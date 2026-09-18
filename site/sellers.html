@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Pay — принимайте оплату за цифровые товары без возвратов через банк</title>
+<meta name="description" content="Accept USDT for digital goods. No chargebacks, no account freezes, no signup. The money goes straight to your wallet.">
+<meta property="og:title" content="Your processor can freeze you. We cannot.">
+<meta property="og:description" content="Take payment in USDT for digital goods. No chargebacks, nothing to freeze, no signup.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
+
+<style>
+/* Тот же набор цветов и та же типографика, что на главной: страница обязана
+   выглядеть частью одного сайта, а не найденной на стороне. */
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
+  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
+  --ok:#128A5A; --fill:rgba(124,58,237,.08); --r:16px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --page-bg:
+    radial-gradient(circle at 8% -8%, #EBDDFD 0%, transparent 50%),
+    radial-gradient(circle at 102% 4%, #E2D2FB 0%, transparent 46%),
+    linear-gradient(170deg, #FFFFFF 0%, #F7F2FE 55%, #EFE5FD 100%);
+  --shadow:0 1px 2px rgba(40,20,80,.06), 0 12px 34px rgba(60,30,120,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.68);
+    --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+    --ok:#3DD598; --fill:rgba(169,123,255,.12);
+    --page-bg:
+      radial-gradient(circle at 8% -8%, #1F1235 0%, transparent 52%),
+      radial-gradient(circle at 102% 4%, #1B1030 0%, transparent 48%),
+      linear-gradient(170deg, #120A20 0%, #0D0716 60%);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.45);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); background-image:var(--page-bg); background-attachment:fixed;
+  color:var(--label); font-family:var(--font); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px; margin:0 auto; padding:0 22px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.2; margin:0; letter-spacing:-.02em}
+h1{font-size:clamp(32px,6vw,52px); font-weight:800}
+h2{font-size:clamp(23px,3.4vw,30px); font-weight:750; margin-bottom:24px}
+h3{font-size:17.5px; font-weight:700; margin-bottom:5px}
+p{margin:0 0 14px}
+section{padding:56px 0; border-top:1px solid var(--sep)}
+.lead{font-size:19px; color:var(--label-2); max-width:58ch; margin-top:20px}
+
+header{position:sticky; top:0; z-index:20;
+  backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
+  background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--sep)}
+.bar{display:flex; align-items:center; gap:14px; height:60px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:750; color:var(--label); font-size:17px}
+.brand:hover{text-decoration:none}
+.brand svg{width:30px; height:30px; border-radius:8px; display:block}
+.bar nav{margin-left:auto; display:flex; align-items:center; gap:14px; font-size:15px; color:var(--label-2)}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
+  color:var(--label-2); padding:5px 9px; border-radius:7px}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+@media(max-width:520px){ .bar nav a{display:none} }
+
+.hero{padding-top:64px; padding-bottom:8px}
+.cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:30px}
+.btn{display:inline-block; padding:14px 24px; border-radius:13px; font-weight:650; font-size:16.5px}
+.btn-main{background:var(--accent); color:#fff}
+.btn-main:hover{text-decoration:none; filter:brightness(1.06)}
+.btn-plain{border:1px solid var(--sep); color:var(--label); background:var(--card)}
+.btn-plain:hover{text-decoration:none}
+.note{font-size:15px; color:var(--label-3); margin-top:16px}
+
+/* Показ вместо рассказа: слева счёт, справа сообщение о том, что заплатили.
+   Это единственное, что человек всё равно захочет увидеть глазами. */
+.demo{display:grid; gap:18px; margin:44px 0 0}
+@media(min-width:720px){ .demo{grid-template-columns:1fr 1fr; align-items:start; gap:26px} }
+.panel{background:var(--card); border:1px solid var(--sep); border-radius:var(--r);
+       box-shadow:var(--shadow); padding:20px 22px}
+.panel .cap{font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+            color:var(--label-3); margin-bottom:14px}
+.field{border:1px solid var(--sep); border-radius:11px; padding:10px 13px; margin-bottom:10px;
+       background:var(--fill)}
+.field span{display:block; font-size:12.5px; color:var(--label-3)}
+.field b{font-weight:650; font-size:16px}
+.link{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; color:var(--label-2);
+      word-break:break-all}
+.bubble{background:var(--fill); border-radius:14px 14px 14px 4px; padding:14px 16px; margin-top:6px}
+.bubble .top{display:flex; align-items:center; gap:9px; font-weight:750; color:var(--ok)}
+.tick{width:20px; height:20px; border-radius:50%; background:var(--ok); display:inline-flex;
+      align-items:center; justify-content:center; flex:0 0 20px}
+.tick svg{width:11px; height:11px; display:block}
+.bubble .amt{font-size:26px; font-weight:800; letter-spacing:-.02em; margin:8px 0 2px}
+.bubble .meta{font-size:13.5px; color:var(--label-3)}
+
+.rows{display:grid; gap:26px 34px}
+@media(min-width:680px){ .rows{grid-template-columns:1fr 1fr} }
+.rows p{color:var(--label-2); font-size:16px; margin:0}
+.steps{counter-reset:s; display:grid; gap:14px}
+.step{display:flex; gap:14px; align-items:flex-start}
+.step .n{flex:0 0 28px; height:28px; border-radius:9px; background:var(--fill); color:var(--accent);
+         font-weight:750; font-size:15px; display:flex; align-items:center; justify-content:center}
+.step p{margin:0; color:var(--label-2); font-size:16px}
+.step b{color:var(--label); font-weight:650}
+.honest{background:var(--card); border:1px solid var(--sep); border-radius:var(--r); padding:22px 24px;
+        box-shadow:var(--shadow)}
+.honest ul{margin:0; padding-left:20px}
+.honest li{color:var(--label-2); font-size:16px; margin-bottom:13px}
+.honest li:last-child{margin-bottom:0}
+.honest b{color:var(--label); font-weight:650}
+footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; color:var(--label-3)}
+footer a{color:var(--label-3)}
+footer p{margin:0 0 10px}
+</style>
+</head>
+<body id="top">
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="https://tavarov.com/">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <rect width="120" height="120" rx="27" fill="#4B1FE8"/>
+        <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+          <rect x="37" y="13" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+          <rect x="37" y="92" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+          <rect x="13" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="13" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+          <rect x="92" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="68" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+        </g>
+      </svg>
+      Wallet
+    </a>
+    <nav>
+      <a href="https://tavarov.com/" data-t="back">← На главную</a>
+      <div class="langs" id="langs"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <h1 data-t="h1">Ваш эквайринг может вас заморозить. Мы&nbsp;— нет.</h1>
+    <p class="lead" data-t="lead">Принимайте USDT за ключи, аккаунты, лицензии, подписки — за всё цифровое.
+       Деньги идут прямо на ваш кошелёк и через нас не проходят.</p>
+    <div class="cta">
+      <a class="btn btn-main" href="https://wallet.tavarov.com/invoice" data-t="cta1">Выставить счёт</a>
+      <a class="btn btn-plain" href="https://wallet.tavarov.com/" data-t="cta2">Открыть кошелёк</a>
+    </div>
+    <p class="note" data-t="note1">Без регистрации, без договора, без проверки документов. Ссылка на оплату делается секунд за двадцать.</p>
+
+    <div class="demo">
+      <div class="panel">
+        <div class="cap" data-t="d1">Вы делаете счёт</div>
+        <div class="field"><span data-t="d2">Сумма</span><b>12.00 USDT</b></div>
+        <div class="field"><span data-t="d3">За что</span><b data-t="d4">Ключ Steam — Hades II</b></div>
+        <div class="cap" style="margin:16px 0 6px" data-t="d5">Ссылка для отправки</div>
+        <div class="link">wallet.tavarov.com/pay.html#p=eyJtIjoiMHg…</div>
+      </div>
+      <div class="panel">
+        <div class="cap" data-t="d6">Вам сообщают, что оплатили</div>
+        <div class="bubble">
+          <div class="top"><span class="tick"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6.4 4.4 9.2 10.5 2.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-t="d7">Оплачено</span></div>
+          <div class="amt">12.00 USDT</div>
+          <div class="meta" data-t="d8">от 0x7f3a…c214 · счёт №A-1183<br>пришло на ваш кошелёк, а не на наш</div>
+        </div>
+        <p class="note" style="margin-top:14px" data-t="d9">В Telegram или подписанным сообщением на ваш сайт — тогда товар выдаётся сам.</p>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2 data-t="w_h">Почему цифровым продавцам</h2>
+      <div class="rows">
+        <div>
+          <h3 data-t="w1h">Возврата через банк не бывает</h3>
+          <p data-t="w1t">Покупатель не заберёт деньги обратно после того, как скачал ключ. Платёж в блокчейне окончателен — для всех, включая нас.</p>
+        </div>
+        <div>
+          <h3 data-t="w2h">Замораживать нечего</h3>
+          <p data-t="w2t">Мы не держим ваши деньги, значит и удержать не можем. Ни баланса, ни выплат по расписанию, ни проверки, которая кончается блокировкой на полгода.</p>
+        </div>
+        <div>
+          <h3 data-t="w3h">Нет счёта, который отберут</h3>
+          <p data-t="w3t">Регистрироваться негде. Кошелёк и есть ваш счёт, и он ваш: ключи создаются на вашем устройстве и никуда не уходят.</p>
+        </div>
+        <div>
+          <h3 data-t="w4h">Деньги сразу</h3>
+          <p data-t="w4t">Платёж приходит вам на кошелёк за секунды, а не через несколько дней. Комиссия сети — доли цента, и она идёт сети, а не нам.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-t="s_h">Как проходит продажа</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><p data-t="s1"><b>Вы делаете счёт.</b> Сумма, монета, за что. Получаете ссылку и код.</p></div>
+        <div class="step"><div class="n">2</div><p data-t="s2"><b>Отправляете ссылку.</b> В переписку, в письмо, на свой сайт — туда, где вы и так говорите с покупателем.</p></div>
+        <div class="step"><div class="n">3</div><p data-t="s3"><b>Покупатель платит</b> из любого кошелька. Деньги оказываются на вашем адресе за секунды.</p></div>
+        <div class="step"><div class="n">4</div><p data-t="s4"><b>Вам сообщают.</b> Сообщением в Telegram или подписанным запросом на ваш сайт, чтобы товар выдался сам.</p></div>
+      </div>
+      <p class="note" style="max-width:62ch" data-t="s_note">Продаёте через сайт? Сообщение подписано вашим секретом, и ваш сервер проверяет подпись прежде, чем что-то выдать, — браузеру покупателя верить нельзя.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 data-t="ho_h">Честно</h2>
+      <div class="honest">
+        <ul>
+          <li data-t="ho1"><b>Независимого аудита у контрактов нет.</b> Мы проверили их сами, много раз, и проверки открыты — но это не то же самое. Начинайте с небольших сумм.</li>
+          <li data-t="ho2"><b>Правила у стран разные.</b> Кое-где расчёты криптой за товары и услуги ограничены или запрещены. Проверьте правила там, где вы зарегистрированы.</li>
+          <li data-t="ho3"><b>Платёж окончателен.</b> Это защищает вас от возвратов через банк, но означает и обратное: ошибочный платёж назад не вернуть. Возврат — это ваша кнопка, а не решение банка.</li>
+          <li data-t="ho4"><b>Баллы TVR — не вложение.</b> У них нет цены, и они не продаются. Любой, кто предлагает купить у него TVR, — мошенник.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="https://tavarov.com/">tavarov.com</a> ·
+       <a href="https://wallet.tavarov.com/invoice" data-t="f1">Выставить счёт</a> ·
+       <a href="https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c" data-t="f2">Контракт оплаты</a> ·
+       <a href="./privacy" data-t="f3">Политика конфиденциальности</a></p>
+    <p data-t="f4">Tavarov — некастодиальный кошелёк: мы не храним ваши ключи и не имеем доступа к вашим деньгам. © 2026 Tavarov</p>
+  </div>
+</footer>
+
+<script>
+/* Словарь лежит прямо здесь, как и на главной: страница должна открываться
+   сразу на нужном языке, а не мигать чужим, пока что-то грузится. Русский
+   берём из разметки — так он не может разойтись с тем, что в исходнике. */
+const T = {
+  en: {
+    back:'← Main page',
+    h1:'Your processor can freeze&nbsp;you. We cannot.',
+    lead:'Take payment in USDT for keys, accounts, licences, subscriptions — anything digital. The money goes straight to your wallet and never passes through us.',
+    cta1:'Create an invoice', cta2:'Open the wallet',
+    note1:'No signup, no contract, no KYC. An invoice link takes about twenty seconds.',
+    d1:'You make an invoice', d2:'Amount', d3:'What for', d4:'Steam key — Hades II',
+    d5:'Link to send', d6:'You are told it is paid', d7:'Paid',
+    d8:'from 0x7f3a…c214 · invoice #A-1183<br>arrived on your wallet, not ours',
+    d9:'In Telegram, or as a signed message to your site so the goods are released automatically.',
+    w_h:'Why digital sellers',
+    w1h:'Chargebacks cannot happen',
+    w1t:'A buyer cannot download the key and then pull the money back through their bank. A blockchain payment is final — for everyone, including us.',
+    w2h:'There is nothing to freeze',
+    w2t:'We never hold your money, so we cannot hold it back. No balance, no payout schedule, no review that ends with your funds locked for 180 days.',
+    w3h:'No account to lose',
+    w3t:'Nothing to sign up for. Your wallet is the account, and it is yours — the keys are created on your device and never leave it.',
+    w4h:'Money right away',
+    w4t:'The payment reaches your wallet in seconds, not in days. The network fee is a fraction of a cent and goes to the network, not to us.',
+    s_h:'How a sale goes',
+    s1:'<b>You make an invoice.</b> Amount, currency, what it is for. You get a link and a QR code.',
+    s2:'<b>You send the link.</b> In chat, in email, on your site — wherever you already talk to buyers.',
+    s3:'<b>The buyer pays</b> from any wallet. The money lands on your address in seconds.',
+    s4:'<b>You are told.</b> A message in Telegram, or a signed request to your site so the goods are released automatically.',
+    s_note:'Selling through a website? The message is signed with your secret and your server verifies it before releasing anything — never trust the buyer\'s browser.',
+    ho_h:'Honestly',
+    ho1:'<b>The contracts have no independent audit.</b> We checked them ourselves, many times, and the checks are public — but that is not the same thing. Start small.',
+    ho2:'<b>Rules differ by country.</b> In some places paying with crypto for goods and services is restricted or forbidden. Check the rules where you are registered.',
+    ho3:'<b>Payments are final.</b> That protects you from chargebacks, and it also means a mistaken payment cannot be pulled back. A refund is a button you press, not a bank decision.',
+    ho4:'<b>TVR points are not an investment.</b> They have no price and are not for sale. Anyone offering to sell you TVR is a fraud.',
+    f1:'Create an invoice', f2:'Payment contract', f3:'Privacy policy',
+    f4:'Tavarov is a non-custodial wallet: we do not keep your keys and have no access to your money. © 2026 Tavarov'
+  },
+  es: {
+    back:'← Página principal',
+    h1:'Su procesador puede congelarle. Nosotros no.',
+    lead:'Cobre en USDT por claves, cuentas, licencias, suscripciones: por todo lo digital. El dinero va directo a su monedero y no pasa por nosotros.',
+    cta1:'Crear una factura', cta2:'Abrir el monedero',
+    note1:'Sin registro, sin contrato, sin verificación de identidad. El enlace de pago se hace en unos veinte segundos.',
+    d1:'Usted crea la factura', d2:'Importe', d3:'Concepto', d4:'Clave de Steam — Hades II',
+    d5:'Enlace para enviar', d6:'Le avisan del pago', d7:'Pagado',
+    d8:'de 0x7f3a…c214 · factura n.º A-1183<br>llegó a su monedero, no al nuestro',
+    d9:'En Telegram o como mensaje firmado a su sitio, para que el producto se entregue solo.',
+    w_h:'Por qué a los vendedores digitales',
+    w1h:'No existen los contracargos',
+    w1t:'El comprador no puede descargar la clave y luego recuperar el dinero por el banco. Un pago en la cadena es definitivo, para todos, también para nosotros.',
+    w2h:'No hay nada que congelar',
+    w2t:'No guardamos su dinero, así que no podemos retenerlo. Ni saldo, ni calendario de pagos, ni revisiones que terminan con fondos bloqueados medio año.',
+    w3h:'No hay cuenta que perder',
+    w3t:'No hay dónde registrarse. El monedero es la cuenta y es suya: las claves se crean en su dispositivo y no salen de ahí.',
+    w4h:'El dinero al instante',
+    w4t:'El pago llega a su monedero en segundos, no en días. La comisión de red es una fracción de céntimo y va a la red, no a nosotros.',
+    s_h:'Cómo transcurre una venta',
+    s1:'<b>Usted crea la factura.</b> Importe, moneda, concepto. Recibe un enlace y un código QR.',
+    s2:'<b>Envía el enlace.</b> Por chat, por correo, en su sitio: donde ya habla con el comprador.',
+    s3:'<b>El comprador paga</b> desde cualquier monedero. El dinero llega a su dirección en segundos.',
+    s4:'<b>Le avisan.</b> Un mensaje en Telegram o una petición firmada a su sitio para entregar el producto solo.',
+    s_note:'¿Vende desde un sitio web? El mensaje va firmado con su secreto y su servidor lo verifica antes de entregar nada: nunca confíe en el navegador del comprador.',
+    ho_h:'Con franqueza',
+    ho1:'<b>Los contratos no tienen auditoría independiente.</b> Los revisamos nosotros, muchas veces, y las comprobaciones son públicas, pero no es lo mismo. Empiece con poco.',
+    ho2:'<b>Las reglas cambian según el país.</b> En algunos, pagar con cripto por bienes y servicios está limitado o prohibido. Consulte las de donde esté registrado.',
+    ho3:'<b>Los pagos son definitivos.</b> Eso le protege de los contracargos y también significa que un pago erróneo no se recupera. La devolución es un botón suyo, no una decisión del banco.',
+    ho4:'<b>Los puntos TVR no son una inversión.</b> No tienen precio ni están a la venta. Quien le ofrezca venderle TVR es un estafador.',
+    f1:'Crear una factura', f2:'Contrato de pagos', f3:'Política de privacidad',
+    f4:'Tavarov es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. © 2026 Tavarov'
+  },
+  tr: {
+    back:'← Ana sayfa',
+    h1:'Ödeme kuruluşunuz sizi dondurabilir. Biz donduramayız.',
+    lead:'Anahtarlar, hesaplar, lisanslar, abonelikler — dijital olan her şey için USDT ile ödeme alın. Para doğrudan cüzdanınıza gider, bizden geçmez.',
+    cta1:'Fatura oluştur', cta2:'Cüzdanı aç',
+    note1:'Kayıt yok, sözleşme yok, kimlik doğrulaması yok. Ödeme bağlantısı yaklaşık yirmi saniye sürer.',
+    d1:'Faturayı siz oluşturursunuz', d2:'Tutar', d3:'Ne için', d4:'Steam anahtarı — Hades II',
+    d5:'Gönderilecek bağlantı', d6:'Ödendiği size bildirilir', d7:'Ödendi',
+    d8:'0x7f3a…c214 adresinden · fatura #A-1183<br>bizim değil, sizin cüzdanınıza geldi',
+    d9:'Telegram\'dan ya da sitenize imzalı bir mesajla — böylece ürün kendiliğinden teslim edilir.',
+    w_h:'Neden dijital satıcılar',
+    w1h:'Ters ibraz olamaz',
+    w1t:'Alıcı anahtarı indirdikten sonra parayı bankası üzerinden geri çekemez. Zincirdeki ödeme kesindir — biz dahil herkes için.',
+    w2h:'Dondurulacak bir şey yok',
+    w2t:'Paranızı biz tutmuyoruz, dolayısıyla alıkoyamayız. Bakiye yok, ödeme takvimi yok, paranızı altı ay kilitleyen inceleme yok.',
+    w3h:'Kaybedilecek hesap yok',
+    w3t:'Kayıt olunacak bir yer yok. Cüzdan zaten hesabınız ve size ait: anahtarlar cihazınızda oluşur ve oradan çıkmaz.',
+    w4h:'Para hemen',
+    w4t:'Ödeme cüzdanınıza günler sonra değil, saniyeler içinde ulaşır. Ağ ücreti bir kuruşun çok altında ve bize değil, ağa gider.',
+    s_h:'Bir satış nasıl geçer',
+    s1:'<b>Faturayı oluşturursunuz.</b> Tutar, para birimi, ne için. Bir bağlantı ve karekod alırsınız.',
+    s2:'<b>Bağlantıyı gönderirsiniz.</b> Sohbette, e-postada, sitenizde — alıcıyla zaten konuştuğunuz yerde.',
+    s3:'<b>Alıcı öder,</b> herhangi bir cüzdandan. Para saniyeler içinde adresinize geçer.',
+    s4:'<b>Size bildirilir.</b> Telegram mesajıyla ya da sitenize imzalı bir istekle, ürün kendiliğinden teslim edilsin diye.',
+    s_note:'Siteden mi satıyorsunuz? Mesaj sizin gizli anahtarınızla imzalanır ve sunucunuz bir şey teslim etmeden önce imzayı doğrular — alıcının tarayıcısına asla güvenmeyin.',
+    ho_h:'Açıkça',
+    ho1:'<b>Sözleşmelerin bağımsız denetimi yok.</b> Kendimiz defalarca denetledik ve denetimler herkese açık, ama bu aynı şey değil. Küçük tutarlarla başlayın.',
+    ho2:'<b>Kurallar ülkeye göre değişir.</b> Bazı yerlerde mal ve hizmet için kripto ödemesi sınırlı ya da yasaktır. Kayıtlı olduğunuz yerin kurallarına bakın.',
+    ho3:'<b>Ödemeler kesindir.</b> Bu sizi ters ibrazdan korur; aynı zamanda yanlış bir ödemenin geri alınamayacağı anlamına gelir. İade sizin bastığınız bir düğmedir, bankanın kararı değil.',
+    ho4:'<b>TVR puanları yatırım değildir.</b> Fiyatları yok ve satılık değiller. Size TVR satmayı teklif eden herkes dolandırıcıdır.',
+    f1:'Fatura oluştur', f2:'Ödeme sözleşmesi', f3:'Gizlilik politikası',
+    f4:'Tavarov saklamasız bir cüzdandır: anahtarlarınızı tutmayız ve paranıza erişimimiz yoktur. © 2026 Tavarov'
+  },
+  pt: {
+    back:'← Página inicial',
+    h1:'Seu processador pode congelar você. Nós não.',
+    lead:'Receba em USDT por chaves, contas, licenças, assinaturas — por tudo que é digital. O dinheiro vai direto para a sua carteira e não passa por nós.',
+    cta1:'Criar uma fatura', cta2:'Abrir a carteira',
+    note1:'Sem cadastro, sem contrato, sem verificação de documentos. O link de pagamento leva uns vinte segundos.',
+    d1:'Você cria a fatura', d2:'Valor', d3:'Referente a', d4:'Chave Steam — Hades II',
+    d5:'Link para enviar', d6:'Você é avisado do pagamento', d7:'Pago',
+    d8:'de 0x7f3a…c214 · fatura nº A-1183<br>caiu na sua carteira, não na nossa',
+    d9:'No Telegram ou como mensagem assinada para o seu site, para o produto ser entregue sozinho.',
+    w_h:'Por que vendedores digitais',
+    w1h:'Estorno não acontece',
+    w1t:'O comprador não baixa a chave e depois puxa o dinheiro de volta pelo banco. Um pagamento na blockchain é definitivo — para todos, inclusive para nós.',
+    w2h:'Não há o que congelar',
+    w2t:'Não guardamos o seu dinheiro, então não podemos retê-lo. Sem saldo, sem calendário de repasses, sem análise que termina com os fundos travados por meio ano.',
+    w3h:'Não há conta a perder',
+    w3t:'Não há onde se cadastrar. A carteira é a conta, e ela é sua: as chaves nascem no seu aparelho e não saem de lá.',
+    w4h:'Dinheiro na hora',
+    w4t:'O pagamento chega à sua carteira em segundos, não em dias. A taxa de rede é fração de centavo e vai para a rede, não para nós.',
+    s_h:'Como corre uma venda',
+    s1:'<b>Você cria a fatura.</b> Valor, moeda, referente a quê. Recebe um link e um QR code.',
+    s2:'<b>Você envia o link.</b> No chat, no e-mail, no seu site — onde você já fala com o comprador.',
+    s3:'<b>O comprador paga</b> de qualquer carteira. O dinheiro chega ao seu endereço em segundos.',
+    s4:'<b>Você é avisado.</b> Uma mensagem no Telegram ou um pedido assinado para o seu site, para o produto sair sozinho.',
+    s_note:'Vende pelo site? A mensagem é assinada com o seu segredo e o seu servidor confere antes de entregar qualquer coisa — nunca confie no navegador do comprador.',
+    ho_h:'Com franqueza',
+    ho1:'<b>Os contratos não têm auditoria independente.</b> Nós mesmos verificamos, muitas vezes, e as verificações são públicas — mas não é a mesma coisa. Comece pequeno.',
+    ho2:'<b>As regras mudam de país para país.</b> Em alguns, pagar com cripto por bens e serviços é restrito ou proibido. Confira as do lugar onde você está registrado.',
+    ho3:'<b>Os pagamentos são definitivos.</b> Isso protege você do estorno e também significa que um pagamento errado não volta. O reembolso é um botão seu, não uma decisão do banco.',
+    ho4:'<b>Pontos TVR não são investimento.</b> Não têm preço e não estão à venda. Quem oferecer vender TVR é golpista.',
+    f1:'Criar uma fatura', f2:'Contrato de pagamentos', f3:'Política de privacidade',
+    f4:'Tavarov é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. © 2026 Tavarov'
+  }
+};
+const TITLES = {
+  ru:'Tavarov Pay — оплата за цифровые товары без возвратов через банк',
+  en:'Tavarov Pay — take payment for digital goods without chargebacks',
+  es:'Tavarov Pay — cobre por productos digitales sin contracargos',
+  tr:'Tavarov Pay — ters ibraz olmadan dijital ürün ödemesi',
+  pt:'Tavarov Pay — receba por produtos digitais sem estornos'
+};
+const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+
+function apply(code){
+  const d = T[code] || null;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    if (!d){ if (el.dataset.ru !== undefined) el.innerHTML = el.dataset.ru; return; }
+    if (el.dataset.ru === undefined) el.dataset.ru = el.innerHTML;
+    const v = d[el.dataset.t];
+    if (v !== undefined) el.innerHTML = v;
+  });
+  document.documentElement.lang = code;
+  try { localStorage.setItem('tavarov.site.lang', code); } catch (e) {}
+  document.querySelectorAll('#langs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === code)));
+  document.title = TITLES[code] || TITLES.ru;
+  /* Ссылки на кассу уносят выбранный язык с собой: касса живёт на другом
+     адресе, и её хранилище про наш выбор ничего не знает. */
+  document.querySelectorAll('a[href*="wallet.tavarov.com/invoice"]').forEach(a => {
+    a.href = 'https://wallet.tavarov.com/invoice?lang=' + code;
+  });
+}
+
+/* Русский лежит в разметке, поэтому перед первой заменой запоминаем его —
+   иначе переключиться обратно на RU было бы нечем. */
+document.querySelectorAll('[data-t]').forEach(el => { el.dataset.ru = el.innerHTML; });
+
+const box = document.getElementById('langs');
+Object.keys(NAMES).forEach(code => {
+  const b = document.createElement('button');
+  b.textContent = NAMES[code];
+  b.dataset.code = code;
+  b.onclick = () => apply(code);
+  box.appendChild(b);
+});
+
+let startLang = null;
+try { startLang = localStorage.getItem('tavarov.site.lang'); } catch (e) {}
+if (!startLang) {
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  startLang = NAMES[nav] ? nav : 'en';
+}
+apply(NAMES[startLang] ? startLang : 'en');
+</script>
+
+</body>
+</html>

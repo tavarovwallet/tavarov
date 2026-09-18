@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Wallet — политика конфиденциальности</title>
+<meta name="description" content="Что приложение собирает (ничего), что хранится на устройстве и куда уходят запросы.">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.70);
+  --label-3:rgba(48,33,79,.42); --sep:rgba(90,60,150,.16); --accent:#7C3AED; --r:16px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.72);
+    --label-3:rgba(235,225,255,.44); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--label); font-family:var(--font);
+  font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px; margin:0 auto; padding:0 22px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex; align-items:center; gap:14px; height:60px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:750; color:var(--label); font-size:17px}
+.brand:hover{text-decoration:none}
+.brand svg{width:30px; height:30px; border-radius:8px; display:block}
+.bar nav{margin-left:auto}
+.langs{display:flex; gap:2px; background:rgba(124,58,237,.08); border-radius:9px; padding:2px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
+  color:var(--label-2); padding:5px 9px; border-radius:7px}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(27px,4.4vw,38px); font-weight:800; letter-spacing:-.02em; margin:44px 0 6px}
+h2{font-size:19.5px; font-weight:730; letter-spacing:-.01em; margin:34px 0 8px}
+p{margin:0 0 13px; color:var(--label-2)}
+ul{margin:0 0 13px; padding-left:22px; color:var(--label-2)}
+li{margin-bottom:7px}
+.date{color:var(--label-3); font-size:15px; margin-bottom:26px}
+.box{background:var(--card); border:1px solid var(--sep); border-radius:var(--r); padding:20px 24px; margin:22px 0}
+.box p:last-child{margin:0}
+footer{border-top:1px solid var(--sep); margin-top:44px; padding:26px 0 52px; color:var(--label-3); font-size:14.5px}
+footer a{color:var(--label-2); font-size:15px; margin-right:20px}
+@media (max-width:430px){
+  .wrap{padding:0 16px}
+  .brand{font-size:15px; gap:8px}
+  .brand svg{width:26px; height:26px}
+  .langs button{padding:5px 6px; font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="./">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <rect width="120" height="120" rx="27" fill="#4B1FE8"/>
+        <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+          <rect x="37" y="13" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+          <rect x="37" y="92" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+          <rect x="13" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="13" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+          <rect x="92" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="68" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+        </g>
+      </svg>
+      Tavarov
+    </a>
+    <nav><div class="langs" id="langs"></div></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 data-t="h1">Политика конфиденциальности</h1>
+  <div class="date"><span data-t="upd">Обновлено</span>: 10.09.2026 · Tavarov Wallet</div>
+
+  <div class="box">
+    <p data-t="short"><b>Коротко.</b> Приложение не собирает о вас ничего. У него нет ни учётных записей, ни счётчиков посещений, ни рекламы. Ключи от кошелька создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем.</p>
+  </div>
+
+  <h2 data-t="h_no">Чего мы не собираем</h2>
+  <p data-t="p_no">Мы не просим и не получаем: имя, почту, телефон, документы, местоположение, список контактов, рекламные идентификаторы. Регистрации нет вовсе — приложение начинает работать сразу.</p>
+
+  <h2 data-t="h_dev">Что хранится на вашем устройстве</h2>
+  <ul>
+    <li data-t="d1">Ключи кошелька и фраза из двенадцати слов — в зашифрованном виде, под вашим паролем.</li>
+    <li data-t="d2">Настройки: язык, роль, выбранная сеть, добавленные вами токены, адрес сайта для счетов.</li>
+    <li data-t="d3">Журнал ваших операций — чтобы история открывалась мгновенно и работала без сети.</li>
+  </ul>
+  <p data-t="p_dev">Всё это лежит только на устройстве. На наши серверы не уходит и в облако не копируется. Удалите приложение — исчезнет вместе с ним, поэтому резервную копию стоит сделать заранее.</p>
+
+  <h2 data-t="h_net">Куда уходят запросы</h2>
+  <p data-t="p_net">Кошелёк не может работать, не спрашивая блокчейн. Эти запросы идут напрямую с вашего устройства, минуя нас, и получателям видны ваш IP-адрес и то, о чём вы спросили:</p>
+  <ul>
+    <li data-t="n1"><b>Узлы BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com и подобные) — остатки, комиссии, отправка операций.</li>
+    <li data-t="n2"><b>CoinGecko</b> — курсы монет, чтобы показать примерную сумму в долларах. Запрашиваются только названия монет, ваш адрес туда не уходит.</li>
+    <li data-t="n3"><b>Наш сайт</b> — сама страница приложения и страница оплаты по ссылке. Журналы веб-хостинга (Cloudflare) при этом видят обычные для интернета данные: IP, время, адрес страницы.</li>
+    <li data-t="n4"><b>BscScan</b> — только если вы сами нажмёте ссылку «посмотреть в обозревателе».</li>
+  </ul>
+  <p data-t="p_net2">Ни один из этих сервисов не получает от нас ваши ключи, фразу или пароль: их у нас нет.</p>
+
+  <h2 data-t="h_perm">Разрешения приложения</h2>
+  <ul>
+    <li data-t="r1"><b>Интернет</b> — без него кошелёк не увидит сеть.</li>
+    <li data-t="r2"><b>Камера</b> — только чтобы прочитать QR-код оплаты. Изображение обрабатывается на устройстве, никуда не отправляется и не сохраняется. Разрешение спрашивается в тот момент, когда вы нажимаете «сканировать», и отказ ломает только сканирование.</li>
+    <li data-t="r3"><b>Отпечаток или код разблокировки</b> — если вы сами включите вход по биометрии. Проверку делает система устройства, нам она ничего не сообщает.</li>
+  </ul>
+
+  <h2 data-t="h_back">Резервная копия</h2>
+  <p data-t="p_back">Копию создаёте вы сами, и она сразу шифруется вашим паролем. Файл остаётся у вас: мы его не получаем и восстановить забытый пароль не можем. Храните копию и пароль отдельно друг от друга.</p>
+
+  <h2 data-t="h_chain">Блокчейн — открытая книга</h2>
+  <p data-t="p_chain">Всё, что происходит в сети, видно всем и остаётся навсегда: адреса, суммы, время. Это устройство самого блокчейна, а не наше решение, и удалить оттуда запись не может никто, включая нас.</p>
+
+  <h2 data-t="h_kids">Дети</h2>
+  <p data-t="p_kids">Приложение не предназначено для детей и не рассчитано на них по содержанию.</p>
+
+  <h2 data-t="h_chg">Изменения</h2>
+  <p data-t="p_chg">Если что-то поменяется, мы поменяем и эту страницу, а дату обновления сверху — в первую очередь.</p>
+
+  <h2 data-t="h_ask">Связь</h2>
+  <p data-t="p_ask">Вопросы по этой странице: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Ключи, фразу из двенадцати слов и пароль мы не спрашиваем никогда — кто бы ни просил, это мошенник.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="./" data-t="f1">О приложении</a>
+    <a href="https://wallet.tavarov.com/" data-t="f2">Открыть кошелёк</a>
+    <p style="margin:14px 0 0">© 2026 Tavarov</p>
+  </div>
+</footer>
+
+<script>
+const T = {
+  en: {
+    h1:'Privacy policy', upd:'Updated',
+    short:'<b>In short.</b> The app collects nothing about you. It has no accounts, no analytics, no advertising. The wallet keys are created on your device and stay there: we cannot see them and cannot obtain them.',
+    h_no:'What we do not collect',
+    p_no:'We neither ask for nor receive: name, email, phone number, documents, location, contacts, advertising identifiers. There is no sign-up at all — the app simply starts working.',
+    h_dev:'What is stored on your device',
+    d1:'The wallet keys and the twelve-word phrase — encrypted, under your password.',
+    d2:'Settings: language, role, the chosen network, tokens you added yourself, the site address used for invoices.',
+    d3:'A journal of your own operations — so that history opens instantly and works without a connection.',
+    p_dev:'All of it lives on the device only. It is not sent to our servers and not copied to any cloud. Delete the app and it goes with it, which is why a backup is worth making in advance.',
+    h_net:'Where requests go',
+    p_net:'A wallet cannot work without asking the blockchain. These requests go straight from your device, bypassing us, and their recipients can see your IP address and what you asked about:',
+    n1:'<b>BNB Chain nodes</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com and similar) — balances, fees, sending operations.',
+    n2:'<b>CoinGecko</b> — coin rates, to show an approximate amount in dollars. Only coin names are requested; your address never goes there.',
+    n3:'<b>Our site</b> — the app page itself and the payment page behind a link. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.',
+    n4:'<b>BscScan</b> — only if you press "view in the explorer" yourself.',
+    p_net2:'None of these services receives your keys, phrase or password from us: we do not have them.',
+    h_perm:'App permissions',
+    r1:'<b>Internet</b> — without it the wallet cannot see the network.',
+    r2:'<b>Camera</b> — only to read a payment QR code. The image is processed on the device, is never sent anywhere and is not saved. Permission is asked at the moment you press "scan", and refusing it breaks nothing but scanning.',
+    r3:'<b>Fingerprint or screen lock</b> — only if you turn on biometric unlock yourself. The check is done by the device’s own system, which tells us nothing.',
+    h_back:'Backups',
+    p_back:'You create the backup yourself and it is encrypted with your password at once. The file stays with you: we never receive it and cannot recover a forgotten password. Keep the copy and the password apart from each other.',
+    h_chain:'The blockchain is an open book',
+    p_chain:'Everything that happens on the network is visible to everyone and stays forever: addresses, amounts, times. That is how a blockchain is built, not a decision of ours, and nobody can delete a record from it, ourselves included.',
+    h_kids:'Children',
+    p_kids:'The app is not intended for children and is not aimed at them in content.',
+    h_chg:'Changes',
+    p_chg:'If something changes, this page changes with it — starting with the date at the top.',
+    h_ask:'Contact',
+    p_ask:'Questions about this page: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. We never ask for keys, the twelve-word phrase or your password — whoever asks, it is a fraud.',
+    f1:'About the app', f2:'Open the wallet'
+  },
+  es: {
+    h1:'Política de privacidad', upd:'Actualizado',
+    short:'<b>En resumen.</b> La aplicación no recoge nada sobre usted. No tiene cuentas, ni analítica, ni publicidad. Las claves del monedero se crean en su dispositivo y allí se quedan: no podemos verlas ni obtenerlas.',
+    h_no:'Lo que no recogemos',
+    p_no:'Ni pedimos ni recibimos: nombre, correo, teléfono, documentos, ubicación, contactos, identificadores publicitarios. No hay registro alguno: la aplicación simplemente empieza a funcionar.',
+    h_dev:'Qué se guarda en su dispositivo',
+    d1:'Las claves del monedero y la frase de doce palabras, cifradas con su contraseña.',
+    d2:'Ajustes: idioma, rol, la red elegida, los tokens que usted añadió, la dirección del sitio para las cobranzas.',
+    d3:'Un registro de sus propias operaciones, para que el historial se abra al instante y funcione sin conexión.',
+    p_dev:'Todo eso vive solo en el dispositivo. No se envía a nuestros servidores ni se copia a ninguna nube. Si borra la aplicación, se va con ella: por eso conviene hacer una copia de seguridad con antelación.',
+    h_net:'Adónde van las peticiones',
+    p_net:'Un monedero no puede funcionar sin preguntar a la blockchain. Esas peticiones salen directamente de su dispositivo, sin pasar por nosotros, y quien las recibe ve su dirección IP y lo que preguntó:',
+    n1:'<b>Nodos de BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com y similares): saldos, comisiones, envío de operaciones.',
+    n2:'<b>CoinGecko</b>: cotizaciones, para mostrar un importe aproximado en dólares. Solo se piden nombres de monedas; su dirección no llega allí.',
+    n3:'<b>Nuestro sitio</b>: la propia página de la aplicación y la página de pago del enlace. Los registros del alojamiento web (Cloudflare) ven entonces lo que ve cualquier sitio: IP, hora, dirección de la página.',
+    n4:'<b>BscScan</b>: solo si usted mismo pulsa «ver en el explorador».',
+    p_net2:'Ninguno de esos servicios recibe de nosotros sus claves, su frase ni su contraseña: no las tenemos.',
+    h_perm:'Permisos de la aplicación',
+    r1:'<b>Internet</b>: sin él el monedero no ve la red.',
+    r2:'<b>Cámara</b>: solo para leer un código QR de pago. La imagen se procesa en el dispositivo, no se envía a ninguna parte y no se guarda. El permiso se pide en el momento en que usted pulsa «escanear», y negarlo solo impide escanear.',
+    r3:'<b>Huella o bloqueo de pantalla</b>: solo si usted activa el desbloqueo biométrico. La comprobación la hace el propio sistema del dispositivo y a nosotros no nos dice nada.',
+    h_back:'Copia de seguridad',
+    p_back:'La copia la crea usted y se cifra de inmediato con su contraseña. El archivo se queda con usted: nunca lo recibimos y no podemos recuperar una contraseña olvidada. Guarde la copia y la contraseña por separado.',
+    h_chain:'La blockchain es un libro abierto',
+    p_chain:'Todo lo que ocurre en la red es visible para cualquiera y queda para siempre: direcciones, importes, horas. Así está hecha una blockchain, no es una decisión nuestra, y nadie puede borrar un registro de allí, nosotros tampoco.',
+    h_kids:'Menores',
+    p_kids:'La aplicación no está destinada a menores ni dirigida a ellos por su contenido.',
+    h_chg:'Cambios',
+    p_chg:'Si algo cambia, esta página cambia con ello, empezando por la fecha de arriba.',
+    h_ask:'Contacto',
+    p_ask:'Preguntas sobre esta página: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Nunca pedimos claves, la frase de doce palabras ni su contraseña: quien lo haga es un estafador.',
+    f1:'Sobre la aplicación', f2:'Abrir el monedero'
+  },
+  tr: {
+    h1:'Gizlilik politikası', upd:'Güncellendi',
+    short:'<b>Kısaca.</b> Uygulama sizinle ilgili hiçbir şey toplamaz. Hesap yok, ölçümleme yok, reklam yok. Cüzdan anahtarları sizin cihazınızda oluşur ve orada kalır: onları ne görebiliriz ne de elde edebiliriz.',
+    h_no:'Toplamadıklarımız',
+    p_no:'İsim, e-posta, telefon, belge, konum, rehber, reklam kimliği istemiyoruz ve almıyoruz. Kayıt diye bir şey yok — uygulama doğrudan çalışmaya başlar.',
+    h_dev:'Cihazınızda ne saklanır',
+    d1:'Cüzdan anahtarları ve on iki kelimelik ifade — parolanızla şifrelenmiş hâlde.',
+    d2:'Ayarlar: dil, rol, seçilen ağ, kendi eklediğiniz tokenlar, faturalar için site adresi.',
+    d3:'Kendi işlemlerinizin kaydı — geçmiş anında açılsın ve bağlantı olmadan da çalışsın diye.',
+    p_dev:'Bunların hepsi yalnızca cihazda durur. Sunucularımıza gitmez, buluta kopyalanmaz. Uygulamayı silerseniz onunla birlikte gider; bu yüzden yedeği önceden almakta fayda var.',
+    h_net:'İstekler nereye gider',
+    p_net:'Bir cüzdan blok zincirine sormadan çalışamaz. Bu istekler doğrudan cihazınızdan gider, bizden geçmez; alan taraf IP adresinizi ve ne sorduğunuzu görür:',
+    n1:'<b>BNB Chain düğümleri</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com ve benzerleri) — bakiyeler, ücretler, işlem gönderimi.',
+    n2:'<b>CoinGecko</b> — dolar karşılığını yaklaşık göstermek için kur bilgisi. Yalnızca para birimi adları sorulur; adresiniz oraya gitmez.',
+    n3:'<b>Bizim sitemiz</b> — uygulamanın kendi sayfası ve bağlantıdaki ödeme sayfası. Web barındırmanın (Cloudflare) günlükleri her sitenin gördüğünü görür: IP, saat, sayfa adresi.',
+    n4:'<b>BscScan</b> — yalnızca «gezginde görüntüle» bağlantısına siz basarsanız.',
+    p_net2:'Bu hizmetlerin hiçbiri bizden anahtarlarınızı, ifadenizi ya da parolanızı almaz: bizde yoklar.',
+    h_perm:'Uygulama izinleri',
+    r1:'<b>İnternet</b> — onsuz cüzdan ağı göremez.',
+    r2:'<b>Kamera</b> — yalnızca ödeme QR kodunu okumak için. Görüntü cihazda işlenir, hiçbir yere gönderilmez ve kaydedilmez. İzin, «tara» düğmesine bastığınız anda istenir; reddetmek yalnızca taramayı devre dışı bırakır.',
+    r3:'<b>Parmak izi ya da ekran kilidi</b> — yalnızca biyometrik girişi kendiniz açarsanız. Doğrulamayı cihazın kendi sistemi yapar ve bize hiçbir şey bildirmez.',
+    h_back:'Yedek',
+    p_back:'Yedeği siz oluşturursunuz ve anında parolanızla şifrelenir. Dosya sizde kalır: biz onu hiç almayız ve unutulan parolayı kurtaramayız. Yedeği ve parolayı birbirinden ayrı saklayın.',
+    h_chain:'Blok zinciri açık bir defterdir',
+    p_chain:'Ağda olan her şey herkese görünür ve sonsuza dek kalır: adresler, tutarlar, saatler. Bu blok zincirinin yapısıdır, bizim kararımız değil; oradan bir kaydı kimse silemez, biz de.',
+    h_kids:'Çocuklar',
+    p_kids:'Uygulama çocuklara yönelik değildir ve içeriğiyle onları hedeflemez.',
+    h_chg:'Değişiklikler',
+    p_chg:'Bir şey değişirse bu sayfa da onunla değişir — en başta yukarıdaki tarih.',
+    h_ask:'İletişim',
+    p_ask:'Bu sayfayla ilgili sorular: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Anahtarları, on iki kelimelik ifadeyi ve parolayı asla sormayız — kim sorarsa sorsun, o bir dolandırıcıdır.',
+    f1:'Uygulama hakkında', f2:'Cüzdanı aç'
+  },
+  pt: {
+    h1:'Política de privacidade', upd:'Atualizado',
+    short:'<b>Em resumo.</b> O aplicativo não coleta nada sobre você. Não há contas, nem análises, nem publicidade. As chaves da carteira são criadas no seu aparelho e ficam nele: não podemos vê-las nem obtê-las.',
+    h_no:'O que não coletamos',
+    p_no:'Não pedimos nem recebemos: nome, e-mail, telefone, documentos, localização, contatos, identificadores de publicidade. Não existe cadastro algum — o aplicativo simplesmente começa a funcionar.',
+    h_dev:'O que fica guardado no seu aparelho',
+    d1:'As chaves da carteira e a frase de doze palavras — criptografadas com a sua senha.',
+    d2:'Configurações: idioma, papel, a rede escolhida, os tokens que você mesmo adicionou, o endereço do site para as cobranças.',
+    d3:'Um registro das suas próprias operações — para que o histórico abra na hora e funcione sem conexão.',
+    p_dev:'Tudo isso vive apenas no aparelho. Não vai para os nossos servidores nem é copiado para nenhuma nuvem. Se apagar o aplicativo, vai junto com ele: por isso vale a pena fazer uma cópia de segurança antes.',
+    h_net:'Para onde vão os pedidos',
+    p_net:'Uma carteira não funciona sem perguntar ao blockchain. Esses pedidos saem direto do seu aparelho, sem passar por nós, e quem os recebe vê o seu endereço IP e o que foi perguntado:',
+    n1:'<b>Nós da BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com e semelhantes) — saldos, taxas, envio de operações.',
+    n2:'<b>CoinGecko</b> — cotações, para mostrar um valor aproximado em dólares. Só são pedidos nomes de moedas; o seu endereço não vai para lá.',
+    n3:'<b>Nosso site</b> — a própria página do aplicativo e a página de pagamento do link. Os registros da hospedagem (Cloudflare) veem o que qualquer site vê: IP, hora, endereço da página.',
+    n4:'<b>BscScan</b> — apenas se você mesmo clicar em «ver no explorador».',
+    p_net2:'Nenhum desses serviços recebe de nós as suas chaves, a sua frase ou a sua senha: nós não as temos.',
+    h_perm:'Permissões do aplicativo',
+    r1:'<b>Internet</b> — sem ela a carteira não enxerga a rede.',
+    r2:'<b>Câmera</b> — apenas para ler o QR code de pagamento. A imagem é processada no aparelho, não é enviada a lugar nenhum e não é salva. A permissão é pedida no momento em que você toca em «escanear», e recusá-la só impede o escaneamento.',
+    r3:'<b>Digital ou bloqueio de tela</b> — apenas se você mesmo ativar a entrada por biometria. A verificação é feita pelo próprio sistema do aparelho, que não nos informa nada.',
+    h_back:'Cópia de segurança',
+    p_back:'A cópia é feita por você e é criptografada na hora com a sua senha. O arquivo fica com você: nunca o recebemos e não podemos recuperar uma senha esquecida. Guarde a cópia e a senha separadas uma da outra.',
+    h_chain:'O blockchain é um livro aberto',
+    p_chain:'Tudo o que acontece na rede é visível para todos e fica para sempre: endereços, valores, horários. É assim que um blockchain é feito, não é decisão nossa, e ninguém pode apagar um registro de lá, nem nós.',
+    h_kids:'Crianças',
+    p_kids:'O aplicativo não é destinado a crianças nem se dirige a elas pelo conteúdo.',
+    h_chg:'Mudanças',
+    p_chg:'Se algo mudar, esta página muda junto — a começar pela data do topo.',
+    h_ask:'Contato',
+    p_ask:'Dúvidas sobre esta página: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Nunca pedimos chaves, a frase de doze palavras ou a sua senha — quem pedir é golpista.',
+    f1:'Sobre o aplicativo', f2:'Abrir a carteira'
+  }
+};
+
+const RU = {};
+document.querySelectorAll('[data-t]').forEach(el => { RU[el.dataset.t] = el.innerHTML; });
+T.ru = RU;
+
+const TITLES = {
+  ru:'Tavarov Wallet — политика конфиденциальности',
+  en:'Tavarov Wallet — privacy policy',
+  es:'Tavarov Wallet — política de privacidad',
+  tr:'Tavarov Wallet — gizlilik politikası',
+  pt:'Tavarov Wallet — política de privacidade'
+};
+const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+
+function apply(code){
+  const d = T[code] || T.ru;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = d[el.dataset.t];
+    if (v !== undefined) el.innerHTML = v;
+  });
+  document.documentElement.lang = code;
+  try { localStorage.setItem('tavarov.site.lang', code); } catch (e) {}
+  document.querySelectorAll('#langs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === code)));
+  document.title = TITLES[code] || TITLES.ru;
+}
+
+const box = document.getElementById('langs');
+Object.keys(NAMES).forEach(code => {
+  const b = document.createElement('button');
+  b.textContent = NAMES[code];
+  b.dataset.code = code;
+  b.onclick = () => apply(code);
+  box.appendChild(b);
+});
+
+let startLang = null;
+try { startLang = localStorage.getItem('tavarov.site.lang'); } catch (e) {}
+if (!startLang) {
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  startLang = NAMES[nav] ? nav : 'en';
+}
+apply(T[startLang] ? startLang : 'en');
+</script>
+</body>
+</html>

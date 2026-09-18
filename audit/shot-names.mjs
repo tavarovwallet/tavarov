@@ -1,0 +1,17 @@
+import { boot } from './boot.mjs';
+import { start, state } from './mocknode.mjs';
+const srv = await start(8555);
+const { browser, page } = await boot({ role:'seller', testnet:true, rpc:'http://localhost:8555' });
+const me = await page.evaluate(()=>wallet.evm.address);
+state.balances[me.toLowerCase()]={native:0.4,USDT:87.5,TVR:1500};
+state.names['kofeinya']=me;
+await page.evaluate(()=>{ setTab('settings'); });
+await page.waitForTimeout(2000);
+await page.evaluate(()=>refreshMyName(true));
+await page.waitForTimeout(1200);
+await page.screenshot({path:'shots/имя-настройки.png', fullPage:true});
+await page.evaluate(()=>setTab('wallet'));
+await page.evaluate(()=>refreshBalances());
+await page.waitForTimeout(2000);
+await page.screenshot({path:'shots/имя-кошелёк.png', fullPage:true});
+await browser.close(); srv.close();

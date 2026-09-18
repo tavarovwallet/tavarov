@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Выставить счёт · Tavarov Pay</title>
+<!--
+  Страница продавца: выставить счёт и получить ссылку.
+
+  ЗАЧЕМ ОНА. У шлюза было две страницы: витрина-пример (как выглядит кнопка
+  в чужом магазине) и страница счёта для покупателя. Между ними — дыра: сам
+  продавец выставить счёт не мог никак. А продавцов со своим сайтом почти
+  нет. Есть человек, который продаёт в переписке: договорились о цене — надо
+  кинуть ссылку на оплату. Вот для него.
+
+  ЧЕГО ЗДЕСЬ НЕТ. Ни ключей, ни паролей, ни сервера с базой. Счёт целиком
+  лежит в самой ссылке, а состояние оплаты — в блокчейне. Терять нечего и
+  красть нечего: адрес продавца и так публичен, он уедет в цепочку вместе
+  с платежом.
+
+  ПРО ЯЗЫКИ. Продавец, ради которого это сделано, чаще всего не русский:
+  фрилансер с заграничными заказчиками, торговец ключами, автор курсов.
+  Поэтому страница говорит на пяти языках и при первом заходе выбирает язык
+  сама — по языку браузера, а не по нашему предположению.
+-->
+<style>
+:root{
+  --bg:#F5F6F8; --card:#fff; --label:#14161A; --label-2:#5B6270; --sep:#E3E6EB;
+  --accent:#7C3AED; --green:#1E9E57; --red:#E5342A; --orange:#D97706; --label-3:#8A909C;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#0F1115; --card:#171A20; --label:#fff; --label-2:#9AA2B1; --sep:#262B34;
+  --accent:#A97BFF; --red:#FF7A70; --orange:#F0A03A; --label-3:#767D8C;
+} }
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--label); font-family:var(--font); font-size:16px; line-height:1.55}
+.wrap{max-width:560px; margin:0 auto; padding:26px 18px 70px}
+/* На узком экране (а это и телефон в руке, и наш ролик) строка из логотипа и
+   пяти языков не помещается, и переключатель уезжал за край — последние языки
+   были не видны и не нажимались. Разрешаем ей переноситься. */
+.top{display:flex; align-items:center; justify-content:space-between; gap:10px 12px;
+     flex-wrap:wrap; margin-bottom:20px}
+.brand{display:flex; align-items:center; gap:9px; font-size:14px; color:var(--label-2);
+       white-space:nowrap}
+.brand svg{width:26px; height:26px; border-radius:7px}
+.langs{display:flex; gap:2px; background:var(--sep); border-radius:9px; padding:2px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:650;
+              color:var(--label-2); padding:4px 8px; border-radius:7px; line-height:1.2}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:23px; margin:0 0 6px}
+.sub{color:var(--label-2); font-size:14.5px; margin:0 0 20px}
+.card{background:var(--card); border:1px solid var(--sep); border-radius:15px; padding:20px; margin-bottom:16px}
+label, .lbl{display:block; font-size:11.5px; font-weight:650; letter-spacing:.07em;
+            text-transform:uppercase; color:var(--label-3, var(--label-2)); margin:0 0 7px}
+
+/* Переключатель вместо выпадающего списка. Выпадающий список — это два
+   касания и модальное окно поверх формы; переключатель — одно касание, и
+   все варианты видно сразу, не открывая. */
+.seg{display:flex; gap:4px; background:var(--bg); border:1.5px solid var(--sep);
+     border-radius:11px; padding:4px}
+.seg button{flex:1 1 0; min-width:0; border:0; background:transparent; cursor:pointer;
+            font:inherit; font-size:14.5px; font-weight:600; color:var(--label-2);
+            padding:8px 4px; border-radius:8px; line-height:1.25; white-space:nowrap;
+            overflow:hidden; text-overflow:ellipsis}
+.seg button[aria-pressed="true"]{background:var(--card); color:var(--label);
+            box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.seg button:hover:not([aria-pressed="true"]){color:var(--label)}
+
+/* Живой итог. Пока его не было, продавец узнавал сумму только после
+   нажатия — а это ровно то место, где он проверяет себя. */
+.sum-row{display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+         margin:16px 0 2px; padding-top:14px; border-top:1px solid var(--sep)}
+.sum-row .k{font-size:11.5px; font-weight:650; letter-spacing:.07em;
+            text-transform:uppercase; color:var(--label-3, var(--label-2))}
+.sum-row .v{font-size:21px; font-weight:700; letter-spacing:-.01em}
+.sum-row .v.dim{color:var(--label-3, var(--label-2)); font-weight:600; font-size:17px}
+input, select{width:100%; padding:12px 13px; border-radius:11px; border:1.5px solid var(--sep);
+  background:var(--bg); color:var(--label); font:inherit; font-size:16px}
+input:focus, select:focus{outline:none; border-color:var(--accent)}
+input.mono{font-family:var(--mono); font-size:13.5px}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:11px}
+.field{margin-bottom:13px}
+.btn{display:block; width:100%; padding:15px; border:none; border-radius:13px; background:var(--accent);
+     color:#fff; font:inherit; font-size:16.5px; font-weight:640; cursor:pointer; margin-top:4px}
+.btn:hover{filter:brightness(1.07)}
+.btn-plain{background:var(--card); color:var(--label); border:1.5px solid var(--sep); font-weight:560; margin-top:9px}
+.note{margin-top:13px; padding:12px 14px; border-radius:11px; font-size:13.5px; line-height:1.5}
+.note-err{background:rgba(229,52,42,.12); color:var(--red)}
+.note-warn{background:rgba(217,119,6,.14); color:var(--orange)}
+.note-ok{background:rgba(30,158,87,.13); color:var(--green)}
+.hidden{display:none!important}
+#qrBox{background:#fff; border-radius:14px; padding:16px; display:flex; justify-content:center; margin:4px 0 14px}
+#qrBox canvas, #qrBox img{display:block}
+.linkbox{font-family:var(--mono); font-size:12px; word-break:break-all; color:var(--label-2);
+         background:var(--bg); border:1px solid var(--sep); border-radius:10px; padding:11px 12px; margin-bottom:12px}
+.kv{display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid var(--sep); font-size:14.5px}
+.kv:last-child{border-bottom:none}
+.kv span{color:var(--label-2)}
+.kv b{font-weight:600; text-align:right; word-break:break-all}
+.big{font-size:30px; font-weight:700; text-align:center; margin:2px 0 4px}
+.status{text-align:center; font-size:14px; color:var(--label-2); margin-bottom:14px}
+.paid{color:var(--green); font-weight:640}
+p.small{color:var(--label-2); font-size:13.5px; line-height:1.5}
+
+/* Сеть одна, и выбирать её нечего. Строкой, а не полем: поле выглядело как
+   сломанный ввод, в который продавец тыкал и ничего не получал. */
+.netline{display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+         padding:11px 2px 0; border-top:1px solid var(--sep); margin-bottom:13px}
+.netline span:last-child{font-size:15px; font-weight:600; color:var(--label)}
+
+/* ---- журнал счетов ---- */
+.lrow{display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-top:1px solid var(--sep)}
+.lrow:first-of-type{border-top:none}
+.lbody{flex:1 1 auto; min-width:0; cursor:pointer}
+.lsum{font-weight:640; font-size:15px}
+.ldim{color:var(--label-2); font-size:13px; margin-top:2px; word-break:break-word}
+.pill{display:inline-block; padding:3px 10px; border-radius:999px; font-size:12.5px;
+      font-weight:640; white-space:nowrap; flex:0 0 auto}
+.pill-paid{background:rgba(30,158,87,.15); color:var(--green)}
+.pill-wait{background:rgba(124,58,237,.14); color:var(--accent)}
+.pill-old{background:rgba(91,98,112,.18); color:var(--label-2)}
+.rm{flex:0 0 auto; background:none; border:none; color:var(--label-2); font-size:19px;
+    line-height:1; cursor:pointer; padding:0 2px}
+.rm:hover{color:var(--red)}
+.total{display:flex; justify-content:space-between; gap:10px; padding-top:12px;
+       margin-top:4px; border-top:1px solid var(--sep); font-size:14.5px}
+.total b{font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#4B1FE8"/>
+        <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+          <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+          <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+          <rect x="13" y="37" width="15" height="46" fill="#C9B6FB"/><rect x="13" y="52.5" width="39" height="15" fill="#C9B6FB"/>
+          <rect x="92" y="37" width="15" height="46" fill="#C9B6FB"/><rect x="68" y="52.5" width="39" height="15" fill="#C9B6FB"/>
+        </g></svg>
+      Tavarov Pay
+    </div>
+    <div class="langs" id="langs"></div>
+  </div>
+
+  <!-- ============ ФОРМА ============ -->
+  <div id="formCard">
+    <h1 data-t="h1">Выставить счёт</h1>
+    <p class="sub" data-t="sub">Заполните — получите ссылку и код. Ссылку можно послать
+    покупателю в переписке, код — показать с экрана или распечатать.</p>
+
+    <!-- Кошелёк и название продавец вводит один раз и потом не трогает. Держать
+         их развёрнутыми поверх каждого счёта — значит каждый раз предлагать
+         поменять то, что менять не надо, и прятать под ними сумму, ради которой
+         человек сюда и зашёл. -->
+    <div class="card hidden" id="whoBar" style="display:flex; align-items:center; gap:10px; justify-content:space-between">
+      <div style="min-width:0">
+        <div id="whoName" style="font-weight:640"></div>
+        <div id="whoAddr" class="mono" style="font-size:12.5px; color:var(--label-2); overflow:hidden; text-overflow:ellipsis"></div>
+      </div>
+      <button class="rm" id="whoEdit" data-t="edit" style="font-size:13px; flex:0 0 auto">изменить</button>
+    </div>
+
+    <div class="card">
+      <div class="field" id="fWallet">
+        <label for="wallet" data-t="lWallet">Ваш кошелёк — сюда придут деньги</label>
+        <input id="wallet" class="mono" type="text" placeholder="0x…" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="field" id="fShop">
+        <label for="shop" data-t="lShop">Название — его увидит покупатель</label>
+        <input id="shop" type="text" data-tp="phShop" placeholder="Кофейня на углу" maxlength="40">
+      </div>
+      <div class="field">
+        <label for="item" data-t="lItem">За что платят</label>
+        <input id="item" type="text" data-tp="phItem" placeholder="Капучино и круассан" maxlength="60">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="amount" data-t="lAmount">Сумма</label>
+          <input id="amount" type="text" inputmode="decimal" placeholder="12.34">
+        </div>
+        <div class="field">
+          <span class="lbl" data-t="lCur">Валюта</span>
+          <!-- Значение живёт в скрытом поле: весь остальной код и память
+               между заходами читают его как раньше, менялся только вид. -->
+          <input type="hidden" id="cur" value="USDT">
+          <div class="seg" id="curSeg">
+            <button type="button" data-v="USDT">USDT</button>
+            <button type="button" data-v="USDC">USDC</button>
+          </div>
+        </div>
+      </div>
+      <!-- Выбора сети здесь нет намеренно.
+
+           Тестовая сеть выглядит как настоящая, а деньги в ней ненастоящие и
+           раздаются бесплатно. На странице, которую открывает посторонний
+           продавец, у такого выбора нет ни одного честного применения — зато
+           есть мошенническое: выставить счёт в тестовой сети, показать
+           жертве экран «Оплачено» и убедить её, что деньги ходят.
+
+           Поэтому счета выставляются только в основной сети. Проверять
+           тестовую есть где: местный запуск шлюза и само приложение. -->
+      <div>
+        <div class="field">
+          <span class="lbl" data-t="lTtl">Счёт живёт</span>
+          <input type="hidden" id="ttl" value="900">
+          <div class="seg" id="ttlSeg">
+            <button type="button" data-v="900" data-t="ttl15">15 минут</button>
+            <button type="button" data-v="3600" data-t="ttl1h">1 час</button>
+            <button type="button" data-v="86400" data-t="ttl24">сутки</button>
+          </div>
+        </div>
+        <!-- Сеть — это справка, а не поле для ввода. Раньше она и рисовалась
+             полем, и выглядела как сломанный ввод: продавец пытался в неё
+             нажать. Теперь просто строка. -->
+        <div class="field netline">
+          <span class="lbl" style="margin:0" data-t="lNet">Сеть</span>
+          <span id="netFixed">BNB Chain</span>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="order" data-t="lOrder">Номер заказа — для себя, необязательно</label>
+        <input id="order" type="text" data-tp="phOrder" placeholder="заказ-1024" maxlength="40">
+      </div>
+
+      <div class="sum-row">
+        <span class="k" data-t="willPay">Покупатель заплатит</span>
+        <span class="v dim" id="sumPreview">—</span>
+      </div>
+
+      <div id="curNote" class="note note-warn hidden"></div>
+      <div id="formErr" class="note note-err hidden"></div>
+      <button class="btn" id="makeBtn" data-t="make">Выставить счёт</button>
+    </div>
+
+    <p class="small" data-t="noteDirect">Деньги идут от покупателя прямо вам. Шлюз их не касается
+    и не может: он только смотрит в блокчейн и говорит, оплачено или нет.</p>
+  </div>
+
+  <!-- ============ ЖУРНАЛ СЧЕТОВ ============ -->
+  <!--
+    Зачем он. Без журнала выставленный счёт исчезал вместе с вкладкой: узнать,
+    оплатили ли вчерашний, было неоткуда, и продавцу оставалось выставлять
+    новый. Теперь счета помнятся, а «оплачено» берётся не из нашей записи, а
+    из блокчейна — то есть это правда, а не наше мнение.
+
+    Где он живёт. В браузере продавца, и больше нигде: ни сервера, ни входа,
+    ни базы у нас нет и заводить их ради списка незачем. Отсюда и честное
+    ограничение, написанное тут же на экране: список виден только на этом
+    устройстве, а деньги от него не зависят вовсе.
+  -->
+  <div id="logCard">
+    <div class="card">
+      <div class="kv" style="border-bottom:1px solid var(--sep); padding-bottom:10px">
+        <span data-t="logTitle" style="font-size:15px; color:var(--label); font-weight:640">Выставленные счета</span>
+        <span style="flex:0 0 auto">
+          <button class="rm" id="logCsv" data-t="logDl" data-tt="logDlT" title="Выгрузить в файл" style="font-size:13px">выгрузить</button>
+          <button class="rm" id="logClear" data-t="logClr" data-tt="logClrT" title="Очистить список" style="font-size:13px; margin-left:10px">очистить</button>
+        </span>
+      </div>
+      <div id="logRows"></div>
+      <div class="total hidden" id="logTotal"><span data-t="totToday">Получено сегодня</span><b id="logTotalSum">—</b></div>
+      <div class="total hidden" id="logWeek" style="border-top:0; padding-top:0"><span data-t="totWeek">За семь дней</span><b id="logWeekSum">—</b></div>
+    </div>
+    <p class="small" id="logNote" data-t="logNote">Список хранится только в этом браузере — на другом
+    устройстве его не будет. Деньги от списка не зависят: они в блокчейне и в вашем
+    кошельке, даже если список стереть.</p>
+  </div>
+
+  <!-- ============ ГОТОВЫЙ СЧЁТ ============ -->
+  <div id="doneCard" class="hidden">
+    <h1 data-t="doneH">Счёт выставлен</h1>
+    <p class="sub" id="doneSub">Пошлите ссылку покупателю или покажите код.</p>
+
+    <div class="card">
+      <div class="big" id="doneAmount">—</div>
+      <div class="status" id="doneStatus">Ждём оплату…</div>
+
+      <input type="hidden" id="qrKind" value="link">
+      <div class="seg" id="qrSeg">
+        <button type="button" data-v="link" data-t="qrLink">Ссылка</button>
+        <button type="button" data-v="wallet" data-t="qrWallet">Прямо в кошелёк</button>
+      </div>
+
+      <div id="qrBox"></div>
+
+      <p class="small" id="qrHint" data-t="qrHintLink">Покупатель наводит камеру, открывается
+      страница оплаты. Платёж идёт через наш контракт: с комиссией, баллами и возвратом по кнопке.</p>
+
+      <div class="linkbox" id="doneLink">—</div>
+      <button class="btn" id="copyBtn" data-t="copy">Скопировать ссылку</button>
+      <button class="btn btn-plain" id="shareBtn" data-t="share">Послать в мессенджер</button>
+      <button class="btn btn-plain" id="openBtn" data-t="preview">Открыть глазами покупателя</button>
+      <button class="btn btn-plain" id="againBtn" data-t="again">Выставить другой счёт</button>
+    </div>
+
+    <div class="card">
+      <div class="kv"><span data-t="kTo">Кому</span><b id="doneTo">—</b></div>
+      <div class="kv"><span data-t="kNet">Сеть</span><b id="doneNet">—</b></div>
+      <div class="kv"><span data-t="kItem">За что</span><b id="doneItem">—</b></div>
+      <div class="kv"><span data-t="kOrder">Номер заказа</span><b id="doneOrder">—</b></div>
+      <div class="kv"><span data-t="kTill">Действует до</span><b id="doneTill">—</b></div>
+    </div>
+
+    <p class="small" data-t="doneNote">Пока эта страница открыта, она сама следит за оплатой и
+    сообщит, когда деньги придут. Закроете — ничего не сломается: оплату
+    всегда видно в блокчейне и в вашем кошельке.</p>
+  </div>
+
+</div>
+
+<script src="./qrcode.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet' };
+/* Единственная сеть, в которой эта страница выставляет счета. См. пояснение
+   в разметке выше: тестовая сеть здесь — инструмент обмана, а не проверки. */
+const NET = 'bnb';
+
+/* Узлы для одного-единственного вопроса: принимает ли касса эту валюту.
+   Спрашиваем прямо из браузера — ничего секретного в вопросе нет. */
+const RPCS = {
+  bnb: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org']
+};
+const PAY = {
+  bnb: '0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c'
+};
+const TOKENS = {
+  bnb: { USDT:'0x55d398326f99059fF775485246999027B3197955',
+         USDC:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d' }
+};
+/* Знаков после запятой у монеты. Нужны, чтобы собрать код для кошелька:
+   там сумма пишется не как «0.2», а целым числом мельчайших долей. На BNB
+   Chain и USDT, и USDC восемнадцатизначные — не шестизначные, как привыкли
+   те, кто до этого работал с Ethereum. Ошибиться здесь — значит показать
+   покупателю сумму в миллиард раз больше или меньше. */
+const DECIMALS = { bnb: { USDT: 18, USDC: 18 } };
+/* Номер сети для кода, который читает кошелёк. */
+const CHAIN_IDS = { bnb: 56, bnbTestnet: 97 };
+
+/* ================= ЯЗЫКИ =================
+
+   Русский лежит и в разметке, и в словаре RU. Разметка нужна, чтобы страница
+   читалась до того, как отработает скрипт; словарь — чтобы вернуться на
+   русский было чем после переключения. Оба текста обязаны совпадать, и за
+   этим следит отдельная проверка в наборе аудита.
+
+   Ключи короткие и осмысленные, а не хэши: этот файл правят руками, и
+   «lWallet» в разметке говорит человеку больше, чем «k7ac93d95».            */
+const RU = {
+  title:'Выставить счёт · Tavarov Pay',
+  h1:'Выставить счёт',
+  sub:'Заполните — получите ссылку и код. Ссылку можно послать покупателю в переписке, код — показать с экрана или распечатать.',
+  edit:'изменить',
+  lWallet:'Ваш кошелёк — сюда придут деньги',
+  lShop:'Название — его увидит покупатель',
+  phShop:'Кофейня на углу',
+  lItem:'За что платят',
+  phItem:'Капучино и круассан',
+  lAmount:'Сумма', lCur:'Валюта', lTtl:'Счёт живёт',
+  ttl15:'15 минут', ttl1h:'1 час', ttl24:'сутки',
+  lNet:'Сеть',
+  lOrder:'Номер заказа — для себя, необязательно',
+  phOrder:'заказ-1024',
+  make:'Выставить счёт',
+  noteDirect:'Деньги идут от покупателя прямо вам. Шлюз их не касается и не может: он только смотрит в блокчейн и говорит, оплачено или нет.',
+  logTitle:'Выставленные счета',
+  logDl:'выгрузить', logDlT:'Выгрузить в файл',
+  logClr:'очистить', logClrT:'Очистить список',
+  totToday:'Получено сегодня', totWeek:'За семь дней',
+  logNote:'Список хранится только в этом браузере — на другом устройстве его не будет. Деньги от списка не зависят: они в блокчейне и в вашем кошельке, даже если список стереть.',
+  doneH:'Счёт выставлен',
+  doneSub:'Пошлите ссылку покупателю или покажите код.',
+  waiting:'Ждём оплату…',
+  copy:'Скопировать ссылку', copied:'Скопировано',
+  share:'Послать в мессенджер',
+  preview:'Открыть глазами покупателя',
+  again:'Выставить другой счёт',
+  kTo:'Кому', kNet:'Сеть', kItem:'За что', kOrder:'Номер заказа', kTill:'Действует до',
+  doneNote:'Пока эта страница открыта, она сама следит за оплатой и сообщит, когда деньги придут. Закроете — ничего не сломается: оплату всегда видно в блокчейне и в вашем кошельке.',
+  curBad:'Касса не принимает %s в этой сети. Счёт выставить можно, но покупатель заплатит обычным переводом: деньги придут вам на кошелёк, а страница счёта так и будет ждать — «оплачено» она не покажет и бонусы не начислятся. Возьмите другую валюту.',
+  errWallet:'Впишите адрес кошелька — 42 знака, начинается на 0x. Это тот кошелёк, на который придут деньги.',
+  errAmount:'Впишите сумму больше нуля.',
+  willPay:'Покупатель заплатит',
+  noName:'Без названия', invPrefix:'счёт-', payDefault:'Оплата',
+  qrFail:'Код не поместился — пошлите ссылку.',
+  qrLink:'Ссылка', qrWallet:'Прямо в кошелёк',
+  qrHintLink:'Покупатель наводит камеру, открывается страница оплаты. Платёж идёт через наш контракт: с комиссией, баллами и возвратом по кнопке.',
+  qrHintWallet:'Этот код читает сам кошелёк — Trust, MetaMask, Binance. Покупатель сканирует и сразу подтверждает перевод, страница ему не нужна. Комиссии и баллов с такого платежа нет.',
+  errCopy:'Не вышло скопировать — выделите ссылку выше руками.',
+  shareTitle:'Счёт на оплату', sharePay:'К оплате ',
+  logEmpty:'Пока пусто. Выставленные счета появятся здесь и будут помнить, оплатили их или нет.',
+  pPaid:'Оплачено', pOld:'Просрочен', pWait:'Ждёт оплаты',
+  pTest:'тестовая сеть', today:'сегодня', rmT:'Убрать из списка',
+  cfDrop:'Убрать счёт из списка?\n\nНа деньги это не влияет: платёж, если он был, остаётся в блокчейне и в вашем кошельке.',
+  cfClear:'Очистить весь список?\n\nЭто только список. Деньги в блокчейне, их видно в кошельке и без него.',
+  csvHead:'дата|сумма|валюта|за что|номер заказа|состояние|счёт|операция',
+  csvPaid:'оплачен', csvOld:'просрочен', csvWait:'ждёт',
+  donePaid:'Оплачено. Деньги у вас на кошельке.',
+  donePaidSub:'Покупатель заплатил. Можно отдавать товар.',
+  netQuiet:'Сеть не отвечает — проверим ещё раз…',
+  waitLeft:'Ждём оплату… счёт действует ещё %s мин',
+  expired:'Срок счёта вышел. Выставьте новый.'
+};
+
+const T = {
+  ru: RU,
+  en: {
+    title:'Create an invoice · Tavarov Pay',
+    h1:'Create an invoice',
+    sub:'Fill it in and you get a link and a code. Send the link to the buyer in chat; show the code on screen or print it.',
+    edit:'change',
+    lWallet:'Your wallet — the money arrives here',
+    lShop:'Name — the buyer will see it',
+    phShop:'Corner coffee shop',
+    lItem:'What they are paying for',
+    phItem:'Cappuccino and a croissant',
+    lAmount:'Amount', lCur:'Currency', lTtl:'Invoice valid for',
+    ttl15:'15 minutes', ttl1h:'1 hour', ttl24:'24 hours',
+    lNet:'Network',
+    lOrder:'Order number — for yourself, optional',
+    phOrder:'order-1024',
+    make:'Create invoice',
+    noteDirect:'The money goes from the buyer straight to you. The gateway never touches it and cannot: it only looks at the blockchain and says whether it was paid.',
+    logTitle:'Invoices you created',
+    logDl:'export', logDlT:'Export to a file',
+    logClr:'clear', logClrT:'Clear the list',
+    totToday:'Received today', totWeek:'Over seven days',
+    logNote:'The list is kept in this browser only — it will not be on another device. Your money does not depend on the list: it is in the blockchain and in your wallet even if you wipe the list.',
+    doneH:'Invoice created',
+    doneSub:'Send the link to the buyer or show the code.',
+    waiting:'Waiting for payment…',
+    copy:'Copy the link', copied:'Copied',
+    share:'Send in a messenger',
+    preview:'See it as the buyer does',
+    again:'Create another invoice',
+    kTo:'To', kNet:'Network', kItem:'For what', kOrder:'Order number', kTill:'Valid until',
+    doneNote:'While this page is open it watches for the payment itself and tells you when the money arrives. Close it and nothing breaks: the payment is always visible in the blockchain and in your wallet.',
+    curBad:'The till does not accept %s on this network. You can still create the invoice, but the buyer will pay by a plain transfer: the money will reach your wallet while the invoice page keeps waiting — it will never show “paid” and no points will be credited. Pick another currency.',
+    errWallet:'Enter the wallet address — 42 characters, starts with 0x. This is the wallet the money will arrive in.',
+    errAmount:'Enter an amount greater than zero.',
+    willPay:'The buyer pays',
+    noName:'No name', invPrefix:'invoice-', payDefault:'Payment',
+    qrFail:'The code did not fit — send the link instead.',
+    qrLink:'Link', qrWallet:'Straight to wallet',
+    qrHintLink:'The buyer points a camera and the payment page opens. The payment goes through our contract: with the fee, the points and refunds at the press of a button.',
+    qrHintWallet:'This code is read by the wallet itself — Trust, MetaMask, Binance. The buyer scans it and confirms the transfer right away, with no page in between. Such a payment carries no fee and earns no points.',
+    errCopy:'Copying failed — select the link above by hand.',
+    shareTitle:'Invoice to pay', sharePay:'To pay ',
+    logEmpty:'Empty so far. Invoices you create will appear here and remember whether they were paid.',
+    pPaid:'Paid', pOld:'Expired', pWait:'Awaiting payment',
+    pTest:'test network', today:'today', rmT:'Remove from the list',
+    cfDrop:'Remove this invoice from the list?\n\nIt does not affect the money: the payment, if there was one, stays in the blockchain and in your wallet.',
+    cfClear:'Clear the whole list?\n\nIt is only a list. The money is in the blockchain and visible in your wallet without it.',
+    csvHead:'date|amount|currency|for what|order number|state|invoice|transaction',
+    csvPaid:'paid', csvOld:'expired', csvWait:'waiting',
+    donePaid:'Paid. The money is in your wallet.',
+    donePaidSub:'The buyer has paid. You can hand over the goods.',
+    netQuiet:'The network is not answering — we will check again…',
+    waitLeft:'Waiting for payment… the invoice is valid for %s more min',
+    expired:'The invoice has expired. Create a new one.'
+  },
+  es: {
+    title:'Crear una factura · Tavarov Pay',
+    h1:'Crear una factura',
+    sub:'Complete los datos y obtendrá un enlace y un código. El enlace se envía al comprador por chat; el código se muestra en pantalla o se imprime.',
+    edit:'cambiar',
+    lWallet:'Su monedero: aquí llegará el dinero',
+    lShop:'Nombre: lo verá el comprador',
+    phShop:'Cafetería de la esquina',
+    lItem:'Por qué pagan',
+    phItem:'Capuchino y un cruasán',
+    lAmount:'Importe', lCur:'Moneda', lTtl:'La factura dura',
+    ttl15:'15 minutos', ttl1h:'1 hora', ttl24:'24 horas',
+    lNet:'Red',
+    lOrder:'Número de pedido: para usted, opcional',
+    phOrder:'pedido-1024',
+    make:'Crear factura',
+    noteDirect:'El dinero va del comprador directamente a usted. La pasarela no lo toca ni puede hacerlo: solo mira la cadena de bloques y dice si está pagado.',
+    logTitle:'Facturas emitidas',
+    logDl:'exportar', logDlT:'Exportar a un archivo',
+    logClr:'borrar', logClrT:'Borrar la lista',
+    totToday:'Recibido hoy', totWeek:'En siete días',
+    logNote:'La lista se guarda solo en este navegador: no estará en otro dispositivo. Su dinero no depende de la lista: está en la cadena de bloques y en su monedero aunque borre la lista.',
+    doneH:'Factura creada',
+    doneSub:'Envíe el enlace al comprador o muestre el código.',
+    waiting:'Esperando el pago…',
+    copy:'Copiar el enlace', copied:'Copiado',
+    share:'Enviar por mensajería',
+    preview:'Verlo como lo ve el comprador',
+    again:'Crear otra factura',
+    kTo:'Destinatario', kNet:'Red', kItem:'Concepto', kOrder:'Número de pedido', kTill:'Válida hasta',
+    doneNote:'Mientras esta página esté abierta, vigila el pago por sí sola y le avisará cuando llegue el dinero. Si la cierra, no se rompe nada: el pago siempre se ve en la cadena de bloques y en su monedero.',
+    curBad:'La caja no acepta %s en esta red. Puede crear la factura, pero el comprador pagará con una transferencia común: el dinero llegará a su monedero y la página de la factura seguirá esperando; nunca mostrará «pagado» y no se acreditarán puntos. Elija otra moneda.',
+    errWallet:'Escriba la dirección del monedero: 42 caracteres, empieza por 0x. Es el monedero al que llegará el dinero.',
+    errAmount:'Escriba un importe mayor que cero.',
+    willPay:'El comprador paga',
+    noName:'Sin nombre', invPrefix:'factura-', payDefault:'Pago',
+    qrFail:'El código no cupo: envíe el enlace.',
+    qrLink:'Enlace', qrWallet:'Directo a la cartera',
+    qrHintLink:'El comprador apunta la cámara y se abre la página de pago. El pago va por nuestro contrato: con comisión, puntos y devolución con un botón.',
+    qrHintWallet:'Este código lo lee la propia cartera: Trust, MetaMask, Binance. El comprador lo escanea y confirma la transferencia al instante, sin página de por medio. Ese pago no lleva comisión ni da puntos.',
+    errCopy:'No se pudo copiar: seleccione el enlace de arriba a mano.',
+    shareTitle:'Factura para pagar', sharePay:'A pagar ',
+    logEmpty:'Aún vacío. Las facturas que cree aparecerán aquí y recordarán si fueron pagadas.',
+    pPaid:'Pagado', pOld:'Vencida', pWait:'Esperando pago',
+    pTest:'red de pruebas', today:'hoy', rmT:'Quitar de la lista',
+    cfDrop:'¿Quitar esta factura de la lista?\n\nNo afecta al dinero: el pago, si lo hubo, permanece en la cadena de bloques y en su monedero.',
+    cfClear:'¿Borrar toda la lista?\n\nEs solo una lista. El dinero está en la cadena de bloques y se ve en su monedero sin ella.',
+    csvHead:'fecha|importe|moneda|concepto|número de pedido|estado|factura|operación',
+    csvPaid:'pagada', csvOld:'vencida', csvWait:'esperando',
+    donePaid:'Pagado. El dinero está en su monedero.',
+    donePaidSub:'El comprador ha pagado. Puede entregar el producto.',
+    netQuiet:'La red no responde: lo comprobaremos de nuevo…',
+    waitLeft:'Esperando el pago… la factura vale %s min más',
+    expired:'La factura ha vencido. Cree una nueva.'
+  },
+  tr: {
+    title:'Fatura oluştur · Tavarov Pay',
+    h1:'Fatura oluştur',
+    sub:'Doldurun, size bir bağlantı ve bir kod verelim. Bağlantıyı alıcıya sohbette gönderin, kodu ekranda gösterin ya da yazdırın.',
+    edit:'değiştir',
+    lWallet:'Cüzdanınız — para buraya gelir',
+    lShop:'Ad — alıcı bunu görecek',
+    phShop:'Köşedeki kahveci',
+    lItem:'Ne için ödüyorlar',
+    phItem:'Cappuccino ve kruvasan',
+    lAmount:'Tutar', lCur:'Para birimi', lTtl:'Fatura geçerlilik süresi',
+    ttl15:'15 dakika', ttl1h:'1 saat', ttl24:'24 saat',
+    lNet:'Ağ',
+    lOrder:'Sipariş numarası — kendiniz için, isteğe bağlı',
+    phOrder:'siparis-1024',
+    make:'Fatura oluştur',
+    noteDirect:'Para alıcıdan doğrudan size gider. Ağ geçidi paraya dokunmaz ve dokunamaz: yalnızca blok zincirine bakar ve ödenip ödenmediğini söyler.',
+    logTitle:'Oluşturduğunuz faturalar',
+    logDl:'dışa aktar', logDlT:'Dosyaya aktar',
+    logClr:'temizle', logClrT:'Listeyi temizle',
+    totToday:'Bugün alınan', totWeek:'Yedi günde',
+    logNote:'Liste yalnızca bu tarayıcıda saklanır — başka bir cihazda görünmez. Paranız listeye bağlı değildir: listeyi silseniz de blok zincirinde ve cüzdanınızdadır.',
+    doneH:'Fatura oluşturuldu',
+    doneSub:'Bağlantıyı alıcıya gönderin ya da kodu gösterin.',
+    waiting:'Ödeme bekleniyor…',
+    copy:'Bağlantıyı kopyala', copied:'Kopyalandı',
+    share:'Mesajlaşmada gönder',
+    preview:'Alıcının gözünden aç',
+    again:'Başka bir fatura oluştur',
+    kTo:'Kime', kNet:'Ağ', kItem:'Ne için', kOrder:'Sipariş numarası', kTill:'Geçerlilik bitişi',
+    doneNote:'Bu sayfa açıkken ödemeyi kendisi izler ve para geldiğinde size söyler. Kapatırsanız bir şey bozulmaz: ödeme her zaman blok zincirinde ve cüzdanınızda görünür.',
+    curBad:'Kasa bu ağda %s kabul etmiyor. Faturayı yine de oluşturabilirsiniz, ama alıcı sıradan bir transferle ödeyecek: para cüzdanınıza ulaşır, fatura sayfası ise beklemeye devam eder — «ödendi» yazmaz ve puan işlenmez. Başka bir para birimi seçin.',
+    errWallet:'Cüzdan adresini yazın — 42 karakter, 0x ile başlar. Para bu cüzdana gelecek.',
+    errAmount:'Sıfırdan büyük bir tutar yazın.',
+    willPay:'Alıcı öder',
+    noName:'Adsız', invPrefix:'fatura-', payDefault:'Ödeme',
+    qrFail:'Kod sığmadı — bağlantıyı gönderin.',
+    qrLink:'Bağlantı', qrWallet:'Doğrudan cüzdana',
+    qrHintLink:'Alıcı kamerayı tutar, ödeme sayfası açılır. Ödeme bizim sözleşmemizden geçer: komisyon, puanlar ve tek tuşla iade ile.',
+    qrHintWallet:'Bu kodu cüzdanın kendisi okur — Trust, MetaMask, Binance. Alıcı tarar ve transferi hemen onaylar, araya sayfa girmez. Böyle bir ödemede komisyon da puan da yoktur.',
+    errCopy:'Kopyalanamadı — yukarıdaki bağlantıyı elle seçin.',
+    shareTitle:'Ödenecek fatura', sharePay:'Ödenecek ',
+    logEmpty:'Şimdilik boş. Oluşturduğunuz faturalar burada görünecek ve ödenip ödenmediklerini hatırlayacak.',
+    pPaid:'Ödendi', pOld:'Süresi doldu', pWait:'Ödeme bekliyor',
+    pTest:'test ağı', today:'bugün', rmT:'Listeden çıkar',
+    cfDrop:'Bu fatura listeden çıkarılsın mı?\n\nParayı etkilemez: ödeme yapıldıysa blok zincirinde ve cüzdanınızda kalır.',
+    cfClear:'Tüm liste temizlensin mi?\n\nBu yalnızca bir liste. Para blok zincirinde ve liste olmadan da cüzdanınızda görünür.',
+    csvHead:'tarih|tutar|para birimi|ne için|sipariş numarası|durum|fatura|işlem',
+    csvPaid:'ödendi', csvOld:'süresi doldu', csvWait:'bekliyor',
+    donePaid:'Ödendi. Para cüzdanınızda.',
+    donePaidSub:'Alıcı ödedi. Ürünü verebilirsiniz.',
+    netQuiet:'Ağ yanıt vermiyor — tekrar bakacağız…',
+    waitLeft:'Ödeme bekleniyor… fatura %s dk daha geçerli',
+    expired:'Faturanın süresi doldu. Yenisini oluşturun.'
+  },
+  pt: {
+    title:'Criar uma fatura · Tavarov Pay',
+    h1:'Criar uma fatura',
+    sub:'Preencha e receba um link e um código. Envie o link ao comprador no chat; mostre o código na tela ou imprima.',
+    edit:'alterar',
+    lWallet:'Sua carteira — o dinheiro chega aqui',
+    lShop:'Nome — o comprador vai ver',
+    phShop:'Café da esquina',
+    lItem:'Pelo que estão pagando',
+    phItem:'Cappuccino e um croissant',
+    lAmount:'Valor', lCur:'Moeda', lTtl:'A fatura vale por',
+    ttl15:'15 minutos', ttl1h:'1 hora', ttl24:'24 horas',
+    lNet:'Rede',
+    lOrder:'Número do pedido — para você, opcional',
+    phOrder:'pedido-1024',
+    make:'Criar fatura',
+    noteDirect:'O dinheiro vai do comprador direto para você. O gateway não toca nele e nem pode: apenas olha o blockchain e diz se foi pago.',
+    logTitle:'Faturas criadas',
+    logDl:'exportar', logDlT:'Exportar para um arquivo',
+    logClr:'limpar', logClrT:'Limpar a lista',
+    totToday:'Recebido hoje', totWeek:'Em sete dias',
+    logNote:'A lista fica só neste navegador — não estará em outro dispositivo. Seu dinheiro não depende da lista: está no blockchain e na sua carteira mesmo que você apague a lista.',
+    doneH:'Fatura criada',
+    doneSub:'Envie o link ao comprador ou mostre o código.',
+    waiting:'Aguardando o pagamento…',
+    copy:'Copiar o link', copied:'Copiado',
+    share:'Enviar no mensageiro',
+    preview:'Ver como o comprador vê',
+    again:'Criar outra fatura',
+    kTo:'Destinatário', kNet:'Rede', kItem:'Referente a', kOrder:'Número do pedido', kTill:'Válida até',
+    doneNote:'Enquanto esta página estiver aberta, ela mesma acompanha o pagamento e avisa quando o dinheiro chegar. Se fechar, nada quebra: o pagamento sempre aparece no blockchain e na sua carteira.',
+    curBad:'O caixa não aceita %s nesta rede. Você pode criar a fatura, mas o comprador vai pagar por transferência comum: o dinheiro chega à sua carteira e a página da fatura continua esperando — nunca mostrará «pago» e os pontos não serão creditados. Escolha outra moeda.',
+    errWallet:'Informe o endereço da carteira — 42 caracteres, começa com 0x. É a carteira onde o dinheiro vai chegar.',
+    errAmount:'Informe um valor maior que zero.',
+    willPay:'O comprador paga',
+    noName:'Sem nome', invPrefix:'fatura-', payDefault:'Pagamento',
+    qrFail:'O código não coube — envie o link.',
+    qrLink:'Link', qrWallet:'Direto na carteira',
+    qrHintLink:'O comprador aponta a câmera e a página de pagamento abre. O pagamento passa pelo nosso contrato: com taxa, pontos e estorno por um botão.',
+    qrHintWallet:'Este código é lido pela própria carteira — Trust, MetaMask, Binance. O comprador escaneia e confirma a transferência na hora, sem página no meio. Esse pagamento não tem taxa nem gera pontos.',
+    errCopy:'Não deu para copiar — selecione o link acima manualmente.',
+    shareTitle:'Fatura para pagar', sharePay:'A pagar ',
+    logEmpty:'Vazio por enquanto. As faturas que você criar aparecem aqui e lembram se foram pagas.',
+    pPaid:'Pago', pOld:'Vencida', pWait:'Aguardando pagamento',
+    pTest:'rede de teste', today:'hoje', rmT:'Remover da lista',
+    cfDrop:'Remover esta fatura da lista?\n\nIsso não afeta o dinheiro: o pagamento, se houve, continua no blockchain e na sua carteira.',
+    cfClear:'Limpar a lista inteira?\n\nÉ apenas uma lista. O dinheiro está no blockchain e aparece na sua carteira sem ela.',
+    csvHead:'data|valor|moeda|referente a|número do pedido|estado|fatura|operação',
+    csvPaid:'paga', csvOld:'vencida', csvWait:'aguardando',
+    donePaid:'Pago. O dinheiro está na sua carteira.',
+    donePaidSub:'O comprador pagou. Pode entregar o produto.',
+    netQuiet:'A rede não responde — vamos verificar de novo…',
+    waitLeft:'Aguardando o pagamento… a fatura vale mais %s min',
+    expired:'A fatura venceu. Crie uma nova.'
+  }
+};
+
+/* Надпись под суммой и подзаголовок держим ключами, а не готовыми словами:
+   продавец может переключить язык уже после того, как увидел «Оплачено», и
+   надпись обязана смениться вместе со всем остальным. Объявлено здесь, до
+   первого applyLang, — иначе первая же отрисовка споткнулась бы. */
+let doneNow = { s:'waiting', sub:'doneSub', arg:null, ok:false };
+
+const NAMES   = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+const LOCALES = { ru:'ru-RU', en:'en-US', es:'es-ES', tr:'tr-TR', pt:'pt-BR' };
+const LANG_KEY = 'tavarov.site.lang';   // тот же ключ, что у сайта: язык один на всё
+
+let LANG = 'ru';
+function t(k, a){
+  const d = T[LANG] || RU;
+  let s = (d[k] !== undefined) ? d[k] : (RU[k] !== undefined ? RU[k] : k);
+  if (a !== undefined) s = s.replace('%s', a);
+  return s;
+}
+function locale(){ return LOCALES[LANG] || 'en-US'; }
+
+function applyLang(code){
+  LANG = NAMES[code] ? code : 'en';
+  document.documentElement.lang = LANG;
+  document.title = t('title');
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('[data-tp]').forEach(el => { el.placeholder = t(el.dataset.tp); });
+  document.querySelectorAll('[data-tt]').forEach(el => { el.title = t(el.dataset.tt); });
+  document.querySelectorAll('#langs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === LANG)));
+  try{ localStorage.setItem(LANG_KEY, LANG); } catch(e){}
+
+  /* Живые надписи словарём не покрываются: они уже нарисованы. Перерисовываем
+     то, что сейчас на экране, иначе после переключения половина страницы
+     осталась бы на прошлом языке. */
+  renderWho();
+  renderLog();
+  checkCurrency();
+  redrawDone();
+  segPaintAll();
+  renderSum();
+  if (inv) refreshDone();
+}
+
+function setDone(sKey, subKey, arg, ok){
+  doneNow = { s: sKey, sub: subKey || 'doneSub',
+              arg: (arg === undefined ? null : arg), ok: !!ok };
+  redrawDone();
+}
+function redrawDone(){
+  $('doneStatus').textContent = t(doneNow.s, doneNow.arg);
+  $('doneStatus').classList.toggle('paid', doneNow.ok);
+  $('doneSub').textContent = t(doneNow.sub);
+}
+
+(function buildLangs(){
+  const box = $('langs');
+  Object.keys(NAMES).forEach(code => {
+    const b = document.createElement('button');
+    b.textContent = NAMES[code];
+    b.dataset.code = code;
+    b.onclick = () => applyLang(code);
+    box.appendChild(b);
+  });
+})();
+
+function b64url(s){
+  return btoa(unescape(encodeURIComponent(s)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/* Номер счёта. По нему платёж потом находят в блокчейне, и он обязан быть
+   разным у двух одинаковых покупок: два человека могут купить одно и то же
+   в одну секунду. Поэтому — случайные 32 байта, а не хэш от суммы. */
+function newInvoiceId(){
+  const b = new Uint8Array(32);
+  crypto.getRandomValues(b);
+  return '0x' + [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+// ---------- память между заходами ----------
+const KEY = 'tavarov.invoice.v1';
+function restore(){
+  let v = {};
+  try{ v = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){}
+  $('wallet').value = v.wallet || '';
+  $('shop').value   = v.shop || '';
+  $('cur').value    = v.cur || 'USDT';
+  $('ttl').value    = v.ttl || '900';
+}
+function remember(){
+  /* Запоминаем только то, что у продавца не меняется от счёта к счёту.
+     Сумму и товар — намеренно нет: подставить прошлую сумму новому
+     покупателю страшнее, чем набрать её заново. */
+  try{
+    localStorage.setItem(KEY, JSON.stringify({
+      wallet: $('wallet').value.trim(), shop: $('shop').value.trim(),
+      cur: $('cur').value, ttl: $('ttl').value
+    }));
+  } catch(e){}
+}
+/* Переключатели вместо выпадающих списков.
+
+   Значение по-прежнему лежит в поле с тем же самым id, только скрытом, —
+   поэтому весь остальной код, память между заходами и проверка валюты
+   работают без единой правки. Событие change шлём руками: у скрытого поля
+   оно само не возникает. */
+function segBind(segId, inputId){
+  const seg = $(segId), input = $(inputId);
+  if (!seg || !input) return;
+  seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-v]');
+    if (!b || b.dataset.v === input.value) return;
+    input.value = b.dataset.v;
+    segPaint(segId, inputId);
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+function segPaint(segId, inputId){
+  const seg = $(segId), input = $(inputId);
+  if (!seg || !input) return;
+  seg.querySelectorAll('button[data-v]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.v === input.value)));
+}
+function segPaintAll(){ segPaint('curSeg','cur'); segPaint('ttlSeg','ttl'); }
+segBind('curSeg','cur');
+segBind('ttlSeg','ttl');
+segBind('qrSeg','qrKind');
+/* Какой код показывать, продавец решает один раз: у кассы это не тот
+   выбор, который делают заново на каждом счёте. */
+$('qrKind').addEventListener('change', () => {
+  try{ localStorage.setItem(QR_KIND_KEY, $('qrKind').value); } catch(e){}
+  drawQr();
+});
+try{
+  const saved = localStorage.getItem(QR_KIND_KEY);
+  if (saved === 'wallet' || saved === 'link') $('qrKind').value = saved;
+} catch(e){}
+
+/* Сколько заплатит покупатель — видно, пока набираешь, а не после нажатия.
+   Это то место, где продавец проверяет сам себя: лишний ноль виден сразу. */
+function renderSum(){
+  const box = $('sumPreview');
+  if (!box) return;
+  const raw = $('amount').value.trim().replace(',', '.');
+  const n = parseFloat(raw);
+  if (!(n > 0)){ box.textContent = '—'; box.classList.add('dim'); return; }
+  box.textContent = raw + ' ' + $('cur').value;
+  box.classList.remove('dim');
+}
+
+restore();
+segPaintAll();
+renderSum();
+$('amount').addEventListener('input', renderSum);
+$('cur').addEventListener('change', renderSum);
+['wallet','shop','cur','ttl'].forEach(id => $(id).addEventListener('change', () => { remember(); renderWho(); }));
+
+/* Показываем шапку только когда кошелёк похож на настоящий: с половиной
+   адреса сворачивать нечего, а продавец решит, что всё уже заполнено. */
+function renderWho(){
+  const addr = $('wallet').value.trim();
+  const ok = /^0x[0-9a-fA-F]{40}$/.test(addr) && !editingWho;
+  $('whoBar').classList.toggle('hidden', !ok);
+  $('fWallet').classList.toggle('hidden', ok);
+  $('fShop').classList.toggle('hidden', ok);
+  if (ok){
+    $('whoName').textContent = $('shop').value.trim() || t('noName');
+    $('whoAddr').textContent = addr.slice(0, 10) + '…' + addr.slice(-6);
+  }
+}
+let editingWho = false;
+$('whoEdit').onclick = () => { editingWho = true; renderWho(); $('wallet').focus(); };
+/* Сворачиваем, только когда человек ушёл из этой пары полей совсем. Иначе
+   выходило глупо: нажал «изменить», чтобы поправить название, перешёл из
+   кошелька в название — и карточка захлопнулась прямо под пальцами. */
+['wallet','shop'].forEach(id => $(id).addEventListener('blur', (e) => {
+  const to = e.relatedTarget;
+  if (to && (to.id === 'wallet' || to.id === 'shop')) return;
+  if (/^0x[0-9a-fA-F]{40}$/.test($('wallet').value.trim())) { editingWho = false; renderWho(); }
+}));
+
+// ---------- принимает ли касса эту валюту ----------
+/* Самая тихая беда шлюза: продавец выбирает валюту, которую контракт не
+   принимает. Покупатель платит обычным переводом, деньги доходят — а «оплачено»
+   не наступает никогда, потому что события в контракте не было. Продавец ждёт,
+   покупатель уверен, что заплатил. Поэтому спрашиваем ЗАРАНЕЕ. */
+async function rpcCall(net, to, data){
+  for (const url of (RPCS[net] || [])){
+    try{
+      const r = await fetch(url, { method:'POST', headers:{'content-type':'application/json'},
+        body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{ to, data }, 'latest'] }),
+        signal: AbortSignal.timeout(7000) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j.error) continue;
+      if (j.result) return j.result;
+    } catch(e){}
+  }
+  return null;
+}
+let curOk = null;                       // true / false / null — не смогли спросить
+async function checkCurrency(){
+  const net = NET, cur = $('cur').value;
+  const box = $('curNote');
+  const token = (TOKENS[net] || {})[cur];
+  if (!token || !PAY[net]){ curOk = null; box.classList.add('hidden'); return; }
+
+  /* Ответ сети от языка не зависит, а сеть отвечает не мгновенно. Если это
+     просто переключение языка, а спросили мы уже раньше — перерисовываем
+     готовый ответ, а не дёргаем узел заново. */
+  if (curOk === null || box.dataset.cur !== cur){
+    const res = await rpcCall(net, PAY[net], '0x55f5e7de' + '0'.repeat(24) + token.slice(2).toLowerCase());
+    if (res === null){ curOk = null; box.classList.add('hidden'); return; }   // сеть молчит — не пугаем зря
+    curOk = /[1-9a-f]/.test(res.slice(2));
+    box.dataset.cur = cur;
+  }
+  if (curOk){ box.classList.add('hidden'); return; }
+  box.textContent = t('curBad', cur);
+  box.classList.remove('hidden');
+}
+$('cur').addEventListener('change', () => { curOk = null; checkCurrency(); });
+
+// ---------- выставление ----------
+let inv = null, timer = null;
+function fail(text){
+  $('formErr').textContent = text;
+  $('formErr').classList.remove('hidden');
+}
+function payUrl(){
+  return location.origin + '/pay.html#p=' + b64url(JSON.stringify(inv));
+}
+
+/* Сумма целым числом мельчайших долей. Строкой, без чисел с плавающей
+   точкой: 0.1 + 0.2 в них не равно 0.3, а речь о чужих деньгах. */
+function toUnits(amount, decimals){
+  const s = String(amount).trim().replace(',', '.');
+  if (!/^\d+(\.\d+)?$/.test(s)) return null;
+  const [whole, frac = ''] = s.split('.');
+  if (frac.length > decimals && /[1-9]/.test(frac.slice(decimals))) return null;
+  return BigInt(whole + frac.padEnd(decimals, '0').slice(0, decimals)).toString();
+}
+
+/* Код, который читает не браузер, а сам кошелёк: Trust, MetaMask, Binance.
+   Покупатель наводит камеру и сразу видит готовый перевод — наша страница
+   ему не нужна. Формат описан в EIP-681 и понимается кошельками много лет.
+
+   Платёж при этом идёт мимо нашего контракта: комиссии нет, баллов нет.
+   Так решено сознательно 17 сентября — чтобы у кассы можно было заплатить
+   одним сканом. Чтобы такой платёж всё-таки увиделся, проверка на сервере
+   умеет искать прямой перевод в журнале самой монеты.
+
+   Возвращаем null, если собрать код нечем: лучше не показать кнопку, чем
+   показать код, ведущий не туда. */
+function walletUrl(){
+  if (!inv) return null;
+  const chain = CHAIN_IDS[inv.net];
+  const token = (TOKENS[inv.net] || {})[inv.c];
+  const dec   = (DECIMALS[inv.net] || {})[inv.c];
+  if (!chain || !token || dec === undefined) return null;
+  const units = toUnits(inv.a, dec);
+  if (units === null) return null;
+  return 'ethereum:' + token + '@' + chain
+       + '/transfer?address=' + inv.m + '&uint256=' + units;
+}
+
+function qrText(){
+  if ($('qrKind').value === 'wallet'){
+    const u = walletUrl();
+    if (u) return u;
+  }
+  return payUrl();
+}
+
+const QR_KIND_KEY = 'tavarov.qr.kind';
+
+function drawQr(){
+  const wallet = walletUrl();
+  /* Монета, для которой кода собрать нечем, не должна оставлять кнопку:
+     иначе продавец нажмёт её и покажет покупателю пустое место. */
+  $('qrSeg').classList.toggle('hidden', !wallet);
+  if (!wallet && $('qrKind').value === 'wallet') $('qrKind').value = 'link';
+  segPaint('qrSeg', 'qrKind');
+
+  const кошелёк = $('qrKind').value === 'wallet' && wallet;
+  $('qrHint').textContent = t(кошелёк ? 'qrHintWallet' : 'qrHintLink');
+
+  /* Средний уровень избыточности: на высоком в код влезает около 190 знаков,
+     а ссылка со счётом бывает длиннее — и код тогда просто не рисовался. */
+  const holder = $('qrBox');
+  holder.innerHTML = '';
+  let drawn = false;
+  for (const lvl of [QRCode.CorrectLevel.M, QRCode.CorrectLevel.L]){
+    try{
+      new QRCode(holder, { text: qrText(), width: 240, height: 240,
+                           colorDark:'#1C1330', colorLight:'#ffffff', correctLevel: lvl });
+      if (holder.children.length){ drawn = true; break; }
+    } catch(e){ holder.innerHTML = ''; }
+  }
+  if (!drawn) holder.textContent = t('qrFail');
+}
+
+$('makeBtn').onclick = () => {
+  $('formErr').classList.add('hidden');
+  const wallet = $('wallet').value.trim();
+  const amount = $('amount').value.trim().replace(',', '.');
+
+  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) return fail(t('errWallet'));
+  if (!(parseFloat(amount) > 0))           return fail(t('errAmount'));
+
+  const ttl = Number($('ttl').value) || 900;
+  inv = {
+    m: wallet,
+    a: amount,
+    c: $('cur').value,
+    o: $('order').value.trim() || (t('invPrefix') + Date.now()),
+    n: $('shop').value.trim() || t('payDefault'),
+    i: $('item').value.trim(),
+    net: NET,
+    t: Math.floor(Date.now() / 1000) + ttl,
+    /* Когда счёт выставлен. Нужно проверке на сервере: прямой перевод,
+       сделанный ДО того, как счёт появился, к этому счёту отношения не
+       имеет, и закрывать им счёт нельзя. */
+    s: Math.floor(Date.now() / 1000),
+    h: newInvoiceId()
+  };
+  remember();
+  logAdd(inv);
+  show();
+};
+
+/* Карточка готового счёта отдельно от show(): её надо перерисовать ещё и при
+   смене языка, а рисовать заново код и заново запускать слежение — незачем. */
+function refreshDone(){
+  if (!inv) return;
+  $('doneAmount').textContent = inv.a + ' ' + inv.c;
+  $('doneTo').textContent    = inv.m;
+  $('doneNet').textContent   = NET_NAMES[inv.net] || inv.net;
+  $('doneItem').textContent  = inv.i || '—';
+  $('doneOrder').textContent = inv.o;
+  $('doneTill').textContent  = new Date(inv.t * 1000).toLocaleString(locale());
+  $('doneLink').textContent  = payUrl();
+}
+
+function show(){
+  $('formCard').classList.add('hidden');
+  $('logCard').classList.add('hidden');
+  $('doneCard').classList.remove('hidden');
+  refreshDone();
+
+  drawQr();
+  watch();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+$('copyBtn').onclick = () => {
+  navigator.clipboard.writeText(payUrl()).then(() => {
+    $('copyBtn').textContent = t('copied');
+    setTimeout(() => { $('copyBtn').textContent = t('copy'); }, 1600);
+  }, () => fail(t('errCopy')));
+};
+$('shareBtn').onclick = () => {
+  const text = (inv.n ? inv.n + '. ' : '') + t('sharePay') + inv.a + ' ' + inv.c;
+  if (navigator.share) navigator.share({ title: t('shareTitle'), text: text, url: payUrl() }).catch(()=>{});
+  else $('copyBtn').click();
+};
+$('openBtn').onclick = () => window.open(payUrl(), '_blank');
+$('againBtn').onclick = () => {
+  clearInterval(timer); timer = null; inv = null;
+  $('doneCard').classList.add('hidden');
+  $('formCard').classList.remove('hidden');
+  $('logCard').classList.remove('hidden');
+  renderLog();
+  $('amount').value = ''; $('item').value = ''; $('order').value = '';
+  renderSum();
+  setDone('waiting', 'doneSub');
+};
+
+/* ================= ЖУРНАЛ СЧЕТОВ =================
+
+   Блокнот, а не деньги. Здесь лежит только то, что продавец и так сам
+   набрал: сумма, товар, номер заказа, адрес его же кошелька — всё это и так
+   уезжает в блокчейн вместе с платежом. Ни ключей, ни паролей тут нет и
+   быть не может.
+
+   Состояние «оплачено» мы НЕ записываем со слов формы: его каждый раз
+   спрашивают у цепочки. Запись в списке — это подсказка, где смотреть, а не
+   утверждение о деньгах.                                                  */
+const LOG_KEY = 'tavarov.invoices.v1';
+const LOG_MAX = 300;          // дальше список только мешает, а место кончается
+
+function logRead(){
+  try{
+    const a = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    return Array.isArray(a) ? a : [];
+  } catch(e){ return []; }
+}
+function logWrite(list){
+  try{ localStorage.setItem(LOG_KEY, JSON.stringify(list.slice(0, LOG_MAX))); }
+  catch(e){ /* память браузера кончилась или запрещена — список не главное */ }
+}
+function logAdd(v){
+  const list = logRead();
+  if (list.some(x => x.h === v.h)) return;          // тот же счёт дважды не пишем
+  list.unshift({ h:v.h, m:v.m, a:v.a, c:v.c, o:v.o, n:v.n, i:v.i,
+                 net:v.net, t:v.t, at: Date.now(), paid:false, tx:null });
+  logWrite(list);
+  renderLog();
+}
+function logSet(h, patch){
+  const list = logRead();
+  const i = list.findIndex(x => x.h === h);
+  if (i < 0) return;
+  list[i] = Object.assign({}, list[i], patch);
+  logWrite(list);
+}
+
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* «Сегодня» — по часам продавца, а не по UTC: выручку он сверяет со своим
+   днём, а не с гринвичским. */
+function sameDay(ms){
+  const d = new Date(ms), n = new Date();
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth()
+      && d.getDate() === n.getDate();
+}
+function whenText(ms){
+  const d = new Date(ms);
+  const hhmm = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  if (sameDay(ms)) return t('today') + ' ' + hhmm;
+  return d.toLocaleDateString(locale(), { day:'2-digit', month:'2-digit' }) + ' ' + hhmm;
+}
+
+function renderLog(){
+  const box = $('logRows');
+  const list = logRead();
+  if (!list.length){
+    box.innerHTML = '<div class="ldim" style="padding:12px 0">' + esc(t('logEmpty')) + '</div>';
+    $('logTotal').classList.add('hidden');
+    $('logWeek').classList.add('hidden');   // без этого недельный итог оставался висеть над пустым списком
+    return;
+  }
+  const now = Math.floor(Date.now() / 1000);
+  box.innerHTML = list.map(v => {
+    const state = v.paid ? ['pill-paid', t('pPaid')]
+                : (v.t && v.t <= now) ? ['pill-old', t('pOld')]
+                : ['pill-wait', t('pWait')];
+    const tail = [whenText(v.at), v.o, v.net === 'bnbTestnet' ? t('pTest') : '']
+                 .filter(Boolean).join(' · ');
+    return '<div class="lrow">'
+      + '<div class="lbody" data-open="' + esc(v.h) + '">'
+      +   '<div class="lsum">' + esc(v.a) + ' ' + esc(v.c)
+      +     (v.i ? ' <span style="font-weight:400; color:var(--label-2)">· ' + esc(v.i) + '</span>' : '')
+      +   '</div>'
+      +   '<div class="ldim">' + esc(tail) + '</div>'
+      + '</div>'
+      + '<span class="pill ' + state[0] + '">' + esc(state[1]) + '</span>'
+      + '<button class="rm" data-drop="' + esc(v.h) + '" title="' + esc(t('rmT')) + '">&times;</button>'
+      + '</div>';
+  }).join('');
+
+  /* Выручка за день — по валютам отдельно: складывать доллары с чем-то ещё
+     нельзя, а показать «52.34» без валюты значит соврать. */
+  const sums = {};
+  list.forEach(v => {
+    if (!v.paid || !sameDay(v.at)) return;
+    const n = parseFloat(String(v.a).replace(',', '.'));
+    if (!(n > 0)) return;
+    sums[v.c] = (sums[v.c] || 0) + n;
+  });
+  const parts = Object.keys(sums).map(c =>
+    (Math.round(sums[c] * 1e6) / 1e6) + ' ' + c);
+  $('logTotalSum').textContent = parts.length ? parts.join(' · ') : '—';
+  $('logTotal').classList.toggle('hidden', !parts.length);
+
+  /* Неделя нужна не для красоты: день бывает пустым, и по одному дню продавец
+     решает, что «ничего не работает». Семь дней показывают правду. */
+  const weekAgo = Date.now() - 7 * 86400000;
+  const wsums = {};
+  list.forEach(v => {
+    if (!v.paid || v.at < weekAgo) return;
+    const n = parseFloat(String(v.a).replace(',', '.'));
+    if (!(n > 0)) return;
+    wsums[v.c] = (wsums[v.c] || 0) + n;
+  });
+  const wparts = Object.keys(wsums).map(c => (Math.round(wsums[c] * 1e6) / 1e6) + ' ' + c);
+  $('logWeekSum').textContent = wparts.length ? wparts.join(' · ') : '—';
+  $('logWeek').classList.toggle('hidden', !wparts.length);
+}
+
+/* Выгрузка списка файлом. Продавцу рано или поздно нужно свести выручку с
+   тем, что он отдал покупателям, а переписывать с экрана руками — это тот
+   самый труд, из-за которого бросают пользоваться. Файл делается прямо в
+   браузере: список и так лежит здесь, отправлять его куда-то незачем.
+
+   Имя не совпадает с id кнопки нарочно: браузер сам заводит глобальную
+   переменную под каждый id, и функция с тем же именем — ссора на ровном
+   месте. */
+function exportCsv(){
+  const list = logRead();
+  if (!list.length) return;
+  const head = t('csvHead').split('|');
+  const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  /* Excel в английской раскладке ждёт точку, в остальных — запятую. Разделитель
+     колонок при этом всюду «;»: с запятой английский Excel съел бы дробную часть
+     как новую колонку. */
+  const comma = LANG !== 'en';
+  const rows = list.map(v => [
+    new Date(v.at).toLocaleString(locale()),
+    comma ? String(v.a).replace('.', ',') : String(v.a),
+    v.c, v.i || '', v.o || '',
+    v.paid ? t('csvPaid') : ((v.t && v.t * 1000 < Date.now()) ? t('csvOld') : t('csvWait')),
+    v.h || '', v.tx || ''
+  ].map(q).join(';'));
+  /* Метка в начале файла нужна, чтобы Excel не принял буквы с диакритикой за
+     кракозябры: без неё выгрузка открывается нечитаемой, и человек решает,
+     что сломано у нас. */
+  const blob = new Blob(['﻿' + [head.map(q).join(';')].concat(rows).join('\r\n')],
+                        { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tavarov-invoices-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+/* Открыть старый счёт заново: покупатель потерял ссылку — незачем выставлять
+   новый счёт с новым номером, старый жив и лежит целиком здесь. */
+function logOpen(h){
+  const v = logRead().find(x => x.h === h);
+  if (!v) return;
+  inv = { m:v.m, a:v.a, c:v.c, o:v.o, n:v.n, i:v.i, net:v.net, t:v.t, h:v.h };
+  show();
+}
+$('logRows').addEventListener('click', (e) => {
+  const drop = e.target.closest('[data-drop]');
+  if (drop){
+    if (!confirm(t('cfDrop'))) return;
+    logWrite(logRead().filter(x => x.h !== drop.dataset.drop));
+    renderLog();
+    return;
+  }
+  const open = e.target.closest('[data-open]');
+  if (open) logOpen(open.dataset.open);
+});
+$('logCsv').onclick = exportCsv;
+$('logClear').onclick = () => {
+  if (!logRead().length) return;
+  if (!confirm(t('cfClear'))) return;
+  logWrite([]);
+  renderLog();
+};
+
+/* Статусы тянем из цепочки, а не помним со слов. Спрашиваем только про те,
+   что ещё не оплачены: оплата — состояние окончательное, и дёргать узел из-за
+   неё второй раз незачем. По одному, с паузой: двадцать одновременных
+   запросов узел считает за перебор и отвечает отказом всем сразу. */
+let logRefreshing = false;
+async function logRefresh(){
+  if (logRefreshing) return;
+  logRefreshing = true;
+  try{
+    const list = logRead();
+    let asked = 0;
+    for (const v of list){
+      if (v.paid) continue;
+      if (asked >= 20) break;
+      asked++;
+      const d = await askStatus(v);
+      if (d && d.paid){ logSet(v.h, { paid:true, tx: d.tx || null }); renderLog(); }
+      await new Promise(r => setTimeout(r, 150));
+    }
+  } finally { logRefreshing = false; }
+}
+
+/* ---------- слежение за оплатой ----------
+   Тот же вопрос, что задаёт страница покупателя. Молчание узла сети — это НЕ
+   «не оплачено»: сказать продавцу «не оплачено» про уже пришедшие деньги
+   значит отправить его требовать вторую оплату. */
+/* Сумму и валюту посылаем обязательно. Без них проверка на той стороне
+   сверяет только номер счёта и продавца — а номер счёта знает всякий, кому
+   прислали ссылку на оплату, и заплатить по нему копейку может кто угодно.
+   Продавец увидел бы «оплачено» и отдал товар. */
+async function askStatus(v){
+  try{
+    const r = await fetch('/api/status?net=' + encodeURIComponent(v.net)
+      + '&m=' + encodeURIComponent(v.m) + '&h=' + encodeURIComponent(v.h)
+      + '&a=' + encodeURIComponent(v.a) + '&c=' + encodeURIComponent(v.c || 'USDT')
+      + (v.s ? '&s=' + encodeURIComponent(v.s) : ''),
+      { signal: AbortSignal.timeout(9000) });
+    return await r.json();
+  } catch(e){ return { unknown: true }; }
+}
+async function ask(){ return askStatus(inv); }
+function watch(){
+  clearInterval(timer);
+  const tick = async () => {
+    if (!inv) return;
+    const d = await ask();
+    if (!inv) return;
+    if (d && d.paid){
+      clearInterval(timer); timer = null;
+      logSet(inv.h, { paid:true, tx: d.tx || null });
+      setDone('donePaid', 'donePaidSub', null, true);
+      return;
+    }
+    if (d && d.unknown){ setDone('netQuiet', 'doneSub'); return; }
+    const left = inv.t - Math.floor(Date.now() / 1000);
+    if (left > 0) setDone('waitLeft', 'doneSub', String(Math.floor(left / 60)));
+    else          setDone('expired', 'doneSub');
+  };
+  tick();
+  timer = setInterval(tick, 6000);
+}
+
+/* ---------- запуск ----------
+   Язык выбираем до первой отрисовки: сначала тот, что человек выбрал раньше,
+   иначе — язык браузера, и только потом английский. Русский по умолчанию был
+   бы честен только для одного продавца из десяти. */
+let startLang = null;
+/* Язык из адреса — самый главный: с витрины сюда приходят по ссылке, и если
+   человек читал её по-турецки, касса обязана открыться по-турецки, а не по
+   языку его браузера. */
+const askedLang = (location.search + ' ' + location.hash).match(/[?&#]lang=([a-z]{2})/);
+if (askedLang && NAMES[askedLang[1]]) startLang = askedLang[1];
+try{ if (!startLang) startLang = localStorage.getItem(LANG_KEY); } catch(e){}
+if (!startLang){
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  startLang = NAMES[nav] ? nav : 'en';
+}
+applyLang(NAMES[startLang] ? startLang : 'en');
+logRefresh();
+setInterval(logRefresh, 30000);
+</script>
+</body>
+</html>

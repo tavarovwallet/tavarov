@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Оплата · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
+  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
+  --green:#1E9E57; --orange:#C97400; --red:#E5342A; --fill:rgba(124,58,237,.08);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#0D0716; --card:#181026; --label:#fff; --label-2:rgba(235,225,255,.68);
+  --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+  --green:#4ED08A; --orange:#E7A33A; --red:#FF6B61; --fill:rgba(169,123,255,.12);
+} }
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--label); font-family:var(--font);
+     font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased;
+     display:flex; align-items:flex-start; justify-content:center; padding:24px 16px 60px}
+.box{width:100%; max-width:440px}
+.card{background:var(--card); border:1px solid var(--sep); border-radius:18px; padding:24px; margin-bottom:14px}
+h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
+.sum{font-size:40px; font-weight:800; letter-spacing:-.02em; margin:14px 0 2px}
+.muted{color:var(--label-2); font-size:15px}
+.tiny{color:var(--label-3); font-size:13.5px}
+.qr{display:flex; justify-content:center; padding:18px; background:#fff; border-radius:14px; margin:18px 0 12px}
+.qr img,.qr canvas{display:block; width:100%; max-width:230px; height:auto; image-rendering:pixelated}
+.btn{display:block; width:100%; text-align:center; padding:15px; border-radius:13px;
+     font-weight:650; font-size:17px; border:1px solid transparent; cursor:pointer;
+     font-family:inherit; text-decoration:none; margin-bottom:10px}
+.btn-main{background:var(--accent); color:#fff}
+.btn-ghost{background:transparent; color:var(--label); border-color:var(--sep)}
+.row{display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px solid var(--sep); font-size:15.5px}
+.row:last-child{border-bottom:0}
+.row span{color:var(--label-2)} .row b{font-weight:650; text-align:right; word-break:break-all}
+.addr{font-family:var(--mono); font-size:12.5px}
+.state{display:flex; align-items:center; gap:10px; font-weight:650; font-size:16px}
+.dot{width:10px; height:10px; border-radius:50%; background:var(--orange); flex:0 0 auto;
+     animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.ok .dot{background:var(--green); animation:none}
+.bad .dot{background:var(--red); animation:none}
+.note{background:var(--fill); border-radius:12px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:14px}
+.brand{display:flex; align-items:center; gap:9px; justify-content:center; margin-bottom:16px; color:var(--label-2); font-size:14px}
+.brand svg{width:26px; height:26px; border-radius:7px}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px; margin:0 auto 16px; width:max-content}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:650;
+              color:var(--label-2); padding:4px 8px; border-radius:7px; line-height:1.2}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="box">
+
+  <div class="brand">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+      </g>
+    </svg>
+    Tavarov Pay
+  </div>
+
+  <!-- Покупатель и продавец редко из одной страны: счёт выставлен в Лиссабоне,
+       открывают его в Анкаре. Язык берём из браузера того, кто открыл, а не из
+       языка того, кто выставил. -->
+  <div class="langs" id="langs"></div>
+
+  <!-- Счёт в тестовой сети. Наша страница выставления счетов такого больше
+       не умеет, но ссылку можно собрать руками — и именно так её и соберёт
+       мошенник: деньги в тестовой сети ненастоящие и раздаются бесплатно, а
+       экран «Оплачено» выглядит настоящим. Поэтому предупреждаем покупателя
+       до оплаты и словами, которые понятны без объяснений. -->
+  <div class="card hidden" id="testnetWarn">
+    <div class="state bad"><span class="dot"></span><span data-t="tnH">Это ТЕСТОВАЯ сеть</span></div>
+    <div class="note" data-t="tnNote">Деньги в ней ненастоящие: их раздают бесплатно кому угодно.
+    Настоящий магазин так счёт не выставляет. Если вам предлагают заплатить
+    по этой ссылке за товар — вас обманывают. Ничего не платите и не
+    отправляйте продавцу ничего другого.</div>
+  </div>
+
+  <div class="card" id="main">
+    <h1 id="shop">—</h1>
+    <div class="muted" id="item"></div>
+    <div class="sum" id="amount">—</div>
+    <div class="tiny" id="expires"></div>
+
+    <div class="qr" id="qr"></div>
+    <div class="tiny" style="text-align:center; margin-bottom:16px" id="qrHint" data-t="qrHint">
+      Наведите камеру из приложения Tavarov
+    </div>
+
+    <a class="btn btn-main" id="openWallet" href="#" data-t="open">Открыть в кошельке</a>
+    <button class="btn btn-ghost" id="copyLink" data-t="copy">Скопировать ссылку</button>
+
+    <div style="margin-top:18px">
+      <div class="row"><span data-t="rTo">Получатель</span><b class="addr" id="to">—</b></div>
+      <div class="row"><span data-t="rNet">Сеть</span><b id="net">—</b></div>
+      <div class="row"><span data-t="rOrder">Номер заказа</span><b id="order">—</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="state" id="state"><span class="dot"></span><span id="stateText">Ждём оплату…</span></div>
+    <div class="note" id="stateNote">
+      Страница сама увидит платёж — обычно это несколько секунд. Закрывать её не нужно.
+    </div>
+  </div>
+
+  <!-- Каждый выставленный счёт показывают НОВОМУ человеку: покупателю, который
+       про нас ничего не знает. До сих пор ему некуда было нажать, чтобы
+       узнать, куда он вообще платит, — и это одновременно и недоверие, и
+       выброшенное знакомство. Ссылка тихая и в самом низу: она не должна
+       уводить от оплаты, она для тех, кто уже заплатил или ещё думает. -->
+  <p class="tiny" style="text-align:center;margin:18px 0 0">
+    <a href="https://tavarov.com/" target="_blank" rel="noopener"
+       style="color:var(--label-2);text-decoration:none;border-bottom:1px solid var(--sep)"
+       data-t="whatIs">Что такое Tavarov Pay?</a>
+  </p>
+
+  <div class="card hidden" id="err">
+    <div class="state bad"><span class="dot"></span><span id="errText">Ссылка не читается</span></div>
+    <div class="note" data-t="errNote">Вернитесь в магазин и начните оплату заново. Платить по испорченной ссылке нельзя: деньги уйдут неизвестно кому.</div>
+  </div>
+
+</div>
+
+<script src="./qrcode.min.js"></script>
+<script>
+/* Страница оплаты. Своего сервера у неё нет и денег она не касается:
+   всё, что здесь есть, — это счёт, показанный человеку, и наблюдение за
+   блокчейном. Деньги идут от покупателя прямо продавцу.
+
+   Данные счёта лежат в адресе после решётки, а не на сервере: так их
+   нечего терять и незачем хранить. Подделать их бессмысленно — номер
+   счёта считается из них же, и подделанный магазин просто не узнает. */
+
+const $ = id => document.getElementById(id);
+const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet' };
+
+/* ================= ЯЗЫКИ =================
+   Счёт выставляют в одной стране, открывают в другой. Язык берём из браузера
+   покупателя, переключатель оставляем рядом — и запоминаем выбор тем же
+   ключом, что и остальные страницы Tavarov. */
+const RU = {
+  title:'Оплата · Tavarov Pay',
+  titlePay:'Оплата %s · Tavarov Pay',
+  tnH:'Это ТЕСТОВАЯ сеть',
+  tnNote:'Деньги в ней ненастоящие: их раздают бесплатно кому угодно. Настоящий магазин так счёт не выставляет. Если вам предлагают заплатить по этой ссылке за товар — вас обманывают. Ничего не платите и не отправляйте продавцу ничего другого.',
+  qrHint:'Наведите камеру из приложения Tavarov',
+  open:'Открыть в кошельке',
+  copy:'Скопировать ссылку', copied:'Скопировано',
+  copyManual:'Скопируйте ссылку вручную:',
+  rTo:'Получатель', rNet:'Сеть', rOrder:'Номер заказа',
+  payDefault:'Оплата',
+  qrFail:'Код не поместился — оплатите по кнопке ниже',
+  waiting:'Ждём оплату…',
+  waitNote:'Страница сама увидит платёж — обычно это несколько секунд. Закрывать её не нужно.',
+  errH:'Ссылка не читается',
+  errNote:'Вернитесь в магазин и начните оплату заново. Платить по испорченной ссылке нельзя: деньги уйдут неизвестно кому.',
+  validFor:'Счёт действует ещё %s',
+  expiredLine:'Время счёта истекло — вернитесь в магазин и начните заново',
+  expiredH:'Счёт просрочен',
+  whatIs:'Что такое Tavarov Pay?',
+  expiredNote:'Платить по нему уже не нужно: магазин его не примет. Начните оплату заново.',
+  paidH:'Оплачено',
+  paidNote:'Деньги ушли продавцу. Магазин увидит оплату сам.',
+  paidNoteBack:'Деньги ушли продавцу. Магазин увидит оплату сам — сейчас вернём вас на %s.'
+};
+const T = {
+  ru: RU,
+  en: {
+    title:'Payment · Tavarov Pay',
+    titlePay:'Pay %s · Tavarov Pay',
+    tnH:'This is a TEST network',
+    tnNote:'The money in it is not real: anyone can get it for free. A real shop does not issue invoices this way. If someone asks you to pay for goods through this link, you are being deceived. Pay nothing and send the seller nothing else either.',
+    qrHint:'Point the camera from the Tavarov app',
+    open:'Open in the wallet',
+    copy:'Copy the link', copied:'Copied',
+    copyManual:'Copy the link by hand:',
+    rTo:'Recipient', rNet:'Network', rOrder:'Order number',
+    payDefault:'Payment',
+    qrFail:'The code did not fit — pay with the button below',
+    waiting:'Waiting for payment…',
+    waitNote:'The page will see the payment itself — usually a few seconds. You do not need to close it.',
+    errH:'This link cannot be read',
+    errNote:'Go back to the shop and start the payment again. Paying through a broken link is not safe: the money would go to someone unknown.',
+    validFor:'The invoice is valid for another %s',
+    expiredLine:'The invoice has run out — go back to the shop and start again',
+    expiredH:'Invoice expired',
+    whatIs:'What is Tavarov Pay?',
+    expiredNote:'There is no need to pay it any more: the shop will not accept it. Start the payment again.',
+    paidH:'Paid',
+    paidNote:'The money has gone to the seller. The shop will see the payment by itself.',
+    paidNoteBack:'The money has gone to the seller. The shop will see the payment by itself — taking you back to %s now.'
+  },
+  es: {
+    title:'Pago · Tavarov Pay',
+    titlePay:'Pagar %s · Tavarov Pay',
+    tnH:'Esta es una red DE PRUEBAS',
+    tnNote:'El dinero de esta red no es real: se reparte gratis a cualquiera. Una tienda de verdad no emite facturas así. Si le piden pagar un producto con este enlace, le están engañando. No pague nada ni envíe nada más al vendedor.',
+    qrHint:'Apunte con la cámara desde la aplicación Tavarov',
+    open:'Abrir en el monedero',
+    copy:'Copiar el enlace', copied:'Copiado',
+    copyManual:'Copie el enlace a mano:',
+    rTo:'Destinatario', rNet:'Red', rOrder:'Número de pedido',
+    payDefault:'Pago',
+    qrFail:'El código no cupo: pague con el botón de abajo',
+    waiting:'Esperando el pago…',
+    waitNote:'La página verá el pago por sí sola, normalmente en unos segundos. No hace falta cerrarla.',
+    errH:'Este enlace no se puede leer',
+    errNote:'Vuelva a la tienda y empiece el pago de nuevo. Pagar con un enlace dañado no es seguro: el dinero iría a parar a alguien desconocido.',
+    validFor:'La factura vale todavía %s',
+    expiredLine:'El plazo de la factura ha terminado: vuelva a la tienda y empiece de nuevo',
+    expiredH:'Factura vencida',
+    whatIs:'¿Qué es Tavarov Pay?',
+    expiredNote:'Ya no hace falta pagarla: la tienda no la aceptará. Empiece el pago de nuevo.',
+    paidH:'Pagado',
+    paidNote:'El dinero ha ido al vendedor. La tienda verá el pago por sí sola.',
+    paidNoteBack:'El dinero ha ido al vendedor. La tienda verá el pago por sí sola; le devolvemos a %s ahora.'
+  },
+  tr: {
+    title:'Ödeme · Tavarov Pay',
+    titlePay:'%s öde · Tavarov Pay',
+    tnH:'Bu bir TEST ağı',
+    tnNote:'Buradaki para gerçek değil: isteyene bedava dağıtılıyor. Gerçek bir mağaza faturayı böyle kesmez. Bu bağlantıyla bir ürünün parasını ödemeniz isteniyorsa, kandırılıyorsunuz. Hiçbir şey ödemeyin ve satıcıya başka bir şey de göndermeyin.',
+    qrHint:'Tavarov uygulamasından kamerayı doğrultun',
+    open:'Cüzdanda aç',
+    copy:'Bağlantıyı kopyala', copied:'Kopyalandı',
+    copyManual:'Bağlantıyı elle kopyalayın:',
+    rTo:'Alıcı', rNet:'Ağ', rOrder:'Sipariş numarası',
+    payDefault:'Ödeme',
+    qrFail:'Kod sığmadı — aşağıdaki düğmeyle ödeyin',
+    waiting:'Ödeme bekleniyor…',
+    waitNote:'Sayfa ödemeyi kendisi görecek, genelde birkaç saniye sürer. Kapatmanıza gerek yok.',
+    errH:'Bu bağlantı okunamıyor',
+    errNote:'Mağazaya dönüp ödemeye yeniden başlayın. Bozuk bir bağlantıyla ödeme yapmak güvenli değil: para kime gittiği belirsiz olur.',
+    validFor:'Fatura daha %s geçerli',
+    expiredLine:'Faturanın süresi doldu — mağazaya dönüp yeniden başlayın',
+    expiredH:'Faturanın süresi doldu',
+    whatIs:'Tavarov Pay nedir?',
+    expiredNote:'Artık ödemenize gerek yok: mağaza kabul etmeyecek. Ödemeye yeniden başlayın.',
+    paidH:'Ödendi',
+    paidNote:'Para satıcıya gitti. Mağaza ödemeyi kendisi görecek.',
+    paidNoteBack:'Para satıcıya gitti. Mağaza ödemeyi kendisi görecek — sizi şimdi %s adresine geri götürüyoruz.'
+  },
+  pt: {
+    title:'Pagamento · Tavarov Pay',
+    titlePay:'Pagar %s · Tavarov Pay',
+    tnH:'Esta é uma rede DE TESTE',
+    tnNote:'O dinheiro dela não é real: é distribuído de graça para qualquer um. Uma loja de verdade não emite fatura assim. Se pedirem que você pague um produto por este link, você está sendo enganado. Não pague nada e não envie mais nada ao vendedor.',
+    qrHint:'Aponte a câmera pelo aplicativo Tavarov',
+    open:'Abrir na carteira',
+    copy:'Copiar o link', copied:'Copiado',
+    copyManual:'Copie o link manualmente:',
+    rTo:'Destinatário', rNet:'Rede', rOrder:'Número do pedido',
+    payDefault:'Pagamento',
+    qrFail:'O código não coube — pague pelo botão abaixo',
+    waiting:'Aguardando o pagamento…',
+    waitNote:'A página vai ver o pagamento sozinha, normalmente em alguns segundos. Não precisa fechar.',
+    errH:'Não dá para ler este link',
+    errNote:'Volte à loja e comece o pagamento de novo. Pagar por um link quebrado não é seguro: o dinheiro iria para alguém desconhecido.',
+    validFor:'A fatura ainda vale %s',
+    expiredLine:'O prazo da fatura acabou — volte à loja e comece de novo',
+    expiredH:'Fatura vencida',
+    whatIs:'O que é o Tavarov Pay?',
+    expiredNote:'Não precisa mais pagar: a loja não vai aceitar. Comece o pagamento de novo.',
+    paidH:'Pago',
+    paidNote:'O dinheiro foi para o vendedor. A loja vai ver o pagamento sozinha.',
+    paidNoteBack:'O dinheiro foi para o vendedor. A loja vai ver o pagamento sozinha — levando você de volta a %s agora.'
+  }
+};
+/* Состояние держим ключами, а не готовыми словами: человек может переключить
+   язык уже после того, как увидел «Оплачено», и надпись обязана смениться
+   вместе со всем остальным. Объявлено здесь, до первого applyLang, — иначе
+   первая же отрисовка споткнулась бы о необъявленную переменную. */
+let stateNow = { kind:'', k:'waiting', nk:'waitNote', arg:null };
+const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+const LANG_KEY = 'tavarov.site.lang';
+let LANG = 'ru';
+function t(k, a){
+  const d = T[LANG] || RU;
+  let v = (d[k] !== undefined) ? d[k] : (RU[k] !== undefined ? RU[k] : k);
+  if (a !== undefined && a !== null) v = v.replace('%s', a);
+  return v;
+}
+function applyLang(code){
+  LANG = NAMES[code] ? code : 'en';
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('#langs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === LANG)));
+  try{ localStorage.setItem(LANG_KEY, LANG); } catch(e){}
+  document.title = inv ? t('titlePay', inv.a + ' ' + (inv.c || 'USDT')) : t('title');
+  $('errText').textContent = t('errH');
+  redrawState();
+  if (inv) renderText();
+}
+(function buildLangs(){
+  const box = $('langs');
+  Object.keys(NAMES).forEach(code => {
+    const b = document.createElement('button');
+    b.textContent = NAMES[code];
+    b.dataset.code = code;
+    b.onclick = () => applyLang(code);
+    box.appendChild(b);
+  });
+})();
+
+/* Куда разрешено вести кнопке «открыть в кошельке». Список закрытый, и это
+   принципиально: адрес приходит из ссылки, а ссылку человеку присылает тот,
+   кто выставил счёт. Без списка сюда вписали бы javascript: — и чужой код
+   выполнился бы на нашем же домене, там, где лежит хранилище кошелька. */
+const WALLET_ORIGINS = ['https://wallet.tavarov.com',
+                        'https://tavarov-wallet.pages.dev',
+                        'https://tavarov-wallet.netlify.app'];
+
+function b64urlDecode(s){
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  return decodeURIComponent(escape(atob(s)));
+}
+
+/* Адрес кошелька из счёта: либо ровно один из наших, либо никакой. */
+function safeWalletBase(v){
+  if (typeof v !== 'string' || !v) return null;
+  const s = v.replace(/\/+$/, '');
+  return WALLET_ORIGINS.indexOf(s) >= 0 ? s : null;
+}
+
+/* Возврат в магазин. Здесь списка быть не может — магазинов много и они
+   чужие, — поэтому требуем хотя бы https и обычный адрес без пароля внутри.
+   javascript:, data:, //чужой-хост и подобное сюда не пройдут. */
+function safeReturnUrl(v){
+  if (typeof v !== 'string' || !v) return null;
+  let u;
+  try{ u = new URL(v); } catch(e){ return null; }
+  if (u.protocol !== 'https:') return null;
+  if (u.username || u.password) return null;
+  if (!/^[a-z0-9.-]+$/i.test(u.hostname)) return null;
+  return u.href;
+}
+
+let inv = null;      // разобранный счёт
+function readInvoice(){
+  const m = location.hash.match(/[#&]p=([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  try{
+    const o = JSON.parse(b64urlDecode(m[1]));
+    if (!/^0x[0-9a-fA-F]{40}$/.test(o.m || '')) return null;
+    if (!(parseFloat(o.a) > 0)) return null;
+    if (!/^0x[0-9a-fA-F]{64}$/.test(o.h || '')) return null;
+    /* Всё, что уедет в href или в переход, чистим сразу на входе, а не в
+       месте применения: так забыть проверку в одном из мест нельзя. */
+    o.w = safeWalletBase(o.w);
+    o.r = safeReturnUrl(o.r);
+    if (o.net !== 'bnb' && o.net !== 'bnbTestnet') o.net = 'bnb';
+    return o;
+  } catch(e){ return null; }
+}
+
+function fail(text){
+  $('main').classList.add('hidden');
+  $('err').classList.remove('hidden');
+  if (text) $('errText').textContent = text;
+}
+
+inv = readInvoice();
+/* Язык выбираем до первой отрисовки: сначала тот, что человек выбрал раньше,
+   иначе — язык его браузера, и только потом английский. */
+let startLang = null;
+/* Язык из адреса — самый главный: с витрины сюда приходят по ссылке, и если
+   человек читал её по-турецки, касса обязана открыться по-турецки, а не по
+   языку его браузера. */
+const askedLang = (location.search + ' ' + location.hash).match(/[?&#]lang=([a-z]{2})/);
+if (askedLang && NAMES[askedLang[1]]) startLang = askedLang[1];
+try{ if (!startLang) startLang = localStorage.getItem(LANG_KEY); } catch(e){}
+if (!startLang){
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  startLang = NAMES[nav] ? nav : 'en';
+}
+applyLang(NAMES[startLang] ? startLang : 'en');
+
+if (!inv) {
+  fail();
+} else {
+  render();
+  watch();
+}
+
+function payLink(){
+  const p = [];
+  const add = (k, v) => { if (v) p.push(k + '=' + encodeURIComponent(v)); };
+  add('to', inv.m); add('net', inv.net || 'bnb'); add('m', inv.m);
+  add('cur', inv.c || 'USDT'); add('amt', inv.a);
+  add('item', inv.i); add('name', inv.n); add('inv', inv.h);
+  return 'tavarov:pay?' + p.join('&');
+}
+
+/* Текст отдельно от кода и кнопок: при смене языка перерисовать надо только
+   подписи, а рисовать второй QR поверх первого — нельзя. */
+function renderText(){
+  document.title = t('titlePay', inv.a + ' ' + (inv.c || 'USDT'));
+  $('shop').textContent  = inv.n || t('payDefault');
+  $('item').textContent  = inv.i || '';
+  $('amount').textContent = inv.a + ' ' + (inv.c || 'USDT');
+  $('to').textContent    = inv.m;
+  $('net').textContent   = NET_NAMES[inv.net || 'bnb'] || inv.net;
+  $('order').textContent = inv.o || '—';
+}
+
+function render(){
+  renderText();
+  if (inv.net === 'bnbTestnet') $('testnetWarn').classList.remove('hidden');
+
+  const link = payLink();
+  /* Запасной адрес кошелька: он берётся из самого счёта, а сюда попадают
+     только счета, выписанные до того, как поле появилось. Старый адрес тут
+     держать нельзя — покупателя увело бы на площадку, которую мы больше не
+     обновляем. */
+  const walletUrl = (inv.w || 'https://wallet.tavarov.com') + '/?pay=' + encodeURIComponent(link);
+  $('openWallet').href = walletUrl;
+  $('copyLink').onclick = () => {
+    navigator.clipboard.writeText(link).then(
+      () => { $('copyLink').textContent = t('copied'); setTimeout(()=>{ $('copyLink').textContent = t('copy'); }, 1600); },
+      () => { prompt(t('copyManual'), link); });
+  };
+
+  /* Уровень исправления ошибок берём пониже: русское название магазина
+     легко разгоняет строку за двести знаков, а на высоком уровне код
+     столько не вмещает и рисуется пустым квадратом. */
+  try{
+    new QRCode($('qr'), { text: link, width: 230, height: 230,
+                          correctLevel: QRCode.CorrectLevel.M });
+  } catch(e){
+    try{ new QRCode($('qr'), { text: link, width: 230, height: 230,
+                               correctLevel: QRCode.CorrectLevel.L }); }
+    catch(e2){ $('qr').textContent = t('qrFail'); }
+  }
+
+  if (inv.t) tick();
+}
+
+function tick(){
+  const left = () => Math.max(0, inv.t - Math.floor(Date.now() / 1000));
+  const draw = () => {
+    const s = left();
+    if (!s){
+      $('expires').textContent = t('expiredLine');
+      setState('bad', 'expiredH', 'expiredNote');
+      clearInterval(timer);
+      return;
+    }
+    const m = Math.floor(s / 60), c = s % 60;
+    $('expires').textContent = t('validFor', m + ':' + String(c).padStart(2, '0'));
+  };
+  const timer = setInterval(draw, 1000);
+  draw();
+}
+
+function setState(kind, k, nk, arg){
+  stateNow = { kind: kind, k: k, nk: nk || null, arg: (arg === undefined ? null : arg) };
+  redrawState();
+}
+function redrawState(){
+  const box = $('state');
+  box.className = 'state' + (stateNow.kind ? ' ' + stateNow.kind : '');
+  $('stateText').textContent = t(stateNow.k, stateNow.arg);
+  if (stateNow.nk) $('stateNote').textContent = t(stateNow.nk, stateNow.arg);
+}
+
+/* Смотрим сами, не полагаясь на магазин: человеку нужно увидеть «оплачено»
+   сразу, а не после того, как сработает вебхук у продавца. */
+async function watch(){
+  let done = false;
+  const ask = async () => {
+    if (done) return;
+    try{
+      /* Сумму и валюту посылаем обязательно. Без них проверка на той
+         стороне сверяет только номер счёта и продавца — а номер счёта знает
+         всякий, кому прислали эту ссылку, и заплатить по нему копейку может
+         кто угодно. */
+      const r = await fetch('/api/status?h=' + encodeURIComponent(inv.h) +
+                            '&m=' + encodeURIComponent(inv.m) +
+                            '&net=' + encodeURIComponent(inv.net || 'bnb') +
+                            '&a=' + encodeURIComponent(inv.a) +
+                            '&c=' + encodeURIComponent(inv.c || 'USDT') +
+                            (inv.s ? '&s=' + encodeURIComponent(inv.s) : ''));
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d.paid){
+        done = true;
+        setState('ok', 'paidH',
+          inv.r ? 'paidNoteBack' : 'paidNote',
+          inv.r ? new URL(inv.r).hostname : null);
+        if (inv.r){
+          setTimeout(() => {
+            const u = new URL(inv.r);
+            u.searchParams.set('tavarov_order', String(inv.o || ''));
+            u.searchParams.set('tavarov_tx', String(d.tx || ''));
+            location.href = u.href;
+          }, 2500);
+        }
+      }
+    } catch(e){ /* сеть моргнула — спросим через секунду ещё раз */ }
+  };
+  ask();
+  setInterval(ask, 4000);
+}
+</script>
+</body>
+</html>

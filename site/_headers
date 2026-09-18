@@ -1,0 +1,29 @@
+# Заголовки кэша для витрины (tavarov.com).
+
+# Страницы правятся чаще всего — пусть браузер каждый раз спрашивает,
+# не появилось ли свежее.
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/privacy.html
+  Cache-Control: no-cache
+
+# Снимки экрана меняются вместе со сборкой и весят полмегабайта на все пять
+# языков — держим сутки, не дольше: иначе на витрине надолго останутся
+# экраны прошлой версии.
+/shots/*
+  Cache-Control: public, max-age=86400
+
+# По этому файлу страница решает, показывать ли кнопку «Скачать». Из кэша он
+# опасен: кнопка будет вести на прошлую версию.
+/apk.json
+  Cache-Control: no-store
+
+# Витрину незачем встраивать в чужую страницу рамкой.
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

@@ -1,0 +1,24 @@
+В эту папку (www/lib/) нужно положить 5 файлов.
+Откройте каждую ссылку в браузере и сохраните файл ПОД УКАЗАННЫМ ИМЕНЕМ.
+
+1) ethers.umd.min.js
+   https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js
+
+2) nacl-fast.min.js
+   https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.2/nacl-fast.min.js
+
+3) qrcode.min.js
+   https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
+
+4) qr-scanner.umd.min.js
+   https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner.umd.min.js
+
+5) qr-scanner-worker.min.js
+   https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner-worker.min.js
+
+Проверка: после копирования в папке www/lib/ должно быть ровно 5 файлов .js
+(этот txt можно удалить). Если какого-то не хватает, приложение при запуске
+покажет красную плашку с именем недостающего файла.
+
+Важно: скачайте их ОДИН раз и закоммитьте в проект. Больше приложение
+в интернет за библиотеками не ходит — ни при старте, ни при VPN-проблемах.

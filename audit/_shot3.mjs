@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const c = await b.newContext({ viewport:{width:1000,height:820}, colorScheme:'dark', locale:'ru-RU' });
+const p = await c.newPage();
+await p.goto('http://localhost:8097/sellers.html', { waitUntil:'load' });
+await p.waitForTimeout(600);
+console.log('заголовок:', (await p.textContent('h1')).trim().slice(0,60));
+console.log('lang:', await p.evaluate(()=>document.documentElement.lang));
+await p.screenshot({ path:'/tmp/sellers-ru.png' });
+await p.click('#langs button[data-code="ru"]'); await p.waitForTimeout(300);
+console.log('после RU:', (await p.textContent('h1')).trim().slice(0,60));
+await p.click('#langs button[data-code="tr"]'); await p.waitForTimeout(300);
+console.log('после TR:', (await p.textContent('h1')).trim().slice(0,60));
+await b.close();

@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Wallet — платить криптой, не меняя её на деньги</title>
+<meta name="description" content="Некастодиальный кошелёк с кассой для магазинов. Ключи остаются на вашем телефоне, деньги приходят сразу.">
+<meta property="og:title" content="Tavarov Wallet">
+<meta property="og:description" content="Ключи на вашем телефоне. Приём оплаты в USDT и USDC — деньги сразу к вам.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
+
+<style>
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
+  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
+  --orange:#C97400; --fill:rgba(124,58,237,.08); --r:16px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --page-bg:
+    radial-gradient(circle at 8% -8%, #EBDDFD 0%, transparent 50%),
+    radial-gradient(circle at 102% 4%, #E2D2FB 0%, transparent 46%),
+    linear-gradient(170deg, #FFFFFF 0%, #F7F2FE 55%, #EFE5FD 100%);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.68);
+    --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+    --orange:#E7A33A; --fill:rgba(169,123,255,.12);
+    --page-bg:
+      radial-gradient(circle at 8% -8%, #1F1235 0%, transparent 52%),
+      radial-gradient(circle at 102% 4%, #1B1030 0%, transparent 48%),
+      linear-gradient(170deg, #120A20 0%, #0D0716 60%);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; background:var(--bg); background-image:var(--page-bg); background-attachment:fixed;
+  color:var(--label); font-family:var(--font); font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px; margin:0 auto; padding:0 22px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.2; margin:0; letter-spacing:-.02em}
+h1{font-size:clamp(32px,6vw,52px); font-weight:800}
+h2{font-size:clamp(23px,3.4vw,30px); font-weight:750; margin-bottom:24px}
+h3{font-size:17.5px; font-weight:700; margin-bottom:5px}
+p{margin:0 0 14px}
+section{padding:56px 0; border-top:1px solid var(--sep)}
+.lead{font-size:19px; color:var(--label-2); max-width:60ch}
+
+header{position:sticky; top:0; z-index:20;
+  backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
+  background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--sep)}
+.bar{display:flex; align-items:center; gap:14px; height:60px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:750; color:var(--label); font-size:17px}
+.brand:hover{text-decoration:none}
+.brand svg{width:30px; height:30px; border-radius:8px; display:block}
+.bar nav{margin-left:auto}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
+  color:var(--label-2); padding:5px 9px; border-radius:7px}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+/* Языков пять, и на узком телефоне их ряд вместе с названием не влезал в
+   строку: страница уезжала вбок целиком. Ужимаем ряд, а не прячем языки —
+   человек, которому нужен свой язык, должен его видеть сразу. */
+@media (max-width:430px){
+  .brand{font-size:15px; gap:8px}
+  .brand svg{width:26px; height:26px}
+  .langs button{padding:5px 6px; font-size:12px}
+  .wrap{padding:0 16px}
+}
+
+.hero{padding:76px 0 56px}
+.hero h1{max-width:15ch}
+.hero .lead{margin-top:20px; font-size:20px}
+.cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:32px}
+.btn{display:inline-block; padding:14px 28px; border-radius:13px; font-weight:650; font-size:17px;
+  border:1px solid transparent; cursor:pointer; font-family:inherit}
+.btn-main{background:var(--accent); color:#fff; box-shadow:0 6px 22px rgba(124,58,237,.30)}
+.btn-main:hover{text-decoration:none; filter:brightness(1.06)}
+.btn-plain{background:var(--card); color:var(--label); border-color:var(--sep)}
+.btn-plain:hover{text-decoration:none; border-color:var(--accent)}
+.hero .note{margin-top:16px; font-size:15px; color:var(--label-3); max-width:56ch}
+
+/* ---------- снимки экрана ---------- */
+.shots{display:flex; gap:18px; overflow-x:auto; padding:4px 22px 10px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch}
+.shot{flex:0 0 auto; width:214px; scroll-snap-align:center}
+.shot img{width:100%; height:auto; display:block; border-radius:20px;
+  border:1px solid var(--sep); box-shadow:0 12px 34px rgba(50,25,100,.16); background:var(--card)}
+.shot span{display:block; margin-top:10px; font-size:14px; color:var(--label-3); text-align:center}
+@media (min-width:900px){ .shots{justify-content:center; overflow:visible} }
+
+.rows{display:grid; gap:22px}
+@media (min-width:720px){ .rows{grid-template-columns:1fr 1fr; gap:26px 34px} }
+.rows p{margin:0; color:var(--label-2); font-size:15.5px}
+
+.honest{background:var(--card); border:1px solid var(--sep); border-left:4px solid var(--orange);
+  border-radius:var(--r); padding:22px 26px}
+.honest ul{margin:0; padding-left:20px}
+.honest li{margin-bottom:12px; color:var(--label-2); font-size:15.5px}
+.honest li:last-child{margin-bottom:0}
+.honest li b{color:var(--label)}
+
+/* ---------- скачать ---------- */
+.dl{background:var(--card); border:1px solid var(--sep); border-radius:var(--r); padding:24px 26px}
+.dl .meta{font-size:14.5px; color:var(--label-3); margin-top:12px; word-break:break-all; line-height:1.7}
+.dl code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; color:var(--label-2)}
+
+details{border-bottom:1px solid var(--sep); padding:15px 0}
+summary{cursor:pointer; font-weight:650; font-size:16.5px; list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+'; float:right; color:var(--accent); font-weight:700; font-size:20px; line-height:1.2}
+details[open] summary::after{content:'–'}
+details p{margin:10px 0 0; color:var(--label-2); font-size:15.5px; max-width:64ch}
+
+footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; color:var(--label-3)}
+.flinks{display:flex; flex-wrap:wrap; gap:6px 20px; margin-bottom:24px}
+.flinks a{color:var(--label-2); font-size:15px}
+.disclaimer{line-height:1.6}
+.hidden{display:none !important}
+
+/* ---- ролик «как это выглядит» ----
+   Стоит сразу под первым экраном: тридцать секунд показывают то, на что
+   словами уходит абзац, и человек решает за них, а не за текст. Без звука,
+   по кругу — это иллюстрация, а не кино, и она не должна ничего требовать. */
+.demo{margin:46px auto 0; max-width:900px; padding:0 20px}
+.demo figure{margin:0}
+.demo video{display:block; width:100%; height:auto; border-radius:18px;
+            border:1px solid var(--sep); background:#120B22;
+            box-shadow:0 18px 50px rgba(40,20,80,.16)}
+.demo figcaption{margin-top:12px; text-align:center; color:var(--label-2); font-size:14.5px}
+@media (max-width:640px){ .demo{margin-top:32px; padding:0 16px} .demo video{border-radius:14px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <rect width="120" height="120" rx="27" fill="#4B1FE8"/>
+        <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+          <rect x="37" y="13" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+          <rect x="37" y="92" width="46" height="15" fill="#fff"/>
+          <rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+          <rect x="13" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="13" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+          <rect x="92" y="37" width="15" height="46" fill="#BFA6FF"/>
+          <rect x="68" y="52.5" width="39" height="15" fill="#BFA6FF"/>
+        </g>
+      </svg>
+      Wallet
+    </a>
+    <nav><div class="langs" id="langs"></div></nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <div class="wrap hero">
+    <h1 data-t="h1">Платите криптой, не меняя её на деньги</h1>
+    <p class="lead" data-t="hsub">Продавец показывает код — вы платите тем, что у вас есть. Без биржи и без ожидания. Ключи остаются на вашем телефоне.</p>
+    <div class="cta">
+      <a class="btn btn-main" href="https://wallet.tavarov.com/" data-t="cta1">Открыть кошелёк</a>
+      <a class="btn btn-plain hidden" id="apkTop" href="#download" data-t="cta2">Скачать для Android</a>
+    </div>
+    <p class="note" data-t="hnote">Открывается в браузере, ставится на домашний экран. iPhone и Android.</p>
+  </div>
+
+  <!-- ================= ролик ================= -->
+  <div class="demo">
+    <figure>
+      <video id="demoVideo" muted loop playsinline autoplay preload="metadata"
+             poster="./video/demo-poster.jpg" width="1280" height="720"
+             aria-label="Как выставить счёт и получить оплату">
+        <!-- Два формата нарочно: webm первым, mp4 запасным. Браузер берёт
+             первый, который умеет, — и ролик открывается везде, а не только
+             там, где есть проприетарный кодек. -->
+        <source id="demoWebm" src="./video/demo-en.webm" type="video/webm">
+        <source id="demoMp4"  src="./video/demo-en.mp4"  type="video/mp4">
+      </video>
+      <figcaption data-t="demo_c">Продавец выставил счёт, покупатель открыл ссылку, деньги пришли. Тридцать секунд, без монтажа.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ================= снимки ================= -->
+  <div class="shots">
+    <figure class="shot" style="margin:0">
+      <img src="./shots/ru/wallet.webp" data-shot="wallet" width="414" height="896" loading="lazy" alt="">
+      <span data-t="sh1">Кошелёк: BNB, USDT, USDC и бонусы TVR</span>
+    </figure>
+    <figure class="shot" style="margin:0">
+      <img src="./shots/ru/till.webp" data-shot="till" width="414" height="896" loading="lazy" alt="">
+      <span data-t="sh2">Касса: набрали сумму — покупатель навёл камеру</span>
+    </figure>
+    <figure class="shot" style="margin:0">
+      <img src="./shots/ru/bonus.webp" data-shot="bonus" width="414" height="896" loading="lazy" alt="">
+      <span data-t="sh3">Бонусы за покупки, и честно сказано, когда они созреют</span>
+    </figure>
+    <figure class="shot" style="margin:0">
+      <img src="./shots/ru/send.webp" data-shot="send" width="414" height="896" loading="lazy" alt="">
+      <span data-t="sh4">Перевод по имени, а не по длинному адресу</span>
+    </figure>
+  </div>
+
+  <!-- ================= людям ================= -->
+  <section id="people">
+    <div class="wrap">
+      <h2 data-t="p_h">Людям</h2>
+      <div class="rows">
+        <div>
+          <h3 data-t="p1h">Деньги ваши</h3>
+          <p data-t="p1t">Ключ создаётся на вашем устройстве и никуда не уходит. Забрать или заморозить не можем и мы.</p>
+        </div>
+        <div>
+          <h3 data-t="p2h">Двенадцать слов</h3>
+          <p data-t="p2t">Записали на бумаге — кошелёк вернётся на любом устройстве. Потеряли — не вернёт никто, копии у нас нет.</p>
+        </div>
+        <div>
+          <h3 data-t="p3h">Перевод по имени</h3>
+          <p data-t="p3t">Короткое имя вместо строки из сорока двух знаков. Живёт в блокчейне и принадлежит вашему адресу.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= магазинам ================= -->
+  <section id="sellers">
+    <div class="wrap">
+      <h2 data-t="s_h">Магазинам</h2>
+      <div class="rows">
+        <div>
+          <h3 data-t="s2h">Деньги сразу</h3>
+          <p data-t="s2t">Перевод идёт прямо на ваш адрес, не через нас. Заморозить его никто не может.</p>
+        </div>
+        <div>
+          <h3 data-t="s3h">Касса в телефоне</h3>
+          <p data-t="s3t">Набрали сумму — покупатель навёл камеру. Ошибиться в сумме он не может, «оплачено» появляется само.</p>
+        </div>
+        <div>
+          <h3 data-t="s4h">Деньги сразу</h3>
+          <p data-t="s4t">Платёж приходит вам на кошелёк за секунды. Карты переводят через несколько дней, и до тех пор деньги не ваши.</p>
+        </div>
+      </div>
+      <p style="margin-top:26px"><a href="https://wallet.tavarov.com/invoice" data-t="s_link">Выставить счёт прямо сейчас →</a></p>
+      <p style="margin-top:10px"><a href="./sellers" data-t="s_digital">Продаёте цифровые товары? Возвратов через банк не бывает →</a></p>
+    </div>
+  </section>
+
+  <!-- ================= скачать ================= -->
+  <section id="download">
+    <div class="wrap">
+      <h2 data-t="d_h">Скачать</h2>
+      <div class="dl">
+        <p data-t="d_intro" style="color:var(--label-2); font-size:15.5px">В браузере ничего не ставится и обновляется само. Файл для Android — если привычнее обычное приложение.</p>
+        <div id="apkBox" class="hidden">
+          <a class="btn btn-main" id="apkLink" href="./tavarov.apk" download>APK</a>
+          <div class="meta">
+            <div><span data-t="d_ver">Версия</span>: <code id="apkVer">—</code> · <span data-t="d_size">размер</span>: <code id="apkSize">—</code></div>
+            <div data-t="d_hash">Отпечаток файла SHA-256 — сверьте его после скачивания:</div>
+            <div><code id="apkHash">—</code></div>
+          </div>
+          <p class="meta" data-t="d_warn" style="margin-top:14px">Android спросит разрешение на установку из этого источника — так он спрашивает про любой файл не из магазина. Скачивайте только с этой страницы: поддельные «Tavarov» с чужого сайта и есть самый частый способ увести кошелёк.</p>
+        </div>
+        <p id="apkNone" class="meta" data-t="d_none" style="margin:14px 0 0">Файл для Android ещё не выложен — пока пользуйтесь браузерной версией.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= честно ================= -->
+  <section id="honest">
+    <div class="wrap">
+      <h2 data-t="ho_h">Честно</h2>
+      <div class="honest">
+        <ul>
+          <li data-t="ho1"><b>Независимого аудита у контрактов нет.</b> Мы проверили их сами, но это не то же самое. Не держите в кассе больше, чем готовы потерять.</li>
+          <li data-t="ho2"><b>TVR не продаётся и не имеет цены.</b> Это баллы. Любой, кто предлагает купить у него TVR, — мошенник.</li>
+          <li data-t="ho3"><b>Правила у стран разные.</b> Кое-где расчёты криптовалютой запрещены. Проверьте правила своей страны.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= контракты ================= -->
+  <section id="contracts">
+    <div class="wrap">
+      <h2 data-t="c_h">Контракты</h2>
+      <p data-t="c_intro" style="color:var(--label-2); max-width:62ch">Всё, что делает приложение, лежит в открытых контрактах. Их можно прочитать в обозревателе блоков и не верить нам на слово.</p>
+      <div class="honest" style="margin-top:20px">
+        <ul style="list-style:none; padding:0; margin:0">
+          <li style="margin-bottom:10px"><span data-t="c1">Оплата и возвраты</span> — <a href="https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c"><code>0xCa4F…D65c</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c2">Токен TVR</span> — <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503"><code>0x8Baa…8503</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c3">Казна</span> — <a href="https://bscscan.com/address/0x4029B2699340d0356187bd5ed51BA7b61422508A"><code>0x4029…508A</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c4">Счёт в сети</span> — <a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9"><code>0x82a9…aFF9</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c5">Имена</span> — <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e"><code>0xd6E8…338e</code></a></li>
+          <li><span data-t="c6">Имена, прошлая версия</span> — <a href="https://bscscan.com/address/0x45465B98a3Cc486740Be84fD3B1E21e0D3548360"><code>0x4546…8360</code></a></li>
+        </ul>
+      </div>
+      <p data-t="c_one" style="margin-top:20px; color:var(--label-2)"><b>Работает одна сеть — BNB Chain.</b> Ни в какой другой наши контракты не развёрнуты, и приложение туда не ходит.</p>
+      <p data-t="c_pow" style="color:var(--label-2); max-width:62ch">Что мы можем: менять правила имён и закрывать слова-ловушки вроде <code>support</code>. Чего не можем: тронуть ваши деньги, отменить ваш перевод, заморозить счёт или выдать себя за вас. Этих действий в контрактах просто нет.</p>
+    </div>
+  </section>
+
+  <!-- ================= вопросы ================= -->
+  <section id="faq">
+    <div class="wrap">
+      <h2 data-t="q_h">Вопросы</h2>
+      <details>
+        <summary data-t="q1">Что будет, если я потеряю телефон?</summary>
+        <p data-t="a1">Ничего, если записаны двенадцать слов: вводите их на новом устройстве, и кошелёк на месте. Без них не вернёт никто, включая нас.</p>
+      </details>
+      <details>
+        <summary data-t="q3">Сколько это стоит?</summary>
+        <p data-t="a3">Кошелёк бесплатный. С покупок, оплаченных через приложение, контракт берёт один процент — его платит продавец, а не покупатель. Комиссия сети — доли цента, и она идёт сети, а не нам.</p>
+      </details>
+      <details>
+        <summary data-t="q4">Что такое TVR?</summary>
+        <p data-t="a4">Баллы за покупки. Созревают долями за девяносто дней — так в контракте, ускорить не может никто. Цены у них нет, продать негде.</p>
+      </details>
+      <details>
+        <summary data-t="q6">В какой сети всё это работает?</summary>
+        <p data-t="a6">BNB Chain. Комиссия сети там доли цента, а USDT и USDC — те же самые, что на биржах. Контракты открыты, ссылки на них внизу страницы.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="flinks">
+      <a href="https://wallet.tavarov.com/" data-t="f_a1">Открыть кошелёк</a>
+      <a href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
+      <a href="https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c" data-t="f_a3">Контракт оплаты</a>
+      <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503" data-t="f_a4">Токен TVR</a>
+      <a href="https://bscscan.com/address/0x4029B2699340d0356187bd5ed51BA7b61422508A" data-t="f_a5">Казна</a>
+      <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Контракт имён</a>
+      <a href="./sellers" data-t="f_a8">Цифровым магазинам</a>
+      <a href="./privacy" data-t="f_a7">Политика конфиденциальности</a>
+    </div>
+    <div class="disclaimer">
+      <p data-t="disc">Tavarov — некастодиальный кошелёк: мы не храним ваши ключи и не имеем доступа к вашим деньгам. Ничто на этой странице не является инвестиционным советом. Криптовалюты меняются в цене, и потерять на них можно всё. TVR не продаётся, не имеет цены и не обещает дохода. В ряде стран расчёты криптовалютой за товары и услуги ограничены или запрещены — проверьте правила своей страны.</p>
+      <p style="margin:0">© 2026 Tavarov</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Языки. Словарь лежит прямо здесь: страница должна открываться сразу на
+   нужном языке, а не мигать чужим, пока что-то грузится. Русский берём из
+   разметки — так он не может разойтись с тем, что видно в исходнике. */
+const T = {
+  en: {
+    demo_c:'The seller made an invoice, the buyer opened the link, the money arrived. Thirty seconds, no edits.',
+    c_h:'Contracts',
+    c_intro:'Everything the app does lives in open contracts. You can read them in a block explorer instead of taking our word for it.',
+    c1:'Payments and refunds',
+    c2:'TVR token',
+    c3:'Treasury',
+    c4:'On-chain invoice',
+    c5:'Names',
+    c6:'Names, previous version',
+    c_one:'<b>One network only — BNB Chain.</b> Our contracts are not deployed anywhere else, and the app does not go there.',
+    c_pow:'What we can do: change the rules for names and close trap words like <code>support</code>. What we cannot: touch your money, cancel your transfer, freeze an account or act as you. Those actions simply do not exist in the contracts.',
+    h1:'Pay in crypto without cashing it out',
+    hsub:'The seller shows a code — you pay with what you already have. No exchange, no waiting. The keys stay on your phone.',
+    cta1:'Open the wallet', cta2:'Download for Android',
+    hnote:'Opens in a browser, pins to your home screen. iPhone and Android.',
+    sh1:'Wallet: BNB, USDT, USDC and TVR bonuses',
+    sh2:'Till: type the amount, the buyer points a camera',
+    sh3:'Bonuses for purchases, and a straight answer on when they mature',
+    sh4:'Send by name instead of a long address',
+    p_h:'For people',
+    p1h:'The money is yours',
+    p1t:'The key is created on your device and never leaves it. We cannot take or freeze your money either.',
+    p2h:'Twelve words',
+    p2t:'Write the words down and the wallet comes back on any device. Lose them and nobody can bring it back — we keep no copy.',
+    p3h:'Send by name',
+    p3t:'A short name instead of forty-two characters. It lives on the blockchain and belongs to your address.',
+    p4h:'Five languages',
+    p4t:'English, Russian, Spanish, Turkish, Portuguese. The app takes the language from your phone by itself.',
+    s_h:'For shops',
+    s1h:'One percent',
+    s1t:'Cards take two to three, and the money arrives days later. Here it is one percent, paid by the seller.',
+    s2h:'The money at once',
+    s2t:'The transfer goes straight to your address, not through us. Nobody can freeze it.',
+    s3h:'A till in your phone',
+    s3t:'Type the amount, the buyer points the camera. He cannot get the amount wrong, and "paid" appears by itself.',
+    s4h:'Money right away',
+    s4t:'The payment reaches your wallet in seconds. Cards settle in days, and until then the money is not yours.',
+    s_link:'Create an invoice right now →',
+    s_digital:'Selling digital goods? Chargebacks cannot happen →',
+    d_h:'Download',
+    d_intro:'In a browser nothing is installed and updates arrive on their own. The Android file is for those who prefer a normal app.',
+    d_ver:'Version', d_size:'size',
+    d_hash:'SHA-256 fingerprint of the file — check it after downloading:',
+    d_warn:'Android will ask permission to install from this source — it asks that about any file from outside the store. Download only from this page: a fake "Tavarov" on someone else’s site is the most common way a wallet gets taken.',
+    d_none:'The Android file is not published yet — please use the browser version for now.',
+    ho_h:'Honestly',
+    ho1:'<b>The contracts have no independent audit.</b> We checked them ourselves, which is not the same thing. Do not keep more in the till than you can afford to lose.',
+    ho2:'<b>TVR is not for sale and has no price.</b> They are points. Anyone offering to sell you TVR is a fraud.',
+    ho3:'<b>Rules differ by country.</b> In some places paying with crypto is forbidden. Check the rules where you are.',
+    q_h:'Questions',
+    q1:'What happens if I lose my phone?',
+    a1:'Nothing, if the twelve words are written down: type them on a new device and the wallet is there. Without them nobody can bring it back, us included.',
+    q2:'Who holds my money?',
+    a2:'Nobody. It sits on the blockchain at your address, and the key is on your device. We are not a bank and not an exchange, and we cannot reach your money.',
+    q3:'What does it cost?',
+    a3:'The wallet is free. On purchases paid through the app the contract takes one percent, paid by the seller and not by the buyer. The network fee is a fraction of a cent and goes to the network, not to us.',
+    q4:'What is TVR?',
+    a4:'Points for purchases. They mature in parts over ninety days — that is in the contract, and nobody can speed it up. They have no price and nowhere to sell.',
+    q5:'What if the buyer wants a refund?',
+    a5:'The seller refunds with a button, the buyer gets back exactly what he paid, and the bonuses from that purchase are cancelled. The one percent stays in the treasury.',
+    q6:'Which network does this run on?',
+    a6:'BNB Chain. The network fee there is a fraction of a cent, and USDT and USDC are the same ones you know from exchanges. The contracts are open — links at the bottom of this page.',
+    f_a1:'Open the wallet', f_a2:'Create an invoice', f_a3:'Payment contract',
+    f_a4:'TVR token', f_a5:'Treasury', f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers',
+    disc:'Tavarov is a non-custodial wallet: we do not store your keys and have no access to your money. Nothing on this page is investment advice. Crypto changes in price and you can lose all of it. TVR is not for sale, has no price and promises no return. In a number of countries paying for goods and services with crypto is restricted or banned — check the rules where you live.'
+  },
+
+  es: {
+    demo_c:'El vendedor creó una factura, el comprador abrió el enlace, el dinero llegó. Treinta segundos, sin cortes.',
+    c_h:'Contratos',
+    c_intro:'Todo lo que hace la aplicación está en contratos abiertos. Puede leerlos en un explorador de bloques en vez de creernos.',
+    c1:'Pagos y devoluciones',
+    c2:'Token TVR',
+    c3:'Tesorería',
+    c4:'Factura en la cadena',
+    c5:'Nombres',
+    c6:'Nombres, versión anterior',
+    c_one:'<b>Una sola red: BNB Chain.</b> Nuestros contratos no están desplegados en ninguna otra, y la aplicación no va allí.',
+    c_pow:'Lo que podemos: cambiar las reglas de los nombres y cerrar palabras trampa como <code>support</code>. Lo que no podemos: tocar su dinero, cancelar su transferencia, congelar una cuenta o hacernos pasar por usted. Esas acciones no existen en los contratos.',
+    h1:'Pague en cripto sin convertirla a dinero',
+    hsub:'El vendedor muestra un código y usted paga con lo que ya tiene. Sin exchange y sin esperas. Las claves siguen en su teléfono.',
+    cta1:'Abrir el monedero', cta2:'Descargar para Android',
+    hnote:'Se abre en el navegador y se fija en la pantalla de inicio. iPhone y Android.',
+    sh1:'Monedero: BNB, USDT, USDC y puntos TVR',
+    sh2:'Caja: escriba el importe y el comprador apunta la cámara',
+    sh3:'Puntos por las compras, y una respuesta clara sobre cuándo maduran',
+    sh4:'Enviar por nombre en vez de una dirección larga',
+    p_h:'Para las personas',
+    p1h:'El dinero es suyo',
+    p1t:'La clave se crea en su dispositivo y no sale de allí. Nosotros tampoco podemos quitarle ni congelar su dinero.',
+    p2h:'Doce palabras',
+    p2t:'Anote las palabras y el monedero vuelve en cualquier dispositivo. Si las pierde, nadie lo recupera: no guardamos copia.',
+    p3h:'Enviar por nombre',
+    p3t:'Un nombre corto en lugar de cuarenta y dos caracteres. Vive en la cadena y pertenece a su dirección.',
+    p4h:'Cinco idiomas',
+    p4t:'Español, inglés, ruso, turco, portugués. La aplicación toma el idioma del teléfono por sí sola.',
+    s_h:'Para las tiendas',
+    s1h:'Uno por ciento',
+    s1t:'Las tarjetas cobran dos o tres, y el dinero llega días después. Aquí es uno por ciento, y lo paga el vendedor.',
+    s2h:'El dinero al instante',
+    s2t:'La transferencia va directa a su dirección, no pasa por nosotros. Nadie puede congelarla.',
+    s3h:'Una caja en el teléfono',
+    s3t:'Marque el importe y el comprador apunta la cámara. No puede equivocarse, y «pagado» aparece solo.',
+    s4h:'El dinero al instante',
+    s4t:'El pago llega a su monedero en segundos. Las tarjetas liquidan en días, y hasta entonces el dinero no es suyo.',
+    s_link:'Crear una factura ahora mismo →',
+    s_digital:'¿Vende productos digitales? No existen los contracargos →',
+    d_h:'Descargar',
+    d_intro:'En el navegador no se instala nada y se actualiza solo. El archivo de Android es para quien prefiere una app normal.',
+    d_ver:'Versión', d_size:'tamaño',
+    d_hash:'Huella SHA-256 del archivo: compruébela después de descargar:',
+    d_warn:'Android pedirá permiso para instalar desde este origen: lo pregunta con cualquier archivo que no venga de la tienda. Descargue solo desde esta página: un «Tavarov» falso en otro sitio es la forma más común de perder un monedero.',
+    d_none:'El archivo para Android todavía no está publicado; por ahora use la versión del navegador.',
+    ho_h:'Con franqueza',
+    ho1:'<b>Los contratos no tienen auditoría independiente.</b> Los revisamos nosotros, que no es lo mismo. No guarde en la caja más de lo que pueda perder.',
+    ho2:'<b>TVR no se vende ni tiene precio.</b> Son puntos. Quien le ofrezca venderle TVR es un estafador.',
+    ho3:'<b>Las reglas cambian según el país.</b> En algunos pagar con cripto está prohibido. Consulte las de su país.',
+    q_h:'Preguntas',
+    q1:'¿Qué pasa si pierdo el teléfono?',
+    a1:'Nada, si anotó las doce palabras: las escribe en otro dispositivo y el monedero está ahí. Sin ellas no lo recupera nadie, tampoco nosotros.',
+    q2:'¿Quién guarda mi dinero?',
+    a2:'Nadie. Está en la blockchain, en su dirección, y la clave está en su dispositivo. No somos un banco ni un exchange y no alcanzamos su dinero.',
+    q3:'¿Cuánto cuesta?',
+    a3:'El monedero es gratis. En las compras pagadas desde la aplicación el contrato cobra un uno por ciento, que paga el vendedor y no el comprador. La comisión de red es una fracción de céntimo y va a la red, no a nosotros.',
+    q4:'¿Qué es TVR?',
+    a4:'Puntos por las compras. Maduran por partes en noventa días: así está en el contrato y nadie puede acelerarlo. No tienen precio ni dónde venderse.',
+    q5:'¿Y si el comprador quiere devolver la compra?',
+    a5:'El vendedor devuelve con un botón, al comprador le llega exactamente lo que pagó y los puntos de esa compra se anulan. El uno por ciento se queda en la tesorería.',
+    q6:'¿En qué red funciona todo esto?',
+    a6:'BNB Chain. Allí la comisión de red es una fracción de céntimo, y USDT y USDC son los mismos que conoce de los exchanges. Los contratos están abiertos: los enlaces están al pie de la página.',
+    f_a1:'Abrir el monedero', f_a2:'Crear una factura', f_a3:'Contrato de pago',
+    f_a4:'Token TVR', f_a5:'Tesorería', f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales',
+    disc:'Tavarov es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. Nada en esta página es asesoramiento de inversión. Las criptomonedas cambian de precio y se puede perder todo. TVR no está a la venta, no tiene precio y no promete rendimiento. En varios países pagar bienes y servicios con criptomonedas está restringido o prohibido: consulte las reglas de su país.'
+  },
+
+  tr: {
+    demo_c:'Satıcı fatura oluşturdu, alıcı bağlantıyı açtı, para geldi. Otuz saniye, kurgusuz.',
+    c_h:'Sözleşmeler',
+    c_intro:'Uygulamanın yaptığı her şey açık sözleşmelerde duruyor. Bize inanmak yerine blok gezgininde okuyabilirsiniz.',
+    c1:'Ödemeler ve iadeler',
+    c2:'TVR token',
+    c3:'Hazine',
+    c4:'Zincirdeki fatura',
+    c5:'İsimler',
+    c6:'İsimler, önceki sürüm',
+    c_one:'<b>Tek ağ — BNB Chain.</b> Sözleşmelerimiz başka hiçbir ağda kurulu değil, uygulama da oraya gitmiyor.',
+    c_pow:'Yapabildiklerimiz: isim kurallarını değiştirmek ve <code>support</code> gibi tuzak kelimeleri kapatmak. Yapamadıklarımız: paranıza dokunmak, transferinizi iptal etmek, hesabı dondurmak ya da sizin yerinize geçmek. Bu işlemler sözleşmelerde hiç yok.',
+    h1:'Kriptonuzu bozdurmadan ödeyin',
+    hsub:'Satıcı bir kod gösterir, siz elinizdekiyle ödersiniz. Borsa yok, bekleme yok. Anahtarlar telefonunuzda kalır.',
+    cta1:'Cüzdanı aç', cta2:'Android için indir',
+    hnote:'Tarayıcıda açılır, ana ekrana eklenir. iPhone ve Android.',
+    sh1:'Cüzdan: BNB, USDT, USDC ve TVR puanları',
+    sh2:'Kasa: tutarı yazın, alıcı kamerayı tutsun',
+    sh3:'Alışverişe puan — ve ne zaman kullanılabilir olacağı açıkça yazılı',
+    sh4:'Uzun adres yerine isimle gönderim',
+    p_h:'İnsanlar için',
+    p1h:'Para sizin',
+    p1t:'Anahtar cihazınızda oluşur ve oradan çıkmaz. Paranızı biz de alamayız, donduramayız.',
+    p2h:'On iki kelime',
+    p2t:'Kelimeleri yazın, cüzdan her cihazda geri gelir. Kaybederseniz kimse geri getiremez, bizde kopyası yok.',
+    p3h:'İsimle gönderim',
+    p3t:'Kırk iki karakter yerine kısa bir ad. Zincirde yaşar ve adresinize aittir.',
+    p4h:'Beş dil',
+    p4t:'Türkçe, İngilizce, Rusça, İspanyolca, Portekizce. Uygulama dili telefondan kendisi alır.',
+    s_h:'Dükkânlar için',
+    s1h:'Yüzde bir',
+    s1t:'Kartlar yüzde iki üç alır ve para günler sonra gelir. Burada yüzde bir, ve onu satıcı öder.',
+    s2h:'Para anında',
+    s2t:'Transfer doğrudan adresinize gider, bizden geçmez. Kimse donduramaz.',
+    s3h:'Telefonda kasa',
+    s3t:'Tutarı girin, alıcı kamerayı tutsun. Tutarda yanılamaz, «ödendi» kendiliğinden görünür.',
+    s4h:'Para hemen',
+    s4t:'Ödeme cüzdanınıza saniyeler içinde ulaşır. Kartlar günlerce bekletir ve o zamana kadar para sizin değildir.',
+    s_link:'Hemen fatura oluşturun →',
+    s_digital:'Dijital ürün mü satıyorsunuz? Ters ibraz olmaz →',
+    d_h:'İndir',
+    d_intro:'Tarayıcıda hiçbir şey kurulmaz, güncellemeler kendiliğinden gelir. Android dosyası, normal uygulama isteyenler için.',
+    d_ver:'Sürüm', d_size:'boyut',
+    d_hash:'Dosyanın SHA-256 parmak izi — indirdikten sonra karşılaştırın:',
+    d_warn:'Android bu kaynaktan kurulum için izin isteyecek — mağaza dışındaki her dosya için bunu sorar. Yalnızca bu sayfadan indirin: başka bir sitedeki sahte «Tavarov», cüzdanların en sık bu yolla çalınmasının nedenidir.',
+    d_none:'Android dosyası henüz yayınlanmadı — şimdilik tarayıcı sürümünü kullanın.',
+    ho_h:'Açıkça',
+    ho1:'<b>Sözleşmelerin bağımsız denetimi yok.</b> Kendimiz denetledik, bu aynı şey değil. Kasada kaybetmeyi göze alabileceğinizden fazlasını tutmayın.',
+    ho2:'<b>TVR satılık değildir ve fiyatı yoktur.</b> Bunlar puandır. Size TVR satmayı teklif eden herkes dolandırıcıdır.',
+    ho3:'<b>Kurallar ülkeye göre değişir.</b> Bazı yerlerde kripto ile ödeme yasaktır. Kendi ülkenizin kurallarına bakın.',
+    q_h:'Sorular',
+    q1:'Telefonumu kaybedersem ne olur?',
+    a1:'On iki kelime yazılıysa hiçbir şey: yeni cihazda girersiniz, cüzdan yerindedir. Onlarsız kimse geri getiremez, biz de.',
+    q2:'Paramı kim tutuyor?',
+    a2:'Kimse. Para blok zincirinde, sizin adresinizde durur; anahtar ise cihazınızda. Biz banka ya da borsa değiliz ve paranıza erişemeyiz.',
+    q3:'Maliyeti nedir?',
+    a3:'Cüzdan ücretsiz. Uygulama üzerinden ödenen alışverişlerde sözleşme yüzde bir alır; bunu alıcı değil, satıcı öder. Ağ ücreti bir kuruşun çok altında ve bize değil, ağa gider.',
+    q4:'TVR nedir?',
+    a4:'Alışveriş puanları. Doksan günde parça parça olgunlaşır — sözleşmede böyle yazar, kimse hızlandıramaz. Fiyatı yok, satacak yer de.',
+    q5:'Alıcı iade isterse ne olur?',
+    a5:'Satıcı bir düğmeyle iade eder, alıcıya tam olarak ödediği tutar geri gider ve o alışverişin puanları iptal olur. Yüzde bir hazinede kalır.',
+    q6:'Bütün bunlar hangi ağda çalışıyor?',
+    a6:'BNB Chain. Oradaki ağ ücreti bir sentin küçük bir kısmı, USDT ve USDC ise borsalardan bildiğiniz aynı paralar. Sözleşmeler açık — bağlantılar sayfanın altında.',
+    f_a1:'Cüzdanı aç', f_a2:'Fatura oluştur', f_a3:'Ödeme sözleşmesi',
+    f_a4:'TVR token', f_a5:'Hazine', f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için',
+    disc:'Tavarov saklamasız (non-custodial) bir cüzdandır: anahtarlarınızı saklamayız ve paranıza erişimimiz yoktur. Bu sayfadaki hiçbir şey yatırım tavsiyesi değildir. Kripto paraların fiyatı değişir ve tamamını kaybedebilirsiniz. TVR satılık değildir, fiyatı yoktur ve getiri vaat etmez. Bazı ülkelerde mal ve hizmet için kripto ile ödeme kısıtlı ya da yasaktır — yaşadığınız yerin kurallarına bakın.'
+  },
+
+  pt: {
+    demo_c:'O vendedor criou a fatura, o comprador abriu o link, o dinheiro chegou. Trinta segundos, sem cortes.',
+    c_h:'Contratos',
+    c_intro:'Tudo o que o aplicativo faz está em contratos abertos. Você pode lê-los num explorador de blocos em vez de acreditar em nós.',
+    c1:'Pagamentos e estornos',
+    c2:'Token TVR',
+    c3:'Tesouro',
+    c4:'Fatura na rede',
+    c5:'Nomes',
+    c6:'Nomes, versão anterior',
+    c_one:'<b>Uma única rede — BNB Chain.</b> Nossos contratos não estão em nenhuma outra, e o aplicativo não vai até lá.',
+    c_pow:'O que podemos: mudar as regras dos nomes e fechar palavras-armadilha como <code>support</code>. O que não podemos: tocar no seu dinheiro, cancelar sua transferência, congelar uma conta ou nos passar por você. Essas ações simplesmente não existem nos contratos.',
+    h1:'Pague em cripto sem convertê-la em dinheiro',
+    hsub:'O vendedor mostra um código e você paga com o que já tem. Sem corretora e sem espera. As chaves ficam no seu telefone.',
+    cta1:'Abrir a carteira', cta2:'Baixar para Android',
+    hnote:'Abre no navegador e fixa na tela inicial. iPhone e Android.',
+    sh1:'Carteira: BNB, USDT, USDC e pontos TVR',
+    sh2:'Caixa: digite o valor e o comprador aponta a câmera',
+    sh3:'Pontos pelas compras, e uma resposta clara de quando amadurecem',
+    sh4:'Enviar por nome em vez de um endereço longo',
+    p_h:'Para as pessoas',
+    p1h:'O dinheiro é seu',
+    p1t:'A chave nasce no seu aparelho e não sai dele. Nem nós podemos tirar ou congelar seu dinheiro.',
+    p2h:'Doze palavras',
+    p2t:'Anote as palavras e a carteira volta em qualquer aparelho. Se perder, ninguém recupera: não guardamos cópia.',
+    p3h:'Enviar por nome',
+    p3t:'Um nome curto no lugar de quarenta e dois caracteres. Vive na blockchain e pertence ao seu endereço.',
+    p4h:'Cinco idiomas',
+    p4t:'Português, inglês, russo, espanhol, turco. O aplicativo pega o idioma do telefone sozinho.',
+    s_h:'Para as lojas',
+    s1h:'Um por cento',
+    s1t:'Os cartões cobram dois ou três, e o dinheiro chega dias depois. Aqui é um por cento, e quem paga é o vendedor.',
+    s2h:'O dinheiro na hora',
+    s2t:'A transferência vai direto para o seu endereço, não passa por nós. Ninguém consegue congelar.',
+    s3h:'Um caixa no telefone',
+    s3t:'Digite o valor e o comprador aponta a câmera. Ele não erra o valor, e «pago» aparece sozinho.',
+    s4h:'Dinheiro na hora',
+    s4t:'O pagamento chega à sua carteira em segundos. Os cartões liquidam em dias, e até lá o dinheiro não é seu.',
+    s_link:'Criar uma cobrança agora →',
+    s_digital:'Vende produtos digitais? Estornos não acontecem →',
+    d_h:'Baixar',
+    d_intro:'No navegador nada é instalado e a atualização chega sozinha. O arquivo Android é para quem prefere um aplicativo comum.',
+    d_ver:'Versão', d_size:'tamanho',
+    d_hash:'Impressão SHA-256 do arquivo — confira depois de baixar:',
+    d_warn:'O Android vai pedir permissão para instalar desta origem — ele pergunta isso sobre qualquer arquivo de fora da loja. Baixe somente nesta página: um «Tavarov» falso em outro site é a forma mais comum de perder uma carteira.',
+    d_none:'O arquivo para Android ainda não foi publicado — por enquanto use a versão do navegador.',
+    ho_h:'Com franqueza',
+    ho1:'<b>Os contratos não têm auditoria independente.</b> Nós mesmos verificamos, o que não é a mesma coisa. Não guarde no caixa mais do que pode perder.',
+    ho2:'<b>TVR não está à venda e não tem preço.</b> São pontos. Quem oferecer vender TVR é golpista.',
+    ho3:'<b>As regras mudam de país para país.</b> Em alguns, pagar com cripto é proibido. Confira as do seu.',
+    q_h:'Perguntas',
+    q1:'O que acontece se eu perder o telefone?',
+    a1:'Nada, se as doze palavras estiverem anotadas: você as digita em outro aparelho e a carteira está lá. Sem elas ninguém recupera, nem nós.',
+    q2:'Quem guarda o meu dinheiro?',
+    a2:'Ninguém. Ele fica no blockchain, no seu endereço, e a chave fica no seu aparelho. Não somos banco nem corretora e não alcançamos o seu dinheiro.',
+    q3:'Quanto custa?',
+    a3:'A carteira é gratuita. Nas compras pagas pelo aplicativo o contrato cobra um por cento, pago pelo vendedor e não pelo comprador. A taxa de rede é fração de centavo e vai para a rede, não para nós.',
+    q4:'O que é TVR?',
+    a4:'Pontos por compras. Amadurecem em partes ao longo de noventa dias — está no contrato, e ninguém acelera. Não têm preço nem onde vender.',
+    q5:'E se o comprador quiser devolver a compra?',
+    a5:'O vendedor devolve com um botão, o comprador recebe exatamente o que pagou e os pontos daquela compra são cancelados. O um por cento fica no tesouro.',
+    q6:'Em que rede tudo isso funciona?',
+    a6:'BNB Chain. A taxa de rede lá é uma fração de centavo, e USDT e USDC são os mesmos que você conhece das corretoras. Os contratos estão abertos — os links estão no rodapé.',
+    f_a1:'Abrir a carteira', f_a2:'Criar uma cobrança', f_a3:'Contrato de pagamento',
+    f_a4:'Token TVR', f_a5:'Tesouro', f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais',
+    disc:'Tavarov é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. Nada nesta página é recomendação de investimento. As criptomoedas mudam de preço e é possível perder tudo. TVR não está à venda, não tem preço e não promete rendimento. Em vários países pagar bens e serviços com cripto é restrito ou proibido — verifique as regras do seu país.'
+  }
+};
+
+const RU = {};                       // русский берём прямо из разметки
+document.querySelectorAll('[data-t]').forEach(el => { RU[el.dataset.t] = el.innerHTML; });
+T.ru = RU;
+
+const TITLES = {
+  ru:'Tavarov Wallet — платить криптой, не меняя её на деньги',
+  en:'Tavarov Wallet — pay in crypto without cashing out',
+  es:'Tavarov Wallet — pagar en cripto sin convertirla',
+  tr:'Tavarov Wallet — kriptoyu bozdurmadan ödeyin',
+  pt:'Tavarov Wallet — pagar em cripto sem convertê-la'
+};
+const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+let lang = 'ru';
+
+function apply(code){
+  const d = T[code] || T.ru;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = d[el.dataset.t];
+    if (v !== undefined) el.innerHTML = v;
+  });
+  document.documentElement.lang = code;
+  lang = code;
+  /* Снимки экрана тоже на языке страницы. Английская витрина с русскими
+     снимками читается как чужая работа, наспех переведённая. */
+  document.querySelectorAll('img[data-shot]').forEach(img => {
+    img.src = './shots/' + code + '/' + img.dataset.shot + '.webp';
+  });
+  try { localStorage.setItem('tavarov.site.lang', code); } catch (e) {}
+  document.querySelectorAll('#langs button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === code)));
+  document.title = TITLES[code] || TITLES.ru;
+  /* Ссылки на кассу уносят выбранный язык с собой: касса живёт на другом
+     адресе, и её хранилище про наш выбор ничего не знает. */
+  /* Ролик снят на двух языках. Русскому показываем русский, всем остальным —
+     английский: подписи в кадре читать должны, а не угадывать. */
+  const v  = document.getElementById('demoVideo');
+  const vw = document.getElementById('demoWebm'), vm = document.getElementById('demoMp4');
+  if (v && vw && vm){
+    const one = (code === 'ru' ? 'ru' : 'en');
+    if (!vw.getAttribute('src').includes('-' + one + '.')){
+      vw.src = './video/demo-' + one + '.webm';
+      vm.src = './video/demo-' + one + '.mp4';
+      v.load(); v.play().catch(()=>{});
+    }
+  }
+  document.querySelectorAll('a[href*="wallet.tavarov.com/invoice"]').forEach(a => {
+    a.href = 'https://wallet.tavarov.com/invoice?lang=' + code;
+  });
+}
+
+const box = document.getElementById('langs');
+Object.keys(NAMES).forEach(code => {
+  const b = document.createElement('button');
+  b.textContent = NAMES[code];
+  b.dataset.code = code;
+  b.onclick = () => apply(code);
+  box.appendChild(b);
+});
+
+/* Язык: сначала прошлый выбор, потом язык браузера, иначе английский —
+   он чужой всем поровну. */
+let startLang = null;
+try { startLang = localStorage.getItem('tavarov.site.lang'); } catch (e) {}
+if (!startLang) {
+  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  startLang = NAMES[nav] ? nav : 'en';
+}
+apply(T[startLang] ? startLang : 'en');
+
+/* ---------- Файл для Android ----------
+   Кнопка появляется, только если файл действительно выложен: рядом с ним
+   лежит apk.json с версией, размером и отпечатком. Мёртвая кнопка «Скачать»,
+   ведущая в 404, — худшее, что может встретить человек на витрине. */
+fetch('./apk.json', { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(d => {
+    if (!d || !d.file || !d.sha256) return Promise.reject();
+    document.getElementById('apkLink').href = './' + String(d.file).replace(/[^A-Za-z0-9._-]/g, '');
+    document.getElementById('apkLink').textContent = 'APK · ' + (d.version || '');
+    document.getElementById('apkVer').textContent  = d.version || '—';
+    document.getElementById('apkSize').textContent = d.size || '—';
+    document.getElementById('apkHash').textContent = d.sha256;
+    document.getElementById('apkBox').classList.remove('hidden');
+    document.getElementById('apkNone').classList.add('hidden');
+    document.getElementById('apkTop').classList.remove('hidden');
+  })
+  .catch(() => {});
+</script>
+</body>
+</html>
