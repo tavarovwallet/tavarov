@@ -49,7 +49,13 @@ page.on('response', r => { if (r.status() >= 400) missing.push(r.status() + ' ' 
 
 await page.goto(URL, { waitUntil: 'networkidle' });
 
-R.ok('страница открывается', (await page.title()).includes('Tavarov'), await page.title());
+/* Титул главной проверяем на имя КОШЕЛЬКА, а не шлюза. 19 сентября
+   кошелёк стал называться NoN Wallet, и первый экран витрины продаёт
+   именно его: заголовок про оплату криптой, кнопка «Открыть кошелёк»,
+   снимки кошелька. Шлюз живёт на странице продавцов и называется там
+   своим именем — это проверяется отдельно, ниже. */
+R.ok('страница открывается и названа кошельком',
+  (await page.title()).includes('NoN Wallet'), await page.title());
 
 // ---------- пять языков без пропусков ----------
 /* Ключ, которого нет в словаре, оставляет на месте русскую строку. На
@@ -269,7 +275,12 @@ const bg = await dp.evaluate(() => getComputedStyle(document.body).backgroundCol
 R.ok('в тёмной теме фон тёмный, а не белый', /rgb\((\d+), (\d+), (\d+)\)/.test(bg)
   && bg.match(/\d+/g).slice(0, 3).every(v => +v < 60), bg);
 
-const bad = errors.filter(e => !/Failed to load resource/.test(e)).concat(missing.filter(u => !/apk\.json/.test(u)).map(u => 'не загрузилось: ' + u));
+/* Счётчик посещений стоит на витрине и грузится со стороны Cloudflare.
+   В проверочной машине внешней сети нет, поэтому он там не загружается —
+   и это НЕ поломка страницы: скрипт с defer, сайт без него работает
+   целиком. Отдельно проверяем ниже, что на страницах кошелька его нет. */
+const bad = errors.filter(e => !/Failed to load resource/.test(e))
+  .concat(missing.filter(u => !/apk\.json|cloudflareinsights/.test(u)).map(u => 'не загрузилось: ' + u));
 const good = R.done(bad);
 await browser.close(); srv.close();
 process.exit(good ? 0 : 1);

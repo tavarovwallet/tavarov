@@ -123,16 +123,27 @@ const SHOP = '0x2222222222222222222222222222222222222222';
     /BEP-20/.test(note) && /сет/i.test(note), note.slice(0, 80));
   R.ok('и предупреждено, что вернуть будет нельзя', /вернуть/i.test(note), note.slice(0, 110));
   R.ok('и про минимальную сумму вывода', /минимальн/i.test(note), note.slice(-70));
-  R.ok('и заголовок свой', /бирж/i.test(await page.textContent('#simpleTitle')),
+  /* Здесь раньше проверялось, что у «пополнить с биржи» и «принять перевод»
+     РАЗНЫЕ заголовки и разные подсказки. 18 сентября меню свели к двум
+     действиям — «Отправить» и «Принять», — и оба этих режима стали одним
+     экраном. Проверка переписана под то, что теперь верно.
+
+     И отдельно: предупреждение про сеть теперь показывают ВСЕГДА, а не
+     только при пополнении с биржи. Так безопаснее. Человек, принимающий
+     перевод «от друга», сплошь и рядом получает его с биржевого счёта — а
+     ошибка сетью невозвратная, и молчать про неё было тем самым случаем,
+     когда экономия на строчке стоит чужих денег. */
+  R.ok('ЗАГОЛОВОК ПРИЁМА — «ПРИНЯТЬ», ОДИН НА ОБА СЛУЧАЯ',
+    /принять/i.test(await page.textContent('#simpleTitle')),
     await page.textContent('#simpleTitle'));
 
   s = await screen('receive');
   note = await page.evaluate(() => document.getElementById('recvNote').textContent);
-  R.ok('а в переводе от человека — своя, короткая',
-    !/BEP-20/.test(note) && /отправител/i.test(note), note.slice(0, 80));
-  R.ok('и заголовок другой', !/бирж/i.test(await page.textContent('#simpleTitle')),
+  R.ok('ПРО СЕТЬ ПРЕДУПРЕЖДАЮТ И В ОБЫЧНОМ ПРИЁМЕ, А НЕ ТОЛЬКО С БИРЖИ',
+    /BEP-20/.test(note), note.slice(0, 80));
+  R.ok('и заголовок тот же', /принять/i.test(await page.textContent('#simpleTitle')),
     await page.textContent('#simpleTitle'));
-  R.ok('в «принять перевод» — тоже адрес, а не касса', s.simple && !s.kassa, JSON.stringify(s));
+  R.ok('в «принять» — адрес, а не касса', s.simple && !s.kassa, JSON.stringify(s));
   R.ok('и адрес на месте', /^0x[0-9a-fA-F]{40}$/.test(s.addr), s.addr);
 
   s = await screen('withdraw');

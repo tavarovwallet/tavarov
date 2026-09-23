@@ -1,44 +1,48 @@
-# Безопасность
+# Security
 
-## Нашли уязвимость
+## Found a vulnerability
 
-Напишите нам раньше, чем миру: **security@tavarov.com**
+Tell us before you tell the world: **security@tavarov.com**
 
-Мы отвечаем в течение трёх суток. Если ответа нет — значит письмо не дошло,
-напишите ещё раз через форму на tavarov.com.
+We answer within three days. If you hear nothing, the mail did not arrive —
+write again through the form on tavarov.com.
 
-Пожалуйста, не публикуйте находку до того, как мы успеем её закрыть. Речь
-идёт о чужих деньгах, и сутки тишины здесь стоят дороже, чем скорость
-публикации.
+Please hold off on publishing until we have had a chance to close it. Other
+people's money is involved, and a day of quiet is worth more here than being
+first to post.
 
-## Чего мы НИКОГДА не просим
+*По-русски: [SECURITY.ru.md](SECURITY.ru.md)*
 
-* seed-фразу из двенадцати слов — ни для «проверки», ни для «восстановления»,
-  ни для чего;
-* тринадцатое слово;
-* пароль от кошелька;
-* приватный ключ.
+## What we will NEVER ask for
 
-Любой, кто просит это от имени Tavarov, — мошенник. Без исключений.
+* your twelve-word seed phrase — not to "verify" it, not to "restore" it, not
+  for anything;
+* your thirteenth word;
+* your wallet password;
+* your private key.
 
-## Что стоит знать о нашей модели угроз
+Anyone asking for these in the name of Tavarov is a fraud. No exceptions.
 
-**Кошелёк — это веб-страница.** Кто владеет доменом и хостингом, тот может
-подменить приложение на такое, которое украдёт фразу при вводе пароля. Это
-общая беда всех веб-кошельков, и мы не притворяемся, что её нет. Поэтому:
-приложение можно скачать из этого репозитория и открыть с диска — тогда оно
-не зависит ни от нашего домена, ни от нас.
+## What you should know about our threat model
 
-**Аудита у контрактов нет.** Код открыт и сверен с байткодом на bscscan, но
-это не то же самое, что проверка специалистами. Пока аудита нет, держите в
-кассе суммы, потеря которых не станет бедой.
+**The wallet is a web page.** Whoever controls the domain and the hosting can
+replace the app with one that steals the phrase as you type your password.
+This is true of every web wallet and we are not going to pretend otherwise.
+Which is why: you can download the app from this repository and open it from
+disk — then it depends on neither our domain nor us.
 
-**Владелец контрактов — один кошелёк.** Он может менять комиссию (не выше
-2%), адрес казны и список принимаемых валют. Он не может забрать выручку
-продавцов и не может тронуть начисленные баллы.
+**The contracts have not been audited.** The source is public and verified
+against the bytecode on bscscan, but that is not the same as review by
+specialists. Until there is an audit, keep amounts whose loss would not be a
+disaster.
 
-**Прямой перевод не то же самое, что оплата счёта.** Если покупатель платит
-переводом на адрес продавца, минуя контракт, в переводе нет номера счёта.
-Мы находим такой платёж по совпадению валюты, суммы и времени — значит два
-одинаковых счёта одному продавцу может закрыть один перевод. Для кассы, где
-счёт живёт минуты, это редкость, но знать об этом надо.
+**One wallet owns the contracts.** It can change the fee (never above 2%), the
+treasury address and the list of accepted currencies. It cannot take a
+merchant's revenue and cannot touch the points already awarded.
+
+**A plain transfer is not the same as paying an invoice.** If a buyer sends
+money straight to the merchant's address, bypassing the contract, the transfer
+carries no invoice number — there is nowhere to put one. We match such a
+payment by currency, amount and time, which means two identical invoices to
+the same merchant can be closed by one transfer. At a till, where an invoice
+lives for minutes, that is rare — but you should know it.

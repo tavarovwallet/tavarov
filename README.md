@@ -37,6 +37,14 @@ minutes — better to hear it from us.
 * **Code comments are in Russian.** That is historical, and it cannot be fixed
   now: bscscan verification is byte-exact, so editing a comment would break the
   match between the source and the deployed bytecode.
+* **We now keep one thing on a server, and it is new.** A counter sticker
+  carries no amount, so when a seller names a price it is held for ten minutes
+  so the buyer can see it. Stored: the seller's address, the till number, the
+  amount, the currency, the item name, the time. Not stored: anything about the
+  buyer. Whether an invoice was paid is still read from the chain. Until
+  September 2026 the honest answer here was "nothing at all"; now it is longer,
+  and pretending otherwise would be found out by the first person to read
+  `functions/api/till.js`.
 
 ## Mainnet contracts (BNB Chain, chainId 56)
 
@@ -65,7 +73,9 @@ Build settings: the first six use solc `0.8.20+commit.a1b79de6`, optimizer on,
 www/index.html      wallet and till — one app, one file
 www/invoice.html    seller's cabinet: create an invoice, watch it get paid
 www/pay.html        buyer's page; the invoice itself lives after the # in the URL
-functions/api/      the only server-side part: "has this invoice been paid?"
+www/sticker.html    prints the permanent counter sticker
+functions/api/      the two server-side parts: "has this been paid?" and
+                    "what is the till asking for right now?"
 site/               the tavarov.com website
 token/              contracts
 i18n/               dictionaries for five languages, and the build script
@@ -74,7 +84,24 @@ audit/              checks that run in a real browser
 
 **The invoice is not stored on a server.** It lives entirely inside the link,
 after the `#` — which means it never even reaches the host. Whether it was paid
-is read from the blockchain, not from our database: there is no database.
+is read from the blockchain, not from a database of ours.
+
+**The counter sticker is the one exception, and a small one.** The sticker
+itself is an ordinary https link — that matters, because a phone camera cannot
+open `ethereum:` or `tavarov:`, and a code a camera shrugs at is useless on a
+counter. It carries the seller's address and till number, and no amount. The
+amount is written to a ten-minute scratchpad (Cloudflare KV) by the seller's
+till and read back by the buyer's page.
+
+A write has to be signed by the seller's wallet key and is checked in
+`functions/api/till.js`. Without that, anyone could set an amount against a
+seller's address — it is printed on the sticker, after all — and a real
+customer would honestly pay one cent for a two-hundred order. The signature
+costs no gas and is not a transaction.
+
+If the scratchpad is not configured, or is down, nothing breaks: the page falls
+back to the on-chain charge (`TavarovCharges`), and failing that lets the buyer
+type the amount themselves after checking it with the seller.
 
 The app is a single HTML file with no build step. It opens from disk and works
 offline wherever the network is not the point.
@@ -94,6 +121,16 @@ cd audit && ./runall31.sh
 
 Paths inside the checks are absolute — they were written for our build machine.
 To run them elsewhere, change the root in `audit/boot.mjs`.
+
+### The counter sticker needs one binding
+
+`functions/api/till.js` keeps the till's current amount in Cloudflare KV. Create
+a KV namespace and bind it to the Pages project as `TILL` — that exact name, in
+capitals. Nothing else to configure.
+
+Without the binding the endpoint answers honestly and the rest keeps working:
+the till says the amount could not be sent to the sticker, and the buyer's page
+falls back to the on-chain charge, or to typing the amount by hand.
 
 ## Found a hole
 

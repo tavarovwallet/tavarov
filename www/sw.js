@@ -23,7 +23,7 @@
  *   меняются годами. Когда меняются, у них меняется и версия в имени
  *   кэша ниже.
  */
-const CACHE = 'tavarov-v2';
+const CACHE = 'tavarov-v3';   // v3: ключи кэша без строки запроса — старые записи со счетами стираются
 const FILES = [
   './',
   './index.html',
@@ -75,15 +75,22 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname.startsWith('/api/')) return;
 
   if (isApp(req, url)){
-    // Сначала сеть: человек должен видеть ту версию, которую вы выложили.
+    /* Сначала сеть: человек должен видеть ту версию, которую вы выложили.
+
+       В кэш кладём страницу БЕЗ строки запроса. Раньше ключом был полный
+       адрес, и в хранилище браузера — на том же сайте, где лежит кошелёк, —
+       оседали счета целиком: «/pay?p=…» с продавцом, суммой и товаром,
+       «/sticker?m=…&n=Моя кофейня». Страница от этого не меняется: данные
+       счёта она читает из адреса сама. */
+    const key = new Request(url.origin + url.pathname);
     e.respondWith(
       fetch(req).then(res => {
         if (res && res.status === 200 && res.type === 'basic'){
           const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(req, copy));
+          caches.open(CACHE).then(c => c.put(key, copy));
         }
         return res;
-      }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
+      }).catch(() => caches.match(key).then(hit => hit || caches.match('./index.html')))
     );
     return;
   }

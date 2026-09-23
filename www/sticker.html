@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Наклейка для кассы · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
+  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
+  --red:#E5342A; --fill:rgba(124,58,237,.08);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#140B2B; --card:#221642; --label:#fff; --label-2:rgba(235,225,255,.68);
+  --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+  --red:#FF6B61; --fill:rgba(169,123,255,.12);
+} }
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0; min-height:100vh; background:
+       radial-gradient(900px 520px at -10% -12%, color-mix(in srgb, #7C3AED 28%, transparent), transparent 62%),
+       radial-gradient(760px 460px at 112% 6%, color-mix(in srgb, #4B1FE8 20%, transparent), transparent 60%),
+       var(--bg);
+     background-attachment:fixed; color:var(--label); font-family:var(--font);
+     font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased}
+.wrap{max-width:560px; margin:0 auto; padding:26px 18px 70px}
+.card{background:var(--card); border:1px solid var(--sep); border-radius:18px; padding:22px; margin-bottom:16px}
+h1{font-size:23px; margin:0 0 6px; letter-spacing:-.01em}
+h2{font-size:16px; margin:0 0 12px; color:var(--label-2); font-weight:650}
+.muted{color:var(--label-2); font-size:15px}
+.tiny{color:var(--label-3); font-size:13.5px}
+label{display:block; font-size:13.5px; color:var(--label-2); margin-bottom:5px}
+input, select{width:100%; padding:12px 13px; border-radius:11px; border:1.5px solid var(--sep);
+  background:var(--card); color:var(--label); font:inherit; font-size:16px}
+.field{margin-bottom:13px}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:11px}
+.btn{display:block; width:100%; padding:15px; border:none; border-radius:13px; background:var(--accent);
+  color:#fff; font:inherit; font-weight:650; font-size:17px; cursor:pointer; margin-top:6px}
+.btn-ghost{background:transparent; color:var(--label); border:1px solid var(--sep)}
+.warn{background:rgba(229,52,42,.09); border-radius:12px; padding:13px 15px; font-size:14.5px;
+  color:var(--label); margin-top:12px}
+.note{background:var(--fill); border-radius:12px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:12px}
+.brand{display:flex; align-items:center; gap:9px; margin-bottom:18px; color:var(--label-2); font-size:14px}
+.brand svg{width:26px; height:26px; border-radius:7px}
+.hidden{display:none}
+
+/* ---------- сама наклейка ----------
+   Белый фон и чёрный код всегда, независимо от того, тёмная у человека тема
+   или светлая: печатают её на белой бумаге. */
+.sticker{background:#fff; color:#111; border:1px solid var(--sep); border-radius:16px;
+  padding:26px 22px 20px; text-align:center; margin:0 auto; max-width:380px}
+/* Наше имя стоит на фиолетовой плашке белым. Плашка тут не украшение:
+   на бумаге рядом с чёрным кодом чёрная же надпись сливается с ним в одно
+   пятно, а цветное поле сверху читается первым — покупатель понимает, куда
+   попадёт, ещё не наведя камеру.
+
+   print-color-adjust — чтобы браузер не «сэкономил» фон при печати: без
+   него плашка исчезает, и белые буквы остаются белыми на белой бумаге,
+   то есть наклейка выходит из принтера без названия. */
+.sticker .shop{background:#4B1FE8; color:#fff; border-radius:12px; padding:13px 12px;
+  margin:-6px -4px 14px; font-size:24px; font-weight:800; letter-spacing:-.02em;
+  line-height:1.2; word-break:break-word;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact}
+/* Знак стоит буквой «о» внутри имени — так же, как в приложении и на
+   витрине. Печатается чёрным по белому, поэтому дуги берут фирменный
+   фиолетовый, а монета остаётся чёрной: на чёрно-белом принтере она
+   не пропадёт. */
+.sticker .brandmark{display:inline-flex; align-items:baseline; gap:0; letter-spacing:-.04em}
+.sticker .brandmark .oo{width:.88em; height:.88em; margin:0 .01em; align-self:center;
+  position:relative; top:.02em; flex:0 0 auto; display:block}
+.sticker .brandmark .wo{font-weight:750; margin-left:.28em; letter-spacing:-.025em}
+.sticker .cap{font-size:15px; color:#444; margin:0 0 14px}
+.sticker .cap2{font-size:13px; color:#777; margin:-10px 0 14px}
+.sticker .code{display:flex; justify-content:center}
+.sticker .code img, .sticker .code canvas{display:block; width:100%; height:auto; image-rendering:pixelated}
+/* Название точки стоит ПОД кодом. Наверху — наше имя, и оно там всегда:
+   покупатель должен понять, куда он попадёт, ещё до того, как наведёт
+   камеру. Имя магазина он и так видит — он стоит в этом магазине. */
+.sticker .testband{background:repeating-linear-gradient(135deg,#111 0 10px,#fff 10px 20px);
+  color:#fff; font-weight:800; font-size:15px; letter-spacing:.06em; padding:8px; margin:-4px -4px 12px;
+  border-radius:8px; text-shadow:0 0 3px #000, 0 0 3px #000;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact}
+.sticker .place{font-size:20px; font-weight:750; letter-spacing:-.02em; line-height:1.25;
+  margin-top:15px; color:#111; word-break:break-word}
+.sticker .foot{margin-top:14px; font-size:12px; color:#888; display:flex; justify-content:space-between;
+  gap:10px; align-items:center}
+.sticker .mark{display:flex; align-items:center; gap:6px; font-weight:650; color:#4B1FE8; white-space:nowrap}
+.sticker .mark svg{width:16px; height:16px; border-radius:4px}
+
+/* Адрес кошелька на печать не идёт. Покупателю он не нужен — код и так
+   ведёт на него, — а продавцу нужен ровно один раз, до печати: поэтому
+   он стоит на экране, в рамке проверки, и остаётся на бумаге неразличимым. */
+.check{font-family:var(--mono); font-size:12.5px; word-break:break-all; color:var(--label-2)}
+
+/* ---------- Единый вид с кошельком и страницей оплаты ----------
+   Карточки — как стекло над светящимся фоном, главная кнопка — с тем же
+   градиентом, что на странице оплаты. В тёмной теме белые буквы стояли на
+   светло-фиолетовом #A97BFF (контраст 3:1) — теперь кнопка темнее, и
+   надпись читается. Только вид: ни одна проверка от этого не зависит. */
+.card{border-radius:22px; border-color:color-mix(in srgb, var(--accent) 16%, transparent);
+      background:color-mix(in srgb, var(--card) 80%, transparent);
+      -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 1px 2px rgba(40,20,90,.06), 0 16px 36px -16px rgba(40,20,110,.30)}
+.btn:not(.btn-ghost):not(.btn-plain){background:linear-gradient(135deg,#7C3AED 0%,#4B1FE8 100%); color:#fff;
+      box-shadow:0 12px 26px -10px rgba(91,33,232,.55), inset 0 1px 0 rgba(255,255,255,.18);
+      transition:transform .12s ease, opacity .2s ease}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.55}
+input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--accent) 60%, transparent);
+      box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)}
+.brand{color:var(--label); font-weight:650; font-size:15px}
+.brand svg{width:30px; height:30px; border-radius:9px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+
+@media print{
+  /* Поля нулевые НАРОЧНО. Браузер печатает в этих полях свою служебную
+     строку: сверху дату и заголовок, снизу адрес страницы и номер листа.
+     Убрать её настройкой мы не можем — она в диалоге печати, — но когда
+     поля равны нулю, рисовать её негде, и браузер её опускает. Отступы
+     бумаги задаём сами, ниже. */
+  @page{ margin:0; }
+  html, body{background:#fff}
+  .noprint{display:none !important}
+  .wrap{padding:14mm 12mm; max-width:none}
+  .sticker{border:1px dashed #bbb; box-shadow:none; max-width:none; width:100%;
+           page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand noprint">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+      </g>
+    </svg>
+    Tavarov Pay
+  </div>
+
+  <div class="card noprint">
+    <h1>Наклейка для кассы</h1>
+    <p class="muted" style="margin:0">Печатается один раз и висит всегда. Суммы в ней нет:
+    цену вы называете со своего телефона, и она появляется у покупателя сама.</p>
+
+    <div class="field" style="margin-top:18px">
+      <label for="m">Ваш кошелёк — куда придут деньги</label>
+      <input id="m" type="text" spellcheck="false" autocomplete="off" placeholder="0x…">
+    </div>
+
+    <div class="warn hidden" id="otherAddr">
+      <b>В ссылке другой адрес, не ваш сохранённый.</b> Мы оставили ваш. Если вас просили
+      «обновить наклейку» по ссылке — проверьте, от кого она: так подменяют кошелёк.
+      <div class="check" id="otherAddrText" style="margin:8px 0"></div>
+      <button class="btn btn-ghost" id="useOther" type="button">Это мой новый адрес — использовать его</button>
+    </div>
+
+    <div class="field">
+      <label for="n">Название — его увидит покупатель</label>
+      <input id="n" type="text" maxlength="64" placeholder="Кофейня на углу">
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="k">Номер кассы</label>
+        <select id="k"></select>
+      </div>
+      <div class="field">
+        <label for="lang">Язык подписи</label>
+        <select id="lang">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="tr">Türkçe</option>
+          <option value="pt">Português</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Одна касса — одна наклейка. Если их две, а код один, второй
+         покупатель увидит сумму первого: касса у них в этом коде общая. -->
+    <div class="note" id="tillNote">Одна касса — одна наклейка. Если у вас два прилавка и на них
+    один и тот же код, второй покупатель увидит сумму первого. Напечатайте
+    вторую наклейку с номером 2.</div>
+
+    <!-- Наклейку из тестового режима нельзя вешать на прилавок: по ней
+         придут поддельные монеты. Молчать об этом нельзя — на бумаге
+         разницы не видно совсем. -->
+    <div class="warn hidden" id="testnetWarn">
+      <b>Это наклейка для ТЕСТОВОЙ сети.</b> Настоящие деньги по ней не придут.
+      Печатать её для прилавка нельзя — переключите кошелёк в основную сеть
+      и откройте страницу заново.
+    </div>
+
+    <div class="warn">
+      <b>Сверьте адрес до печати.</b> Наклейка живёт годами, и деньги по ней идут
+      прямо на этот кошелёк — мы их не держим. Ошибка в адресе — это чужой кошелёк
+      навсегда, и вернуть отправленное будет некому.
+    </div>
+
+    <button class="btn" id="print">Напечатать</button>
+    <button class="btn btn-ghost" id="copy">Скопировать ссылку</button>
+    <p class="tiny" id="link" style="word-break:break-all; margin:12px 0 0"></p>
+  </div>
+
+  <div class="card noprint hidden" id="err">
+    <b style="color:var(--red)">Адрес кошелька не похож на настоящий.</b>
+    <p class="muted" style="margin:6px 0 0">Он должен начинаться с 0x и состоять из
+    сорока двух знаков. Скопируйте его из кошелька целиком.</p>
+  </div>
+
+  <div id="stickerBox" class="hidden">
+    <div class="sticker" id="sticker">
+      <div class="shop" id="sShop">—</div>
+      <!-- Тестовая наклейка печатается с крупной пометкой. Предупреждение на
+           экране на бумагу не попадает, а по бумаге тестовую от настоящей
+           иначе не отличить: покупатель увидел бы «вас обманывают» на
+           странице оплаты, стоя у настоящей кассы. -->
+      <div class="testband hidden" id="sTest">ТЕСТ · TEST — не для оплаты</div>
+      <p class="cap" id="sCap">Наведите камеру телефона</p>
+      <p class="cap2" id="sCap2">Point your phone camera here</p>
+      <div class="code" id="sCode"></div>
+      <div class="place" id="sPlace"></div>
+      <div class="foot">
+        <span id="sTill">Касса 1</span>
+        <span class="mark">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+            <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+              <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+              <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+              <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+              <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+            </g>
+          </svg>
+          Tavarov Pay
+        </span>
+      </div>
+    </div>
+
+    <div class="card noprint" style="margin-top:16px">
+      <h2 style="margin-bottom:8px">Проверьте перед печатью</h2>
+      <p class="check" id="sAddr"></p>
+      <p class="tiny" style="margin:8px 0 0">Деньги по этой наклейке идут прямо на этот
+      кошелёк — мы их не держим; с покупки через контракт Tavarov Pay удерживается 1%.
+      На саму наклейку адрес не печатается — покупателю он не нужен, он зашит в коде.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="./qrcode.min.js"></script>
+<script>
+/* Наклейка для прилавка.
+
+   ГЛАВНОЕ РЕШЕНИЕ ЭТОЙ СТРАНИЦЫ: в коде лежит обычная https-ссылка, а не
+   «tavarov:pay?…» и не «ethereum:…». Те два формата понимают кошельки — но
+   не понимает камера обычного телефона, а именно ею покупатель и наводит на
+   наклейку. Код, на который камера отвечает пожатием плеч, для кассы
+   бесполезен, каким бы правильным он ни был внутри.
+
+   Открывшаяся страница уже сама предложит и наш кошелёк, и любой другой.
+
+   Адрес продавца лежит после решётки. Это не украшение: то, что стоит после
+   решётки, браузер на сервер не отправляет вообще, поэтому сам заход на
+   страницу оплаты не говорит нашему хостингу, у чьего прилавка стоит
+   человек.
+
+   Но сказать «мы не видим ничего» было бы неправдой, и врать тут нельзя.
+   Открывшаяся страница спрашивает у нас, чего просит касса, и в этом
+   запросе адрес продавца и номер кассы уже есть — иначе спросить не о чем.
+   Значит, у нас оседает «к такому-то прилавку кто-то подошёл». Кто именно —
+   нет: ни имени, ни кошелька покупателя в запросе не бывает. Ровно это и
+   написано на странице о приватности; если тут что-то поменяется,
+   поменять надо и там. */
+
+const $ = id => document.getElementById(id);
+const BASE = 'https://wallet.tavarov.com';
+let net = 'bnb';        // подставляется из адресной строки, см. restore()
+
+const CAP = {
+  ru: { cap:'Наведите камеру телефона', till:'Касса' },
+  en: { cap:'Point your phone camera here', till:'Till' },
+  es: { cap:'Apunte aquí la cámara del teléfono', till:'Caja' },
+  tr: { cap:'Telefon kameranızı buraya tutun', till:'Kasa' },
+  pt: { cap:'Aponte a câmera do telefone aqui', till:'Caixa' }
+};
+
+function b64url(obj){
+  const s = unescape(encodeURIComponent(JSON.stringify(obj)));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/* ---------- память между заходами ----------
+   Продавец печатает наклейку раз в жизни, но перепечатывает её после
+   переезда, потери и запачканного стекла. Заставлять его каждый раз искать
+   свой адрес — верный способ получить наклейку с ошибкой. */
+const KEY = 'tavarov.sticker.v1';
+function restore(){
+  let v = {};
+  try{ v = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){}
+  const q = new URLSearchParams(location.search);
+  /* Адрес из ссылки не перебивает сохранённый молча. Мошенник рассылает
+     «обновлённую ссылку на наклейку» с адресом, похожим на ваш началом и
+     концом, — и наклейка годами собирает деньги на чужой кошелёк. Если
+     адреса расходятся, оставляем свой и показываем чужой с предупреждением:
+     переключиться на него — отдельное осознанное нажатие. */
+  const qm = (q.get('m') || '').trim(), vm = (v.m || '').trim();
+  if (qm && vm && qm.toLowerCase() !== vm.toLowerCase()){
+    $('m').value = vm;
+    $('otherAddrText').textContent = qm;
+    $('otherAddr').classList.remove('hidden');
+    $('useOther').onclick = () => {
+      $('m').value = qm; $('otherAddr').classList.add('hidden'); draw();
+    };
+  } else {
+    $('m').value = qm || vm || '';
+  }
+  $('n').value = q.get('n') || v.n || '';
+  $('k').value = okTill(q.get('k') || v.k || '1');
+  /* В какой сети работает продавец, знает приложение — оно и приписывает
+     сеть к ссылке «Напечатать наклейку». Своими силами страница этого не
+     выяснит, поэтому по умолчанию основная: наклейку печатают для денег,
+     а не для проверок. */
+  const qnet = q.get('net');
+  net = (qnet === 'bnbTestnet' || qnet === 'bnb') ? qnet : 'bnb';
+  $('testnetWarn').classList.toggle('hidden', net !== 'bnbTestnet');
+  $('sTest').classList.toggle('hidden', net !== 'bnbTestnet');
+  $('lang').value = CAP[q.get('lang')] ? q.get('lang')
+                  : (CAP[v.lang] ? v.lang
+                  : (CAP[(navigator.language || 'ru').slice(0,2)] ? (navigator.language||'ru').slice(0,2) : 'ru'));
+}
+function remember(){
+  try{ localStorage.setItem(KEY, JSON.stringify({
+    m: $('m').value.trim(), n: $('n').value.trim(), k: $('k').value, lang: $('lang').value })); } catch(e){}
+}
+
+/* Касс в списке ровно столько же, сколько их разрешает приложение, — 99.
+   Было девять, и это тихо ломало наклейку: продавец с кассой №12 приходил
+   сюда по ссылке «Напечатать наклейку», нужного пункта в списке не
+   находилось, поле оказывалось пустым, номер уезжал в код нулём — и
+   покупатель, наведя камеру, получал «ссылка испорчена». Узнали бы об этом
+   не сегодня, а когда наклейка уже год висит на прилавке. */
+const MAX_TILL = 99;
+(function fillTills(){
+  const sel = $('k');
+  for (let i = 1; i <= MAX_TILL; i++){
+    const o = document.createElement('option');
+    o.value = String(i); o.textContent = String(i);
+    sel.appendChild(o);
+  }
+})();
+
+/* Номер кассы приходит из адресной строки, то есть снаружи. Всё, что не
+   целое число от единицы до 99, — это первая касса, а не ноль и не пусто. */
+function okTill(v){
+  const n = parseInt(v, 10);
+  return (n >= 1 && n <= MAX_TILL) ? String(n) : '1';
+}
+
+function stickerUrl(m, k, n){
+  return BASE + '/pay#t=' + b64url({ m: m, k: Number(k), n: n || '', net: net });
+}
+
+let lastUrl = '';
+function draw(){
+  const m = $('m').value.trim();
+  const n = $('n').value.trim();
+  const k = $('k').value;
+  const lang = CAP[$('lang').value] ? $('lang').value : 'ru';
+
+  const okAddr = /^0x[0-9a-fA-F]{40}$/.test(m);
+  $('err').classList.toggle('hidden', okAddr || !m);
+  $('stickerBox').classList.toggle('hidden', !okAddr);
+  $('print').disabled = !okAddr;
+  if (!okAddr){ lastUrl = ''; $('link').textContent = ''; return; }
+
+  const url = stickerUrl(m, k, n);
+  lastUrl = url;
+  $('link').textContent = url;
+
+  /* Наверху — всегда наше имя, со знаком внутри: тем же, что в приложении
+     и на витрине. Раньше название магазина его затирало, и наклейка
+     переставала говорить покупателю, куда он попадёт. А он этого ещё не
+     знает — в отличие от названия магазина, которое он и так читает на
+     вывеске, стоя у этой самой кассы.
+
+     Разметку знака пишем мы сами, поэтому ей innerHTML можно. */
+  const shop = $('sShop');
+  shop.innerHTML = '<span class="brandmark" aria-label="NoN Wallet">'
+    + '<span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true">'
+    + '<path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="#C9ADFF" stroke-width="16" stroke-linecap="round"/>'
+    + '<path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="#C9ADFF" stroke-width="16" stroke-linecap="round"/>'
+    + '<circle cx="60" cy="60" r="19" fill="#fff"/></svg><span>N</span>'
+    + '<span class="wo">Wallet</span></span>';
+
+  /* Название точки — ТЕКСТОМ, и только текстом, и ПОД кодом. Оно приходит
+     из адресной строки, то есть снаружи: подставить его через innerHTML
+     значит однажды подставить туда чужую разметку. */
+  const place = $('sPlace');
+  place.textContent = n;
+  place.style.display = n ? '' : 'none';
+  $('sCap').textContent  = CAP[lang].cap;
+  /* Вторая строка по-английски — для тех, кто зашёл с улицы и по-русски не
+     читает. Если подпись и так английская, второй раз её повторять незачем. */
+  $('sCap2').textContent = lang === 'en' ? '' : CAP.en.cap;
+  $('sCap2').style.display = lang === 'en' ? 'none' : '';
+  $('sTill').textContent = CAP[lang].till + ' ' + k;
+  $('sAddr').textContent = m;
+
+  /* Уровень исправления ошибок повыше: наклейку заденут рукавом, заляпают
+     и выгорят на солнце, а перепечатывать её никто не побежит. Ссылка
+     короткая, место в коде на это есть. */
+  const box = $('sCode');
+  box.innerHTML = '';
+  try{
+    new QRCode(box, { text: url, width: 900, height: 900,
+                      colorDark:'#000000', colorLight:'#ffffff',
+                      correctLevel: QRCode.CorrectLevel.Q });
+  } catch(e){
+    try{ new QRCode(box, { text: url, width: 900, height: 900,
+                           correctLevel: QRCode.CorrectLevel.M }); }
+    catch(e2){ box.textContent = 'Код не получился'; }
+  }
+  remember();
+}
+
+['m','n','k','lang'].forEach(id => {
+  $(id).addEventListener('input', draw);
+  $(id).addEventListener('change', draw);
+});
+
+$('print').onclick = () => window.print();
+$('copy').onclick = () => {
+  if (!lastUrl) return;
+  navigator.clipboard.writeText(lastUrl).then(
+    () => { $('copy').textContent = 'Скопировано'; setTimeout(()=>{ $('copy').textContent = 'Скопировать ссылку'; }, 1600); },
+    () => prompt('Скопируйте ссылку вручную:', lastUrl));
+};
+
+restore();
+draw();
+</script>
+</body>
+</html>

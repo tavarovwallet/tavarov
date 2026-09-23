@@ -98,64 +98,75 @@ export async function boot(opts = {}) {
   await page.fill('#newPass', 'testpassword1');
   await page.fill('#newPass2', 'testpassword1');
   await page.evaluate(() => savePassword());
-  /* Двухфакторный код. В браузере он теперь обязателен, пропустить нельзя —
-     значит и проверка обязана его пройти, как проходит живой человек: взять
-     ключ с экрана, посчитать по нему код и ввести. Считаем средствами самого
-     приложения — это те же функции, которыми оно потом код и проверяет.
-     Отдельной лазейки «для тестов» в приложении нет и быть не должно. */
-  await page.waitForFunction(() => flowStage === 'totp-setup' || flowStage === 'ready');
-  if (await page.evaluate(() => flowStage === 'totp-setup')) {
-    if (await page.evaluate(() => typeof totpRequired === 'function' && totpRequired())) {
-      await page.evaluate(async () => {
-        const code = await totpAt(base32Decode(pendingTotpSecret), Math.floor(Date.now() / 1000 / 30));
-        document.getElementById('totpSetupCode').value = code;
-        await confirmTotpSetup();
-      });
-    } else {
-      await page.evaluate(() => skipTotpSetup());
-    }
-  }
+  /* Экрана подключения кода между паролем и кошельком больше нет:
+     опасные действия подтверждает лицо или отпечаток, а в браузере без
+     них — пароль от кошелька. Ждём просто готового кошелька. */
   await page.waitForFunction(() => flowStage === 'ready');
 
   return { browser, ctx, page, errors, console_ };
 }
 
-/* Вход в запертый кошелёк. Кода при входе больше нет: он спрашивается при
-   оплате и на опасных действиях, а вход открывает пароль. Обработку окна с
-   кодом оставляем на случай, если оно всё-таки появится, — молча зависнуть
-   проверка не должна. */
+/* Вход в запертый кошелёк. Подтверждения при входе нет: оно спрашивается
+   при оплате и на опасных действиях, а вход открывает пароль. */
 export async function unlock(page, password = 'testpassword1') {
   await page.fill('#unlockPass', password);
   page.evaluate(() => doUnlock());
   await page.waitForFunction(
-    () => flowStage === 'ready' || flowStage === 'totp-setup'
-       || !document.getElementById('totpAskModal').classList.contains('hidden')
+    () => flowStage === 'ready'
+       || !document.getElementById('confirmModal').classList.contains('hidden')
        || !document.getElementById('unlockError').classList.contains('hidden'),
     null, { timeout: 15000 });
-  if (await page.evaluate(() => !document.getElementById('totpAskModal').classList.contains('hidden'))) {
-    await page.evaluate(async () => {
-      const code = await totpAt(base32Decode(totpAskSecret), Math.floor(Date.now() / 1000 / 30));
-      document.getElementById('totpAskCode').value = code;
-      await totpAskSubmit();
-    });
+  if (await page.evaluate(() => !document.getElementById('confirmModal').classList.contains('hidden'))) {
+    await answerConfirm(page, password);
   }
 }
 
-/* Подтверждение кодом там, где оно теперь и живёт: при оплате. Считаем код
-   функциями самого приложения — отдельной лазейки «для проверок» в нём нет. */
-export async function answerTotp(page, timeout = 8000) {
+/* Подтверждение опасного действия там, где оно теперь и живёт.
+
+   В песочнице Face ID нет: ключи доступа в headless-браузере не заводятся,
+   и приложение честно показывает поле пароля. Проверка отвечает ровно тем
+   же, чем ответил бы человек за таким же устройством, — паролем. Никакой
+   лазейки «для проверок» в приложении нет: пароль сверяется настоящей
+   расшифровкой хранилища. */
+export async function answerConfirm(page, password = 'testpassword1', timeout = 8000) {
   try {
     await page.waitForFunction(
-      () => !document.getElementById('totpAskModal').classList.contains('hidden'),
+      () => !document.getElementById('confirmModal').classList.contains('hidden'),
       null, { timeout });
   } catch (e) { return false; }
-  await page.evaluate(async () => {
-    const code = await totpAt(base32Decode(totpAskSecret), Math.floor(Date.now() / 1000 / 30));
-    document.getElementById('totpAskCode').value = code;
-    await totpAskSubmit();
-  });
+  /* Дальше возможны два исхода, и проверка обязана пережить оба.
+
+     Если на стенде поднят виртуальный ключ доступа (так делают проверки
+     входа по лицу), приложение подтвердит действие само и закроет окно —
+     пароль спрашивать будет не у кого. Если ключа нет, появится поле
+     пароля. Ждём того, что случится первым; ждать только поля значит
+     однажды провалиться там, где всё как раз сработало. */
+  await page.waitForFunction(() => {
+    const m = document.getElementById('confirmModal');
+    const f = document.getElementById('confirmPassField');
+    return m.classList.contains('hidden') || !f.classList.contains('hidden');
+  }, null, { timeout: 15000 });
+  if (await page.evaluate(() => document.getElementById('confirmModal').classList.contains('hidden')))
+    return true;                                  // подтвердилось лицом
+  await page.fill('#confirmPass', password);
+  await page.evaluate(() => confirmSubmit());
+  /* Ждём закрытия ИЛИ ошибки на экране. Без второй ветки неверный пароль
+     в проверке выглядел бы как зависшее приложение: голый таймаут, из
+     которого не видно, что окно всё это время показывало «неверный
+     пароль». */
+  await page.waitForFunction(() => {
+    const m = document.getElementById('confirmModal');
+    const e = document.getElementById('confirmError');
+    return m.classList.contains('hidden') || !e.classList.contains('hidden');
+  }, null, { timeout: 15000 });
+  if (!await page.evaluate(() => document.getElementById('confirmModal').classList.contains('hidden')))
+    throw new Error('подтверждение отвергнуто: ' +
+      await page.textContent('#confirmError'));
   return true;
 }
+
+/* Старое имя: половина проверок зовёт его. Ведёт себя так же. */
+export const answerTotp = (page, timeout = 8000) => answerConfirm(page, 'testpassword1', timeout);
 
 export function reporter() {
   const rows = [];

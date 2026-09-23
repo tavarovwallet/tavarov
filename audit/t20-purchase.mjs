@@ -60,11 +60,35 @@ async function send({ purchase }){
 await page.evaluate(() => { tab = 'pay'; setPayMode(null); });
 await page.waitForTimeout(400);
 R.ok('список дел показан', await page.isVisible('#payHub'));
-for (const [id, label] of [['hubBuy','оплатить покупку'], ['hubTransfer','перевести человеку'],
-                           ['hubWithdraw','вывести на биржу'], ['hubReceive','получить перевод'],
-                           ['hubDeposit','пополнить с биржи']]){
+
+/* Здесь раньше проверялись пять дел: оплатить покупку, перевести человеку,
+   вывести на биржу, получить перевод, пополнить с биржи. 18 сентября меню
+   свели к двум — «Отправить» и «Принять», — потому что четыре из пяти делали
+   по сути одно и то же и человек тратил время на выбор, который ни на что
+   не влиял.
+
+   Проверяем теперь то, что осталось верным: дела по-прежнему РАЗДЕЛЕНЫ на
+   отправку и приём и видны отдельно, а старые названия должны были исчезнуть
+   не только с экрана, но и из кода. */
+for (const [id, label] of [['hubBuy','оплатить покупку'], ['hubSend','отправить'],
+                           ['hubReceive','принять']]){
   R.ok('в списке есть «' + label + '»', await page.isVisible('#' + id));
 }
+R.ok('СТАРЫХ ЧЕТЫРЁХ ПУНКТОВ НЕ ОСТАЛОСЬ',
+  await page.evaluate(() => !document.getElementById('hubTransfer')
+                         && !document.getElementById('hubWithdraw')
+                         && !document.getElementById('hubDeposit')));
+/* И старые имена режимов должны по-прежнему работать: по ним приходят с
+   быстрых кнопок и из ссылок, выписанных до упрощения. Если они перестанут
+   пониматься, человек нажмёт кнопку и не попадёт никуда. */
+R.ok('старые имена режимов не сломались',
+  await page.evaluate(() => {
+    setPayMode('withdraw'); const a = payMode;
+    setPayMode('deposit');  const b = payMode;
+    setPayMode('transfer'); const c = payMode;
+    setPayMode(null);
+    return a === 'send' && b === 'receive' && c === 'send';
+  }));
 R.ok('пока дело не выбрано, форм на экране нет',
   await page.evaluate(() => document.getElementById('actionsCard').classList.contains('hidden')));
 

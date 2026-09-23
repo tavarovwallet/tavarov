@@ -51,6 +51,11 @@ const IFACE = new E.utils.Interface([
   'function VESTING() view returns (uint256)',
   'function refund(bytes32 invoice, uint256 amount)',
   'function saleOf(bytes32) view returns (address merchant, uint96 amount, address buyer, uint96 refunded, address token, uint128 buyerReward, uint128 merchantReward)',
+  'function referralOf(address) view returns (address referrer, uint64 until)',
+  'function hasSold(address) view returns (bool)',
+  'function setReferrer(address referrer)',
+  'function REF_SHARE_BPS() view returns (uint16)',
+  'function claimBonus()',
   'event Paid(address indexed merchant, address indexed payer, address indexed token, uint256 amountToMerchant, uint256 fee, uint256 reward, bytes32 invoice)'
 ]);
 
@@ -107,17 +112,24 @@ export const state = {
   /* Сколько раз подряд узел ответит «квитанции ещё нет». */
   receiptSilent: 0,
   vestingSeconds: 90 * 86400,
+  /* Третья версия контракта оплаты: кто кого привёл и была ли продажа. */
+  referral: {},          // продавец (нижний регистр) -> { referrer, until }
+  sold: {},              // продавец (нижний регистр) -> true
+  /* Когда развёрнута новая версия, у старой свои версия и бонусы. Ключ —
+     адрес контракта в нижнем регистре; нет ключа — общие значения выше. */
+  versionByHub: {},
+  bonusByHub: {},
   logs: []               // события в сети: их отдаём на eth_getLogs
 };
 
 /* Собрать событие оплаты так, как его отдал бы настоящий узел.
    Кодируем настоящим ABI-кодировщиком: если приложение разберёт лог
    неправильно, проверка это увидит. */
-export function paidLog({ merchant, payer, token, toMerchant, fee, reward, invoice, block = 1 }){
+export function paidLog({ merchant, payer, token, toMerchant, fee, reward, invoice, block = 1, address }){
   const ev = IFACE.getEvent('Paid');
   const enc = IFACE.encodeEventLog(ev, [merchant, payer, token, toMerchant, fee, reward, invoice]);
   return {
-    address: ADDR.pay,
+    address: address || ADDR.pay,
     topics: enc.topics,
     data: enc.data,
     blockNumber: '0x' + block.toString(16),
@@ -201,17 +213,31 @@ function handleCall(to, data){
       return encCall('saleOf', [sale.merchant, sale.amount, sale.buyer || z,
                                 sale.refunded || 0, sale.token, 0, 0]);
     }
-    case 'VERSION':
+    case 'VERSION': {
       /* У первой версии контракта такой функции нет вовсе, и узел отвечает
          пустотой. Приложение по этому и понимает, что возвратов там нет. */
-      return state.payVersion >= 2 ? encCall('VERSION', [state.payVersion]) : '0x';
+      const v = state.versionByHub[to.toLowerCase()] !== undefined ? state.versionByHub[to.toLowerCase()] : state.payVersion;
+      return v >= 2 ? encCall('VERSION', [v]) : '0x';
+    }
+    case 'referralOf': {
+      const v = state.versionByHub[to.toLowerCase()] !== undefined ? state.versionByHub[to.toLowerCase()] : state.payVersion;
+      if (v < 3) return '0x';
+      const r = state.referral[args[0].toLowerCase()];
+      return encCall('referralOf', [r ? r.referrer : '0x0000000000000000000000000000000000000000', r ? r.until : 0]);
+    }
+    case 'hasSold':       return encCall('hasSold', [!!state.sold[args[0].toLowerCase()]]);
+    case 'REF_SHARE_BPS': return encCall('REF_SHARE_BPS', [2000]);
     case 'buyerShareBps': return encCall('buyerShareBps', [6000]);
     case 'acceptedToken': return encCall('acceptedToken', [args[0].toLowerCase() === ADDR.usdt.toLowerCase()]);
     case 'previewRewards':return encCall('previewRewards', [E.BigNumber.from(args[1]).mul(6).div(10), E.BigNumber.from(args[1]).mul(4).div(10)]);
-    case 'bonusOf':       return encCall('bonusOf',
-      [E.utils.parseUnits(String(state.bonus.pending), 18),
-       E.utils.parseUnits(String(state.bonus.claimable), 18), 0]);
-    case 'claimableOf':   return encCall('claimableOf', [E.utils.parseUnits(String(state.bonus.claimable), 18)]);
+    case 'bonusOf': {
+      const b = state.bonusByHub[to.toLowerCase()] || state.bonus;
+      return encCall('bonusOf', [E.utils.parseUnits(String(b.pending), 18), E.utils.parseUnits(String(b.claimable), 18), 0]);
+    }
+    case 'claimableOf': {
+      const b = state.bonusByHub[to.toLowerCase()] || state.bonus;
+      return encCall('claimableOf', [E.utils.parseUnits(String(b.claimable), 18)]);
+    }
     case 'VESTING':       return encCall('VESTING', [state.vestingSeconds]);
     case 'rewardFor':     return encCall('rewardFor', [0]);
     case 'allowance':     return encCall('allowance', [state.allowance]);
@@ -324,6 +350,11 @@ export function start(port = 8555){
               } catch(e){}
             }
 
+            if (tx.data && tx.data.slice(0, 10) === IFACE.getSighash('setReferrer')){
+              const a = IFACE.decodeFunctionData('setReferrer', tx.data);
+              state.referral[String(tx.from).toLowerCase()] =
+                { referrer: a[0], until: Math.floor(Date.now() / 1000) + 365 * 86400 };
+            }
             /* Настоящий контракт счетов сразу меняет своё состояние —
                повторяем это, иначе проверки видят несуществующий мир. */
             if (tx.to && tx.to.toLowerCase() === ADDR.names.toLowerCase()){

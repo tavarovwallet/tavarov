@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tavarov Wallet — политика конфиденциальности</title>
+<title>Tavarov Pay и NoN Wallet — политика конфиденциальности</title>
 <meta name="description" content="Что приложение собирает (ничего), что хранится на устройстве и куда уходят запросы.">
 <meta name="robots" content="index, follow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
@@ -35,7 +35,8 @@ header{border-bottom:1px solid var(--sep)}
 .langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
   color:var(--label-2); padding:5px 9px; border-radius:7px}
 .langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
-h1{font-size:clamp(27px,4.4vw,38px); font-weight:800; letter-spacing:-.02em; margin:44px 0 6px}
+h1{font-size:clamp(24px,4.4vw,38px); font-weight:800; letter-spacing:-.02em; margin:44px 0 6px;
+   overflow-wrap:anywhere; hyphens:auto}
 h2{font-size:19.5px; font-weight:730; letter-spacing:-.01em; margin:34px 0 8px}
 p{margin:0 0 13px; color:var(--label-2)}
 ul{margin:0 0 13px; padding-left:22px; color:var(--label-2)}
@@ -51,6 +52,14 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   .brand svg{width:26px; height:26px}
   .langs button{padding:5px 6px; font-size:12px}
 }
+
+/* Выбранная кнопка в тёмной теме — СВЕТЛЕЕ дорожки, а не темнее.
+   Раньше она брала цвет карточки, а карточка в тёмной теме темнее фона
+   дорожки: выбранный язык выглядел дыркой, а невыбранные — выпуклыми, то
+   есть ровно наоборот. Так рисует и iOS: выбранный сегмент в тёмной теме
+   поднят светлым, а не утоплен. */
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;} }
+:root[data-theme="dark"] .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;}
 </style>
 </head>
 <body>
@@ -79,11 +88,24 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 
 <main class="wrap">
   <h1 data-t="h1">Политика конфиденциальности</h1>
-  <div class="date"><span data-t="upd">Обновлено</span>: 10.09.2026 · Tavarov Wallet</div>
+  <div class="date"><span data-t="upd">Обновлено</span>: 23.09.2026 · Tavarov Pay · NoN Wallet</div>
 
   <div class="box">
-    <p data-t="short"><b>Коротко.</b> Приложение не собирает о вас ничего. У него нет ни учётных записей, ни счётчиков посещений, ни рекламы. Ключи от кошелька создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем.</p>
+    <p data-t="short"><b>Коротко.</b> Приложение не собирает о вас ничего: ни учётных записей, ни счётчиков, ни рекламы. Ключи от кошелька создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем. На этой странице-витрине стоит счётчик посещений — он считает просмотры страниц, не ставит cookie и не следит за вами на других сайтах. В самом кошельке, кассе и на странице оплаты его нет.</p>
   </div>
+
+  <h2 data-t="h_till">Наклейка на кассе — единственное, что у нас лежит</h2>
+  <p data-t="p_till">У продавца может висеть на прилавке печатная наклейка. Суммы в ней нет: продавец
+  называет цену со своего телефона, и она десять минут лежит у нас, чтобы её увидел покупатель,
+  наведя камеру. Лежит ровно это: адрес продавца, номер кассы, сумма, валюта, название товара,
+  номер заказа и номер счёта, время. Через десять минут запись стирается сама.</p>
+  <p data-t="p_till2">О покупателе мы не храним ничего: ни адрес кошелька, ни устройство, ни сам платёж —
+  оплачен ли счёт, мы читаем из блокчейна. Но о журналах скажем честно: пока покупатель ждёт сумму,
+  его страница каждые несколько секунд спрашивает наш сервер, чего просит касса, и в этом вопросе
+  есть адрес продавца и номер кассы. Поэтому в журналах хостинга (Cloudflare) остаётся обычная
+  запись: такой-то IP спрашивал про такую-то кассу в такое-то время. Имени, кошелька и суммы
+  покупателя в ней нет. Если продавец пользуется счётом в блокчейне вместо наклейки, у нас не
+  лежит и суммы.</p>
 
   <h2 data-t="h_no">Чего мы не собираем</h2>
   <p data-t="p_no">Мы не просим и не получаем: имя, почту, телефон, документы, местоположение, список контактов, рекламные идентификаторы. Регистрации нет вовсе — приложение начинает работать сразу.</p>
@@ -103,6 +125,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
     <li data-t="n2"><b>CoinGecko</b> — курсы монет, чтобы показать примерную сумму в долларах. Запрашиваются только названия монет, ваш адрес туда не уходит.</li>
     <li data-t="n3"><b>Наш сайт</b> — сама страница приложения и страница оплаты по ссылке. Журналы веб-хостинга (Cloudflare) при этом видят обычные для интернета данные: IP, время, адрес страницы.</li>
     <li data-t="n4"><b>BscScan</b> — только если вы сами нажмёте ссылку «посмотреть в обозревателе».</li>
+    <li data-t="n5"><b>Приложения-кошельки</b> (MetaMask, Trust Wallet, OKX) — только если на странице оплаты вы сами выберете «открыть в приложении». Тогда ссылка на эту оплату — продавец, сумма и товар — проходит через их сервер ссылок (metamask.app.link, link.trustwallet.com, web3.okx.com), чтобы открыть страницу в их браузере.</li>
   </ul>
   <p data-t="p_net2">Ни один из этих сервисов не получает от нас ваши ключи, фразу или пароль: их у нас нет.</p>
 
@@ -110,7 +133,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <ul>
     <li data-t="r1"><b>Интернет</b> — без него кошелёк не увидит сеть.</li>
     <li data-t="r2"><b>Камера</b> — только чтобы прочитать QR-код оплаты. Изображение обрабатывается на устройстве, никуда не отправляется и не сохраняется. Разрешение спрашивается в тот момент, когда вы нажимаете «сканировать», и отказ ломает только сканирование.</li>
-    <li data-t="r3"><b>Отпечаток или код разблокировки</b> — если вы сами включите вход по биометрии. Проверку делает система устройства, нам она ничего не сообщает.</li>
+    <li data-t="r3"><b>Лицо, отпечаток или код разблокировки</b> — если вы сами включите вход по биометрии. Тогда ими же подтверждаются крупные платежи и опасные действия. Проверку делает система устройства, нам она ничего не сообщает.</li>
   </ul>
 
   <h2 data-t="h_back">Резервная копия</h2>
@@ -126,7 +149,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <p data-t="p_chg">Если что-то поменяется, мы поменяем и эту страницу, а дату обновления сверху — в первую очередь.</p>
 
   <h2 data-t="h_ask">Связь</h2>
-  <p data-t="p_ask">Вопросы по этой странице: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Ключи, фразу из двенадцати слов и пароль мы не спрашиваем никогда — кто бы ни просил, это мошенник.</p>
+  <p data-t="p_ask">Вопросы по этой странице: <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>. Ключи, фразу из двенадцати слов и пароль мы не спрашиваем никогда — кто бы ни просил, это мошенник.</p>
 </main>
 
 <footer>
@@ -141,7 +164,10 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 const T = {
   en: {
     h1:'Privacy policy', upd:'Updated',
-    short:'<b>In short.</b> The app collects nothing about you. It has no accounts, no analytics, no advertising. The wallet keys are created on your device and stay there: we cannot see them and cannot obtain them.',
+    short:'<b>In short.</b> The app collects nothing about you: no accounts, no analytics, no advertising. The wallet keys are created on your device and stay there: we cannot see them and cannot obtain them. This marketing site does have a visit counter — it counts page views, sets no cookies and does not follow you across other sites. There is none of it in the wallet, the till or the payment page.',
+    h_till:'The till sticker is the one thing we do keep',
+    p_till:'A seller may have a printed sticker on the counter. It carries no amount: the seller names the price on their own phone, and for ten minutes we hold it so the buyer can see it when they point a camera at the sticker. What is held is exactly this: the seller’s address, the till number, the amount, the currency, the item name, the order and invoice numbers, and the time. After ten minutes the record deletes itself.',
+    p_till2:'Nothing about the buyer is kept: not a wallet address, not a device, not the payment itself — whether an invoice was paid we read from the blockchain. But to be honest about logs: while the buyer waits for the amount, their page asks our server every few seconds what the till is asking for, and that question contains the seller’s address and the till number. So the hosting logs (Cloudflare) keep an ordinary entry: such-and-such IP asked about such-and-such till at such-and-such time. The buyer’s name, wallet and amount are not in it. If a seller uses the on-chain charge instead of the sticker, we do not hold the amount either.',
     h_no:'What we do not collect',
     p_no:'We neither ask for nor receive: name, email, phone number, documents, location, contacts, advertising identifiers. There is no sign-up at all — the app simply starts working.',
     h_dev:'What is stored on your device',
@@ -155,11 +181,12 @@ const T = {
     n2:'<b>CoinGecko</b> — coin rates, to show an approximate amount in dollars. Only coin names are requested; your address never goes there.',
     n3:'<b>Our site</b> — the app page itself and the payment page behind a link. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.',
     n4:'<b>BscScan</b> — only if you press "view in the explorer" yourself.',
+    n5:'<b>Wallet apps</b> (MetaMask, Trust Wallet, OKX) — only if you choose “open in an app” on the payment page yourself. Then the link to this payment — seller, amount and item — goes through their link service (metamask.app.link, link.trustwallet.com, web3.okx.com) so the page opens in their browser.',
     p_net2:'None of these services receives your keys, phrase or password from us: we do not have them.',
     h_perm:'App permissions',
     r1:'<b>Internet</b> — without it the wallet cannot see the network.',
     r2:'<b>Camera</b> — only to read a payment QR code. The image is processed on the device, is never sent anywhere and is not saved. Permission is asked at the moment you press "scan", and refusing it breaks nothing but scanning.',
-    r3:'<b>Fingerprint or screen lock</b> — only if you turn on biometric unlock yourself. The check is done by the device’s own system, which tells us nothing.',
+    r3:'<b>Face, fingerprint or screen lock</b> — only if you turn on biometric unlock yourself. They then also confirm large payments and dangerous actions. The check is done by the device’s own system, which tells us nothing.',
     h_back:'Backups',
     p_back:'You create the backup yourself and it is encrypted with your password at once. The file stays with you: we never receive it and cannot recover a forgotten password. Keep the copy and the password apart from each other.',
     h_chain:'The blockchain is an open book',
@@ -169,12 +196,15 @@ const T = {
     h_chg:'Changes',
     p_chg:'If something changes, this page changes with it — starting with the date at the top.',
     h_ask:'Contact',
-    p_ask:'Questions about this page: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. We never ask for keys, the twelve-word phrase or your password — whoever asks, it is a fraud.',
+    p_ask:'Questions about this page: <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>. We never ask for keys, the twelve-word phrase or your password — whoever asks, it is a fraud.',
     f1:'About the app', f2:'Open the wallet'
   },
   es: {
     h1:'Política de privacidad', upd:'Actualizado',
-    short:'<b>En resumen.</b> La aplicación no recoge nada sobre usted. No tiene cuentas, ni analítica, ni publicidad. Las claves del monedero se crean en su dispositivo y allí se quedan: no podemos verlas ni obtenerlas.',
+    short:'<b>En resumen.</b> La aplicación no recoge nada sobre usted: ni cuentas, ni analítica, ni publicidad. Las claves del monedero se crean en su dispositivo y allí se quedan: no podemos verlas ni obtenerlas. Este sitio de presentación sí tiene un contador de visitas: cuenta páginas vistas, no pone cookies y no le sigue por otros sitios. En el monedero, la caja y la página de pago no hay nada de eso.',
+    h_till:'La pegatina de la caja es lo único que guardamos',
+    p_till:'El vendedor puede tener una pegatina impresa en el mostrador. No lleva importe: el vendedor dice el precio desde su teléfono y durante diez minutos lo guardamos para que el comprador lo vea al apuntar la cámara. Se guarda exactamente esto: la dirección del vendedor, el número de caja, el importe, la moneda, el nombre del producto, los números de pedido y de factura, y la hora. A los diez minutos el registro se borra solo.',
+    p_till2:'Del comprador no se guarda nada: ni la dirección del monedero, ni el dispositivo, ni el propio pago; si una factura está pagada lo leemos de la cadena de bloques. Pero sobre los registros, con franqueza: mientras el comprador espera el importe, su página pregunta a nuestro servidor cada pocos segundos qué pide la caja, y esa pregunta lleva la dirección del vendedor y el número de caja. Por eso en los registros del alojamiento (Cloudflare) queda una entrada corriente: tal IP preguntó por tal caja a tal hora. No contiene ni el nombre, ni el monedero, ni el importe del comprador. Si el vendedor usa la factura en la cadena en vez de la pegatina, tampoco guardamos el importe.',
     h_no:'Lo que no recogemos',
     p_no:'Ni pedimos ni recibimos: nombre, correo, teléfono, documentos, ubicación, contactos, identificadores publicitarios. No hay registro alguno: la aplicación simplemente empieza a funcionar.',
     h_dev:'Qué se guarda en su dispositivo',
@@ -188,11 +218,12 @@ const T = {
     n2:'<b>CoinGecko</b>: cotizaciones, para mostrar un importe aproximado en dólares. Solo se piden nombres de monedas; su dirección no llega allí.',
     n3:'<b>Nuestro sitio</b>: la propia página de la aplicación y la página de pago del enlace. Los registros del alojamiento web (Cloudflare) ven entonces lo que ve cualquier sitio: IP, hora, dirección de la página.',
     n4:'<b>BscScan</b>: solo si usted mismo pulsa «ver en el explorador».',
+    n5:'<b>Aplicaciones de monedero</b> (MetaMask, Trust Wallet, OKX): solo si usted mismo elige «abrir en una aplicación» en la página de pago. Entonces el enlace a ese pago —vendedor, importe y producto— pasa por su servicio de enlaces (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir la página en su navegador.',
     p_net2:'Ninguno de esos servicios recibe de nosotros sus claves, su frase ni su contraseña: no las tenemos.',
     h_perm:'Permisos de la aplicación',
     r1:'<b>Internet</b>: sin él el monedero no ve la red.',
     r2:'<b>Cámara</b>: solo para leer un código QR de pago. La imagen se procesa en el dispositivo, no se envía a ninguna parte y no se guarda. El permiso se pide en el momento en que usted pulsa «escanear», y negarlo solo impide escanear.',
-    r3:'<b>Huella o bloqueo de pantalla</b>: solo si usted activa el desbloqueo biométrico. La comprobación la hace el propio sistema del dispositivo y a nosotros no nos dice nada.',
+    r3:'<b>Rostro, huella o bloqueo de pantalla</b>: solo si usted activa el desbloqueo biométrico. Entonces también confirman los pagos grandes y las acciones peligrosas. La comprobación la hace el propio sistema del dispositivo y a nosotros no nos dice nada.',
     h_back:'Copia de seguridad',
     p_back:'La copia la crea usted y se cifra de inmediato con su contraseña. El archivo se queda con usted: nunca lo recibimos y no podemos recuperar una contraseña olvidada. Guarde la copia y la contraseña por separado.',
     h_chain:'La blockchain es un libro abierto',
@@ -202,12 +233,15 @@ const T = {
     h_chg:'Cambios',
     p_chg:'Si algo cambia, esta página cambia con ello, empezando por la fecha de arriba.',
     h_ask:'Contacto',
-    p_ask:'Preguntas sobre esta página: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Nunca pedimos claves, la frase de doce palabras ni su contraseña: quien lo haga es un estafador.',
+    p_ask:'Preguntas sobre esta página: <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>. Nunca pedimos claves, la frase de doce palabras ni su contraseña: quien lo haga es un estafador.',
     f1:'Sobre la aplicación', f2:'Abrir el monedero'
   },
   tr: {
     h1:'Gizlilik politikası', upd:'Güncellendi',
-    short:'<b>Kısaca.</b> Uygulama sizinle ilgili hiçbir şey toplamaz. Hesap yok, ölçümleme yok, reklam yok. Cüzdan anahtarları sizin cihazınızda oluşur ve orada kalır: onları ne görebiliriz ne de elde edebiliriz.',
+    short:'<b>Kısaca.</b> Uygulama sizinle ilgili hiçbir şey toplamaz: hesap yok, ölçümleme yok, reklam yok. Cüzdan anahtarları sizin cihazınızda oluşur ve orada kalır: onları ne görebiliriz ne de elde edebiliriz. Bu tanıtım sitesinde bir ziyaret sayacı var: sayfa görüntülemelerini sayar, çerez koymaz ve sizi başka sitelerde izlemez. Cüzdanda, kasada ve ödeme sayfasında böyle bir şey yok.',
+    h_till:'Kasa etiketi, bizde duran tek şey',
+    p_till:'Satıcının tezgâhında basılı bir etiket olabilir. İçinde tutar yoktur: satıcı fiyatı kendi telefonundan söyler ve müşteri kamerayı etikete doğrulttuğunda görebilsin diye o tutarı on dakika bizde tutarız. Tutulan tam olarak şudur: satıcının adresi, kasa numarası, tutar, para birimi, ürün adı, sipariş ve fatura numaraları ile saat. On dakika sonra kayıt kendiliğinden silinir.',
+    p_till2:'Müşteriye dair hiçbir şey saklanmaz: ne cüzdan adresi, ne cihaz, ne de ödemenin kendisi — faturanın ödenip ödenmediğini blok zincirinden okuyoruz. Ama kayıtlar konusunda dürüst olalım: müşteri tutarı beklerken sayfası birkaç saniyede bir sunucumuza kasanın ne istediğini sorar ve bu soruda satıcının adresi ile kasa numarası vardır. Bu yüzden barındırma kayıtlarında (Cloudflare) sıradan bir kayıt kalır: şu IP şu kasayı şu saatte sordu. Müşterinin adı, cüzdanı ve tutarı bu kayıtta yoktur. Satıcı etiket yerine zincir üstü faturayı kullanıyorsa tutar da bizde durmaz.',
     h_no:'Toplamadıklarımız',
     p_no:'İsim, e-posta, telefon, belge, konum, rehber, reklam kimliği istemiyoruz ve almıyoruz. Kayıt diye bir şey yok — uygulama doğrudan çalışmaya başlar.',
     h_dev:'Cihazınızda ne saklanır',
@@ -221,11 +255,12 @@ const T = {
     n2:'<b>CoinGecko</b> — dolar karşılığını yaklaşık göstermek için kur bilgisi. Yalnızca para birimi adları sorulur; adresiniz oraya gitmez.',
     n3:'<b>Bizim sitemiz</b> — uygulamanın kendi sayfası ve bağlantıdaki ödeme sayfası. Web barındırmanın (Cloudflare) günlükleri her sitenin gördüğünü görür: IP, saat, sayfa adresi.',
     n4:'<b>BscScan</b> — yalnızca «gezginde görüntüle» bağlantısına siz basarsanız.',
+    n5:'<b>Cüzdan uygulamaları</b> (MetaMask, Trust Wallet, OKX) — yalnızca ödeme sayfasında «bir uygulamada aç» seçeneğini kendiniz seçerseniz. O zaman bu ödemenin bağlantısı — satıcı, tutar ve ürün — sayfayı onların tarayıcısında açmak için bağlantı sunucularından (metamask.app.link, link.trustwallet.com, web3.okx.com) geçer.',
     p_net2:'Bu hizmetlerin hiçbiri bizden anahtarlarınızı, ifadenizi ya da parolanızı almaz: bizde yoklar.',
     h_perm:'Uygulama izinleri',
     r1:'<b>İnternet</b> — onsuz cüzdan ağı göremez.',
     r2:'<b>Kamera</b> — yalnızca ödeme QR kodunu okumak için. Görüntü cihazda işlenir, hiçbir yere gönderilmez ve kaydedilmez. İzin, «tara» düğmesine bastığınız anda istenir; reddetmek yalnızca taramayı devre dışı bırakır.',
-    r3:'<b>Parmak izi ya da ekran kilidi</b> — yalnızca biyometrik girişi kendiniz açarsanız. Doğrulamayı cihazın kendi sistemi yapar ve bize hiçbir şey bildirmez.',
+    r3:'<b>Yüz, parmak izi ya da ekran kilidi</b> — yalnızca biyometrik girişi kendiniz açarsanız. O zaman büyük ödemeleri ve tehlikeli işlemleri de onlar onaylar. Doğrulamayı cihazın kendi sistemi yapar ve bize hiçbir şey bildirmez.',
     h_back:'Yedek',
     p_back:'Yedeği siz oluşturursunuz ve anında parolanızla şifrelenir. Dosya sizde kalır: biz onu hiç almayız ve unutulan parolayı kurtaramayız. Yedeği ve parolayı birbirinden ayrı saklayın.',
     h_chain:'Blok zinciri açık bir defterdir',
@@ -235,12 +270,15 @@ const T = {
     h_chg:'Değişiklikler',
     p_chg:'Bir şey değişirse bu sayfa da onunla değişir — en başta yukarıdaki tarih.',
     h_ask:'İletişim',
-    p_ask:'Bu sayfayla ilgili sorular: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Anahtarları, on iki kelimelik ifadeyi ve parolayı asla sormayız — kim sorarsa sorsun, o bir dolandırıcıdır.',
+    p_ask:'Bu sayfayla ilgili sorular: <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>. Anahtarları, on iki kelimelik ifadeyi ve parolayı asla sormayız — kim sorarsa sorsun, o bir dolandırıcıdır.',
     f1:'Uygulama hakkında', f2:'Cüzdanı aç'
   },
   pt: {
     h1:'Política de privacidade', upd:'Atualizado',
-    short:'<b>Em resumo.</b> O aplicativo não coleta nada sobre você. Não há contas, nem análises, nem publicidade. As chaves da carteira são criadas no seu aparelho e ficam nele: não podemos vê-las nem obtê-las.',
+    short:'<b>Em resumo.</b> O aplicativo não coleta nada sobre você: nem contas, nem análises, nem publicidade. As chaves da carteira são criadas no seu aparelho e ficam nele: não podemos vê-las nem obtê-las. Este site de apresentação tem, sim, um contador de visitas: conta visualizações de páginas, não usa cookies e não o segue por outros sites. Na carteira, no caixa e na página de pagamento não há nada disso.',
+    h_till:'O adesivo do caixa é a única coisa que guardamos',
+    p_till:'O vendedor pode ter um adesivo impresso no balcão. Ele não traz valor: o vendedor diz o preço no próprio telefone e, por dez minutos, guardamos esse valor para o comprador ver ao apontar a câmera. Guarda-se exatamente isto: o endereço do vendedor, o número do caixa, o valor, a moeda, o nome do produto, os números do pedido e da fatura, e a hora. Depois de dez minutos o registro se apaga sozinho.',
+    p_till2:'Do comprador não se guarda nada: nem o endereço da carteira, nem o aparelho, nem o próprio pagamento — se a fatura foi paga, lemos da blockchain. Mas sobre os registros, com franqueza: enquanto o comprador espera o valor, a página dele pergunta ao nosso servidor a cada poucos segundos o que o caixa está pedindo, e essa pergunta traz o endereço do vendedor e o número do caixa. Por isso nos registros da hospedagem (Cloudflare) fica uma entrada comum: tal IP perguntou por tal caixa a tal hora. Não há nela nome, carteira nem valor do comprador. Se o vendedor usa a fatura na blockchain em vez do adesivo, também não guardamos o valor.',
     h_no:'O que não coletamos',
     p_no:'Não pedimos nem recebemos: nome, e-mail, telefone, documentos, localização, contatos, identificadores de publicidade. Não existe cadastro algum — o aplicativo simplesmente começa a funcionar.',
     h_dev:'O que fica guardado no seu aparelho',
@@ -254,11 +292,12 @@ const T = {
     n2:'<b>CoinGecko</b> — cotações, para mostrar um valor aproximado em dólares. Só são pedidos nomes de moedas; o seu endereço não vai para lá.',
     n3:'<b>Nosso site</b> — a própria página do aplicativo e a página de pagamento do link. Os registros da hospedagem (Cloudflare) veem o que qualquer site vê: IP, hora, endereço da página.',
     n4:'<b>BscScan</b> — apenas se você mesmo clicar em «ver no explorador».',
+    n5:'<b>Aplicativos de carteira</b> (MetaMask, Trust Wallet, OKX) — apenas se você mesmo escolher «abrir num aplicativo» na página de pagamento. Então o link deste pagamento — vendedor, valor e produto — passa pelo serviço de links deles (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir a página no navegador deles.',
     p_net2:'Nenhum desses serviços recebe de nós as suas chaves, a sua frase ou a sua senha: nós não as temos.',
     h_perm:'Permissões do aplicativo',
     r1:'<b>Internet</b> — sem ela a carteira não enxerga a rede.',
     r2:'<b>Câmera</b> — apenas para ler o QR code de pagamento. A imagem é processada no aparelho, não é enviada a lugar nenhum e não é salva. A permissão é pedida no momento em que você toca em «escanear», e recusá-la só impede o escaneamento.',
-    r3:'<b>Digital ou bloqueio de tela</b> — apenas se você mesmo ativar a entrada por biometria. A verificação é feita pelo próprio sistema do aparelho, que não nos informa nada.',
+    r3:'<b>Rosto, digital ou bloqueio de tela</b> — apenas se você mesmo ativar a entrada por biometria. Aí eles também confirmam pagamentos grandes e ações perigosas. A verificação é feita pelo próprio sistema do aparelho, que não nos informa nada.',
     h_back:'Cópia de segurança',
     p_back:'A cópia é feita por você e é criptografada na hora com a sua senha. O arquivo fica com você: nunca o recebemos e não podemos recuperar uma senha esquecida. Guarde a cópia e a senha separadas uma da outra.',
     h_chain:'O blockchain é um livro aberto',
@@ -268,7 +307,7 @@ const T = {
     h_chg:'Mudanças',
     p_chg:'Se algo mudar, esta página muda junto — a começar pela data do topo.',
     h_ask:'Contato',
-    p_ask:'Dúvidas sobre esta página: <a href="mailto:vsa22866@gmail.com">vsa22866@gmail.com</a>. Nunca pedimos chaves, a frase de doze palavras ou a sua senha — quem pedir é golpista.',
+    p_ask:'Dúvidas sobre esta página: <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>. Nunca pedimos chaves, a frase de doze palavras ou a sua senha — quem pedir é golpista.',
     f1:'Sobre o aplicativo', f2:'Abrir a carteira'
   }
 };
@@ -278,11 +317,11 @@ document.querySelectorAll('[data-t]').forEach(el => { RU[el.dataset.t] = el.inne
 T.ru = RU;
 
 const TITLES = {
-  ru:'Tavarov Wallet — политика конфиденциальности',
-  en:'Tavarov Wallet — privacy policy',
-  es:'Tavarov Wallet — política de privacidad',
-  tr:'Tavarov Wallet — gizlilik politikası',
-  pt:'Tavarov Wallet — política de privacidade'
+  ru:'Tavarov Pay и NoN Wallet — политика конфиденциальности',
+  en:'Tavarov Pay and NoN Wallet — privacy policy',
+  es:'Tavarov Pay y NoN Wallet — política de privacidad',
+  tr:'Tavarov Pay ve NoN Wallet — gizlilik politikası',
+  pt:'Tavarov Pay e NoN Wallet — política de privacidade'
 };
 const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
 
@@ -316,5 +355,11 @@ if (!startLang) {
 }
 apply(T[startLang] ? startLang : 'en');
 </script>
+<!-- Счётчик посещений. Только витрина: на страницах кошелька, кассы и
+     оплаты никакого постороннего кода нет и не будет — там человек вводит
+     пароль и видит суммы. Cloudflare Web Analytics не ставит cookie и не
+     следит за человеком между сайтами, поэтому баннер про печеньки не
+     нужен. Считает просмотры страниц и откуда пришли, не более. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "807d9906067747c9ba6d53e1cc9f4520"}'></script>
 </body>
 </html>

@@ -7,53 +7,142 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
 <style>
+/* ===================== Внешний вид =====================
+
+   Страницу оплаты видит человек, который про нас ничего не знает, — у
+   прилавка, с телефоном в руке, за секунду до того, как отдать деньги.
+   Плоский почти чёрный фон с серыми рамками читался как самодельная
+   страница, а самодельной странице денег не доверяют. Поэтому фон теперь
+   светится: мягкие фиолетовые пятна того же цвета, что знак, и карточки
+   поверх них — как стекло, а не как вырезанный картон.
+
+   Всё, что ниже, — только вид. Ни одна проверка не зависит от цвета. */
 :root{
-  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
-  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
-  --green:#1E9E57; --orange:#C97400; --red:#E5342A; --fill:rgba(124,58,237,.08);
+  --bg:#F4EEFF;
+  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
+  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
+  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
+  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
+  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
+  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
-  --bg:#0D0716; --card:#181026; --label:#fff; --label-2:rgba(235,225,255,.68);
-  --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
-  --green:#4ED08A; --orange:#E7A33A; --red:#FF6B61; --fill:rgba(169,123,255,.12);
+  /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
+     пятна света видны, а на чёрном они тонули. */
+  --bg:#140B2B;
+  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
+  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
+  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
+  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
+  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
 } }
 *{box-sizing:border-box}
-body{margin:0; background:var(--bg); color:var(--label); font-family:var(--font);
+html{background:var(--bg)}
+body{margin:0; min-height:100vh; color:var(--label); font-family:var(--font);
      font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased;
-     display:flex; align-items:flex-start; justify-content:center; padding:24px 16px 60px}
+     display:flex; align-items:flex-start; justify-content:center; padding:22px 16px 60px;
+     background:
+       radial-gradient(900px 520px at -10% -12%, var(--glow-1), transparent 62%),
+       radial-gradient(760px 460px at 112% 6%, var(--glow-2), transparent 60%),
+       radial-gradient(700px 520px at 50% 118%, var(--glow-3), transparent 64%),
+       var(--bg);
+     background-attachment:fixed}
 .box{width:100%; max-width:440px}
-.card{background:var(--card); border:1px solid var(--sep); border-radius:18px; padding:24px; margin-bottom:14px}
-h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
-.sum{font-size:40px; font-weight:800; letter-spacing:-.02em; margin:14px 0 2px}
+.card{background:var(--card); border:1px solid var(--card-edge); border-radius:22px; padding:24px;
+      margin-bottom:14px; box-shadow:var(--card-hi), var(--shadow);
+      -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%)}
+h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
+.sum{font-size:44px; font-weight:800; letter-spacing:-.035em; margin:14px 0 2px; line-height:1.1;
+     font-variant-numeric:tabular-nums}
 .muted{color:var(--label-2); font-size:15px}
 .tiny{color:var(--label-3); font-size:13.5px}
-.qr{display:flex; justify-content:center; padding:18px; background:#fff; border-radius:14px; margin:18px 0 12px}
-.qr img,.qr canvas{display:block; width:100%; max-width:230px; height:auto; image-rendering:pixelated}
-.btn{display:block; width:100%; text-align:center; padding:15px; border-radius:13px;
-     font-weight:650; font-size:17px; border:1px solid transparent; cursor:pointer;
-     font-family:inherit; text-decoration:none; margin-bottom:10px}
-.btn-main{background:var(--accent); color:#fff}
-.btn-ghost{background:transparent; color:var(--label); border-color:var(--sep)}
+.qr{display:flex; justify-content:center; padding:16px; background:#fff; border-radius:18px; margin:20px 0 12px;
+    box-shadow:0 0 0 1px rgba(90,60,150,.10), 0 10px 26px -14px rgba(60,30,140,.35)}
+.qr img,.qr canvas{display:block; width:100%; max-width:220px; height:auto; image-rendering:pixelated}
+.btn{display:flex; align-items:center; justify-content:center; gap:9px; width:100%; text-align:center;
+     padding:15px 16px; border-radius:15px; font-weight:650; font-size:17px; border:1px solid transparent;
+     cursor:pointer; font-family:inherit; text-decoration:none; margin-bottom:10px; line-height:1.25;
+     transition:transform .12s ease, box-shadow .2s ease, opacity .2s ease}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.55; cursor:default; transform:none}
+.btn-main{color:#fff; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+          box-shadow:0 12px 26px -10px rgba(91,33,232,.60), inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-ghost{background:var(--ghost-bg); color:var(--label); border-color:var(--ghost-edge); font-size:16px}
+/* Значка у «другого кошелька» нет нарочно: с ним подпись на узком телефоне
+   переносилась или обрезалась многоточием, а без него помещается целиком. */
+.btn > span{min-width:0}
+.btn .ico{width:20px; height:20px; flex:0 0 auto}
 .row{display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px solid var(--sep); font-size:15.5px}
 .row:last-child{border-bottom:0}
 .row span{color:var(--label-2)} .row b{font-weight:650; text-align:right; word-break:break-all}
 .addr{font-family:var(--mono); font-size:12.5px}
 .state{display:flex; align-items:center; gap:10px; font-weight:650; font-size:16px}
 .dot{width:10px; height:10px; border-radius:50%; background:var(--orange); flex:0 0 auto;
+     box-shadow:0 0 0 4px color-mix(in srgb, var(--orange) 22%, transparent);
      animation:pulse 1.4s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.ok .dot{background:var(--green); animation:none}
-.bad .dot{background:var(--red); animation:none}
-.note{background:var(--fill); border-radius:12px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:14px}
-.brand{display:flex; align-items:center; gap:9px; justify-content:center; margin-bottom:16px; color:var(--label-2); font-size:14px}
-.brand svg{width:26px; height:26px; border-radius:7px}
-.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px; margin:0 auto 16px; width:max-content}
+.ok .dot{background:var(--green); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--green) 22%, transparent)}
+.bad .dot{background:var(--red); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--red) 22%, transparent)}
+.info .dot{background:var(--label-3); animation:none; box-shadow:none}
+.note{background:var(--fill); border-radius:14px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:14px}
+.brand{display:flex; align-items:center; gap:10px; justify-content:center; margin:4px 0 16px;
+       color:var(--label); font-size:15px; font-weight:650; letter-spacing:-.01em}
+.brand svg{width:28px; height:28px; border-radius:8px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+.brand small{display:block; font-size:12px; font-weight:500; color:var(--label-3); letter-spacing:.01em}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:10px; padding:3px; margin:0 auto 16px; width:max-content}
 .langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:650;
-              color:var(--label-2); padding:4px 8px; border-radius:7px; line-height:1.2}
-.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
-.hidden{display:none}
+              color:var(--label-2); padding:5px 9px; border-radius:7px; line-height:1.2}
+.langs button[aria-pressed="true"]{background:var(--seg-on); color:var(--seg-on-text); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.hidden{display:none !important}
+
+/* ---------- Выбор кошелька ----------
+   Шторка снизу, как в системе. Сверху — кошельки, которые уже стоят в этом
+   браузере (их находит стандарт EIP-6963: каждый расширение-кошелёк само
+   называет себя и присылает значок). Ниже, на телефоне, — приложения:
+   страница откроется в их встроенном браузере, и оплата пройдёт там. */
+.sheet-bg{position:fixed; inset:0; background:rgba(12,6,28,.46); z-index:40;
+          -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+          display:flex; align-items:flex-end; justify-content:center; animation:fade .18s ease}
+.sheet{width:100%; max-width:480px; max-height:88vh; overflow:auto; background:var(--card-solid);
+       border-radius:24px 24px 0 0; padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+       box-shadow:0 -20px 50px -20px rgba(0,0,0,.45); animation:up .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{transform:translateY(40px); opacity:.4}to{transform:none; opacity:1}}
+.sheet .grab{width:38px; height:5px; border-radius:3px; background:var(--sep); margin:0 auto 14px}
+.sheet h2{font-size:20px; margin:0 0 4px; letter-spacing:-.015em}
+.sheet .sub{color:var(--label-2); font-size:14.5px; margin:0 0 14px}
+.sec{font-size:12.5px; font-weight:650; text-transform:uppercase; letter-spacing:.06em; color:var(--label-3); margin:16px 2px 8px}
+.wlist{display:flex; flex-direction:column; gap:8px}
+.wrow{display:flex; align-items:center; gap:13px; width:100%; padding:12px 14px; border-radius:16px;
+      background:var(--fill); border:1px solid transparent; color:var(--label); font:inherit; font-size:16.5px;
+      font-weight:600; text-align:left; cursor:pointer; text-decoration:none}
+.wrow:active{transform:scale(.99)}
+.wrow .wi{width:38px; height:38px; border-radius:11px; flex:0 0 auto; display:grid; place-items:center;
+          font-weight:800; font-size:17px; color:#fff; overflow:hidden; background:#6D28D9}
+.wrow .wi img{width:100%; height:100%; object-fit:cover}
+.wrow .wt{flex:1 1 auto; min-width:0}
+.wrow .wt small{display:block; font-size:13px; font-weight:500; color:var(--label-2)}
+.wrow .chev{color:var(--label-3); font-size:20px}
+.empty{color:var(--label-2); font-size:14.5px; padding:10px 2px}
+
+/* ---------- Шаги оплаты чужим кошельком ---------- */
+.steps{list-style:none; padding:0; margin:14px 0 4px}
+.steps li{display:flex; align-items:center; gap:12px; padding:9px 0; font-size:15.5px; color:var(--label-2)}
+.steps .n{width:26px; height:26px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center;
+          font-size:13px; font-weight:750; background:var(--fill); color:var(--label-2)}
+.steps li.run{color:var(--label)} .steps li.run .n{background:var(--accent); color:#fff; animation:pulse 1.4s infinite}
+.steps li.done{color:var(--label)} .steps li.done .n{background:var(--green); color:#fff}
+.steps li.fail .n{background:var(--red); color:#fff}
+.steps small{display:block; font-size:12.5px; color:var(--label-3); font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -69,7 +158,7 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
         <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
       </g>
     </svg>
-    Tavarov Pay
+    <span>Tavarov Pay<small data-t="brandSub">Оплата напрямую продавцу</small></span>
   </div>
 
   <!-- Покупатель и продавец редко из одной страны: счёт выставлен в Лиссабоне,
@@ -90,6 +179,61 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
     отправляйте продавцу ничего другого.</div>
   </div>
 
+  <!-- ===== Касса: наклейка без суммы =====
+       Наклейку печатают один раз, и суммы в ней нет и быть не может. Пока
+       продавец не назвал цену, платить нечего — но и пустой экран показывать
+       нельзя: человек с телефоном в руках должен понимать, чего он ждёт и
+       что делать, если ждать надоело. -->
+  <div class="card hidden" id="tillCard">
+    <h1 id="tillShop">—</h1>
+    <div class="muted" id="tillWho"></div>
+
+    <div id="tillWait" style="margin-top:18px">
+      <div class="state"><span class="dot"></span><span data-t="tillWaiting">Ждём, пока продавец назовёт сумму</span></div>
+      <div class="note" data-t="tillWaitNote">Кассир наберёт её на своём телефоне, и она появится здесь сама.
+      Закрывать страницу не нужно.</div>
+    </div>
+
+    <div id="tillGot" class="hidden">
+      <div class="sum" id="tillAmount">—</div>
+      <div class="tiny" id="tillItem"></div>
+      <!-- Сколько секунд назад её выставили. Это не украшение: наклейка
+           вечная, и на неё могли навести камеру через полчаса после того,
+           как предыдущий покупатель ушёл. Человек обязан видеть возраст
+           суммы, прежде чем платить. -->
+      <div class="tiny" id="tillAge" style="margin-top:6px"></div>
+      <div class="note hidden" id="tillChanged" data-t="tillChanged">Продавец только что поменял сумму — проверьте её заново.</div>
+      <button class="btn btn-main" style="margin-top:16px" id="tillPay" data-t="tillPayBtn">Оплатить</button>
+    </div>
+
+    <!-- Стоит отдельно от суммы, а не внутри неё. Так было сначала — и это
+         пряталось ровно тогда, когда нужнее всего: пока касса молчит.
+         Человек у прилавка не должен упираться в вечный кружок, если
+         продавец забыл нажать, интернет моргнул или наш сервер лежит. -->
+    <button class="btn btn-ghost" id="tillOwn" data-t="tillOwnBtn">Ввести сумму самому</button>
+
+    <div id="tillManual" class="hidden" style="margin-top:18px">
+      <label class="tiny" for="tillInput" data-t="tillOwnLabel">Сколько платим</label>
+      <div style="display:flex; gap:8px; margin:6px 0 12px">
+        <input id="tillInput" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00"
+               style="flex:1 1 auto; min-width:0; padding:13px; font-size:19px; font-family:inherit;
+                      border-radius:12px; border:1.5px solid var(--sep); background:var(--card); color:var(--label)">
+        <select id="tillCur" style="flex:0 0 auto; padding:13px; font-size:16px; font-family:inherit;
+                      border-radius:12px; border:1.5px solid var(--sep); background:var(--card); color:var(--label)"></select>
+      </div>
+      <div class="note" data-t="tillOwnNote">Сумму вы вводите сами — сверьте её с продавцом, прежде чем платить.
+      Ошибётесь в свою сторону — придётся доплачивать, в его — деньги уже не вернутся сами.</div>
+      <button class="btn btn-main" style="margin-top:12px" id="tillManualPay" data-t="tillPayBtn">Оплатить</button>
+    </div>
+
+    <div class="note hidden" id="tillProblem"></div>
+
+    <div style="margin-top:18px">
+      <div class="row"><span data-t="rTo">Получатель</span><b class="addr" id="tillTo">—</b></div>
+      <div class="row"><span data-t="rNet">Сеть</span><b id="tillNet">—</b></div>
+    </div>
+  </div>
+
   <div class="card" id="main">
     <h1 id="shop">—</h1>
     <div class="muted" id="item"></div>
@@ -101,7 +245,22 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
       Наведите камеру из приложения Tavarov
     </div>
 
-    <a class="btn btn-main" id="openWallet" href="#" data-t="open">Открыть в кошельке</a>
+    <a class="btn btn-main" id="openWallet" href="#">
+      <svg class="ico" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#fff"/></svg>
+      <span data-t="open">Оплатить в NoN Wallet</span></a>
+    <!-- Раньше здесь был «ethereum:…» — обычный перевод по стандарту EIP-681.
+         Его понимал любой кошелёк, но у него было два недостатка, и оба
+         дорогие. Первый: телефон сам решал, каким кошельком его открыть, —
+         у кого стоит три кошелька, того молча уводило в MetaMask. Второй:
+         перевод шёл мимо контракта, и с такой покупки не бралась комиссия
+         и не начислялись бонусы.
+
+         Теперь кнопка открывает выбор: кошельки, что уже стоят в этом
+         браузере, и приложения на телефоне. Платёж в любом из них идёт
+         через контракт Tavarov Pay — прямо продавцу, как и раньше, но уже
+         как покупка. -->
+    <button class="btn btn-ghost" id="openOther" type="button">
+      <span data-t="openOther">Оплатить другим кошельком</span></button>
     <button class="btn btn-ghost" id="copyLink" data-t="copy">Скопировать ссылку</button>
 
     <div style="margin-top:18px">
@@ -111,7 +270,7 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="stateCard">
     <div class="state" id="state"><span class="dot"></span><span id="stateText">Ждём оплату…</span></div>
     <div class="note" id="stateNote">
       Страница сама увидит платёж — обычно это несколько секунд. Закрывать её не нужно.
@@ -128,6 +287,55 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.01em}
        style="color:var(--label-2);text-decoration:none;border-bottom:1px solid var(--sep)"
        data-t="whatIs">Что такое Tavarov Pay?</a>
   </p>
+
+  <div class="sheet-bg hidden" id="wSheet" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+    <div class="sheet">
+      <div class="grab"></div>
+
+      <div id="wPick">
+        <h2 id="wTitle" data-t="wTitle">Чем платить</h2>
+        <p class="sub" data-t="wSub">Платёж пройдёт через контракт Tavarov Pay прямо продавцу. Понадобится немного BNB на комиссию сети.</p>
+
+        <div class="sec" data-t="wHere">На этом устройстве</div>
+        <div class="wlist" id="wFound"></div>
+
+        <div id="wAppsBox" class="hidden">
+          <div class="sec" data-t="wApps">Открыть в приложении</div>
+          <div class="wlist" id="wApps"></div>
+        </div>
+
+        <div class="sec" data-t="wOtherSec">Другой кошелёк</div>
+        <div class="wlist">
+          <button class="wrow" id="wCopy" type="button">
+            <span class="wi" style="background:#475569">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+            </span>
+            <span class="wt"><span data-t="wCopyT">Скопировать ссылку</span><small data-t="wCopyS">и открыть её в браузере своего кошелька</small></span>
+          </button>
+        </div>
+
+        <button class="btn btn-ghost" id="wClose" type="button" style="margin-top:18px" data-t="wCancel">Отмена</button>
+      </div>
+
+      <div id="wRun" class="hidden">
+        <h2 id="wRunTitle">—</h2>
+        <p class="sub" id="wRunSub"></p>
+        <ol class="steps" id="wSteps">
+          <li data-s="connect"><span class="n">1</span><span><span data-t="sConnect">Подключаем кошелёк</span><small></small></span></li>
+          <li data-s="chain"><span class="n">2</span><span><span data-t="sChain">Сеть BNB Chain</span><small></small></span></li>
+          <li data-s="approve"><span class="n">3</span><span><span data-t="sApprove">Разрешение на эту сумму</span><small></small></span></li>
+          <li data-s="pay"><span class="n">4</span><span><span data-t="sPay">Оплата продавцу</span><small></small></span></li>
+        </ol>
+        <!-- Окно подписи в кошельке иногда не всплывает само — особенно во
+             встроенном браузере на телефоне. Через несколько секунд ожидания
+             говорим, где его искать, вместо немого кружка. -->
+        <div class="note hidden" id="wHint" data-t="wHint">Окно кошелька не появилось? Откройте его вручную — запрос ждёт там. В MetaMask это значок кошелька вверху или внизу экрана.</div>
+        <div class="note hidden" id="wErr"></div>
+        <button class="btn btn-main hidden" id="wRetry" type="button" data-t="wRetry">Попробовать ещё раз</button>
+        <button class="btn btn-ghost" id="wBack" type="button" data-t="wBack">Выбрать другой кошелёк</button>
+      </div>
+    </div>
+  </div>
 
   <div class="card hidden" id="err">
     <div class="state bad"><span class="dot"></span><span id="errText">Ссылка не читается</span></div>
@@ -176,7 +384,23 @@ const RU = {
   expiredNote:'Платить по нему уже не нужно: магазин его не примет. Начните оплату заново.',
   paidH:'Оплачено',
   paidNote:'Деньги ушли продавцу. Магазин увидит оплату сам.',
-  paidNoteBack:'Деньги ушли продавцу. Магазин увидит оплату сам — сейчас вернём вас на %s.'
+  paidNoteBack:'Деньги ушли продавцу. Магазин увидит оплату сам — сейчас вернём вас на %s.',
+  openOther:'Оплатить другим кошельком',
+  tillTitle:'Касса · Tavarov Pay',
+  tillWho:'Касса №%s',
+  tillWaiting:'Ждём, пока продавец назовёт сумму',
+  tillWaitNote:'Кассир наберёт её на своём телефоне, и она появится здесь сама. Закрывать страницу не нужно.',
+  tillChanged:'Продавец только что поменял сумму — проверьте её заново.',
+  tillPayBtn:'Оплатить',
+  tillOwnBtn:'Ввести сумму самому',
+  tillOwnLabel:'Сколько платим',
+  tillOwnNote:'Сумму вы вводите сами — сверьте её с продавцом, прежде чем платить. Ошибётесь в свою сторону — придётся доплачивать, в его — деньги уже не вернутся сами.',
+  tillAgeFresh:'Сумму выставили только что',
+  tillAgeSec:'Сумму выставили %s секунд назад',
+  tillAgeMin:'Сумму выставили %s минут назад — если ждёте давно, переспросите продавца',
+  tillOffline:'Не получается спросить кассу. Проверьте интернет — или введите сумму сами, сверив её с продавцом.',
+  tillBad:'Введите сумму больше нуля',
+  tillGaveUp:'Продавец так и не назвал сумму. Переспросите его — или введите её сами, сверив с ним.'
 };
 const T = {
   ru: RU,
@@ -203,7 +427,23 @@ const T = {
     expiredNote:'There is no need to pay it any more: the shop will not accept it. Start the payment again.',
     paidH:'Paid',
     paidNote:'The money has gone to the seller. The shop will see the payment by itself.',
-    paidNoteBack:'The money has gone to the seller. The shop will see the payment by itself — taking you back to %s now.'
+    paidNoteBack:'The money has gone to the seller. The shop will see the payment by itself — taking you back to %s now.',
+    openOther:'Pay from another wallet',
+    tillTitle:'Till · Tavarov Pay',
+    tillWho:'Till no. %s',
+    tillWaiting:'Waiting for the seller to name the amount',
+    tillWaitNote:'The cashier will type it on their phone and it will appear here by itself. You do not need to close this page.',
+    tillChanged:'The seller has just changed the amount — check it again.',
+    tillPayBtn:'Pay',
+    tillOwnBtn:'Enter the amount myself',
+    tillOwnLabel:'How much to pay',
+    tillOwnNote:'You are typing the amount yourself — check it with the seller before paying. Too little and you will have to pay again; too much and the money will not come back on its own.',
+    tillAgeFresh:'The amount was set just now',
+    tillAgeSec:'The amount was set %s seconds ago',
+    tillAgeMin:'The amount was set %s minutes ago — if you have been waiting a while, ask the seller again',
+    tillOffline:'Cannot reach the till. Check your connection — or type the amount yourself, having checked it with the seller.',
+    tillBad:'Enter an amount greater than zero',
+    tillGaveUp:'The seller never named an amount. Ask them again — or type it yourself, having checked it with them.'
   },
   es: {
     title:'Pago · Tavarov Pay',
@@ -228,7 +468,23 @@ const T = {
     expiredNote:'Ya no hace falta pagarla: la tienda no la aceptará. Empiece el pago de nuevo.',
     paidH:'Pagado',
     paidNote:'El dinero ha ido al vendedor. La tienda verá el pago por sí sola.',
-    paidNoteBack:'El dinero ha ido al vendedor. La tienda verá el pago por sí sola; le devolvemos a %s ahora.'
+    paidNoteBack:'El dinero ha ido al vendedor. La tienda verá el pago por sí sola; le devolvemos a %s ahora.',
+    openOther:'Pagar con otro monedero',
+    tillTitle:'Caja · Tavarov Pay',
+    tillWho:'Caja n.º %s',
+    tillWaiting:'Esperando a que el vendedor diga el importe',
+    tillWaitNote:'El cajero lo escribirá en su teléfono y aparecerá aquí solo. No hace falta cerrar esta página.',
+    tillChanged:'El vendedor acaba de cambiar el importe: compruébelo otra vez.',
+    tillPayBtn:'Pagar',
+    tillOwnBtn:'Escribir el importe yo mismo',
+    tillOwnLabel:'Cuánto se paga',
+    tillOwnNote:'El importe lo escribe usted: compruébelo con el vendedor antes de pagar. Si pone de menos, tendrá que pagar otra vez; si pone de más, el dinero no vuelve solo.',
+    tillAgeFresh:'El importe se acaba de poner',
+    tillAgeSec:'El importe se puso hace %s segundos',
+    tillAgeMin:'El importe se puso hace %s minutos: si lleva rato esperando, pregunte otra vez al vendedor',
+    tillOffline:'No se puede consultar la caja. Revise la conexión, o escriba el importe usted mismo tras comprobarlo con el vendedor.',
+    tillBad:'Escriba un importe mayor que cero',
+    tillGaveUp:'El vendedor no llegó a decir el importe. Pregúnteselo otra vez, o escríbalo usted tras comprobarlo con él.'
   },
   tr: {
     title:'Ödeme · Tavarov Pay',
@@ -253,7 +509,23 @@ const T = {
     expiredNote:'Artık ödemenize gerek yok: mağaza kabul etmeyecek. Ödemeye yeniden başlayın.',
     paidH:'Ödendi',
     paidNote:'Para satıcıya gitti. Mağaza ödemeyi kendisi görecek.',
-    paidNoteBack:'Para satıcıya gitti. Mağaza ödemeyi kendisi görecek — sizi şimdi %s adresine geri götürüyoruz.'
+    paidNoteBack:'Para satıcıya gitti. Mağaza ödemeyi kendisi görecek — sizi şimdi %s adresine geri götürüyoruz.',
+    openOther:'Başka bir cüzdanla öde',
+    tillTitle:'Kasa · Tavarov Pay',
+    tillWho:'Kasa no. %s',
+    tillWaiting:'Satıcının tutarı söylemesi bekleniyor',
+    tillWaitNote:'Kasiyer tutarı kendi telefonuna yazacak ve burada kendiliğinden görünecek. Sayfayı kapatmanıza gerek yok.',
+    tillChanged:'Satıcı tutarı az önce değiştirdi — yeniden kontrol edin.',
+    tillPayBtn:'Öde',
+    tillOwnBtn:'Tutarı kendim gireyim',
+    tillOwnLabel:'Ne kadar ödenecek',
+    tillOwnNote:'Tutarı siz giriyorsunuz — ödemeden önce satıcıyla doğrulayın. Eksik girerseniz tekrar ödemeniz gerekir; fazla girerseniz para kendiliğinden geri gelmez.',
+    tillAgeFresh:'Tutar az önce girildi',
+    tillAgeSec:'Tutar %s saniye önce girildi',
+    tillAgeMin:'Tutar %s dakika önce girildi — uzun süredir bekliyorsanız satıcıya yeniden sorun',
+    tillOffline:'Kasaya ulaşılamıyor. Bağlantınızı kontrol edin ya da satıcıyla doğrulayıp tutarı kendiniz girin.',
+    tillBad:'Sıfırdan büyük bir tutar girin',
+    tillGaveUp:'Satıcı tutarı hiç söylemedi. Ona yeniden sorun ya da onunla doğrulayıp kendiniz girin.'
   },
   pt: {
     title:'Pagamento · Tavarov Pay',
@@ -278,9 +550,313 @@ const T = {
     expiredNote:'Não precisa mais pagar: a loja não vai aceitar. Comece o pagamento de novo.',
     paidH:'Pago',
     paidNote:'O dinheiro foi para o vendedor. A loja vai ver o pagamento sozinha.',
-    paidNoteBack:'O dinheiro foi para o vendedor. A loja vai ver o pagamento sozinha — levando você de volta a %s agora.'
+    paidNoteBack:'O dinheiro foi para o vendedor. A loja vai ver o pagamento sozinha — levando você de volta a %s agora.',
+    openOther:'Pagar com outra carteira',
+    tillTitle:'Caixa · Tavarov Pay',
+    tillWho:'Caixa n.º %s',
+    tillWaiting:'Aguardando o vendedor dizer o valor',
+    tillWaitNote:'O caixa vai digitar no telefone dele e o valor aparece aqui sozinho. Não precisa fechar esta página.',
+    tillChanged:'O vendedor acabou de mudar o valor — confira de novo.',
+    tillPayBtn:'Pagar',
+    tillOwnBtn:'Digitar o valor eu mesmo',
+    tillOwnLabel:'Quanto vai pagar',
+    tillOwnNote:'O valor é digitado por você — confirme com o vendedor antes de pagar. Se faltar, vai ter que pagar de novo; se sobrar, o dinheiro não volta sozinho.',
+    tillAgeFresh:'O valor foi posto agora mesmo',
+    tillAgeSec:'O valor foi posto há %s segundos',
+    tillAgeMin:'O valor foi posto há %s minutos — se está esperando faz tempo, pergunte de novo ao vendedor',
+    tillOffline:'Não dá para consultar o caixa. Veja a sua conexão — ou digite o valor você mesmo, conferindo com o vendedor.',
+    tillBad:'Digite um valor maior que zero',
+    tillGaveUp:'O vendedor não chegou a dizer o valor. Pergunte de novo, ou digite você mesmo após conferir com ele.'
   }
 };
+/* ---------- Строки выбора кошелька ----------
+   Отдельным словарём и поверх основного: так новые слова нельзя забыть в
+   одном из языков — пропущенный ключ сразу виден рядом с остальными четырьмя. */
+const T2 = {
+  ru: {
+    brandSub:'Оплата напрямую продавцу',
+    open:'Оплатить в NoN Wallet',
+    qrHint:'Наведите камеру из приложения NoN Wallet',
+    openOther:'Оплатить другим кошельком',
+    wTitle:'Чем платить',
+    wSub:'Платёж пройдёт через контракт Tavarov Pay прямо продавцу. Понадобится немного BNB на комиссию сети.',
+    wHere:'На этом устройстве',
+    wApps:'Открыть в приложении',
+    wOtherSec:'Другой кошелёк',
+    wCopyT:'Скопировать ссылку',
+    wCopyS:'и открыть её в браузере своего кошелька',
+    wCopied:'Скопировано — вставьте в браузер кошелька',
+    wCancel:'Отмена',
+    wNone:'В этом браузере кошелёк не найден.',
+    wNoneDesk:'В этом браузере кошелёк не найден. Поставьте расширение MetaMask, Trust или OKX — или откройте страницу на телефоне.',
+    wFoundHint:'Уже стоит здесь',
+    wAppHint:'Страница откроется в его браузере',
+    wBrowser:'Кошелёк этого браузера',
+    wRunTitle:'Оплата через %s',
+    wRunSub:'Подтверждайте каждый шаг в окне кошелька. Сумма и продавец — те, что на экране.',
+    sConnect:'Подключаем кошелёк',
+    sChain:'Сеть BNB Chain',
+    sApprove:'Разрешение на эту сумму',
+    sPay:'Оплата продавцу',
+    sAlready:'уже разрешено',
+    sSent:'отправлено, ждём сеть',
+    wRetry:'Попробовать ещё раз',
+    wBack:'Выбрать другой кошелёк',
+    wRejected:'Вы отменили в кошельке. Деньги не списаны.',
+    wPending:'Кошелёк уже ждёт вашего ответа — откройте его окно.',
+    wSelf:'Это кошелёк самого продавца. Платить себе нельзя — выберите другой.',
+    wNotAccepted:'Эту монету контракт не принимает. Попросите продавца выставить счёт в USDT.',
+    wNoMoney:'На кошельке %s — не хватает на эту оплату.',
+    wNoGas:'На кошельке нет BNB, а сеть берёт комиссию именно в BNB. Пополните немного BNB и повторите.',
+    wReverted:'Сеть отклонила операцию. Деньги не списаны — попробуйте ещё раз.',
+    wWrongChain:'Кошелёк не переключился на BNB Chain. Переключите сеть в самом кошельке и повторите.',
+    wUsed:'По этому счёту уже заплатили. Второй раз платить не нужно.',
+    wUnknown:'Не получилось: %s',
+    wDone:'Оплата отправлена. Страница сама увидит её через несколько секунд.'
+  },
+  en: {
+    brandSub:'Paid straight to the seller',
+    open:'Pay with NoN Wallet',
+    qrHint:'Point the camera from the NoN Wallet app',
+    openOther:'Pay with another wallet',
+    wTitle:'How to pay',
+    wSub:'The payment goes through the Tavarov Pay contract straight to the seller. You will need a little BNB for the network fee.',
+    wHere:'On this device',
+    wApps:'Open in an app',
+    wOtherSec:'Another wallet',
+    wCopyT:'Copy the link',
+    wCopyS:'and open it in your wallet’s browser',
+    wCopied:'Copied — paste it into your wallet’s browser',
+    wCancel:'Cancel',
+    wNone:'No wallet found in this browser.',
+    wNoneDesk:'No wallet found in this browser. Install the MetaMask, Trust or OKX extension — or open this page on your phone.',
+    wFoundHint:'Already installed here',
+    wAppHint:'The page will open in its browser',
+    wBrowser:'This browser’s wallet',
+    wRunTitle:'Paying with %s',
+    wRunSub:'Confirm each step in your wallet’s window. The amount and the seller are the ones on screen.',
+    sConnect:'Connecting the wallet',
+    sChain:'BNB Chain network',
+    sApprove:'Permission for this amount',
+    sPay:'Payment to the seller',
+    sAlready:'already allowed',
+    sSent:'sent, waiting for the network',
+    wRetry:'Try again',
+    wBack:'Choose another wallet',
+    wRejected:'You cancelled in the wallet. Nothing was charged.',
+    wPending:'The wallet is already waiting for your answer — open its window.',
+    wSelf:'This is the seller’s own wallet. You cannot pay yourself — choose another one.',
+    wNotAccepted:'The contract does not accept this coin. Ask the seller for an invoice in USDT.',
+    wNoMoney:'The wallet holds %s — not enough for this payment.',
+    wNoGas:'The wallet has no BNB, and the network charges its fee in BNB. Top up a little BNB and try again.',
+    wReverted:'The network rejected the operation. Nothing was charged — try again.',
+    wWrongChain:'The wallet did not switch to BNB Chain. Switch the network in the wallet itself and try again.',
+    wUsed:'This invoice has already been paid. There is no need to pay it twice.',
+    wUnknown:'That did not work: %s',
+    wDone:'Payment sent. The page will see it by itself in a few seconds.'
+  },
+  es: {
+    brandSub:'Pago directo al vendedor',
+    open:'Pagar con NoN Wallet',
+    qrHint:'Apunte la cámara desde la aplicación NoN Wallet',
+    openOther:'Pagar con otro monedero',
+    wTitle:'Cómo pagar',
+    wSub:'El pago pasa por el contrato de Tavarov Pay directamente al vendedor. Necesitará un poco de BNB para la comisión de la red.',
+    wHere:'En este dispositivo',
+    wApps:'Abrir en una aplicación',
+    wOtherSec:'Otro monedero',
+    wCopyT:'Copiar el enlace',
+    wCopyS:'y abrirlo en el navegador de su monedero',
+    wCopied:'Copiado: péguelo en el navegador de su monedero',
+    wCancel:'Cancelar',
+    wNone:'No se encontró ningún monedero en este navegador.',
+    wNoneDesk:'No se encontró ningún monedero en este navegador. Instale la extensión de MetaMask, Trust u OKX, o abra esta página en el teléfono.',
+    wFoundHint:'Ya instalado aquí',
+    wAppHint:'La página se abrirá en su navegador',
+    wBrowser:'Monedero de este navegador',
+    wRunTitle:'Pago con %s',
+    wRunSub:'Confirme cada paso en la ventana del monedero. El importe y el vendedor son los de la pantalla.',
+    sConnect:'Conectando el monedero',
+    sChain:'Red BNB Chain',
+    sApprove:'Permiso para este importe',
+    sPay:'Pago al vendedor',
+    sAlready:'ya permitido',
+    sSent:'enviado, esperando a la red',
+    wRetry:'Intentar de nuevo',
+    wBack:'Elegir otro monedero',
+    wRejected:'Canceló en el monedero. No se cobró nada.',
+    wPending:'El monedero ya espera su respuesta: abra su ventana.',
+    wSelf:'Es el monedero del propio vendedor. No puede pagarse a sí mismo: elija otro.',
+    wNotAccepted:'El contrato no acepta esta moneda. Pida al vendedor una factura en USDT.',
+    wNoMoney:'El monedero tiene %s: no alcanza para este pago.',
+    wNoGas:'El monedero no tiene BNB, y la red cobra su comisión en BNB. Recargue un poco de BNB e inténtelo de nuevo.',
+    wReverted:'La red rechazó la operación. No se cobró nada: inténtelo de nuevo.',
+    wWrongChain:'El monedero no cambió a BNB Chain. Cambie la red en el propio monedero e inténtelo de nuevo.',
+    wUsed:'Esta factura ya está pagada. No hace falta pagarla dos veces.',
+    wUnknown:'No funcionó: %s',
+    wDone:'Pago enviado. La página lo verá sola en unos segundos.'
+  },
+  tr: {
+    brandSub:'Doğrudan satıcıya ödeme',
+    open:'NoN Wallet ile öde',
+    qrHint:'NoN Wallet uygulamasından kamerayı tutun',
+    openOther:'Başka bir cüzdanla öde',
+    wTitle:'Nasıl ödenecek',
+    wSub:'Ödeme Tavarov Pay sözleşmesi üzerinden doğrudan satıcıya gider. Ağ ücreti için biraz BNB gerekir.',
+    wHere:'Bu cihazda',
+    wApps:'Bir uygulamada aç',
+    wOtherSec:'Başka bir cüzdan',
+    wCopyT:'Bağlantıyı kopyala',
+    wCopyS:'ve cüzdanınızın tarayıcısında açın',
+    wCopied:'Kopyalandı — cüzdanınızın tarayıcısına yapıştırın',
+    wCancel:'Vazgeç',
+    wNone:'Bu tarayıcıda cüzdan bulunamadı.',
+    wNoneDesk:'Bu tarayıcıda cüzdan bulunamadı. MetaMask, Trust veya OKX eklentisini kurun ya da sayfayı telefonda açın.',
+    wFoundHint:'Burada zaten kurulu',
+    wAppHint:'Sayfa onun tarayıcısında açılır',
+    wBrowser:'Bu tarayıcının cüzdanı',
+    wRunTitle:'%s ile ödeme',
+    wRunSub:'Her adımı cüzdan penceresinde onaylayın. Tutar ve satıcı ekrandakilerle aynıdır.',
+    sConnect:'Cüzdan bağlanıyor',
+    sChain:'BNB Chain ağı',
+    sApprove:'Bu tutar için izin',
+    sPay:'Satıcıya ödeme',
+    sAlready:'zaten izin verilmiş',
+    sSent:'gönderildi, ağ bekleniyor',
+    wRetry:'Tekrar dene',
+    wBack:'Başka cüzdan seç',
+    wRejected:'Cüzdanda iptal ettiniz. Hiçbir şey çekilmedi.',
+    wPending:'Cüzdan zaten yanıtınızı bekliyor — penceresini açın.',
+    wSelf:'Bu, satıcının kendi cüzdanı. Kendinize ödeme yapamazsınız — başka birini seçin.',
+    wNotAccepted:'Sözleşme bu parayı kabul etmiyor. Satıcıdan USDT ile fatura isteyin.',
+    wNoMoney:'Cüzdanda %s var — bu ödeme için yetmiyor.',
+    wNoGas:'Cüzdanda BNB yok ve ağ ücretini BNB olarak alıyor. Biraz BNB yükleyip tekrar deneyin.',
+    wReverted:'Ağ işlemi reddetti. Hiçbir şey çekilmedi — tekrar deneyin.',
+    wWrongChain:'Cüzdan BNB Chain’e geçmedi. Ağı cüzdanın kendisinde değiştirip tekrar deneyin.',
+    wUsed:'Bu fatura zaten ödendi. İkinci kez ödemeye gerek yok.',
+    wUnknown:'Olmadı: %s',
+    wDone:'Ödeme gönderildi. Sayfa birkaç saniye içinde kendisi görecek.'
+  },
+  pt: {
+    brandSub:'Pagamento direto ao vendedor',
+    open:'Pagar com a NoN Wallet',
+    qrHint:'Aponte a câmera pelo aplicativo NoN Wallet',
+    openOther:'Pagar com outra carteira',
+    wTitle:'Como pagar',
+    wSub:'O pagamento passa pelo contrato da Tavarov Pay direto para o vendedor. Você vai precisar de um pouco de BNB para a taxa da rede.',
+    wHere:'Neste aparelho',
+    wApps:'Abrir num aplicativo',
+    wOtherSec:'Outra carteira',
+    wCopyT:'Copiar o link',
+    wCopyS:'e abri-lo no navegador da sua carteira',
+    wCopied:'Copiado — cole no navegador da sua carteira',
+    wCancel:'Cancelar',
+    wNone:'Nenhuma carteira encontrada neste navegador.',
+    wNoneDesk:'Nenhuma carteira encontrada neste navegador. Instale a extensão MetaMask, Trust ou OKX — ou abra esta página no celular.',
+    wFoundHint:'Já instalada aqui',
+    wAppHint:'A página vai abrir no navegador dela',
+    wBrowser:'Carteira deste navegador',
+    wRunTitle:'Pagamento com %s',
+    wRunSub:'Confirme cada passo na janela da carteira. O valor e o vendedor são os da tela.',
+    sConnect:'Conectando a carteira',
+    sChain:'Rede BNB Chain',
+    sApprove:'Permissão para este valor',
+    sPay:'Pagamento ao vendedor',
+    sAlready:'já permitido',
+    sSent:'enviado, aguardando a rede',
+    wRetry:'Tentar de novo',
+    wBack:'Escolher outra carteira',
+    wRejected:'Você cancelou na carteira. Nada foi cobrado.',
+    wPending:'A carteira já está esperando a sua resposta — abra a janela dela.',
+    wSelf:'Esta é a carteira do próprio vendedor. Não dá para pagar a si mesmo — escolha outra.',
+    wNotAccepted:'O contrato não aceita esta moeda. Peça ao vendedor uma fatura em USDT.',
+    wNoMoney:'A carteira tem %s — não basta para este pagamento.',
+    wNoGas:'A carteira não tem BNB, e a rede cobra a taxa em BNB. Coloque um pouco de BNB e tente de novo.',
+    wReverted:'A rede recusou a operação. Nada foi cobrado — tente de novo.',
+    wWrongChain:'A carteira não mudou para a BNB Chain. Troque a rede na própria carteira e tente de novo.',
+    wUsed:'Esta fatura já foi paga. Não é preciso pagar duas vezes.',
+    wUnknown:'Não deu certo: %s',
+    wDone:'Pagamento enviado. A página vai vê-lo sozinha em alguns segundos.'
+  }
+};
+Object.keys(T2).forEach(code => { T[code] = Object.assign(T[code] || {}, T2[code]); });
+/* Строки, добавленные после аудита 23 сентября. */
+const T3 = {
+  ru: {
+    wHint:'Окно кошелька не появилось? Откройте его вручную — запрос ждёт там. В MetaMask это значок кошелька вверху или внизу экрана.',
+    wStuck:'Кошелёк не ответил. Откройте его и проверьте, не ждёт ли там запрос; если нет — нажмите «Попробовать ещё раз».',
+    wNetDown:'Нет связи с сетью BNB Chain. Проверьте интернет и попробуйте ещё раз.',
+    paidOther:'По этому счёту уже заплатили',
+    paidOtherNote:'Заплатил кошелёк %s. Если это ваш — всё в порядке. Если нет, вы ещё ничего не платили: попросите продавца выставить сумму заново.',
+    wExpired:'Время счёта истекло — магазин его не примет. Начните оплату заново.',
+    wUsed:'Этот номер счёта уже занят другой оплатой, и контракт не примет вашу. Ничего не списано. Вернитесь в магазин и начните оплату заново.',
+    wSlowApprove:'Сеть ещё не подтвердила разрешение. Подождите минуту и нажмите «Попробовать ещё раз» — второе разрешение подписывать не придётся.',
+    wSlowPay:'Оплата отправлена, но сеть пока молчит. Не платите второй раз: страница сама увидит оплату, как только сеть её подтвердит.',
+    wNoHash:'Кошелёк не вернул номер операции. Прежде чем платить снова, проверьте в самом кошельке, не ушла ли она.',
+    wBadAmount:'Сумма в счёте записана с ошибкой. Попросите продавца выставить счёт заново.',
+    wNoAccount:'Кошелёк не дал адрес. Откройте его, разблокируйте и попробуйте ещё раз.'
+  },
+  en: {
+    wHint:'The wallet window did not appear? Open it yourself — the request is waiting there. In MetaMask it is the wallet icon at the top or bottom of the screen.',
+    wStuck:'The wallet did not answer. Open it and check whether a request is waiting there; if not, press “Try again”.',
+    wNetDown:'No connection to the BNB Chain network. Check your internet and try again.',
+    paidOther:'This invoice has already been paid',
+    paidOtherNote:'It was paid from wallet %s. If that is yours, all is well. If not, you have paid nothing yet: ask the seller to set the amount again.',
+    wExpired:'The invoice has run out — the shop will not accept it. Start the payment again.',
+    wUsed:'This invoice number is already taken by another payment, and the contract will not accept yours. Nothing was charged. Go back to the shop and start the payment again.',
+    wSlowApprove:'The network has not confirmed the permission yet. Wait a minute and press “Try again” — you will not have to sign a second permission.',
+    wSlowPay:'The payment was sent, but the network is still silent. Do not pay a second time: the page will see the payment as soon as the network confirms it.',
+    wNoHash:'The wallet did not return an operation number. Before paying again, check in the wallet whether it went through.',
+    wBadAmount:'The amount in the invoice is written incorrectly. Ask the seller to issue it again.',
+    wNoAccount:'The wallet gave no address. Open it, unlock it and try again.'
+  },
+  es: {
+    wHint:'¿No apareció la ventana del monedero? Ábralo usted: la solicitud le espera allí. En MetaMask es el icono del monedero arriba o abajo de la pantalla.',
+    wStuck:'El monedero no respondió. Ábralo y compruebe si hay una solicitud esperando; si no, pulse «Intentar de nuevo».',
+    wNetDown:'No hay conexión con la red BNB Chain. Revise su internet e inténtelo de nuevo.',
+    paidOther:'Esta factura ya está pagada',
+    paidOtherNote:'La pagó el monedero %s. Si es el suyo, todo está bien. Si no, usted aún no ha pagado nada: pida al vendedor que marque el importe de nuevo.',
+    wExpired:'La factura ha caducado: la tienda no la aceptará. Empiece el pago de nuevo.',
+    wUsed:'Este número de factura ya lo ocupa otro pago, y el contrato no aceptará el suyo. No se cobró nada. Vuelva a la tienda y empiece el pago de nuevo.',
+    wSlowApprove:'La red aún no ha confirmado el permiso. Espere un minuto y pulse «Intentar de nuevo»: no tendrá que firmar un segundo permiso.',
+    wSlowPay:'El pago se envió, pero la red aún no responde. No pague dos veces: la página verá el pago en cuanto la red lo confirme.',
+    wNoHash:'El monedero no devolvió el número de la operación. Antes de pagar de nuevo, compruebe en el monedero si salió.',
+    wBadAmount:'El importe de la factura está mal escrito. Pida al vendedor que la emita de nuevo.',
+    wNoAccount:'El monedero no dio una dirección. Ábralo, desbloquéelo e inténtelo de nuevo.'
+  },
+  tr: {
+    wHint:'Cüzdan penceresi açılmadı mı? Kendiniz açın — istek orada bekliyor. MetaMask\'ta ekranın üstündeki ya da altındaki cüzdan simgesidir.',
+    wStuck:'Cüzdan yanıt vermedi. Açıp orada bekleyen bir istek olup olmadığına bakın; yoksa “Tekrar dene”ye basın.',
+    wNetDown:'BNB Chain ağıyla bağlantı yok. İnternetinizi kontrol edip tekrar deneyin.',
+    paidOther:'Bu fatura zaten ödendi',
+    paidOtherNote:'%s cüzdanından ödendi. O sizinse sorun yok. Değilse henüz hiçbir şey ödemediniz: satıcıdan tutarı yeniden girmesini isteyin.',
+    wExpired:'Faturanın süresi doldu — mağaza kabul etmez. Ödemeye yeniden başlayın.',
+    wUsed:'Bu fatura numarası başka bir ödemeyle zaten kullanılmış ve sözleşme sizinkini kabul etmeyecek. Hiçbir şey çekilmedi. Mağazaya dönüp ödemeye yeniden başlayın.',
+    wSlowApprove:'Ağ izni henüz onaylamadı. Bir dakika bekleyip “Tekrar dene”ye basın — ikinci bir izin imzalamanız gerekmeyecek.',
+    wSlowPay:'Ödeme gönderildi ama ağ henüz yanıt vermiyor. İkinci kez ödemeyin: ağ onaylar onaylamaz sayfa ödemeyi görecek.',
+    wNoHash:'Cüzdan işlem numarası döndürmedi. Tekrar ödemeden önce cüzdanda işlemin gidip gitmediğini kontrol edin.',
+    wBadAmount:'Faturadaki tutar hatalı yazılmış. Satıcıdan faturayı yeniden kesmesini isteyin.',
+    wNoAccount:'Cüzdan adres vermedi. Açın, kilidini açın ve tekrar deneyin.'
+  },
+  pt: {
+    wHint:'A janela da carteira não apareceu? Abra-a você mesmo — o pedido está esperando lá. Na MetaMask é o ícone da carteira no topo ou no fim da tela.',
+    wStuck:'A carteira não respondeu. Abra-a e veja se há um pedido esperando; se não, toque em “Tentar de novo”.',
+    wNetDown:'Sem conexão com a rede BNB Chain. Verifique a internet e tente de novo.',
+    paidOther:'Esta fatura já foi paga',
+    paidOtherNote:'Foi paga pela carteira %s. Se é a sua, está tudo bem. Se não, você ainda não pagou nada: peça ao vendedor que digite o valor de novo.',
+    wExpired:'O prazo da fatura acabou — a loja não vai aceitá-la. Comece o pagamento de novo.',
+    wUsed:'Este número de fatura já está ocupado por outro pagamento, e o contrato não vai aceitar o seu. Nada foi cobrado. Volte à loja e comece o pagamento de novo.',
+    wSlowApprove:'A rede ainda não confirmou a permissão. Espere um minuto e toque em “Tentar de novo” — não será preciso assinar outra permissão.',
+    wSlowPay:'O pagamento foi enviado, mas a rede ainda não respondeu. Não pague duas vezes: a página vai ver o pagamento assim que a rede confirmar.',
+    wNoHash:'A carteira não devolveu o número da operação. Antes de pagar de novo, veja na carteira se ela saiu.',
+    wBadAmount:'O valor da fatura está escrito errado. Peça ao vendedor que a emita de novo.',
+    wNoAccount:'A carteira não deu um endereço. Abra-a, desbloqueie e tente de novo.'
+  }
+};
+Object.keys(T3).forEach(code => {
+  T[code] = Object.assign(T[code] || {}, T3[code]);
+  T2[code] = Object.assign(T2[code] || {}, T3[code]);     // проверка переводов смотрит в T2
+});
 /* Состояние держим ключами, а не готовыми словами: человек может переключить
    язык уже после того, как увидел «Оплачено», и надпись обязана смениться
    вместе со всем остальным. Объявлено здесь, до первого applyLang, — иначе
@@ -292,7 +868,10 @@ let LANG = 'ru';
 function t(k, a){
   const d = T[LANG] || RU;
   let v = (d[k] !== undefined) ? d[k] : (RU[k] !== undefined ? RU[k] : k);
-  if (a !== undefined && a !== null) v = v.replace('%s', a);
+  /* Функцией, а не строкой: у строки-замены свои спецсимволы — «$&»
+     подставил бы найденное. Кошелёк с именем «X$&» превращал заголовок в
+     «Оплата через X%s». */
+  if (a !== undefined && a !== null) v = v.replace('%s', () => String(a));
   return v;
 }
 function applyLang(code){
@@ -302,10 +881,12 @@ function applyLang(code){
   document.querySelectorAll('#langs button').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.code === LANG)));
   try{ localStorage.setItem(LANG_KEY, LANG); } catch(e){}
-  document.title = inv ? t('titlePay', inv.a + ' ' + (inv.c || 'USDT')) : t('title');
+  document.title = inv ? t('titlePay', inv.a + ' ' + (inv.c || 'USDT'))
+                       : (till ? t('tillTitle') : t('title'));
   $('errText').textContent = t('errH');
   redrawState();
   if (inv) renderText();
+  if (till) renderTillText();
 }
 (function buildLangs(){
   const box = $('langs');
@@ -349,34 +930,111 @@ function safeReturnUrl(v){
   if (u.protocol !== 'https:') return null;
   if (u.username || u.password) return null;
   if (!/^[a-z0-9.-]+$/i.test(u.hostname)) return null;
+  /* И не на наш же кошелёк. Иначе «вернуться в магазин» через две секунды
+     после «Оплачено» открывало бы NoN Wallet с готовым вторым платежом —
+     и выглядело бы это как продолжение той же оплаты. */
+  if (WALLET_ORIGINS.some(o => { try{ return new URL(o).host === u.host; } catch(e){ return false; } }))
+    return null;
   return u.href;
 }
 
 let inv = null;      // разобранный счёт
-function readInvoice(){
-  const m = location.hash.match(/[#&]p=([A-Za-z0-9_-]+)/);
-  if (!m) return null;
+let till = null;     // разобранная наклейка кассы (счёта в ней нет — только продавец)
+
+/* Состояние кассы объявлено здесь, рядом со счётом, а не ниже вместе со
+   своим кодом. Причина скучная и дорогая: выбор языка происходит до всего
+   остального и уже трогает эти переменные — а объявленные через let ниже по
+   файлу до своей строки не существуют вовсе, и страница падала бы на первом
+   же кадре. */
+let tillTimer = null, tillAgeTimer = null;
+let tillNow = null;          // что касса показывает сейчас
+let tillSeen = null;         // что она показывала в прошлый раз
+let tillPolls = 0;
+let tillFails = 0;           // сколько раз подряд касса не ответила
+let tillProblemKey = null;   // о чём мы сейчас жалуемся покупателю
+/* ---------- Откуда брать данные счёта ----------
+
+   Обычно — из-за решётки: браузер её на сервер не отправляет. Но ссылку,
+   которую мы отдаём приложению-кошельку («открыть в MetaMask», «в Trust»),
+   эти приложения пересылают по-разному, и часть из них теряет всё, что
+   после решётки. Для них данные едут в строке запроса, а здесь мы сразу
+   переносим их обратно за решётку и убираем из адреса. Цена честная и
+   маленькая: один такой заход оставит данные счёта в журнале хостинга —
+   продавца, сумму и товар. Покупателя в них нет. */
+/* Пришли из приложения-кошелька по нашей же ссылке — шторку выбора
+   открываем сразу: человек уже выбрал кошелёк, спрашивать второй раз
+   незачем. Считаем это ДО того, как адрес будет переписан ниже. */
+const AUTO_PICK = /[?&]pick=1(&|$)/.test(location.search);
+
+function payloadOf(key){
+  const m = location.hash.match(new RegExp('[#&]' + key + '=([A-Za-z0-9_-]+)'));
+  if (m) return m[1];
+  let q = null;
+  try{ q = new URLSearchParams(location.search).get(key); } catch(e){}
+  if (!q || !/^[A-Za-z0-9_-]+$/.test(q)) return null;
   try{
-    const o = JSON.parse(b64urlDecode(m[1]));
+    const lg = new URLSearchParams(location.search).get('lang');
+    history.replaceState(null, '', location.pathname + '#' + key + '=' + q +
+      (lg && /^[a-z]{2}$/.test(lg) ? '&lang=' + lg : ''));
+  } catch(e){}
+  return q;
+}
+
+function readInvoice(){
+  const raw = payloadOf('p');
+  if (!raw) return null;
+  try{
+    const o = JSON.parse(b64urlDecode(raw));
     if (!/^0x[0-9a-fA-F]{40}$/.test(o.m || '')) return null;
-    if (!(parseFloat(o.a) > 0)) return null;
+    /* Сумма — только цифры и точка. «1,000» раньше показывалось как тысяча,
+       а платилась одна монета; «1e3» показывалось как есть и не платилось
+       вовсе. Такой счёт не показываем: его выписали с ошибкой. */
+    if (!/^\d{1,12}(\.\d{1,18})?$/.test(String(o.a)) || !(parseFloat(o.a) > 0)) return null;
+    if (o.c !== undefined && !/^[A-Z]{2,8}$/.test(String(o.c))) return null;
     if (!/^0x[0-9a-fA-F]{64}$/.test(o.h || '')) return null;
     /* Всё, что уедет в href или в переход, чистим сразу на входе, а не в
        месте применения: так забыть проверку в одном из мест нельзя. */
     o.w = safeWalletBase(o.w);
     o.r = safeReturnUrl(o.r);
-    if (o.net !== 'bnb' && o.net !== 'bnbTestnet') o.net = 'bnb';
+    /* Сети нет — это старая ссылка, и она из основной. Сеть есть, но
+       незнакомая — это ошибка или подлог, и молча делать из неё основную
+       нельзя: человек заплатил бы настоящими деньгами по «тестовому» счёту. */
+    if (o.net === undefined || o.net === null || o.net === '') o.net = 'bnb';
+    if (o.net !== 'bnb' && o.net !== 'bnbTestnet') return null;
+    return o;
+  } catch(e){ return null; }
+}
+
+/* ---------- Наклейка кассы ----------
+   В ней нет и не может быть суммы: её печатают один раз и вешают навсегда.
+   Внутри только продавец, номер кассы и сеть — а сумму спросим у кассы уже
+   отсюда. Лежит всё после решётки, как и обычный счёт: адрес продавца при
+   таком способе не уходит даже на наш собственный сервер в журнал запросов. */
+function readTill(){
+  const raw = payloadOf('t');
+  if (!raw) return null;
+  try{
+    const o = JSON.parse(b64urlDecode(raw));
+    if (!/^0x[0-9a-fA-F]{40}$/.test(o.m || '')) return null;
+    o.k = parseInt(o.k, 10);
+    if (!Number.isInteger(o.k) || o.k < 1 || o.k > 99) return null;
+    if (o.net === undefined || o.net === null || o.net === '') o.net = 'bnb';
+    if (o.net !== 'bnb' && o.net !== 'bnbTestnet') return null;
+    o.w = safeWalletBase(o.w);
+    o.n = (typeof o.n === 'string' ? o.n : '').slice(0, 64);
     return o;
   } catch(e){ return null; }
 }
 
 function fail(text){
   $('main').classList.add('hidden');
+  $('tillCard').classList.add('hidden');
   $('err').classList.remove('hidden');
   if (text) $('errText').textContent = text;
 }
 
 inv = readInvoice();
+if (!inv) till = readTill();
 /* Язык выбираем до первой отрисовки: сначала тот, что человек выбрал раньше,
    иначе — язык его браузера, и только потом английский. */
 let startLang = null;
@@ -392,12 +1050,40 @@ if (!startLang){
 }
 applyLang(NAMES[startLang] ? startLang : 'en');
 
-if (!inv) {
-  fail();
-} else {
-  render();
-  watch();
+/* Запуск перенесён в самый конец файла: startTill() трогает таблицы монет,
+   а они объявлены через const — до своей строки такие объявления не
+   существуют вовсе, и запуск отсюда падал бы с ошибкой ещё до первого
+   кадра. */
+
+/* ---------- Оплата чужим кошельком ----------
+   Стандарт EIP-681 — тот самый «ethereum:…», который понимают Trust Wallet,
+   MetaMask и почти все остальные. Для кассы это не удобство, а условие
+   работы: покупатель приходит с тем кошельком, который у него уже стоит, и
+   уговаривать его поставить наш прямо у прилавка — значит не продать.
+
+   Адреса монет и их точность держим здесь же. На BNB Chain и USDT, и USDC
+   имеют восемнадцать знаков после точки — не шесть, как привыкли те, кто
+   имел дело с Ethereum. Ошибка здесь не «показалось не то число», а
+   платёж в миллион раз меньше нужного. */
+const CHAIN_IDS = { bnb: 56, bnbTestnet: 97 };
+const TOKENS = {
+  bnb:        { USDT:{ a:'0x55d398326f99059fF775485246999027B3197955', d:18 },
+                USDC:{ a:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', d:18 },
+                TVR: { a:'0x8Baa77344Fc122967902651D0C3193cdF4c48503', d:18 } },
+  bnbTestnet: { USDT:{ a:'0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e', d:6 },
+                TVR: { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } }
+};
+
+/* «12.5» в целые единицы — строкой, без дробных чисел. В них 0.1 + 0.2 не
+   равно 0.3, а здесь это деньги. */
+function toUnits(amount, decimals){
+  const s = String(amount).trim().replace(',', '.');
+  if (!/^\d+(\.\d+)?$/.test(s)) return null;
+  const [whole, frac = ''] = s.split('.');
+  if (frac.length > decimals && /[1-9]/.test(frac.slice(decimals))) return null;
+  return BigInt(whole + frac.padEnd(decimals, '0').slice(0, decimals)).toString();
 }
+
 
 function payLink(){
   const p = [];
@@ -431,6 +1117,13 @@ function render(){
      обновляем. */
   const walletUrl = (inv.w || 'https://wallet.tavarov.com') + '/?pay=' + encodeURIComponent(link);
   $('openWallet').href = walletUrl;
+
+  /* Чужой кошелёк — только если монета есть в таблице этой сети: иначе
+     контракту нечего отдать в оплату, и шторка открылась бы впустую. */
+  const expired = inv.t && Math.floor(Date.now() / 1000) >= inv.t;
+  const canOther = !expired && !!(tokenOf(inv.net || 'bnb', inv.c || 'USDT') && PAY_CONTRACT[inv.net || 'bnb']);
+  $('openOther').classList.toggle('hidden', !canOther);
+  $('openOther').onclick = () => openWalletSheet();
   $('copyLink').onclick = () => {
     navigator.clipboard.writeText(link).then(
       () => { $('copyLink').textContent = t('copied'); setTimeout(()=>{ $('copyLink').textContent = t('copy'); }, 1600); },
@@ -441,6 +1134,7 @@ function render(){
      легко разгоняет строку за двести знаков, а на высоком уровне код
      столько не вмещает и рисуется пустым квадратом. */
   try{
+    $('qr').innerHTML = '';        // в режиме кассы сюда можно прийти не с пустого места
     new QRCode($('qr'), { text: link, width: 230, height: 230,
                           correctLevel: QRCode.CorrectLevel.M });
   } catch(e){
@@ -460,6 +1154,11 @@ function tick(){
       $('expires').textContent = t('expiredLine');
       setState('bad', 'expiredH', 'expiredNote');
       clearInterval(timer);
+      /* Магазин просроченный счёт не примет — значит и платить по нему не
+         даём. Раньше надпись менялась, а кнопки оставались, и шторка из
+         приложения-кошелька открывалась сама. */
+      ['openWallet', 'openOther', 'qr', 'qrHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+      if (typeof closeWalletSheet === 'function') closeWalletSheet(true);
       return;
     }
     const m = Math.floor(s / 60), c = s % 60;
@@ -500,7 +1199,24 @@ async function watch(){
       if (!r.ok) return;
       const d = await r.json();
       if (d.paid){
+        /* Прямой перевод без номера счёта. Эта страница сама такие больше
+           не делает, значит это чьи-то деньги той же суммы — не оплата
+           этого человека. Зелёным не красим и ждём дальше. */
+        if (d.direct || d.uncertain) return;
         done = true;
+        clearInterval(watchTimer);
+        paidNow();
+        /* У кассы номер счёта общий для всех, кто навёл камеру в эти минуты.
+           Заплатил первый — у второго не должно загореться «Оплачено»: он
+           ушёл бы с товаром, ничего не заплатив, а кассир видел бы зелёное
+           у себя (это оплата первого) и у него. Зелёное — только если
+           платил именно этот кошелёк; иначе честно показываем, кто. */
+        const mine = inv.payer && d.payer && d.payer.toLowerCase() === inv.payer.toLowerCase();
+        if (inv.ft && !mine){
+          setState('info', 'paidOther', 'paidOtherNote',
+                   isAddr(d.payer) ? shortAddr(d.payer) : '—');
+          return;
+        }
         setState('ok', 'paidH',
           inv.r ? 'paidNoteBack' : 'paidNote',
           inv.r ? new URL(inv.r).hostname : null);
@@ -516,8 +1232,739 @@ async function watch(){
     } catch(e){ /* сеть моргнула — спросим через секунду ещё раз */ }
   };
   ask();
-  setInterval(ask, 4000);
+  watchTimer = setInterval(ask, 4000);
 }
+let watchTimer = null;
+/* Оплачено — кнопки оплаты убираем. Иначе, нажав ещё раз, человек подписал
+   бы второе разрешение (и заплатил за него комиссию сети), прежде чем
+   контракт отказал бы в повторной оплате. */
+function paidNow(){
+  ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+  if (typeof closeWalletSheet === 'function') closeWalletSheet(true);
+}
+
+/* ===================== ЧУЖОЙ КОШЕЛЁК — ЧЕРЕЗ КОНТРАКТ =====================
+
+   Зачем это всё, если был простой «ethereum:…».
+
+   Тот перевод шёл мимо контракта: деньги доходили, но это была не покупка,
+   а просто перевод. Ни комиссии, ни бонусов, ни записи о продаже, по
+   которой потом делается возврат. А ещё телефон сам выбирал, каким
+   кошельком его открыть, — у кого их три, того молча уводило в MetaMask.
+
+   Теперь покупатель выбирает кошелёк сам, и платёж идёт тем же путём, что
+   из нашего приложения: разрешение на ровно эту сумму, потом pay() в
+   контракте. Деньги по-прежнему идут от покупателя прямо продавцу —
+   контракт их не держит, он их разводит: продавцу, и комиссия в казну.
+
+   ЧЕГО ЗДЕСЬ НЕТ НАРОЧНО.
+   · Библиотеки для блокчейна. Вызовов всего пять, и каждый собирается
+     руками в тридцать байт — тащить ради них мегабайт кода на страницу,
+     которую открывают у прилавка по мобильному интернету, незачем.
+     Подписи функций сверены с библиотекой в проверке t58.
+   · Бессрочного разрешения. Разрешаем ровно сумму счёта: сорвётся
+     контракт — вынести нечего.
+   · WalletConnect. Он требует регистрации проекта у третьей стороны, и
+     без неё работать не будет. Когда понадобится — это отдельный шаг. */
+
+const PAY_CONTRACT = { bnb:'0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35',
+                       bnbTestnet:'0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6' };
+const CHAIN_PARAMS = {
+  bnb: { chainId:'0x38', chainName:'BNB Smart Chain',
+         nativeCurrency:{ name:'BNB', symbol:'BNB', decimals:18 },
+         rpcUrls:['https://bsc-dataseed.binance.org'], blockExplorerUrls:['https://bscscan.com'] },
+  bnbTestnet: { chainId:'0x61', chainName:'BNB Smart Chain Testnet',
+         nativeCurrency:{ name:'tBNB', symbol:'tBNB', decimals:18 },
+         rpcUrls:['https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
+         blockExplorerUrls:['https://testnet.bscscan.com'] }
+};
+/* Первые четыре байта keccak256 от подписи функции. */
+const SEL = { balanceOf:'0x70a08231', allowance:'0xdd62ed3e', approve:'0x095ea7b3',
+              acceptedToken:'0x55f5e7de', pay:'0x3e8bca68', saleOf:'0x38d56afe' };
+/* Монета из таблицы — только своим ключом. Иначе «__proto__» или
+   «constructor» из ссылки находились бы в таблице и давали монету без
+   адреса и без точности. */
+function tokenOf(net, c){
+  const tbl = TOKENS[net];
+  return (tbl && Object.prototype.hasOwnProperty.call(tbl, c)) ? tbl[c] : null;
+}
+/* ---------- Чтение из сети — нашими узлами, а не через кошелёк ----------
+
+   23 сентября в MetaMask на iPhone оплата вставала намертво на шаге
+   «Разрешение на эту сумму»: кошелёк подключился, сеть переключилась — и
+   дальше тишина, без ошибки и без окна подписи. Известная беда встроенного
+   браузера MetaMask: после переключения сети его запросы на чтение иногда
+   не возвращаются вовсе, пока страницу не перезагрузить.
+
+   Поэтому всё, что только ЧИТАЕТ из блокчейна (принимает ли контракт
+   монету, сколько денег, какое разрешение, дошла ли операция), спрашиваем
+   у публичных узлов сами — так же, как это делает наше приложение. Кошельку
+   остаётся только то, без чего не обойтись: дать адрес, переключить сеть и
+   подписать. И на каждый вопрос есть предел ожидания: зависший запрос
+   теперь кончается понятной ошибкой, а не вечным кружком. */
+const READ_RPCS = {
+  bnb:        ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
+  bnbTestnet: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com']
+};
+async function readRpc(net, method, params){
+  let last = null;
+  for (const url of (READ_RPCS[net] || [])){
+    try{
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 10000);
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }), signal: ctl.signal });
+      clearTimeout(timer);
+      if (!r.ok){ last = 'HTTP ' + r.status; continue; }
+      const d = await r.json();
+      if (d.error){ last = d.error.message || 'node error'; continue; }
+      return d.result;
+    } catch(e){ last = String(e && e.message || e); }
+  }
+  throw human('wNetDown');
+}
+/* Предел ожидания для просьб к кошельку. Кошелёк, который не ответил, — это
+   не «нет», а «не знаю»: говорим, где именно он замолчал. */
+function withLimit(promise, ms, key){
+  let t;
+  return Promise.race([promise, new Promise((_, rej) => { t = setTimeout(() => rej(human(key)), ms); })])
+    .finally(() => clearTimeout(t));
+}
+const w32  = h => String(h).replace(/^0x/, '').toLowerCase().padStart(64, '0');
+const wNum = n => w32(BigInt(n).toString(16));
+const isAddr = a => /^0x[0-9a-fA-F]{40}$/.test(a || '');
+
+/* ---------- Какие кошельки стоят в этом браузере ----------
+   EIP-6963: каждое расширение-кошелёк отвечает на вопрос само и называет
+   себя — имя, значок, провайдер. Это и есть ответ на «у меня их три, а
+   открывался только MetaMask»: теперь их видно все, и выбирает человек. */
+const found = new Map();
+let sheetOpen = false;
+window.addEventListener('eip6963:announceProvider', e => {
+  const d = e && e.detail;
+  if (!d || !d.info || !d.provider || typeof d.provider.request !== 'function') return;
+  found.set(String(d.info.uuid || d.info.rdns || d.info.name), d);
+  if (sheetOpen) drawWallets();
+});
+function discoverWallets(){
+  try{ window.dispatchEvent(new Event('eip6963:requestProvider')); } catch(e){}
+}
+discoverWallets();
+
+/* Значок присылает сам кошелёк, то есть снаружи. Берём только картинку,
+   вшитую в data:, и только в <img> — никакой вставки разметкой. SVG внутри
+   <img> скриптов не выполняет. */
+function safeIcon(src){
+  return (typeof src === 'string' && /^data:image\/(png|jpeg|webp|gif|svg\+xml)[;,]/i.test(src)) ? src : null;
+}
+
+/* Старые кошельки о EIP-6963 не знают и просто кладут себя в
+   window.ethereum. Имя угадываем по флагам — начиная с тех, кто любит
+   притворяться MetaMask'ом. */
+function legacyName(p){
+  if (!p) return t('wBrowser');
+  if (p.isTrust || p.isTrustWallet) return 'Trust Wallet';
+  if (p.isOkxWallet || p.isOKExWallet) return 'OKX Wallet';
+  if (p.isTokenPocket) return 'TokenPocket';
+  if (p.isBitKeep || p.isBitget) return 'Bitget Wallet';
+  if (p.isSafePal) return 'SafePal';
+  if (p.isCoinbaseWallet) return 'Coinbase Wallet';
+  if (p.isBinance) return 'Binance Wallet';
+  if (p.isRabby) return 'Rabby';
+  if (p.isMetaMask) return 'MetaMask';
+  return t('wBrowser');
+}
+function walletsHere(){
+  const list = [...found.values()].map(d => ({
+    name: String(d.info.name || '').slice(0, 40) || t('wBrowser'),
+    icon: safeIcon(d.info.icon), provider: d.provider }));
+  if (!list.length && window.ethereum && typeof window.ethereum.request === 'function')
+    list.push({ name: legacyName(window.ethereum), icon: null, provider: window.ethereum });
+  return list;
+}
+
+const IS_PHONE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+  || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || ''));
+
+/* ---------- Ссылка на эту же оплату — для браузера кошелька ----------
+   Касса к этому моменту уже назвала сумму, и счёт живёт только в памяти
+   вкладки. Собираем его заново целиком — иначе в кошельке откроется
+   пустая касса, а не эта оплата. */
+function b64urlEncode(str){
+  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function paymentUrl(){
+  const o = { m: inv.m, a: inv.a, c: inv.c || 'USDT', h: inv.h, net: inv.net || 'bnb' };
+  ['o', 'n', 'i', 'w', 'r', 't', 's', 'ft'].forEach(k => { if (inv[k]) o[k] = inv[k]; });
+  return location.origin + location.pathname + '?p=' + b64urlEncode(JSON.stringify(o))
+       + '&pick=1&lang=' + LANG;
+}
+/* Форматы ссылок взяты из документации самих кошельков. Приложения,
+   которых здесь нет, покрывает кнопка «скопировать ссылку». */
+function walletApps(){
+  const url = paymentUrl();
+  const bare = url.replace(/^https?:\/\//, '');
+  return [
+    { name:'MetaMask',     color:'#F6851B', letter:'M', href:'https://metamask.app.link/dapp/' + bare },
+    { name:'Trust Wallet', color:'#0500FF', letter:'T',
+      href:'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(url) },
+    { name:'OKX Wallet',   color:'#111111', letter:'O',
+      href:'https://web3.okx.com/download?deeplink=' +
+           encodeURIComponent('okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(url)) }
+  ];
+}
+
+function rowButton(opt){
+  const el = document.createElement(opt.href ? 'a' : 'button');
+  el.className = 'wrow';
+  if (opt.href){ el.href = opt.href; el.rel = 'noopener'; } else el.type = 'button';
+  const ic = document.createElement('span');
+  ic.className = 'wi';
+  if (opt.icon){
+    const img = document.createElement('img');
+    img.alt = ''; img.src = opt.icon;
+    ic.style.background = 'transparent';
+    ic.appendChild(img);
+  } else {
+    ic.style.background = opt.color || '#6D28D9';
+    ic.textContent = opt.letter || (opt.name || '?').charAt(0).toUpperCase();
+  }
+  const tx = document.createElement('span');
+  tx.className = 'wt';
+  tx.textContent = opt.name;
+  const sm = document.createElement('small');
+  sm.textContent = opt.hint || '';
+  tx.appendChild(sm);
+  const ch = document.createElement('span');
+  ch.className = 'chev'; ch.textContent = '›'; ch.setAttribute('aria-hidden', 'true');
+  el.append(ic, tx, ch);
+  if (opt.onClick) el.onclick = opt.onClick;
+  return el;
+}
+
+function drawWallets(){
+  const box = $('wFound');
+  box.innerHTML = '';
+  const here = walletsHere();
+  if (!here.length){
+    const p = document.createElement('div');
+    p.className = 'empty';
+    p.textContent = IS_PHONE ? t('wNone') : t('wNoneDesk');
+    box.appendChild(p);
+  }
+  here.forEach(w => box.appendChild(rowButton({
+    name: w.name, icon: w.icon, hint: t('wFoundHint'), onClick: () => payWith(w) })));
+
+  /* Приложения — только на телефоне: на компьютере эти ссылки ведут на
+     страницы загрузки, а не в кошелёк. */
+  $('wAppsBox').classList.toggle('hidden', !IS_PHONE);
+  if (IS_PHONE){
+    const apps = $('wApps');
+    apps.innerHTML = '';
+    walletApps().forEach(a => apps.appendChild(rowButton(Object.assign({ hint: t('wAppHint') }, a))));
+  }
+}
+
+function openWalletSheet(){
+  /* Кнопки нет — значит платить сейчас нельзя: счёт просрочен, уже оплачен
+     или монета мимо контракта. Шторка, открытая из приложения-кошелька
+     сама, обязана слушаться того же правила. */
+  if (!inv || $('openOther').classList.contains('hidden')) return;
+  sheetOpen = true;
+  discoverWallets();
+  $('wPick').classList.remove('hidden');
+  $('wRun').classList.add('hidden');
+  drawWallets();
+  $('wSheet').classList.remove('hidden');
+}
+/* Шторку можно закрыть ВСЕГДА — и кнопкой, и по фону, и клавишей Esc.
+   Раньше, пока шла оплата, она не закрывалась ничем, а кошелёк, который
+   молча не ответил, запирал человека до перезагрузки — а перезагрузка у
+   кассы теряет сумму.
+
+   Закрыли посреди оплаты — начатая попытка доживает, но дальше ничего не
+   отправляет: каждый её шаг сверяет свой номер с текущим. Окно подписи,
+   уже открытое в кошельке, отозвать нельзя, и это честно: подпишет — так
+   подпишет, но второй операции за ним не последует. */
+let payGen = 0;
+function closeWalletSheet(force){
+  if (payBusy){ payGen++; payBusy = false; }
+  sheetOpen = false;
+  $('wSheet').classList.add('hidden');
+}
+$('wClose').onclick = () => closeWalletSheet();
+$('wSheet').addEventListener('click', e => { if (e.target === $('wSheet')) closeWalletSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen) closeWalletSheet(); });
+$('wBack').onclick = () => {
+  if (payBusy){ payGen++; payBusy = false; }
+  $('wRun').classList.add('hidden'); $('wPick').classList.remove('hidden'); drawWallets();
+};
+$('wCopy').onclick = () => {
+  const url = paymentUrl();
+  const sm = $('wCopy').querySelector('small');
+  navigator.clipboard.writeText(url).then(
+    () => { sm.textContent = t('wCopied'); setTimeout(() => { sm.textContent = t('wCopyS'); }, 2400); },
+    () => { prompt(t('copyManual'), url); });
+};
+
+/* ---------- Сама оплата ---------- */
+let payBusy = false;
+let lastWallet = null;
+
+function stepSet(name, state, note){
+  const li = document.querySelector('#wSteps li[data-s="' + name + '"]');
+  if (!li) return;
+  li.className = state || '';
+  li.querySelector('small').textContent = note || '';
+}
+function stepsReset(){ ['connect', 'chain', 'approve', 'pay'].forEach(n => stepSet(n, '', '')); }
+function shortAddr(a){ return a.slice(0, 6) + '…' + a.slice(-4); }
+/* Целые единицы монеты — в человеческие «12.5», без дробных чисел. */
+function fmtUnits(v, d){
+  const base = 10n ** BigInt(d);
+  const whole = (v / base).toString();
+  const frac = (v % base).toString().padStart(d, '0').slice(0, 2).replace(/0+$/, '');
+  return frac ? whole + '.' + frac : whole;
+}
+
+/* Ошибки кошельков по-человечески. Коды общие для всех (EIP-1193), а текст
+   у каждого свой и обычно по-английски. */
+function walletError(e){
+  const code = e && (e.code !== undefined ? e.code : (e.data && e.data.code));
+  const msg = String((e && (e.message || (e.data && e.data.message))) || e || '');
+  /* Наши собственные тексты — первыми. В английском «сеть отклонила»
+     звучит как «rejected», и раньше любой откат в сети превращался в
+     «Вы отменили в кошельке». */
+  if (e && e.human) return msg;
+  if (code === 4001 || code === 'ACTION_REJECTED' || /user (rejected|denied)|rejected by user|cancel/i.test(msg)) return t('wRejected');
+  if (code === -32002) return t('wPending');
+  if (/invoice already used/i.test(msg)) return t('wUsed');
+  if (/cannot pay yourself/i.test(msg)) return t('wSelf');
+  if (/insufficient funds/i.test(msg)) return t('wNoGas');
+  return t('wUnknown', msg.slice(0, 140) || '—');
+}
+function human(key, arg){ const e = new Error(t(key, arg)); e.human = true; e.key = key; return e; }
+
+/* Сеть кошелька. MetaMask в своём встроенном браузере на iPhone иногда
+   молчит на служебный вопрос «какая сеть?» — особенно сразу после
+   переключения. Молчание здесь не повод останавливать оплату: просьба
+   переключиться на ту же сеть безвредна (окна не будет), а ответ на неё
+   и есть ответ на вопрос. */
+async function askChain(req, cs){
+  if (cs && cs.silent) return '';            // уже молчал — не ждём снова по 8 секунд
+  try{ return String(await req('eth_chainId', null, 8000)).toLowerCase(); }
+  catch(e){ if (e && e.key === 'wStuck'){ if (cs) cs.silent = true; return ''; } throw e; }
+}
+async function ensureChain(req, net, cs){
+  const want = CHAIN_PARAMS[net].chainId;
+  const now = await askChain(req, cs);
+  if (now === want) return;
+  try{
+    await req('wallet_switchEthereumChain', [{ chainId: want }], 120000);
+  } catch(e){
+    const code = e && (e.code !== undefined ? e.code : (e.data && e.data.originalError && e.data.originalError.code));
+    if (code === 4902 || /unrecognized chain|not been added|unknown chain/i.test(String(e && e.message))){
+      await req('wallet_addEthereumChain', [CHAIN_PARAMS[net]], 120000);
+    } else throw e;
+  }
+  const after = await askChain(req, cs);
+  /* Кошелёк переключился без ошибки, но снова промолчал о сети — верим
+     переключению. Не та сеть всё равно не пройдёт: подпись в чужой сети
+     кошелёк покажет с её названием, а мы ждём квитанцию только в своей. */
+  if (after && after !== want) throw human('wWrongChain');
+}
+
+/* Квитанция: 'ok', 'slow' (сеть не ответила за три минуты) или исключение
+   при откате. Статус кошельки отдают кто как — «0x1», «0x01», 1, true;
+   откат — «0x0», 0, false. Раньше числовой 0 считался «нет ответа», и
+   откатившаяся оплата через три минуты помечалась как готовая. */
+function receiptOk(v){
+  if (v === true || v === 1) return true;
+  if (v === false || v === 0) return false;
+  if (typeof v === 'string' && /^0x[0-9a-f]+$/i.test(v)) return BigInt(v) === 1n;
+  return null;
+}
+async function waitReceipt(net, hash, gen){
+  const until = Date.now() + 180000;
+  while (Date.now() < until){
+    if (gen !== payGen) return 'gone';
+    let r = null;
+    try{ r = await readRpc(net, 'eth_getTransactionReceipt', [hash]); } catch(e){}
+    if (r && r.status !== undefined && r.status !== null){
+      const okk = receiptOk(r.status);
+      if (okk === true) return 'ok';
+      if (okk === false) throw human('wReverted');
+    }
+    await new Promise(res => setTimeout(res, 2000));
+  }
+  return 'slow';
+}
+const isHash = h => typeof h === 'string' && /^0x[0-9a-fA-F]{64}$/.test(h);
+
+async function payWith(w){
+  if (payBusy || !inv) return;
+  lastWallet = w;
+  payBusy = true;
+  const gen = ++payGen;
+  const alive = () => { if (gen !== payGen) { const e = new Error('closed'); e.closed = true; throw e; } };
+  $('wPick').classList.add('hidden');
+  $('wRun').classList.remove('hidden');
+  $('wRunTitle').textContent = t('wRunTitle', w.name);
+  $('wRunSub').textContent = t('wRunSub');
+  $('wErr').classList.add('hidden');
+  $('wRetry').classList.add('hidden');
+  stepsReset();
+
+  const net = inv.net || 'bnb';
+  const tk = tokenOf(net, inv.c || 'USDT');
+  const payAddr = PAY_CONTRACT[net];
+  let stage = 'connect';
+  try{
+    /* Просроченный счёт магазин не примет — не платим и по нему. */
+    if (inv.t && Math.floor(Date.now() / 1000) >= inv.t) throw human('wExpired');
+    if (!tk || !payAddr) throw human('wNotAccepted');
+    const units = toUnits(inv.a, tk.d);
+    if (units === null || BigInt(units) <= 0n) throw human('wBadAmount');
+    if (!/^0x[0-9a-fA-F]{64}$/.test(inv.h || '')) inv.h = newLocalId();
+    /* Просьба к кошельку. Там, где нужен человек (подключить, подписать), —
+       ждём долго и через несколько секунд подсказываем открыть окно
+       кошелька; служебные вопросы — коротко. */
+    const req = (method, params, ms) => withLimit(
+      Promise.resolve(w.provider.request(params ? { method, params } : { method })),
+      ms || 20000, 'wStuck');
+    /* Чтение — нашими узлами. Узел на вызов пустого адреса отвечает «0x» —
+       это ноль, а не ошибка. */
+    const call = async (to, data) => {
+      const r = await readRpc(net, 'eth_call', [{ to, data }, 'latest']);
+      return BigInt(r && r !== '0x' ? r : '0x0');
+    };
+    const cs = { silent: false };
+    const hintTimer = setTimeout(() => { if (gen === payGen && payBusy) $('wHint').classList.remove('hidden'); }, 9000);
+    $('wHint').classList.add('hidden');
+
+    stepSet('connect', 'run');
+    const accs = await req('eth_requestAccounts', null, 180000);
+    alive();
+    const me = accs && accs[0];
+    if (!isAddr(me)) throw human('wNoAccount');
+    if (me.toLowerCase() === inv.m.toLowerCase()) throw human('wSelf');
+    inv.payer = me;                          // по нему узнаем «это заплатил я»
+    clearTimeout(hintTimer); $('wHint').classList.add('hidden');
+    stepSet('connect', 'done', shortAddr(me));
+
+    stage = 'chain';
+    stepSet('chain', 'run');
+    await ensureChain(req, net, cs);
+    alive();
+    stepSet('chain', 'done');
+
+    /* Прежде чем просить подпись — проверяем всё, что можно проверить
+       бесплатно. Отказ контракта стоит комиссии, а отказ здесь — ничего. */
+    stage = 'approve';
+    stepSet('approve', 'run');
+    if ((await call(payAddr, SEL.acceptedToken + w32(tk.a))) === 0n) throw human('wNotAccepted');
+
+    /* Номер счёта уже занят? Его может занять кто угодно, заплатив по нему
+       копейку раньше, — контракт тогда откажет в настоящей оплате, а
+       человек уже подписал бы разрешение и заплатил за него. Проверяем
+       ДО подписи. У кассы номер наш собственный — берём новый: касса
+       продавца следит за поступлением, а не за номером. У счёта магазина
+       номер знает магазин — поменять его нельзя, и честно говорим почему. */
+    const raw = await readRpc(net, 'eth_call', [{ to: payAddr, data: SEL.saleOf + w32(inv.h) }, 'latest']);
+    const taken = typeof raw === 'string' && raw.length >= 66 && !/^0+$/.test(raw.slice(26, 66));
+    if (taken){
+      if (inv.ft) inv.h = newLocalId();
+      else throw human('wUsed');
+    }
+
+    const have = await call(tk.a, SEL.balanceOf + w32(me));
+    if (have < BigInt(units)) throw human('wNoMoney', fmtUnits(have, tk.d) + ' ' + (inv.c || 'USDT'));
+    const gas = BigInt(await readRpc(net, 'eth_getBalance', [me, 'latest']) || '0x0');
+    if (gas === 0n) throw human('wNoGas');
+
+    const allowed = await call(tk.a, SEL.allowance + w32(me) + w32(payAddr));
+    if (allowed < BigInt(units)){
+      await ensureChain(req, net, cs);             // сеть могли переключить, пока человек думал
+      alive();
+      $('wHint').classList.add('hidden');
+      const hint1 = setTimeout(() => { if (gen === payGen) $('wHint').classList.remove('hidden'); }, 9000);
+      const h1 = await req('eth_sendTransaction', [{ from: me, to: tk.a,
+        data: SEL.approve + w32(payAddr) + wNum(units) }], 300000).finally(() => clearTimeout(hint1));
+      $('wHint').classList.add('hidden');
+      alive();
+      if (!isHash(h1)) throw human('wNoHash');
+      stepSet('approve', 'run', h1.slice(0, 10) + '…');
+      const got = await waitReceipt(net, h1, gen);
+      alive();
+      /* Разрешение проверяем у сети, а не у своей памяти: квитанция могла
+         не дойти, а pay() без разрешения — это сожжённая комиссия. */
+      if ((await call(tk.a, SEL.allowance + w32(me) + w32(payAddr))) < BigInt(units))
+        throw human(got === 'slow' ? 'wSlowApprove' : 'wReverted');
+      stepSet('approve', 'done');
+    } else stepSet('approve', 'done', t('sAlready'));
+
+    stage = 'pay';
+    stepSet('pay', 'run');
+    await ensureChain(req, net, cs);
+    alive();
+    $('wHint').classList.add('hidden');
+    const hint2 = setTimeout(() => { if (gen === payGen) $('wHint').classList.remove('hidden'); }, 9000);
+    const h2 = await req('eth_sendTransaction', [{ from: me, to: payAddr,
+      data: SEL.pay + w32(inv.m) + w32(tk.a) + wNum(units) + w32(inv.h) }], 300000).finally(() => clearTimeout(hint2));
+    $('wHint').classList.add('hidden');
+    alive();
+    if (!isHash(h2)) throw human('wNoHash');
+    stepSet('pay', 'run', t('sSent'));
+    const got2 = await waitReceipt(net, h2, gen);
+    if (got2 === 'slow'){
+      /* Сеть не ответила. Это НЕ «не прошло» — и уж точно не повод платить
+         второй раз. Говорим ровно это и кнопку повтора не даём. */
+      $('wErr').textContent = t('wSlowPay');
+      $('wErr').classList.remove('hidden');
+      payBusy = false;
+      return;
+    }
+    if (got2 !== 'ok') return;
+    stepSet('pay', 'done', h2.slice(0, 10) + '…');
+    $('wErr').textContent = t('wDone');
+    $('wErr').classList.remove('hidden');
+    /* Дальше «Оплачено» скажет наблюдение за счётом — тот же код, что для
+       нашего приложения: оно спрашивает контракт по номеру счёта. */
+    payBusy = false;
+    setTimeout(() => { if (gen === payGen) closeWalletSheet(); }, 1600);
+    return;
+  } catch(e){
+    $('wHint').classList.add('hidden');
+    if (e && e.closed) return;               // человек закрыл окно — молчим
+    if (gen !== payGen) return;
+    stepSet(stage, 'fail');
+    $('wErr').textContent = walletError(e);
+    $('wErr').classList.remove('hidden');
+    $('wRetry').classList.remove('hidden');
+    payBusy = false;
+  }
+}
+$('wRetry').onclick = () => { if (lastWallet) payWith(lastWallet); };
+
+/* ===================== КАССА =====================
+   Наклейка вечная, и суммы в ней нет. Всё, что здесь происходит, — это
+   ожидание: продавец набирает цену у себя, мы её видим и показываем.
+
+   Три вещи, которые здесь сделаны нарочно и которые легко было бы не сделать.
+
+   Первая: возраст суммы всегда на экране. Наклейка висит сутками, и на неё
+   могли навести камеру через полчаса после того, как предыдущий покупатель
+   передумал и ушёл. Человек обязан видеть, что сумме полчаса, и сам решить,
+   переспросить ли продавца.
+
+   Вторая: если продавец поменял сумму, пока человек смотрит на экран, мы об
+   этом говорим вслух, а не подменяем цифру молча.
+
+   Третья: сумму всегда можно ввести руками. Наш сервер может лежать,
+   интернет — моргать, а очередь у кассы от этого не рассасывается. */
+
+const TILL_POLL = 3000;
+const TILL_GIVE_UP = 200;        // 200 опросов по три секунды — это десять минут
+
+function newLocalId(){
+  const b = new Uint8Array(32);
+  crypto.getRandomValues(b);
+  return '0x' + [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function renderTillText(){
+  if (!till) return;
+  $('tillShop').textContent = till.n || t('payDefault');
+  $('tillWho').textContent  = t('tillWho', till.k);
+  $('tillTo').textContent   = till.m;
+  if (tillProblemKey) $('tillProblem').textContent = t(tillProblemKey);
+  $('tillNet').textContent  = NET_NAMES[till.net] || till.net;
+  if (tillNow) drawTillAmount();
+}
+
+/* Жалоба видна прямо в карточке кассы. Нижняя карточка «ждём оплату» здесь
+   не годится: платить ещё не начали, и обещать, что страница сама увидит
+   платёж, пока не за что. */
+function tillSay(key){
+  tillProblemKey = key;
+  const box = $('tillProblem');
+  box.classList.toggle('hidden', !key);
+  if (key) box.textContent = t(key);
+}
+
+function startTill(){
+  $('main').classList.add('hidden');
+  $('stateCard').classList.add('hidden');
+  $('tillCard').classList.remove('hidden');
+  if (till.net === 'bnbTestnet') $('testnetWarn').classList.remove('hidden');
+
+  const sel = $('tillCur');
+  sel.innerHTML = '';
+  Object.keys(TOKENS[till.net] || {}).forEach(sym => {
+    const o = document.createElement('option');
+    o.value = sym; o.textContent = sym;
+    sel.appendChild(o);
+  });
+
+  renderTillText();
+
+  $('tillPay').onclick = () => { if (tillNow) goPay(fromTill(tillNow)); };
+  $('tillOwn').onclick = () => openManual();
+  $('tillManualPay').onclick = () => {
+    const a = String($('tillInput').value || '').trim().replace(',', '.');
+    /* Только цифры и точка: «1e3» поле ввода числа пропускает, а оплатить
+       такую сумму нельзя. */
+    if (!/^\d{1,12}(\.\d{1,18})?$/.test(a) || !(parseFloat(a) > 0)){ $('tillInput').focus(); tillSay('tillBad'); return; }
+    goPay(fromManual(a, $('tillCur').value));
+  };
+
+  askTill();
+  tillTimer = setInterval(askTill, TILL_POLL);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) askTill(); });
+}
+
+function openManual(){
+  $('tillGot').classList.add('hidden');
+  $('tillWait').classList.add('hidden');
+  $('tillOwn').classList.add('hidden');
+  $('tillManual').classList.remove('hidden');
+  if (tillNow && !$('tillInput').value) $('tillInput').value = tillNow.amount;
+  $('tillInput').focus();
+}
+
+async function askTill(){
+  /* Телефон в кармане экраном вниз спрашивать кассу незачем: человек на
+     страницу не смотрит, а вопросы всё равно считаются. Вернётся к экрану —
+     спросим сразу же. */
+  if (document.hidden) return;
+
+  /* И не вечно. Если за десять минут продавец так и не назвал сумму, он её
+     уже не назовёт: человек отошёл, передумал или закрыл кассу. Бесконечно
+     стучаться в сервер из брошенной вкладки — это чужие деньги за хостинг и
+     вечный кружок перед тем, кто всё-таки вернулся к экрану. */
+  if (tillPolls > TILL_GIVE_UP && !tillNow){
+    if (tillTimer){ clearInterval(tillTimer); tillTimer = null; }
+    tillSay('tillGaveUp');
+    return;
+  }
+
+  /* Счёт в блокчейне — запасной путь, и он стоит вызова узла. Спрашиваем про
+     него не каждые три секунды, а изредка: касса, которая им пользуется,
+     всё равно держит сумму пятнадцать минут. */
+  const deep = (tillPolls++ % 5 === 0) ? '&chain=1' : '';
+  try{
+    const r = await fetch('/api/till?m=' + encodeURIComponent(till.m) +
+                          '&k=' + encodeURIComponent(till.k) +
+                          '&net=' + encodeURIComponent(till.net) + deep);
+    if (!r.ok) return;
+    const d = await r.json();
+    tillFails = 0;
+    if (d.empty){
+      tillNow = null;
+      tillSay(null);
+      if ($('tillManual').classList.contains('hidden')){
+        $('tillGot').classList.add('hidden');
+        $('tillWait').classList.remove('hidden');
+      }
+      return;
+    }
+    if (!d.amount || !(parseFloat(d.amount) > 0)) return;
+    tillSay(null);
+    const changed = tillSeen && (tillSeen.amount !== d.amount || tillSeen.cur !== d.cur);
+    tillSeen = d;
+    tillNow = d;
+    /* Вводит сумму руками — не выдёргиваем поле из-под пальцев. */
+    if (!$('tillManual').classList.contains('hidden')) return;
+    $('tillWait').classList.add('hidden');
+    $('tillGot').classList.remove('hidden');
+    $('tillChanged').classList.toggle('hidden', !changed);
+    drawTillAmount();
+  } catch(e){
+    /* Интернет моргнул — это бывает, и дёргать человека из-за одного
+       неудачного вопроса не за что. Но два подряд — это уже не мигание, и
+       молчать нельзя: он стоит у прилавка и смотрит на кружок, не понимая,
+       ждать ему или доставать наличные. */
+    if (++tillFails >= 2 && !tillNow) tillSay('tillOffline');
+  }
+}
+
+function drawTillAmount(){
+  const d = tillNow;
+  if (!d) return;
+  $('tillAmount').textContent = d.amount + ' ' + (d.cur || 'USDT');
+  $('tillItem').textContent   = d.item || '';
+
+  /* Возраст считаем от часов сервера, а не от часов телефона: у телефона
+     они бывают сбиты на часы, и «выставлено 3 часа назад» напугало бы
+     человека там, где всё в порядке. Счёт в блокчейне времени установки не
+     хранит — тогда честно не пишем ничего. */
+  if (tillAgeTimer){ clearInterval(tillAgeTimer); tillAgeTimer = null; }
+  if (!d.setAt || !d.now){ $('tillAge').textContent = ''; return; }
+  const base = Date.now();
+  const age0 = Math.max(0, d.now - d.setAt);
+  const draw = () => {
+    const s = age0 + Math.floor((Date.now() - base) / 1000);
+    $('tillAge').textContent = s < 5  ? t('tillAgeFresh')
+                             : s < 60 ? t('tillAgeSec', s)
+                                      : t('tillAgeMin', Math.floor(s / 60));
+  };
+  draw();
+  tillAgeTimer = setInterval(draw, 1000);
+}
+
+/* Из того, что назвала касса, — обычный счёт. Дальше страница работает ровно
+   так же, как по присланной ссылке: тот же код, то же слежение за оплатой. */
+function fromTill(d){
+  return { m: till.m, a: d.amount, c: d.cur || 'USDT', o: d.order || '',
+           n: till.n || t('payDefault'), i: d.item || '', net: till.net, w: till.w,
+           t: d.expiresAt || null,
+           s: d.setAt || Math.floor(Date.now() / 1000),
+           h: /^0x[0-9a-fA-F]{64}$/.test(d.h || '') ? d.h : newLocalId(),
+           ft: 1 };
+}
+
+/* Сумма, введённая покупателем. Номера счёта у неё нет и быть не может —
+   заводим свой, только чтобы страница могла следить за оплатой. Платёж
+   найдётся по продавцу и сумме: за этим и нужна метка времени. */
+function fromManual(a, c){
+  const now = Math.floor(Date.now() / 1000);
+  return { m: till.m, a: a, c: c, o: '', n: till.n || t('payDefault'), i: '',
+           net: till.net, w: till.w, t: now + 900, s: now, h: newLocalId(), ft: 1 };
+}
+
+function goPay(built){
+  /* Покупатель выбрал сумму. Дальше следить за кассой нельзя: если продавец
+     в эту секунду наберёт другую цену, цифра на экране не должна поехать под
+     пальцем у человека, который уже нажимает «оплатить». */
+  if (tillTimer){ clearInterval(tillTimer); tillTimer = null; }
+  if (tillAgeTimer){ clearInterval(tillAgeTimer); tillAgeTimer = null; }
+  inv = built;
+  till = null;
+  $('tillCard').classList.add('hidden');
+  $('main').classList.remove('hidden');
+  $('stateCard').classList.remove('hidden');
+  setState('', 'waiting', 'waitNote');
+  render();
+  watch();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+/* Навели камеру на другую наклейку, не закрыв страницу. Браузер считает это
+   переходом внутри той же страницы — адрес меняется, а код не перезапускается,
+   и человек остаётся с прежней кассой перед глазами. Для денег это плохой
+   способ сэкономить перезагрузку. */
+window.addEventListener('hashchange', () => location.reload());
+
+/* ---------- запуск ---------- */
+if (inv) {
+  render();
+  watch();
+  if (AUTO_PICK) setTimeout(openWalletSheet, 350);
+} else if (till) {
+  startTill();
+} else {
+  fail();
+}
+
 </script>
 </body>
 </html>

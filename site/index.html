@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tavarov Wallet — платить криптой, не меняя её на деньги</title>
+<title>NoN Wallet — платить криптой, не меняя её на деньги</title>
 <meta name="description" content="Некастодиальный кошелёк с кассой для магазинов. Ключи остаются на вашем телефоне, деньги приходят сразу.">
-<meta property="og:title" content="Tavarov Wallet">
+<meta property="og:title" content="NoN Wallet">
 <meta property="og:description" content="Ключи на вашем телефоне. Приём оплаты в USDT и USDC — деньги сразу к вам.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
@@ -20,12 +20,14 @@
     radial-gradient(circle at 8% -8%, #EBDDFD 0%, transparent 50%),
     radial-gradient(circle at 102% 4%, #E2D2FB 0%, transparent 46%),
     linear-gradient(170deg, #FFFFFF 0%, #F7F2FE 55%, #EFE5FD 100%);
-}
+ --eyebrow:#6D28D9;
+  }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.68);
     --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
     --orange:#E7A33A; --fill:rgba(169,123,255,.12);
+    --eyebrow:#C9ADFF;
     --page-bg:
       radial-gradient(circle at 8% -8%, #1F1235 0%, transparent 52%),
       radial-gradient(circle at 102% 4%, #1B1030 0%, transparent 48%),
@@ -51,9 +53,16 @@ header{position:sticky; top:0; z-index:20;
   backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
   background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--sep)}
 .bar{display:flex; align-items:center; gap:14px; height:60px}
-.brand{display:flex; align-items:center; gap:10px; font-weight:750; color:var(--label); font-size:17px}
+/* Знак стоит НЕ рядом со словом, а вместо буквы «о» внутри него. Это и есть
+   вся мысль имени: две скобы разведены и монету не держат. Пока значок лежал
+   сбоку, его надо было объяснять; внутри слова он объясняет себя сам. */
+.brand{display:flex; align-items:baseline; gap:0; font-weight:800; color:var(--label);
+  font-size:26px; letter-spacing:-.035em; line-height:1}
+.brand .oo{ width:.86em; height:.86em; margin:0 .01em; align-self:center;
+  position:relative; top:.02em; border-radius:0; flex:0 0 auto }
+.brand .wo{ font-weight:750; margin-left:.30em; letter-spacing:-.02em; opacity:.94 }
 .brand:hover{text-decoration:none}
-.brand svg{width:30px; height:30px; border-radius:8px; display:block}
+
 .bar nav{margin-left:auto}
 .langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px}
 .langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
@@ -63,8 +72,12 @@ header{position:sticky; top:0; z-index:20;
    строку: страница уезжала вбок целиком. Ужимаем ряд, а не прячем языки —
    человек, которому нужен свой язык, должен его видеть сразу. */
 @media (max-width:430px){
-  .brand{font-size:15px; gap:8px}
-  .brand svg{width:26px; height:26px}
+  .brand{font-size:20px}
+  /* На самых узких экранах слово «Wallet» уходит, а знак остаётся. Рядом с
+     ним пять кнопок языка, и вместе они разъезжались на два пикселя за край
+     — полоса прокрутки вбок на первом же экране. Имя без «Wallet» читается,
+     полоса — нет. */
+  .brand .wo{display:none}
   .langs button{padding:5px 6px; font-size:12px}
   .wrap{padding:0 16px}
 }
@@ -130,6 +143,35 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
             box-shadow:0 18px 50px rgba(40,20,80,.16)}
 .demo figcaption{margin-top:12px; text-align:center; color:var(--label-2); font-size:14.5px}
 @media (max-width:640px){ .demo{margin-top:32px; padding:0 16px} .demo video{border-radius:14px} }
+/* Надстрочник над заголовком. Он объясняет имя, и это не украшение:
+   слово non-custodial знают в крипте и почти нигде больше, а «ключи только
+   у вас» понимает каждый. Пусть имя объясняет себя само, с первой строки. */
+/* Цвет берём из переменной, а не жёстким значением. На светлом фоне
+   бледно-сиреневый почти не читался — а это ровно та строчка, ради которой
+   всё и затевалось: она объясняет имя. Пусть тема сама решает, какой
+   оттенок ей по силам. */
+.eyebrow{ font-size:15px; letter-spacing:.01em; color:var(--eyebrow); font-weight:700;
+  margin:0 0 26px; }
+
+/* Имя крупно, первым, до всякого текста. Смысл тот же, что и в шапке, только
+   здесь он должен успеть сработать раньше, чем человек начнёт читать: знак
+   стоит вместо буквы «о» и показывает, что монету никто не держит.
+
+   Кегль растёт вместе с шириной экрана, но упирается в потолок: на большом
+   мониторе имя высотой в пол-экрана выглядит не уверенно, а крикливо. */
+.mark{ display:flex; align-items:baseline; gap:0; line-height:.9; font-weight:800;
+  letter-spacing:-.05em; color:var(--label); margin:0 0 18px;
+  font-size:clamp(62px, 13vw, 116px); }
+.mark .oo{ width:.88em; height:.88em; margin:0 .01em; align-self:center;
+  position:relative; top:.02em; flex:0 0 auto; display:block }
+
+/* Выбранная кнопка в тёмной теме — СВЕТЛЕЕ дорожки, а не темнее.
+   Раньше она брала цвет карточки, а карточка в тёмной теме темнее фона
+   дорожки: выбранный язык выглядел дыркой, а невыбранные — выпуклыми, то
+   есть ровно наоборот. Так рисует и iOS: выбранный сегмент в тёмной теме
+   поднят светлым, а не утоплен. */
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;} }
+:root[data-theme="dark"] .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;}
 </style>
 </head>
 <body>
@@ -137,20 +179,7 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
 <header>
   <div class="wrap bar">
     <a class="brand" href="#top">
-      <svg viewBox="0 0 120 120" aria-hidden="true">
-        <rect width="120" height="120" rx="27" fill="#4B1FE8"/>
-        <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
-          <rect x="37" y="13" width="46" height="15" fill="#fff"/>
-          <rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
-          <rect x="37" y="92" width="46" height="15" fill="#fff"/>
-          <rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
-          <rect x="13" y="37" width="15" height="46" fill="#BFA6FF"/>
-          <rect x="13" y="52.5" width="39" height="15" fill="#BFA6FF"/>
-          <rect x="92" y="37" width="15" height="46" fill="#BFA6FF"/>
-          <rect x="68" y="52.5" width="39" height="15" fill="#BFA6FF"/>
-        </g>
-      </svg>
-      Wallet
+      <span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span><span class="wo">Wallet</span>
     </a>
     <nav><div class="langs" id="langs"></div></nav>
   </div>
@@ -159,6 +188,8 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
 <main id="top">
 
   <div class="wrap hero">
+    <div class="mark" aria-label="NoN"><span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span></div>
+    <p class="eyebrow" data-t="eyebrow">NoN — от non-custodial. Ключи только у вас, деньги тоже.</p>
     <h1 data-t="h1">Платите криптой, не меняя её на деньги</h1>
     <p class="lead" data-t="hsub">Продавец показывает код — вы платите тем, что у вас есть. Без биржи и без ожидания. Ключи остаются на вашем телефоне.</p>
     <div class="cta">
@@ -231,12 +262,12 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
       <h2 data-t="s_h">Магазинам</h2>
       <div class="rows">
         <div>
-          <h3 data-t="s2h">Деньги сразу</h3>
-          <p data-t="s2t">Перевод идёт прямо на ваш адрес, не через нас. Заморозить его никто не может.</p>
+          <h3 data-t="s2h">Деньги не у нас</h3>
+          <p data-t="s2t">Покупка идёт прямо на ваш адрес — мы её не держим и заморозить не можем. Tavarov Pay удерживает 1% с покупки сразу, в той же операции.</p>
         </div>
         <div>
           <h3 data-t="s3h">Касса в телефоне</h3>
-          <p data-t="s3t">Набрали сумму — покупатель навёл камеру. Ошибиться в сумме он не может, «оплачено» появляется само.</p>
+          <p data-t="s3t">Набрали сумму — покупатель навёл камеру и видит её у себя. «Оплачено» появляется само.</p>
         </div>
         <div>
           <h3 data-t="s4h">Деньги сразу</h3>
@@ -290,7 +321,7 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
       <p data-t="c_intro" style="color:var(--label-2); max-width:62ch">Всё, что делает приложение, лежит в открытых контрактах. Их можно прочитать в обозревателе блоков и не верить нам на слово.</p>
       <div class="honest" style="margin-top:20px">
         <ul style="list-style:none; padding:0; margin:0">
-          <li style="margin-bottom:10px"><span data-t="c1">Оплата и возвраты</span> — <a href="https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c"><code>0xCa4F…D65c</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c1">Оплата и возвраты</span> — <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35"><code>0x1Fc6…Ca35</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c2">Токен TVR</span> — <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503"><code>0x8Baa…8503</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c3">Казна</span> — <a href="https://bscscan.com/address/0x4029B2699340d0356187bd5ed51BA7b61422508A"><code>0x4029…508A</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c4">Счёт в сети</span> — <a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9"><code>0x82a9…aFF9</code></a></li>
@@ -332,15 +363,18 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
     <div class="flinks">
       <a href="https://wallet.tavarov.com/" data-t="f_a1">Открыть кошелёк</a>
       <a href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
-      <a href="https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c" data-t="f_a3">Контракт оплаты</a>
+      <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35" data-t="f_a3">Контракт оплаты</a>
       <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503" data-t="f_a4">Токен TVR</a>
       <a href="https://bscscan.com/address/0x4029B2699340d0356187bd5ed51BA7b61422508A" data-t="f_a5">Казна</a>
       <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Контракт имён</a>
       <a href="./sellers" data-t="f_a8">Цифровым магазинам</a>
+      <a href="https://github.com/tavarovwallet/tavarov" data-t="f_a9">Исходный код</a>
+      <a href="https://t.me/tavarovpay" target="_blank" rel="noopener" data-t="f_tg">Новости в Telegram</a>
+      <a href="https://x.com/TavarovWallet" target="_blank" rel="noopener" data-t="f_x">Мы в X</a>
       <a href="./privacy" data-t="f_a7">Политика конфиденциальности</a>
     </div>
     <div class="disclaimer">
-      <p data-t="disc">Tavarov — некастодиальный кошелёк: мы не храним ваши ключи и не имеем доступа к вашим деньгам. Ничто на этой странице не является инвестиционным советом. Криптовалюты меняются в цене, и потерять на них можно всё. TVR не продаётся, не имеет цены и не обещает дохода. В ряде стран расчёты криптовалютой за товары и услуги ограничены или запрещены — проверьте правила своей страны.</p>
+      <p data-t="disc">NoN Wallet — некастодиальный кошелёк: ключи мы не храним и доступа к вашим деньгам не имеем. Ничто на этой странице не является инвестиционным советом. Криптовалюты меняются в цене, и потерять на них можно всё. TVR не продаётся, не имеет цены и не обещает дохода. В ряде стран расчёты криптовалютой за товары и услуги ограничены или запрещены — проверьте правила своей страны.</p>
       <p style="margin:0">© 2026 Tavarov</p>
     </div>
   </div>
@@ -363,6 +397,7 @@ const T = {
     c6:'Names, previous version',
     c_one:'<b>One network only — BNB Chain.</b> Our contracts are not deployed anywhere else, and the app does not go there.',
     c_pow:'What we can do: change the rules for names and close trap words like <code>support</code>. What we cannot: touch your money, cancel your transfer, freeze an account or act as you. Those actions simply do not exist in the contracts.',
+    eyebrow:'NoN — as in non-custodial. Your keys, and your money.',
     h1:'Pay in crypto without cashing it out',
     hsub:'The seller shows a code — you pay with what you already have. No exchange, no waiting. The keys stay on your phone.',
     cta1:'Open the wallet', cta2:'Download for Android',
@@ -383,10 +418,10 @@ const T = {
     s_h:'For shops',
     s1h:'One percent',
     s1t:'Cards take two to three, and the money arrives days later. Here it is one percent, paid by the seller.',
-    s2h:'The money at once',
-    s2t:'The transfer goes straight to your address, not through us. Nobody can freeze it.',
+    s2h:'We never hold the money',
+    s2t:'The purchase goes straight to your address — we do not hold it and cannot freeze it. Tavarov Pay keeps 1% of the purchase on the spot, in the same operation.',
     s3h:'A till in your phone',
-    s3t:'Type the amount, the buyer points the camera. He cannot get the amount wrong, and "paid" appears by itself.',
+    s3t:'Type the amount, the buyer points the camera and sees it on their phone. "Paid" appears by itself.',
     s4h:'Money right away',
     s4t:'The payment reaches your wallet in seconds. Cards settle in days, and until then the money is not yours.',
     s_link:'Create an invoice right now →',
@@ -415,8 +450,8 @@ const T = {
     q6:'Which network does this run on?',
     a6:'BNB Chain. The network fee there is a fraction of a cent, and USDT and USDC are the same ones you know from exchanges. The contracts are open — links at the bottom of this page.',
     f_a1:'Open the wallet', f_a2:'Create an invoice', f_a3:'Payment contract',
-    f_a4:'TVR token', f_a5:'Treasury', f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers',
-    disc:'Tavarov is a non-custodial wallet: we do not store your keys and have no access to your money. Nothing on this page is investment advice. Crypto changes in price and you can lose all of it. TVR is not for sale, has no price and promises no return. In a number of countries paying for goods and services with crypto is restricted or banned — check the rules where you live.'
+    f_a4:'TVR token', f_a5:'Treasury', f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers', f_a9:'Source code', f_tg:'News on Telegram', f_x:'We are on X',
+    disc:'NoN Wallet is a non-custodial wallet: we do not store your keys and have no access to your money. Nothing on this page is investment advice. Crypto changes in price and you can lose all of it. TVR is not for sale, has no price and promises no return. In a number of countries paying for goods and services with crypto is restricted or banned — check the rules where you live.'
   },
 
   es: {
@@ -431,6 +466,7 @@ const T = {
     c6:'Nombres, versión anterior',
     c_one:'<b>Una sola red: BNB Chain.</b> Nuestros contratos no están desplegados en ninguna otra, y la aplicación no va allí.',
     c_pow:'Lo que podemos: cambiar las reglas de los nombres y cerrar palabras trampa como <code>support</code>. Lo que no podemos: tocar su dinero, cancelar su transferencia, congelar una cuenta o hacernos pasar por usted. Esas acciones no existen en los contratos.',
+    eyebrow:'NoN — de non-custodial. Sus claves, y su dinero.',
     h1:'Pague en cripto sin convertirla a dinero',
     hsub:'El vendedor muestra un código y usted paga con lo que ya tiene. Sin exchange y sin esperas. Las claves siguen en su teléfono.',
     cta1:'Abrir el monedero', cta2:'Descargar para Android',
@@ -451,10 +487,10 @@ const T = {
     s_h:'Para las tiendas',
     s1h:'Uno por ciento',
     s1t:'Las tarjetas cobran dos o tres, y el dinero llega días después. Aquí es uno por ciento, y lo paga el vendedor.',
-    s2h:'El dinero al instante',
-    s2t:'La transferencia va directa a su dirección, no pasa por nosotros. Nadie puede congelarla.',
+    s2h:'El dinero no pasa por nosotros',
+    s2t:'La compra va directa a su dirección: no la retenemos y no podemos congelarla. Tavarov Pay se queda con el 1% de la compra al momento, en la misma operación.',
     s3h:'Una caja en el teléfono',
-    s3t:'Marque el importe y el comprador apunta la cámara. No puede equivocarse, y «pagado» aparece solo.',
+    s3t:'Marque el importe, el comprador apunta la cámara y lo ve en su teléfono. «Pagado» aparece solo.',
     s4h:'El dinero al instante',
     s4t:'El pago llega a su monedero en segundos. Las tarjetas liquidan en días, y hasta entonces el dinero no es suyo.',
     s_link:'Crear una factura ahora mismo →',
@@ -483,8 +519,8 @@ const T = {
     q6:'¿En qué red funciona todo esto?',
     a6:'BNB Chain. Allí la comisión de red es una fracción de céntimo, y USDT y USDC son los mismos que conoce de los exchanges. Los contratos están abiertos: los enlaces están al pie de la página.',
     f_a1:'Abrir el monedero', f_a2:'Crear una factura', f_a3:'Contrato de pago',
-    f_a4:'Token TVR', f_a5:'Tesorería', f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales',
-    disc:'Tavarov es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. Nada en esta página es asesoramiento de inversión. Las criptomonedas cambian de precio y se puede perder todo. TVR no está a la venta, no tiene precio y no promete rendimiento. En varios países pagar bienes y servicios con criptomonedas está restringido o prohibido: consulte las reglas de su país.'
+    f_a4:'Token TVR', f_a5:'Tesorería', f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales', f_a9:'Código fuente', f_tg:'Novedades en Telegram', f_x:'Estamos en X',
+    disc:'NoN Wallet es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. Nada en esta página es asesoramiento de inversión. Las criptomonedas cambian de precio y se puede perder todo. TVR no está a la venta, no tiene precio y no promete rendimiento. En varios países pagar bienes y servicios con criptomonedas está restringido o prohibido: consulte las reglas de su país.'
   },
 
   tr: {
@@ -499,6 +535,7 @@ const T = {
     c6:'İsimler, önceki sürüm',
     c_one:'<b>Tek ağ — BNB Chain.</b> Sözleşmelerimiz başka hiçbir ağda kurulu değil, uygulama da oraya gitmiyor.',
     c_pow:'Yapabildiklerimiz: isim kurallarını değiştirmek ve <code>support</code> gibi tuzak kelimeleri kapatmak. Yapamadıklarımız: paranıza dokunmak, transferinizi iptal etmek, hesabı dondurmak ya da sizin yerinize geçmek. Bu işlemler sözleşmelerde hiç yok.',
+    eyebrow:'NoN — non-custodial’dan. Anahtarlar da para da sizin.',
     h1:'Kriptonuzu bozdurmadan ödeyin',
     hsub:'Satıcı bir kod gösterir, siz elinizdekiyle ödersiniz. Borsa yok, bekleme yok. Anahtarlar telefonunuzda kalır.',
     cta1:'Cüzdanı aç', cta2:'Android için indir',
@@ -519,10 +556,10 @@ const T = {
     s_h:'Dükkânlar için',
     s1h:'Yüzde bir',
     s1t:'Kartlar yüzde iki üç alır ve para günler sonra gelir. Burada yüzde bir, ve onu satıcı öder.',
-    s2h:'Para anında',
-    s2t:'Transfer doğrudan adresinize gider, bizden geçmez. Kimse donduramaz.',
+    s2h:'Para bizde durmaz',
+    s2t:'Alışveriş doğrudan adresinize gider — biz tutmayız ve donduramayız. Tavarov Pay alışverişin %1\'ini aynı işlemde anında alır.',
     s3h:'Telefonda kasa',
-    s3t:'Tutarı girin, alıcı kamerayı tutsun. Tutarda yanılamaz, «ödendi» kendiliğinden görünür.',
+    s3t:'Tutarı girin, alıcı kamerayı tutar ve tutarı kendi telefonunda görür. «Ödendi» kendiliğinden görünür.',
     s4h:'Para hemen',
     s4t:'Ödeme cüzdanınıza saniyeler içinde ulaşır. Kartlar günlerce bekletir ve o zamana kadar para sizin değildir.',
     s_link:'Hemen fatura oluşturun →',
@@ -551,8 +588,8 @@ const T = {
     q6:'Bütün bunlar hangi ağda çalışıyor?',
     a6:'BNB Chain. Oradaki ağ ücreti bir sentin küçük bir kısmı, USDT ve USDC ise borsalardan bildiğiniz aynı paralar. Sözleşmeler açık — bağlantılar sayfanın altında.',
     f_a1:'Cüzdanı aç', f_a2:'Fatura oluştur', f_a3:'Ödeme sözleşmesi',
-    f_a4:'TVR token', f_a5:'Hazine', f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için',
-    disc:'Tavarov saklamasız (non-custodial) bir cüzdandır: anahtarlarınızı saklamayız ve paranıza erişimimiz yoktur. Bu sayfadaki hiçbir şey yatırım tavsiyesi değildir. Kripto paraların fiyatı değişir ve tamamını kaybedebilirsiniz. TVR satılık değildir, fiyatı yoktur ve getiri vaat etmez. Bazı ülkelerde mal ve hizmet için kripto ile ödeme kısıtlı ya da yasaktır — yaşadığınız yerin kurallarına bakın.'
+    f_a4:'TVR token', f_a5:'Hazine', f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için', f_a9:'Kaynak kod', f_tg:'Telegram\'da haberler', f_x:'X\'teyiz',
+    disc:'NoN Wallet saklamasız (non-custodial) bir cüzdandır: anahtarlarınızı saklamayız ve paranıza erişimimiz yoktur. Bu sayfadaki hiçbir şey yatırım tavsiyesi değildir. Kripto paraların fiyatı değişir ve tamamını kaybedebilirsiniz. TVR satılık değildir, fiyatı yoktur ve getiri vaat etmez. Bazı ülkelerde mal ve hizmet için kripto ile ödeme kısıtlı ya da yasaktır — yaşadığınız yerin kurallarına bakın.'
   },
 
   pt: {
@@ -567,6 +604,7 @@ const T = {
     c6:'Nomes, versão anterior',
     c_one:'<b>Uma única rede — BNB Chain.</b> Nossos contratos não estão em nenhuma outra, e o aplicativo não vai até lá.',
     c_pow:'O que podemos: mudar as regras dos nomes e fechar palavras-armadilha como <code>support</code>. O que não podemos: tocar no seu dinheiro, cancelar sua transferência, congelar uma conta ou nos passar por você. Essas ações simplesmente não existem nos contratos.',
+    eyebrow:'NoN — de non-custodial. Suas chaves, e seu dinheiro.',
     h1:'Pague em cripto sem convertê-la em dinheiro',
     hsub:'O vendedor mostra um código e você paga com o que já tem. Sem corretora e sem espera. As chaves ficam no seu telefone.',
     cta1:'Abrir a carteira', cta2:'Baixar para Android',
@@ -587,10 +625,10 @@ const T = {
     s_h:'Para as lojas',
     s1h:'Um por cento',
     s1t:'Os cartões cobram dois ou três, e o dinheiro chega dias depois. Aqui é um por cento, e quem paga é o vendedor.',
-    s2h:'O dinheiro na hora',
-    s2t:'A transferência vai direto para o seu endereço, não passa por nós. Ninguém consegue congelar.',
+    s2h:'O dinheiro não fica conosco',
+    s2t:'A compra vai direto para o seu endereço — não a seguramos e não podemos congelá-la. A Tavarov Pay fica com 1% da compra na hora, na mesma operação.',
     s3h:'Um caixa no telefone',
-    s3t:'Digite o valor e o comprador aponta a câmera. Ele não erra o valor, e «pago» aparece sozinho.',
+    s3t:'Digite o valor, o comprador aponta a câmera e o vê no próprio telefone. «Pago» aparece sozinho.',
     s4h:'Dinheiro na hora',
     s4t:'O pagamento chega à sua carteira em segundos. Os cartões liquidam em dias, e até lá o dinheiro não é seu.',
     s_link:'Criar uma cobrança agora →',
@@ -619,8 +657,8 @@ const T = {
     q6:'Em que rede tudo isso funciona?',
     a6:'BNB Chain. A taxa de rede lá é uma fração de centavo, e USDT e USDC são os mesmos que você conhece das corretoras. Os contratos estão abertos — os links estão no rodapé.',
     f_a1:'Abrir a carteira', f_a2:'Criar uma cobrança', f_a3:'Contrato de pagamento',
-    f_a4:'Token TVR', f_a5:'Tesouro', f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais',
-    disc:'Tavarov é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. Nada nesta página é recomendação de investimento. As criptomoedas mudam de preço e é possível perder tudo. TVR não está à venda, não tem preço e não promete rendimento. Em vários países pagar bens e serviços com cripto é restrito ou proibido — verifique as regras do seu país.'
+    f_a4:'Token TVR', f_a5:'Tesouro', f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais', f_a9:'Código-fonte', f_tg:'Novidades no Telegram', f_x:'Estamos no X',
+    disc:'NoN Wallet é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. Nada nesta página é recomendação de investimento. As criptomoedas mudam de preço e é possível perder tudo. TVR não está à venda, não tem preço e não promete rendimento. Em vários países pagar bens e serviços com cripto é restrito ou proibido — verifique as regras do seu país.'
   }
 };
 
@@ -629,11 +667,11 @@ document.querySelectorAll('[data-t]').forEach(el => { RU[el.dataset.t] = el.inne
 T.ru = RU;
 
 const TITLES = {
-  ru:'Tavarov Wallet — платить криптой, не меняя её на деньги',
-  en:'Tavarov Wallet — pay in crypto without cashing out',
-  es:'Tavarov Wallet — pagar en cripto sin convertirla',
-  tr:'Tavarov Wallet — kriptoyu bozdurmadan ödeyin',
-  pt:'Tavarov Wallet — pagar em cripto sem convertê-la'
+  ru:'NoN Wallet — платить криптой, не меняя её на деньги',
+  en:'NoN Wallet — pay in crypto without cashing out',
+  es:'NoN Wallet — pagar en cripto sin convertirla',
+  tr:'NoN Wallet — kriptoyu bozdurmadan ödeyin',
+  pt:'NoN Wallet — pagar em cripto sem convertê-la'
 };
 const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
 let lang = 'ru';
@@ -711,6 +749,25 @@ fetch('./apk.json', { cache: 'no-store' })
     document.getElementById('apkTop').classList.remove('hidden');
   })
   .catch(() => {});
+</script>
+<!-- Счётчик посещений. Только витрина: на страницах кошелька, кассы и
+     оплаты никакого постороннего кода нет и не будет — там человек вводит
+     пароль и видит суммы. Cloudflare Web Analytics не ставит cookie и не
+     следит за человеком между сайтами, поэтому баннер про печеньки не
+     нужен. Считает просмотры страниц и откуда пришли, не более. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "807d9906067747c9ba6d53e1cc9f4520"}'></script>
+<script>
+/* Ссылка приглашения (?ref=адрес или имя) должна дожить до кошелька:
+   человек читает эту страницу, а закрепляет пригласившего уже в кошельке.
+   Передаём её только в ссылки на сам кошелёк и только проверенную. */
+(function(){
+  try{
+    var r = new URLSearchParams(location.search).get('ref') || '';
+    if (!/^0x[0-9a-fA-F]{40}$/.test(r) && !/^@?[a-zA-Z][a-zA-Z0-9_]{2,19}$/.test(r)) return;
+    var links = document.querySelectorAll('a[href="https://wallet.tavarov.com/"]');
+    for (var i = 0; i < links.length; i++) links[i].href = 'https://wallet.tavarov.com/?ref=' + encodeURIComponent(r.replace(/^@+/, ''));
+  } catch(e){}
+})();
 </script>
 </body>
 </html>

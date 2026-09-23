@@ -35,8 +35,21 @@
 /lib/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Страницу счёта нельзя встраивать в чужой сайт в рамке: так делают поддельные
-# «оплаты» — сверху рисуют свою сумму, а платёж уходит мошеннику.
+# ПОЧЕМУ У КАЖДОЙ СТРАНИЦЫ ДВА ПРАВИЛА
+#
+# Cloudflare Pages сам уводит /pay.html на /pay — чистый адрес у него один.
+# Правило, написанное на /pay.html, достаётся ответу-переадресации, а не
+# странице: страница приезжает с заголовками только из /*. Для корня это
+# когда-то заметили и написали и /, и /index.html; для остальных — нет.
+# Поэтому ниже каждая страница перечислена в обоих написаниях.
+
+/pay
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
 /pay.html
   Cache-Control: no-cache
   X-Frame-Options: DENY
@@ -44,11 +57,39 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
 
+/invoice
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+
 /invoice.html
   Cache-Control: no-cache
   X-Frame-Options: DENY
   Content-Security-Policy: frame-ancestors 'none'
   X-Content-Type-Options: nosniff
+
+# Страница печати наклейки. Правило про кэш здесь было забыто, и зря:
+# страницу открывают раз в жизни, и открытая из кэша прошлогодняя версия
+# напечатает прошлогоднюю наклейку — а висеть ей годами.
+/sticker
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+/sticker.html
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+# Рисовалку кодов держим рядом с наклейкой: без неё страница печати
+# показывает пустое место там, где должен быть код.
+/qrcode.min.js
+  Cache-Control: public, max-age=86400
 
 # Ответ «оплачено ли» живёт секунды — из кэша он опасен.
 /api/*
