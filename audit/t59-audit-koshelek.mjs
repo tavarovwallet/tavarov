@@ -56,8 +56,11 @@ await page.evaluate(() => renderHistoryList([
 await page.waitForTimeout(500);
 R.ok('ИСТОРИЯ: ХЕШ И СУММА ИЗ СЕТИ НЕ ВЫПОЛНЯЮТ КОД', (await page.evaluate(() => window.__xss)) === 0,
   'xss=' + await page.evaluate(() => window.__xss));
+/* Ссылки в истории могут быть — на настоящие операции, отправленные выше.
+   Проверяем, что ни одна не ведёт на поддельный «хеш» с разметкой: у
+   настоящей ссылки на конце ровно 0x и 64 шестнадцатеричных знака. */
 R.ok('и ссылки на поддельный хеш нет', (await page.evaluate(() =>
-  document.querySelectorAll('#historyList a').length)) === 0);
+  [...document.querySelectorAll('#historyList a')].filter(a => !/\/tx\/0x[0-9a-fA-F]{64}$/.test(a.getAttribute('href') || '')).length)) === 0);
 
 // ======================= 3. свой токен не подменяет USDT =======================
 const real = await page.evaluate(() => tokensFor(network).USDT.contract);

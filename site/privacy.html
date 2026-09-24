@@ -94,7 +94,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
     <p data-t="short"><b>Коротко.</b> Приложение не собирает о вас ничего: ни учётных записей, ни счётчиков, ни рекламы. Ключи от кошелька создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем. На этой странице-витрине стоит счётчик посещений — он считает просмотры страниц, не ставит cookie и не следит за вами на других сайтах. В самом кошельке, кассе и на странице оплаты его нет.</p>
   </div>
 
-  <h2 data-t="h_till">Наклейка на кассе — единственное, что у нас лежит</h2>
+  <h2 data-t="h_till">Что у нас лежит, первое: наклейка на кассе</h2>
   <p data-t="p_till">У продавца может висеть на прилавке печатная наклейка. Суммы в ней нет: продавец
   называет цену со своего телефона, и она десять минут лежит у нас, чтобы её увидел покупатель,
   наведя камеру. Лежит ровно это: адрес продавца, номер кассы, сумма, валюта, название товара,
@@ -106,6 +106,9 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   запись: такой-то IP спрашивал про такую-то кассу в такое-то время. Имени, кошелька и суммы
   покупателя в ней нет. Если продавец пользуется счётом в блокчейне вместо наклейки, у нас не
   лежит и суммы.</p>
+
+  <h2 data-t="h_don">Что у нас лежит, второе: сообщения к донатам</h2>
+  <p data-t="p_don">На странице донатов (wallet.tavarov.com/d/имя) зритель может написать автору ник и короткое сообщение. Оно лежит у нас под номером счёта и показывается автору только после того, как по этому номеру в блокчейне пришла оплата именно ему; неоплаченные сообщения стираются через два часа, оплаченные — через 180 дней. Вместе с сообщением хранятся сумма, валюта и адрес плательщика — те же, что и так публично видны в блокчейне. Больше ничего о зрителе мы не храним. Сообщение не секретное: автор видит его, а позже может показать на стриме.</p>
 
   <h2 data-t="h_no">Чего мы не собираем</h2>
   <p data-t="p_no">Мы не просим и не получаем: имя, почту, телефон, документы, местоположение, список контактов, рекламные идентификаторы. Регистрации нет вовсе — приложение начинает работать сразу.</p>
@@ -165,9 +168,11 @@ const T = {
   en: {
     h1:'Privacy policy', upd:'Updated',
     short:'<b>In short.</b> The app collects nothing about you: no accounts, no analytics, no advertising. The wallet keys are created on your device and stay there: we cannot see them and cannot obtain them. This marketing site does have a visit counter — it counts page views, sets no cookies and does not follow you across other sites. There is none of it in the wallet, the till or the payment page.',
-    h_till:'The till sticker is the one thing we do keep',
+    h_till:'What we keep, part one: the till sticker',
     p_till:'A seller may have a printed sticker on the counter. It carries no amount: the seller names the price on their own phone, and for ten minutes we hold it so the buyer can see it when they point a camera at the sticker. What is held is exactly this: the seller’s address, the till number, the amount, the currency, the item name, the order and invoice numbers, and the time. After ten minutes the record deletes itself.',
     p_till2:'Nothing about the buyer is kept: not a wallet address, not a device, not the payment itself — whether an invoice was paid we read from the blockchain. But to be honest about logs: while the buyer waits for the amount, their page asks our server every few seconds what the till is asking for, and that question contains the seller’s address and the till number. So the hosting logs (Cloudflare) keep an ordinary entry: such-and-such IP asked about such-and-such till at such-and-such time. The buyer’s name, wallet and amount are not in it. If a seller uses the on-chain charge instead of the sticker, we do not hold the amount either.',
+    h_don:'What we keep, part two: messages attached to tips',
+    p_don:'On the tips page (wallet.tavarov.com/d/name) a viewer can leave the creator a nickname and a short message. We keep it under the invoice number and show it to the creator only after a payment to that very creator arrives on the blockchain under that number; unpaid messages are erased after two hours, paid ones after 180 days. Stored with the message are the amount, the currency and the payer address — the same things that are already public on the blockchain. Nothing else about the viewer is kept. The message is not private: the creator sees it and may later show it on stream.',
     h_no:'What we do not collect',
     p_no:'We neither ask for nor receive: name, email, phone number, documents, location, contacts, advertising identifiers. There is no sign-up at all — the app simply starts working.',
     h_dev:'What is stored on your device',
@@ -202,9 +207,11 @@ const T = {
   es: {
     h1:'Política de privacidad', upd:'Actualizado',
     short:'<b>En resumen.</b> La aplicación no recoge nada sobre usted: ni cuentas, ni analítica, ni publicidad. Las claves del monedero se crean en su dispositivo y allí se quedan: no podemos verlas ni obtenerlas. Este sitio de presentación sí tiene un contador de visitas: cuenta páginas vistas, no pone cookies y no le sigue por otros sitios. En el monedero, la caja y la página de pago no hay nada de eso.',
-    h_till:'La pegatina de la caja es lo único que guardamos',
+    h_till:'Lo que guardamos, primero: la pegatina de la caja',
     p_till:'El vendedor puede tener una pegatina impresa en el mostrador. No lleva importe: el vendedor dice el precio desde su teléfono y durante diez minutos lo guardamos para que el comprador lo vea al apuntar la cámara. Se guarda exactamente esto: la dirección del vendedor, el número de caja, el importe, la moneda, el nombre del producto, los números de pedido y de factura, y la hora. A los diez minutos el registro se borra solo.',
     p_till2:'Del comprador no se guarda nada: ni la dirección del monedero, ni el dispositivo, ni el propio pago; si una factura está pagada lo leemos de la cadena de bloques. Pero sobre los registros, con franqueza: mientras el comprador espera el importe, su página pregunta a nuestro servidor cada pocos segundos qué pide la caja, y esa pregunta lleva la dirección del vendedor y el número de caja. Por eso en los registros del alojamiento (Cloudflare) queda una entrada corriente: tal IP preguntó por tal caja a tal hora. No contiene ni el nombre, ni el monedero, ni el importe del comprador. Si el vendedor usa la factura en la cadena en vez de la pegatina, tampoco guardamos el importe.',
+    h_don:'Lo que guardamos, segundo: los mensajes de las donaciones',
+    p_don:'En la página de donaciones (wallet.tavarov.com/d/nombre) quien dona puede dejar al autor un apodo y un mensaje corto. Lo guardamos con el número de factura y se lo mostramos al autor solo cuando en la cadena de bloques llega un pago a ese mismo autor con ese número; los mensajes sin pagar se borran a las dos horas, los pagados a los 180 días. Junto al mensaje se guardan el importe, la moneda y la dirección de quien paga: lo mismo que ya es público en la cadena. Nada más sobre quien dona. El mensaje no es privado: el autor lo ve y puede mostrarlo en directo.',
     h_no:'Lo que no recogemos',
     p_no:'Ni pedimos ni recibimos: nombre, correo, teléfono, documentos, ubicación, contactos, identificadores publicitarios. No hay registro alguno: la aplicación simplemente empieza a funcionar.',
     h_dev:'Qué se guarda en su dispositivo',
@@ -239,9 +246,11 @@ const T = {
   tr: {
     h1:'Gizlilik politikası', upd:'Güncellendi',
     short:'<b>Kısaca.</b> Uygulama sizinle ilgili hiçbir şey toplamaz: hesap yok, ölçümleme yok, reklam yok. Cüzdan anahtarları sizin cihazınızda oluşur ve orada kalır: onları ne görebiliriz ne de elde edebiliriz. Bu tanıtım sitesinde bir ziyaret sayacı var: sayfa görüntülemelerini sayar, çerez koymaz ve sizi başka sitelerde izlemez. Cüzdanda, kasada ve ödeme sayfasında böyle bir şey yok.',
-    h_till:'Kasa etiketi, bizde duran tek şey',
+    h_till:'Bizde duranlar, birincisi: kasa etiketi',
     p_till:'Satıcının tezgâhında basılı bir etiket olabilir. İçinde tutar yoktur: satıcı fiyatı kendi telefonundan söyler ve müşteri kamerayı etikete doğrulttuğunda görebilsin diye o tutarı on dakika bizde tutarız. Tutulan tam olarak şudur: satıcının adresi, kasa numarası, tutar, para birimi, ürün adı, sipariş ve fatura numaraları ile saat. On dakika sonra kayıt kendiliğinden silinir.',
     p_till2:'Müşteriye dair hiçbir şey saklanmaz: ne cüzdan adresi, ne cihaz, ne de ödemenin kendisi — faturanın ödenip ödenmediğini blok zincirinden okuyoruz. Ama kayıtlar konusunda dürüst olalım: müşteri tutarı beklerken sayfası birkaç saniyede bir sunucumuza kasanın ne istediğini sorar ve bu soruda satıcının adresi ile kasa numarası vardır. Bu yüzden barındırma kayıtlarında (Cloudflare) sıradan bir kayıt kalır: şu IP şu kasayı şu saatte sordu. Müşterinin adı, cüzdanı ve tutarı bu kayıtta yoktur. Satıcı etiket yerine zincir üstü faturayı kullanıyorsa tutar da bizde durmaz.',
+    h_don:'Bizde duranlar, ikincisi: bağış mesajları',
+    p_don:'Bağış sayfasında (wallet.tavarov.com/d/ad) izleyici üreticiye bir takma ad ve kısa bir mesaj bırakabilir. Mesajı fatura numarasıyla saklarız ve üreticiye yalnızca bu numarayla blokzincirde tam o üreticiye ödeme geldikten sonra gösteririz; ödenmemiş mesajlar iki saat sonra, ödenenler 180 gün sonra silinir. Mesajla birlikte tutar, para birimi ve ödeyenin adresi saklanır — bunlar zaten blokzincirde herkese açıktır. İzleyici hakkında başka hiçbir şey tutulmaz. Mesaj gizli değildir: üretici onu görür ve yayında gösterebilir.',
     h_no:'Toplamadıklarımız',
     p_no:'İsim, e-posta, telefon, belge, konum, rehber, reklam kimliği istemiyoruz ve almıyoruz. Kayıt diye bir şey yok — uygulama doğrudan çalışmaya başlar.',
     h_dev:'Cihazınızda ne saklanır',
@@ -276,9 +285,11 @@ const T = {
   pt: {
     h1:'Política de privacidade', upd:'Atualizado',
     short:'<b>Em resumo.</b> O aplicativo não coleta nada sobre você: nem contas, nem análises, nem publicidade. As chaves da carteira são criadas no seu aparelho e ficam nele: não podemos vê-las nem obtê-las. Este site de apresentação tem, sim, um contador de visitas: conta visualizações de páginas, não usa cookies e não o segue por outros sites. Na carteira, no caixa e na página de pagamento não há nada disso.',
-    h_till:'O adesivo do caixa é a única coisa que guardamos',
+    h_till:'O que guardamos, primeiro: o adesivo do caixa',
     p_till:'O vendedor pode ter um adesivo impresso no balcão. Ele não traz valor: o vendedor diz o preço no próprio telefone e, por dez minutos, guardamos esse valor para o comprador ver ao apontar a câmera. Guarda-se exatamente isto: o endereço do vendedor, o número do caixa, o valor, a moeda, o nome do produto, os números do pedido e da fatura, e a hora. Depois de dez minutos o registro se apaga sozinho.',
     p_till2:'Do comprador não se guarda nada: nem o endereço da carteira, nem o aparelho, nem o próprio pagamento — se a fatura foi paga, lemos da blockchain. Mas sobre os registros, com franqueza: enquanto o comprador espera o valor, a página dele pergunta ao nosso servidor a cada poucos segundos o que o caixa está pedindo, e essa pergunta traz o endereço do vendedor e o número do caixa. Por isso nos registros da hospedagem (Cloudflare) fica uma entrada comum: tal IP perguntou por tal caixa a tal hora. Não há nela nome, carteira nem valor do comprador. Se o vendedor usa a fatura na blockchain em vez do adesivo, também não guardamos o valor.',
+    h_don:'O que guardamos, segundo: mensagens das doações',
+    p_don:'Na página de doações (wallet.tavarov.com/d/nome) o espectador pode deixar para o criador um apelido e uma mensagem curta. Guardamos a mensagem com o número da fatura e só a mostramos ao criador depois que chega na blockchain um pagamento para esse mesmo criador com esse número; mensagens não pagas são apagadas em duas horas, as pagas em 180 dias. Junto com a mensagem ficam o valor, a moeda e o endereço de quem pagou — o mesmo que já é público na blockchain. Nada mais sobre o espectador é guardado. A mensagem não é privada: o criador a vê e pode mostrá-la na live.',
     h_no:'O que não coletamos',
     p_no:'Não pedimos nem recebemos: nome, e-mail, telefone, documentos, localização, contatos, identificadores de publicidade. Não existe cadastro algum — o aplicativo simplesmente começa a funcionar.',
     h_dev:'O que fica guardado no seu aparelho',

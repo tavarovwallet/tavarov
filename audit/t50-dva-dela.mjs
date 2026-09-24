@@ -18,7 +18,9 @@ const { browser, page, errors } = await boot({ role: 'buyer' });
 await page.evaluate(() => { tab = 'pay'; payMode = null; renderWalletState(); });
 await page.waitForTimeout(200);
 
-const rows = await page.$$eval('#payHub .row:not(.hidden) .row-title',
+/* Дела — это строки-кнопки. Строки настроек (оповещения для OBS) делами
+   не считаются: их не нажимают, в них переключают. */
+const rows = await page.$$eval('#payHub button.row:not(.hidden) .row-title',
   els => els.map(e => e.textContent.trim()));
 R.ok('ДЕЛ НА ЭКРАНЕ ОСТАЛОСЬ ДВА-ТРИ, А НЕ ПЯТЬ', rows.length <= 3, rows.join(' | '));
 R.ok('есть «Отправить»', rows.includes('Отправить'), rows.join(' | '));
@@ -58,7 +60,13 @@ for (const [старое, ждём] of [['transfer', 'send'], ['withdraw', 'send
 await page.evaluate(() => { tab = 'home'; payMode = null; renderWalletState(); });
 await page.waitForTimeout(200);
 const quick = await page.$$eval('.quick .quick-item span:last-child', els => els.map(e => e.textContent.trim()));
-R.ok('ДВУХ КНОПОК ПОД ОДНО ДЕЙСТВИЕ БОЛЬШЕ НЕТ', quick.length === 3, quick.join(' | '));
+/* Кнопок стало четыре: к трём добавилась «По имени». Проверка не про их
+   число, а про то, ради чего она писалась: чтобы две кнопки не вели в одно
+   и то же место. Считать их штуки — значит ломать проверку на каждой
+   новой кнопке и ничего при этом не проверять. */
+R.ok('ДВУХ КНОПОК ПОД ОДНО ДЕЙСТВИЕ БОЛЬШЕ НЕТ',
+  new Set(quick.map(x => x.toLowerCase())).size === quick.length && quick.length >= 3,
+  quick.join(' | '));
 R.ok('среди быстрых кнопок «Принять» и «Отправить»',
   quick.includes('Принять') && quick.includes('Отправить'), quick.join(' | '));
 

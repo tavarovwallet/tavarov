@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оповещения о донатах · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<style>
+/* Экран оповещений для OBS («Источник → Браузер»).
+
+   Фон прозрачный: OBS кладёт эту страницу поверх картинки стрима, и видно
+   только карточку доната, пока она на экране. Страница ничего не хранит и
+   ни во что не входит: оплату она видит сама в открытом журнале контракта
+   оплаты, а за ником и текстом ходит на наш сервер, который отдаёт их только
+   для доната, оплата по которому уже есть в сети. */
+:root{ --accent:#6D28D9; --accent-2:#4B1FE8; --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,Roboto,sans-serif; }
+html, body{ margin:0; background:transparent; overflow:hidden; font-family:var(--font); -webkit-font-smoothing:antialiased; }
+.stage{ position:fixed; inset:0; display:flex; align-items:flex-start; justify-content:center; padding-top:4vh; pointer-events:none }
+.alert{ width:min(92vw, 720px); border-radius:28px; padding:26px 30px 28px; color:#fff; text-align:center;
+  background:linear-gradient(135deg, rgba(109,40,217,.96) 0%, rgba(75,31,232,.96) 60%, rgba(236,72,153,.92) 130%);
+  box-shadow:0 24px 60px -18px rgba(40,10,120,.75), inset 0 1px 0 rgba(255,255,255,.28);
+  opacity:0; transform:translateY(-30px) scale(.96); transition:opacity .45s ease, transform .55s cubic-bezier(.2,.9,.2,1.15) }
+.alert.show{ opacity:1; transform:none }
+.alert.hide{ opacity:0; transform:translateY(-16px) scale(.98); transition:opacity .5s ease, transform .5s ease }
+.head{ display:flex; align-items:center; justify-content:center; gap:10px; font-size:clamp(14px, 2.6vw, 20px); font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; opacity:.9 }
+.head svg{ width:26px; height:26px; border-radius:7px }
+.amount{ font-size:clamp(40px, 9vw, 76px); font-weight:850; letter-spacing:-.03em; line-height:1.05; margin:10px 0 4px;
+  text-shadow:0 4px 20px rgba(0,0,0,.25); font-variant-numeric:tabular-nums }
+.who{ font-size:clamp(20px, 4.2vw, 32px); font-weight:750; line-height:1.2; word-break:break-word }
+.msg{ font-size:clamp(18px, 3.6vw, 27px); line-height:1.35; margin-top:12px; font-weight:550; opacity:.97; word-break:break-word;
+  background:rgba(255,255,255,.14); border-radius:16px; padding:12px 16px }
+.msg:empty{ display:none }
+@keyframes pop{ 0%{transform:scale(.85)} 60%{transform:scale(1.06)} 100%{transform:scale(1)} }
+.alert.show .amount{ animation:pop .7s .15s both }
+
+/* Подсказка — только когда страницу открыли в обычном браузере, а не в OBS. */
+.help{ position:fixed; left:50%; bottom:24px; transform:translateX(-50%); width:min(92vw, 560px); background:#1C1330; color:#EFE7FF;
+  border-radius:18px; padding:18px 20px; font-size:15px; line-height:1.55; box-shadow:0 18px 40px -16px rgba(0,0,0,.6) }
+.help b{ color:#fff } .help code{ background:rgba(255,255,255,.12); padding:1px 6px; border-radius:6px; word-break:break-all }
+.help .st{ display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:650 }
+.dot{ width:9px; height:9px; border-radius:50%; background:#F0AE4A } .dot.ok{ background:#4ED08A } .dot.bad{ background:#FF6B61 }
+.help button{ margin-top:12px; border:0; border-radius:12px; padding:10px 14px; font:inherit; font-weight:650; cursor:pointer;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff }
+.hidden{ display:none !important }
+
+/* Полоса цели (?goal=1): отдельный источник в OBS, обычно внизу кадра. */
+.goal{ position:fixed; left:50%; bottom:3vh; transform:translateX(-50%); width:min(94vw, 760px); color:#fff; border-radius:20px;
+  padding:14px 18px 16px; background:rgba(20,11,43,.82); box-shadow:0 14px 40px -14px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.12) }
+.goal .top{ display:flex; justify-content:space-between; align-items:baseline; gap:14px; font-weight:750; font-size:clamp(16px, 3vw, 22px) }
+.goal .top span:last-child{ font-variant-numeric:tabular-nums; white-space:nowrap }
+.goal .bar{ height:16px; border-radius:10px; background:rgba(255,255,255,.14); overflow:hidden; margin-top:10px }
+.goal .bar i{ display:block; height:100%; width:0; border-radius:10px; background:linear-gradient(90deg, #8B5CF6, #EC4899, #F59E0B);
+  transition:width 1.2s cubic-bezier(.2,.9,.2,1) }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="alert" id="alert" aria-live="polite">
+    <div class="head">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="27" fill="#EFE7FE"/><g transform="translate(60 60) scale(0.62) translate(-60 -60)"><rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/><rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/><rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/><rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/></g></svg>
+      <span id="aHead"></span>
+    </div>
+    <div class="amount" id="aAmount"></div>
+    <div class="who" id="aWho"></div>
+    <div class="msg" id="aMsg"></div>
+  </div>
+</div>
+
+<div class="goal hidden" id="goal"><div class="top"><span id="gTitle"></span><span id="gSum"></span></div><div class="bar"><i id="gFill"></i></div></div>
+
+<div class="help hidden" id="help">
+  <div id="helpText"></div>
+  <div class="st"><span class="dot" id="stDot"></span><span id="stText"></span></div>
+  <button id="helpDemo"></button>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const TO = (Q.get('to') || '').toLowerCase();
+const NET = Q.get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+const MIN = Math.max(0, parseFloat(Q.get('min') || '0') || 0);
+const DUR = Math.min(30, Math.max(3, parseInt(Q.get('d') || '8', 10) || 8));
+const SOUND = Q.get('snd') !== '0';
+const SHOW_MSG = Q.get('msg') !== '0';
+const DEMO = Q.get('demo') === '1';
+const IN_OBS = !!window.obsstudio;
+const GOAL = Q.get('goal') === '1';
+
+const L = {
+  ru: { head:'Новый донат', anon:'Аноним', link:'[ссылка]', demoNick:['Ваня','Kate_22','Аноним'], demoMsg:['Спасибо за стрим!','Лучший стрим недели 🔥',''],
+        goalHelp:'Это полоса цели сбора для <b>OBS</b>. В OBS: <b>Источники → + → Браузер</b>, вставьте адрес этой страницы, ширина <b>800</b>, высота <b>160</b>. Цель задаётся в NoN Wallet в режиме «Автор».', goalNone:'Цель не задана. Поставьте её в NoN Wallet: режим «Автор» → Страница доната.', demoGoal:'На новый микрофон',
+        help:'Это экран оповещений для <b>OBS</b>. В OBS: <b>Источники → + → Браузер</b>, вставьте адрес этой страницы, ширина <b>800</b>, высота <b>400</b>. Фон прозрачный — на стриме видна только карточка доната.',
+        listen:'Слушаю донаты для ', ok:' · связь с сетью есть', bad:'Нет связи с сетью — пробую снова', noTo:'В ссылке нет адреса кошелька. Возьмите ссылку в NoN Wallet: Оплата → Донаты → Оповещения для OBS.', demo:'Показать пример' },
+  en: { head:'New tip', anon:'Anonymous', link:'[link]', demoNick:['John','Kate_22','Anonymous'], demoMsg:['Thanks for the stream!','Best stream this week 🔥',''],
+        goalHelp:'This is the goal bar for <b>OBS</b>. In OBS: <b>Sources → + → Browser</b>, paste this page’s address, width <b>800</b>, height <b>160</b>. Set the goal in NoN Wallet in Creator mode.', goalNone:'No goal yet. Set one in NoN Wallet: Creator mode → Tip page.', demoGoal:'New microphone',
+        help:'This is the alert screen for <b>OBS</b>. In OBS: <b>Sources → + → Browser</b>, paste this page’s address, width <b>800</b>, height <b>400</b>. The background is transparent, so only the tip card shows on stream.',
+        listen:'Listening for tips to ', ok:' · connected', bad:'No connection to the network, retrying', noTo:'The link has no wallet address. Take the link from NoN Wallet: Payments → Tips → OBS alerts.', demo:'Show an example' },
+  es: { head:'Nueva donación', anon:'Anónimo', link:'[enlace]', demoNick:['Juan','Kate_22','Anónimo'], demoMsg:['¡Gracias por el directo!','El mejor directo de la semana 🔥',''],
+        goalHelp:'Esta es la barra de meta para <b>OBS</b>. En OBS: <b>Fuentes → + → Navegador</b>, pega la dirección de esta página, ancho <b>800</b>, alto <b>160</b>. La meta se define en NoN Wallet, modo Autor.', goalNone:'Aún no hay meta. Defínela en NoN Wallet: modo Autor → Página de donaciones.', demoGoal:'Micrófono nuevo',
+        help:'Esta es la pantalla de alertas para <b>OBS</b>. En OBS: <b>Fuentes → + → Navegador</b>, pega la dirección de esta página, ancho <b>800</b>, alto <b>400</b>. El fondo es transparente: en el directo solo se ve la tarjeta.',
+        listen:'Escuchando donaciones para ', ok:' · conectado', bad:'Sin conexión con la red, reintentando', noTo:'El enlace no tiene dirección de billetera. Tómalo en NoN Wallet: Pagos → Donaciones → Alertas para OBS.', demo:'Ver un ejemplo' },
+  tr: { head:'Yeni bağış', anon:'Anonim', link:'[bağlantı]', demoNick:['Ali','Kate_22','Anonim'], demoMsg:['Yayın için teşekkürler!','Haftanın en iyi yayını 🔥',''],
+        goalHelp:'Bu, <b>OBS</b> için bağış hedefi çubuğudur. OBS’te: <b>Kaynaklar → + → Tarayıcı</b>, bu sayfanın adresini yapıştırın, genişlik <b>800</b>, yükseklik <b>160</b>. Hedef NoN Wallet’ta Üretici modunda belirlenir.', goalNone:'Henüz hedef yok. NoN Wallet’ta belirleyin: Üretici modu → Bağış sayfası.', demoGoal:'Yeni mikrofon',
+        help:'Bu, <b>OBS</b> için bildirim ekranıdır. OBS’te: <b>Kaynaklar → + → Tarayıcı</b>, bu sayfanın adresini yapıştırın, genişlik <b>800</b>, yükseklik <b>400</b>. Arka plan şeffaftır, yayında yalnızca bağış kartı görünür.',
+        listen:'Bağışlar dinleniyor: ', ok:' · bağlantı var', bad:'Ağ bağlantısı yok, yeniden deneniyor', noTo:'Bağlantıda cüzdan adresi yok. Bağlantıyı NoN Wallet’tan alın: Ödeme → Bağışlar → OBS bildirimleri.', demo:'Örnek göster' },
+  pt: { head:'Nova doação', anon:'Anônimo', link:'[link]', demoNick:['João','Kate_22','Anônimo'], demoMsg:['Valeu pela live!','Melhor live da semana 🔥',''],
+        goalHelp:'Esta é a barra de meta para o <b>OBS</b>. No OBS: <b>Fontes → + → Navegador</b>, cole o endereço desta página, largura <b>800</b>, altura <b>160</b>. A meta é definida no NoN Wallet, no modo Criador.', goalNone:'Ainda não há meta. Defina no NoN Wallet: modo Criador → Página de doações.', demoGoal:'Microfone novo',
+        help:'Esta é a tela de alertas para o <b>OBS</b>. No OBS: <b>Fontes → + → Navegador</b>, cole o endereço desta página, largura <b>800</b>, altura <b>400</b>. O fundo é transparente: na live só aparece o cartão da doação.',
+        listen:'Ouvindo doações para ', ok:' · conectado', bad:'Sem conexão com a rede, tentando de novo', noTo:'O link não tem endereço de carteira. Pegue o link no NoN Wallet: Pagamento → Doações → Alertas para OBS.', demo:'Mostrar um exemplo' }
+};
+const LANG = (() => {
+  const q = Q.get('lang');
+  if (q && L[q]) return q;
+  const n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  return L[n] ? n : 'en';
+})();
+const T = L[LANG];
+document.documentElement.lang = LANG;
+
+/* ---------- сеть ---------- */
+const NETS = {
+  bnb: { rpcs: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org'],
+         pays: ['0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35', '0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c'] },
+  bnbTestnet: { rpcs: ['https://bsc-testnet-rpc.publicnode.com', 'https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
+         pays: ['0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6'] }
+};
+const PAID = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
+async function rpc(method, params){
+  for (const url of NETS[NET].rpcs){
+    try{
+      const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 8000);
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctl.signal,
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+      clearTimeout(tm);
+      const j = await r.json();
+      if (j && j.result !== undefined && j.result !== null) return j.result;
+    } catch(e){}
+  }
+  throw new Error('net');
+}
+
+/* ---------- очередь оповещений ---------- */
+const queue = [];
+let playing = false;
+function fmtAmount(a){
+  const n = Number(a);
+  if (!isFinite(n)) return String(a);
+  return (Math.round(n * 100) / 100).toLocaleString(LANG, { maximumFractionDigits: 2 });
+}
+/* Ссылки в тексте на экран стрима не выводим: это самый частый спам. */
+function tidy(s){
+  return String(s || '')
+    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, T.link)
+    .replace(/\b[a-z0-9-]{2,}\.(?:com|ru|net|org|io|gg|xyz|me|tv|link|site|online|shop|top|club|info|biz|su|pro|app|dev|ly|to)\b\S*/gi, T.link)
+    .slice(0, 200);
+}
+function beep(){
+  if (!SOUND) return;
+  try{
+    const C = window.AudioContext || window.webkitAudioContext;
+    const ctx = new C();
+    const now = ctx.currentTime;
+    [[880, 0], [1320, .12], [1760, .24]].forEach(([f, t0]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, now + t0);
+      g.gain.exponentialRampToValueAtTime(0.25, now + t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + 0.5);
+      o.connect(g); g.connect(ctx.destination); o.start(now + t0); o.stop(now + t0 + 0.55);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 1500);
+  } catch(e){}
+}
+function enqueue(item){ queue.push(item); if (!playing) next(); }
+function next(){
+  const it = queue.shift();
+  if (!it){ playing = false; return; }
+  playing = true;
+  const box = $('alert');
+  $('aHead').textContent = T.head;
+  $('aAmount').textContent = fmtAmount(it.amount) + ' ' + (it.cur || '');
+  $('aWho').textContent = it.nick ? it.nick : T.anon;
+  $('aMsg').textContent = SHOW_MSG ? tidy(it.msg) : '';
+  box.classList.remove('hide'); void box.offsetWidth; box.classList.add('show');
+  beep();
+  setTimeout(() => {
+    box.classList.remove('show'); box.classList.add('hide');
+    setTimeout(next, 900);
+  }, DUR * 1000);
+}
+window.__alerts = { enqueue, queue };
+
+/* ---------- слушаем журнал контракта ----------
+   Каждые 4 секунды: новые события «оплачено» в адрес автора. По каждому —
+   спрашиваем у сервера ник и текст. Сервер отдаёт их, только если по этому
+   номеру счёта в сети есть оплата именно этому автору; оплата без записи
+   доната (обычная покупка у того же кошелька) оповещением не станет. */
+const seen = new Set();
+let last = null, lastOk = 0, order = Promise.resolve();
+const pad = a => '0x' + '0'.repeat(24) + a.replace(/^0x/, '');
+async function lookup(h, tries){
+  for (let i = 0; i < tries; i++){
+    try{
+      const r = await fetch('/api/donate?net=' + NET + '&to=' + TO + '&h=' + h, { cache: 'no-store' });
+      const d = await r.json();
+      if (d && d.item) return d.item;
+      if (!(d && d.pending)) return null;
+    } catch(e){}
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  return null;
+}
+async function poll(){
+  try{
+    const latest = parseInt(await rpc('eth_blockNumber', []), 16);
+    if (last === null) last = latest;             // с момента открытия, старое не повторяем
+    let from = last + 1;
+    if (latest - from > 1500) from = latest - 1500;
+    if (from <= latest){
+      const logs = await rpc('eth_getLogs', [{ address: NETS[NET].pays, fromBlock: '0x' + from.toString(16),
+        toBlock: '0x' + latest.toString(16), topics: [PAID, pad(TO)] }]);
+      for (const l of (logs || [])){
+        const h = '0x' + String(l.data).replace(/^0x/, '').slice(192, 256);
+        if (seen.has(h)) continue;
+        seen.add(h);
+        /* По очереди, в порядке оплат: кто заплатил раньше, того и
+           показываем первым. */
+        order = order.then(() => lookup(h, 8)).then(item => {
+          if (!item) return;
+          if (Number(item.amount) < MIN) return;
+          enqueue(item);
+        }).catch(() => {});
+      }
+      last = latest;
+    }
+    lastOk = Date.now();
+    status(true);
+  } catch(e){ status(false); }
+  setTimeout(poll, 4000);
+}
+
+/* ---------- подсказка вне OBS ---------- */
+function status(ok){
+  if (IN_OBS) return;
+  $('stDot').className = 'dot ' + (ok ? 'ok' : 'bad');
+  $('stText').textContent = ok ? T.listen + TO.slice(0, 6) + '…' + TO.slice(-4) + (NET === 'bnbTestnet' ? ' (testnet)' : '') + T.ok : T.bad;
+}
+let demoI = 0;
+function demo(){
+  const i = demoI++ % 3;
+  enqueue({ nick: T.demoNick[i] === T.anon ? '' : T.demoNick[i], msg: T.demoMsg[i], amount: ['5', '25', '1'][i], cur: ['USDT', 'USDC', 'USDT'][i] });
+}
+$('helpDemo').textContent = T.demo;
+$('helpDemo').onclick = demo;
+
+/* ---------- полоса цели ----------
+   Сколько собрано, считает сервер из журнала контракта; спрашиваем раз в
+   20 секунд — чаще незачем, сеть подтверждает оплату примерно за 10. */
+function money(v){ const n = Number(v); return isFinite(n) ? n.toLocaleString(LANG, { maximumFractionDigits: 2 }) : String(v); }
+function showGoal(g){
+  if (!g){
+    $('goal').classList.add('hidden');
+    if (!IN_OBS){ $('help').classList.remove('hidden'); $('helpText').textContent = T.goalNone; }
+    return;
+  }
+  $('goal').classList.remove('hidden');
+  $('gTitle').textContent = g.title;
+  $('gSum').textContent = money(g.raised) + ' / ' + money(g.target) + ' $';
+  const pct = Math.max(0, Math.min(100, Number(g.raised) / Number(g.target) * 100 || 0));
+  $('gFill').style.width = pct.toFixed(1) + '%';
+}
+async function pollGoal(){
+  try{
+    const r = await fetch('/api/donate?net=' + NET + '&to=' + TO + '&profile=1', { cache: 'no-store' });
+    const d = await r.json();
+    if (d && d.profile){ showGoal(d.profile.goal); status(true); }
+  } catch(e){ status(false); }
+  setTimeout(pollGoal, 20000);
+}
+
+if (!/^0x[0-9a-f]{40}$/.test(TO)){
+  if (!IN_OBS){ $('help').classList.remove('hidden'); $('helpText').textContent = T.noTo; $('stDot').className = 'dot bad'; }
+} else if (GOAL){
+  if (!IN_OBS && !DEMO){ $('help').classList.remove('hidden'); $('helpText').innerHTML = T.goalHelp; $('helpDemo').classList.add('hidden'); }
+  if (DEMO){ let r = 120; showGoal({ title: T.demoGoal, raised: r, target: 300 }); setInterval(() => { r = r >= 300 ? 60 : r + 25; showGoal({ title: T.demoGoal, raised: r, target: 300 }); }, 2500); }
+  else pollGoal();
+} else {
+  if (!IN_OBS && !DEMO){ $('help').classList.remove('hidden'); $('helpText').innerHTML = T.help; }
+  poll();
+}
+if (DEMO && !GOAL){ demo(); setInterval(demo, (DUR + 3) * 1000); }
+</script>
+</body>
+</html>

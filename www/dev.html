@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="ru" data-lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Pay API</title>
+<meta name="description" content="Приём USDT и USDC на вашем сайте: ключ, счёт одним запросом, вебхук об оплате. Деньги идут сразу на ваш кошелёк.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+/* Кабинет разработчика и документация API — одна страница.
+
+   Кто её читает: программист магазина, чаще всего с компьютера. Поэтому
+   она шире страницы оплаты и в ней много кода. Цвета — те же, что у
+   страницы оплаты: покупатель увидит их через минуту, и магазину полезно
+   знать, как это будет выглядеть. */
+:root{
+  --bg:#F4EEFF;
+  --glow-1:rgba(124,58,237,.20); --glow-2:rgba(75,31,232,.14);
+  --card:rgba(255,255,255,.82); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -14px rgba(60,30,140,.22);
+  --label:#1C1330; --label-2:rgba(48,33,79,.70); --label-3:rgba(48,33,79,.46);
+  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#B86E00; --red:#D92D22; --fill:rgba(124,58,237,.08);
+  --ghost-bg:rgba(255,255,255,.66); --ghost-edge:rgba(109,40,217,.22);
+  --code-bg:#1B1233; --code-fg:#EDE7FF; --code-dim:#A89BD0; --code-str:#B6F0C8; --code-key:#C9B6FF;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#140B2B;
+  --glow-1:rgba(124,58,237,.38); --glow-2:rgba(75,31,232,.30);
+  --card:rgba(34,22,66,.70); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
+  --label:#fff; --label-2:rgba(236,228,255,.74); --label-3:rgba(236,228,255,.48);
+  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.13);
+  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.26);
+  --code-bg:#0E0820;
+} }
+*{box-sizing:border-box}
+html{background:var(--bg); scroll-behavior:smooth}
+body{margin:0; min-height:100vh; color:var(--label); font-family:var(--font); font-size:16px; line-height:1.6;
+     -webkit-font-smoothing:antialiased; padding:18px 16px 70px;
+     background:radial-gradient(900px 520px at -10% -12%, var(--glow-1), transparent 62%),
+                radial-gradient(760px 460px at 112% 6%, var(--glow-2), transparent 60%), var(--bg);
+     background-attachment:fixed}
+html[data-lang="ru"] .en, html[data-lang="en"] .ru{display:none !important}
+.wrap{max-width:900px; margin:0 auto}
+.hidden{display:none !important}
+a{color:var(--accent)}
+header{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; letter-spacing:-.01em; color:var(--label); text-decoration:none}
+.brand svg{width:30px; height:30px; border-radius:8px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+.brand small{display:block; font-size:12px; font-weight:500; color:var(--label-3)}
+nav{display:flex; gap:4px; flex-wrap:wrap; margin-left:auto}
+nav a{color:var(--label-2); text-decoration:none; font-size:14px; font-weight:600; padding:6px 10px; border-radius:9px}
+nav a:hover{background:var(--fill); color:var(--label)}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:10px; padding:3px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700;
+              color:var(--label-2); padding:5px 10px; border-radius:7px; line-height:1.2}
+.langs button[aria-pressed="true"]{background:var(--card-solid); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.card{background:var(--card); border:1px solid var(--card-edge); border-radius:20px; padding:24px; margin-bottom:16px;
+      box-shadow:var(--shadow); -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%)}
+h1{font-size:30px; line-height:1.18; letter-spacing:-.025em; margin:0 0 10px}
+h2{font-size:22px; letter-spacing:-.015em; margin:0 0 12px; line-height:1.25}
+h3{font-size:17px; margin:22px 0 8px}
+p{margin:0 0 12px}
+.lead{font-size:17.5px; color:var(--label-2); margin-bottom:18px}
+.muted{color:var(--label-2)} .tiny{color:var(--label-3); font-size:13.5px}
+.facts{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:6px}
+.fact{background:var(--fill); border-radius:14px; padding:12px 14px; font-size:14.5px; color:var(--label-2)}
+.fact b{display:block; color:var(--label); font-size:17px; margin-bottom:2px}
+@media (max-width:640px){ .facts{grid-template-columns:1fr} h1{font-size:25px} nav{margin-left:0; width:100%} }
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 16px; border-radius:12px;
+     font-weight:650; font-size:15px; border:1px solid transparent; cursor:pointer; font-family:inherit; line-height:1.25;
+     text-decoration:none; transition:transform .12s ease, opacity .2s ease}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.5; cursor:default; transform:none}
+.btn-main{color:#fff; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+          box-shadow:0 10px 22px -10px rgba(91,33,232,.6)}
+.btn-ghost{background:var(--ghost-bg); color:var(--label); border-color:var(--ghost-edge)}
+.btn-sm{padding:7px 11px; font-size:13.5px; border-radius:10px}
+.btn-danger{color:var(--red)}
+.btns{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.note{background:var(--fill); border-radius:14px; padding:12px 15px; font-size:14.5px; color:var(--label-2); margin:12px 0}
+.warn{background:color-mix(in srgb, var(--orange) 13%, transparent); color:var(--label)}
+.okbox{background:color-mix(in srgb, var(--green) 13%, transparent); color:var(--label)}
+.errbox{background:color-mix(in srgb, var(--red) 12%, transparent); color:var(--label)}
+.row{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--sep); flex-wrap:wrap}
+.row:last-child{border-bottom:0}
+.row .k{font-weight:650}
+.mono{font-family:var(--mono); font-size:13.5px; word-break:break-all}
+input[type=text], input[type=url]{width:100%; font:inherit; font-size:15px; padding:11px 13px; border-radius:12px;
+  border:1px solid var(--ghost-edge); background:var(--ghost-bg); color:var(--label); outline:none}
+input:focus{border-color:var(--accent)}
+.field{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0}
+.field input{flex:1 1 280px}
+.secret{display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:var(--fill); padding:10px 12px; border-radius:12px; margin:8px 0}
+.secret .mono{flex:1 1 260px}
+.seg{display:inline-flex; gap:2px; background:var(--fill); border-radius:10px; padding:3px}
+.seg button{border:0; background:transparent; font:inherit; font-size:13.5px; font-weight:650; color:var(--label-2); padding:6px 12px; border-radius:8px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card-solid); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+table{width:100%; border-collapse:collapse; font-size:14.5px}
+th, td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--sep); vertical-align:top}
+th{color:var(--label-3); font-weight:650; font-size:12.5px; text-transform:uppercase; letter-spacing:.04em}
+.tbl{overflow-x:auto; margin:8px 0 4px}
+code{font-family:var(--mono); font-size:.9em; background:var(--fill); padding:1px 6px; border-radius:6px}
+.codebox{background:var(--code-bg); border-radius:14px; margin:10px 0 16px; overflow:hidden; border:1px solid rgba(190,160,255,.14)}
+.codebar{display:flex; align-items:center; gap:2px; padding:6px 8px; border-bottom:1px solid rgba(190,160,255,.12)}
+.codebar button{border:0; background:transparent; color:var(--code-dim); font:inherit; font-size:12.5px; font-weight:650; padding:5px 10px; border-radius:7px; cursor:pointer}
+.codebar button[aria-pressed="true"]{background:rgba(190,160,255,.16); color:var(--code-fg)}
+.codebar .copy{margin-left:auto}
+pre{margin:0; padding:14px 16px; overflow-x:auto; color:var(--code-fg); font-family:var(--mono); font-size:13px; line-height:1.6; tab-size:2}
+pre .c{color:var(--code-dim)}
+.pill{display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--fill); color:var(--label-2); white-space:nowrap}
+.pill.paid{background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green)}
+.pill.pending{background:color-mix(in srgb, var(--orange) 16%, transparent); color:var(--orange)}
+.pill.bad{background:color-mix(in srgb, var(--red) 14%, transparent); color:var(--red)}
+.steps{counter-reset:s; list-style:none; padding:0; margin:0}
+.steps li{counter-increment:s; position:relative; padding:0 0 14px 40px}
+.steps li::before{content:counter(s); position:absolute; left:0; top:0; width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; font-weight:700; font-size:14px;
+  display:flex; align-items:center; justify-content:center}
+.method{font-family:var(--mono); font-weight:700; font-size:13px; padding:2px 8px; border-radius:6px; margin-right:6px}
+.m-post{background:color-mix(in srgb, var(--green) 16%, transparent); color:var(--green)}
+.m-get{background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent)}
+.endpoint{font-family:var(--mono); font-size:14.5px; margin:14px 0 6px; font-weight:600}
+footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="brand" href="/dev">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+      </g>
+    </svg>
+    <span>Tavarov Pay API<small><span class="ru">для разработчиков</span><span class="en">for developers</span></small></span>
+  </a>
+  <nav>
+    <a href="#cabinet"><span class="ru">Кабинет</span><span class="en">Dashboard</span></a>
+    <a href="#start"><span class="ru">Быстрый старт</span><span class="en">Quick start</span></a>
+    <a href="#invoices"><span class="ru">Счета</span><span class="en">Invoices</span></a>
+    <a href="#webhooks"><span class="ru">Вебхуки</span><span class="en">Webhooks</span></a>
+    <a href="#test"><span class="ru">Тест</span><span class="en">Testing</span></a>
+    <a href="#errors"><span class="ru">Ошибки</span><span class="en">Errors</span></a>
+  </nav>
+  <div class="langs" id="langs"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+</header>
+
+<!-- ===================== Витрина ===================== -->
+<div class="card">
+  <h1><span class="ru">Приём USDT и USDC на вашем сайте</span><span class="en">Accept USDT and USDC on your site</span></h1>
+  <p class="lead">
+    <span class="ru">Один запрос — и у покупателя ссылка на оплату. Он платит из своего кошелька, деньги приходят сразу на ваш, а ваш сервер получает вебхук «оплачено». Без подключения, без договоров, без выплат раз в неделю.</span>
+    <span class="en">One request gives your customer a payment link. They pay from their own wallet, the money lands straight in yours, and your server gets a signed “paid” webhook. No onboarding, no contracts, no weekly payouts.</span>
+  </p>
+  <div class="facts">
+    <div class="fact"><b>1%</b><span class="ru">комиссия, платит магазин. Покупатель — только доли цента за сеть.</span><span class="en">fee, paid by the shop. The buyer only pays a fraction of a cent in network gas.</span></div>
+    <div class="fact"><b><span class="ru">Сразу</span><span class="en">Instantly</span></b><span class="ru">99% приходят на ваш кошелёк в той же операции. Мы деньги не держим ни секунды.</span><span class="en">99% arrives in your wallet in the same transaction. We never hold your money.</span></div>
+    <div class="fact"><b>BNB Chain</b><span class="ru">USDT и USDC. Платить можно MetaMask, Trust Wallet, NoN Wallet и другими.</span><span class="en">USDT and USDC. Buyers can pay with MetaMask, Trust Wallet, NoN Wallet and more.</span></div>
+  </div>
+</div>
+
+<!-- ===================== Кабинет ===================== -->
+<div class="card" id="cabinet">
+  <h2><span class="ru">Кабинет</span><span class="en">Dashboard</span></h2>
+
+  <div id="cabOut">
+    <p class="muted">
+      <span class="ru">Вход — это подпись сообщения кошельком, на который вы хотите получать деньги. Подпись бесплатна и деньги не двигает. Паролей и регистрации нет.</span>
+      <span class="en">Signing in means signing a message with the wallet you want to get paid to. It is free and moves no money. No passwords, no sign-up.</span>
+    </p>
+    <div class="btns">
+      <button class="btn btn-main" id="mmLogin"><span class="ru">Войти через MetaMask</span><span class="en">Sign in with MetaMask</span></button>
+      <button class="btn btn-ghost" id="nonLogin"><span class="ru">Войти через NoN Wallet</span><span class="en">Sign in with NoN Wallet</span></button>
+    </div>
+    <div class="note hidden" id="nonHow">
+      <span class="ru">Откройте NoN Wallet → вкладка <b>«Оплата»</b> → внизу <b>«Приём оплаты на сайте (API)»</b> → <b>«Открыть кабинет»</b>. Кошелёк подпишет вход сам и откроет эту страницу уже внутри кабинета.</span>
+      <span class="en">Open NoN Wallet → <b>Payments</b> tab → at the bottom, <b>Accept payments on a website (API)</b> → <b>Open dashboard</b>. The wallet signs in for you and opens this page already signed in.</span>
+    </div>
+    <div class="note errbox hidden" id="loginErr"></div>
+  </div>
+
+  <div id="cabIn" class="hidden">
+    <div class="row">
+      <div><div class="tiny"><span class="ru">Кошелёк для приёма денег</span><span class="en">Payout wallet</span></div><div class="mono" id="meWallet"></div></div>
+      <button class="btn btn-ghost btn-sm" id="logout"><span class="ru">Выйти</span><span class="en">Sign out</span></button>
+    </div>
+
+    <h3><span class="ru">Ключи API</span><span class="en">API keys</span></h3>
+    <p class="tiny"><span class="ru">Боевой ключ — настоящие деньги в BNB Chain. Тестовый — тестовая сеть, деньги ненастоящие. Ключ показывается один раз; храните его на сервере, не в коде страницы.</span><span class="en">A live key means real money on BNB Chain. A test key uses the testnet with play money. A key is shown only once; keep it on your server, never in front-end code.</span></p>
+    <div id="keysBox"></div>
+    <div class="note warn hidden" id="newKeyBox">
+      <b><span class="ru">Ваш новый ключ — скопируйте сейчас, второй раз мы его не покажем:</span><span class="en">Your new key. Copy it now, we will not show it again:</span></b>
+      <div class="secret"><span class="mono" id="newKey"></span><button class="btn btn-ghost btn-sm" data-copy="newKey"><span class="ru">Копировать</span><span class="en">Copy</span></button></div>
+    </div>
+
+    <h3><span class="ru">Вебхук</span><span class="en">Webhook</span></h3>
+    <p class="tiny"><span class="ru">Адрес на вашем сервере, куда мы пришлём «оплачено». Только https:// и только ваш домен.</span><span class="en">An address on your server where we POST “paid”. https:// only, on your own domain.</span></p>
+    <div class="field">
+      <input type="url" id="whUrl" placeholder="https://your-shop.com/tavarov/webhook" autocomplete="off" spellcheck="false">
+      <button class="btn btn-main" id="whSave"><span class="ru">Сохранить</span><span class="en">Save</span></button>
+    </div>
+    <div id="whSecretBox" class="hidden">
+      <div class="tiny"><span class="ru">Секрет подписи — им вы проверяете, что вебхук пришёл от нас:</span><span class="en">Signing secret, used to check that a webhook really came from us:</span></div>
+      <div class="secret">
+        <span class="mono" id="whSecret">••••••••••••••••</span>
+        <button class="btn btn-ghost btn-sm" id="whShow"><span class="ru">Показать</span><span class="en">Reveal</span></button>
+        <button class="btn btn-ghost btn-sm" id="whCopy"><span class="ru">Копировать</span><span class="en">Copy</span></button>
+        <button class="btn btn-ghost btn-sm btn-danger" id="whRotate"><span class="ru">Заменить</span><span class="en">Roll</span></button>
+      </div>
+      <div class="btns">
+        <button class="btn btn-ghost btn-sm" id="whTest"><span class="ru">Отправить проверку</span><span class="en">Send a test event</span></button>
+        <button class="btn btn-ghost btn-sm btn-danger" id="whRemove"><span class="ru">Убрать вебхук</span><span class="en">Remove webhook</span></button>
+      </div>
+    </div>
+    <div class="note hidden" id="whMsg"></div>
+
+    <h3 style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+      <span><span class="ru">Последние счета</span><span class="en">Recent invoices</span></span>
+      <span class="seg" id="invMode"><button data-m="live" aria-pressed="true"><span class="ru">Боевые</span><span class="en">Live</span></button><button data-m="test" aria-pressed="false"><span class="ru">Тестовые</span><span class="en">Test</span></button></span>
+      <button class="btn btn-ghost btn-sm" id="invReload"><span class="ru">Обновить</span><span class="en">Refresh</span></button>
+    </h3>
+    <div class="tbl"><table>
+      <thead><tr><th><span class="ru">Когда</span><span class="en">When</span></th><th><span class="ru">Заказ</span><span class="en">Order</span></th><th><span class="ru">Сумма</span><span class="en">Amount</span></th><th><span class="ru">Статус</span><span class="en">Status</span></th><th><span class="ru">Вебхук</span><span class="en">Webhook</span></th><th></th></tr></thead>
+      <tbody id="invRows"></tbody>
+    </table></div>
+    <p class="tiny" id="invEmpty"></p>
+  </div>
+</div>
+
+<!-- ===================== Быстрый старт ===================== -->
+<div class="card" id="start">
+  <h2><span class="ru">Быстрый старт</span><span class="en">Quick start</span></h2>
+  <ol class="steps">
+    <li><span class="ru">Войдите в кабинет выше и возьмите <b>тестовый ключ</b> <code>tp_test_…</code>. Впишите адрес вебхука.</span><span class="en">Sign in above and create a <b>test key</b> <code>tp_test_…</code>. Enter your webhook URL.</span></li>
+    <li><span class="ru">На странице оформления заказа ваш сервер выставляет счёт и уводит покупателя по <code>payment_url</code>.</span><span class="en">At checkout your server creates an invoice and redirects the customer to <code>payment_url</code>.</span></li>
+    <li><span class="ru">Покупатель платит. Через несколько секунд на ваш вебхук приходит <code>invoice.paid</code> — отдаёте товар. Покупатель возвращается на ваш <code>success_url</code>.</span><span class="en">The customer pays. Within seconds your webhook receives <code>invoice.paid</code>, so you fulfil the order. The customer comes back to your <code>success_url</code>.</span></li>
+    <li><span class="ru">Всё работает — замените тестовый ключ на боевой <code>tp_live_…</code>. Больше ничего менять не нужно.</span><span class="en">Once it all works, swap the test key for a live one, <code>tp_live_…</code>. Nothing else changes.</span></li>
+  </ol>
+  <p class="muted"><span class="ru">Адрес API:</span><span class="en">Base URL:</span> <code>https://wallet.tavarov.com/api/v1</code>. <span class="ru">Ключ передаётся заголовком</span><span class="en">Send your key in the header</span> <code>Authorization: Bearer tp_live_…</code>. <span class="ru">Запросы и ответы — JSON.</span><span class="en">Requests and responses are JSON.</span></p>
+</div>
+
+<!-- ===================== Счета ===================== -->
+<div class="card" id="invoices">
+  <h2><span class="ru">Счета</span><span class="en">Invoices</span></h2>
+
+  <div class="endpoint"><span class="method m-post">POST</span>/api/v1/invoices</div>
+  <p><span class="ru">Выставить счёт. В ответе — <code>payment_url</code>: туда отправьте покупателя.</span><span class="en">Create an invoice. The response contains <code>payment_url</code>: send the customer there.</span></p>
+
+  <div class="codebox" data-group="create">
+    <div class="codebar"><button data-tab="curl">curl</button><button data-tab="php">PHP</button><button data-tab="node">Node.js</button><button data-tab="python">Python</button><button class="copy"><span class="ru">Копировать</span><span class="en">Copy</span></button></div>
+<pre data-pane="curl">curl https://wallet.tavarov.com/api/v1/invoices \
+  -H "Authorization: Bearer $TAVAROV_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "12.50",
+    "currency": "USDT",
+    "order_id": "1001",
+    "description": "Sneakers",
+    "success_url": "https://your-shop.com/thanks"
+  }'</pre>
+<pre data-pane="php">&lt;?php
+$ch = curl_init('https://wallet.tavarov.com/api/v1/invoices');
+curl_setopt_array($ch, [
+  CURLOPT_POST           =&gt; true,
+  CURLOPT_RETURNTRANSFER =&gt; true,
+  CURLOPT_TIMEOUT        =&gt; 15,
+  CURLOPT_HTTPHEADER     =&gt; [
+    'Authorization: Bearer ' . getenv('TAVAROV_API_KEY'),
+    'Content-Type: application/json',
+  ],
+  CURLOPT_POSTFIELDS =&gt; json_encode([
+    'amount'      =&gt; '12.50',            // a string, not a float
+    'currency'    =&gt; 'USDT',
+    'order_id'    =&gt; (string) $orderId,
+    'description' =&gt; 'Sneakers',
+    'success_url' =&gt; 'https://your-shop.com/thanks',
+  ]),
+]);
+$invoice = json_decode(curl_exec($ch), true);
+if (curl_getinfo($ch, CURLINFO_RESPONSE_CODE) &gt;= 300) {
+  throw new Exception($invoice['error']['message']);
+}
+// save $invoice['id'] next to your order, then:
+header('Location: ' . $invoice['payment_url']);</pre>
+<pre data-pane="node">const r = await fetch('https://wallet.tavarov.com/api/v1/invoices', {
+  method: 'POST',
+  headers: {
+    Authorization: 'Bearer ' + process.env.TAVAROV_API_KEY,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    amount: '12.50',                 // a string, not a float
+    currency: 'USDT',
+    order_id: String(order.id),
+    description: 'Sneakers',
+    success_url: 'https://your-shop.com/thanks',
+  }),
+});
+const invoice = await r.json();
+if (!r.ok) throw new Error(invoice.error.message);
+// save invoice.id next to your order, then:
+res.redirect(invoice.payment_url);</pre>
+<pre data-pane="python">import os, requests
+
+r = requests.post(
+    'https://wallet.tavarov.com/api/v1/invoices',
+    headers={'Authorization': 'Bearer ' + os.environ['TAVAROV_API_KEY']},
+    json={
+        'amount': '12.50',               # a string, not a float
+        'currency': 'USDT',
+        'order_id': str(order.id),
+        'description': 'Sneakers',
+        'success_url': 'https://your-shop.com/thanks',
+    },
+    timeout=15,
+)
+invoice = r.json()
+if r.status_code &gt;= 300:
+    raise Exception(invoice['error']['message'])
+# save invoice['id'] next to your order, then:
+return redirect(invoice['payment_url'])</pre>
+  </div>
+
+  <h3><span class="ru">Поля запроса</span><span class="en">Request fields</span></h3>
+  <div class="tbl"><table>
+    <tr><th><span class="ru">Поле</span><span class="en">Field</span></th><th></th><th><span class="ru">Что это</span><span class="en">Meaning</span></th></tr>
+    <tr><td><code>amount</code></td><td><span class="ru">обязательно</span><span class="en">required</span></td><td><span class="ru">Сумма строкой: <code>"12.50"</code>. Точка, без запятых и степеней.</span><span class="en">Amount as a string: <code>"12.50"</code>. A dot, no commas, no exponents.</span></td></tr>
+    <tr><td><code>currency</code></td><td><code>USDT</code></td><td><span class="ru"><code>USDT</code> или <code>USDC</code>. В тестовой сети — только <code>USDT</code>.</span><span class="en"><code>USDT</code> or <code>USDC</code>. The testnet has <code>USDT</code> only.</span></td></tr>
+    <tr><td><code>order_id</code></td><td></td><td><span class="ru">Ваш номер заказа, до 64 знаков. Повтор запроса с тем же номером вернёт тот же счёт, а не второй.</span><span class="en">Your order number, up to 64 chars. Repeating a request with the same order_id returns the same invoice instead of a new one.</span></td></tr>
+    <tr><td><code>description</code></td><td></td><td><span class="ru">Что покупают, до 64 знаков. Видно покупателю.</span><span class="en">What is being bought, up to 64 chars. Shown to the customer.</span></td></tr>
+    <tr><td><code>shop_name</code></td><td></td><td><span class="ru">Название магазина, до 48 знаков. Видно покупателю.</span><span class="en">Your shop name, up to 48 chars. Shown to the customer.</span></td></tr>
+    <tr><td><code>success_url</code></td><td></td><td><span class="ru">Куда вернуть покупателя после оплаты (https://). Мы добавим <code>tavarov_order</code> и <code>tavarov_tx</code>.</span><span class="en">Where to send the customer after paying (https://). We append <code>tavarov_order</code> and <code>tavarov_tx</code>.</span></td></tr>
+    <tr><td><code>expires_in</code></td><td>3600</td><td><span class="ru">Сколько секунд счёт живёт: от 300 до 604800.</span><span class="en">Seconds until the invoice expires, from 300 to 604800.</span></td></tr>
+    <tr><td><code>lang</code></td><td></td><td><span class="ru">Язык страницы оплаты: <code>ru</code>, <code>en</code>, <code>es</code>, <code>tr</code>, <code>pt</code>. Без него — язык браузера покупателя.</span><span class="en">Payment page language: <code>ru</code>, <code>en</code>, <code>es</code>, <code>tr</code>, <code>pt</code>. Defaults to the customer's browser language.</span></td></tr>
+    <tr><td><code>metadata</code></td><td></td><td><span class="ru">Ваши данные, до 20 ключей и 2 КБ. Вернутся в ответах и вебхуках как есть.</span><span class="en">Your own data, up to 20 keys and 2 KB. Returned as-is in responses and webhooks.</span></td></tr>
+  </table></div>
+
+  <h3><span class="ru">Ответ</span><span class="en">Response</span></h3>
+  <div class="codebox"><pre>{
+  "id": "0x6f1c…b9",                 <span class="c">// invoice id, 32 random bytes</span>
+  "object": "invoice",
+  "status": "pending",
+  "livemode": true,
+  "network": "bnb",
+  "merchant": "0xYOUR_WALLET",
+  "amount": "12.5",
+  "currency": "USDT",
+  "order_id": "1001",
+  "description": "Sneakers",
+  "metadata": {},
+  "payment_url": "https://wallet.tavarov.com/pay#p=eyJt…",
+  "created_at": 1790000000,
+  "expires_at": 1790003600,
+  "payment": null,
+  "webhook": { "delivered": false, "attempts": 0 }
+}</pre></div>
+
+  <div class="endpoint"><span class="method m-get">GET</span>/api/v1/invoices/{id}</div>
+  <p><span class="ru">Узнать статус. Ответ берётся из контракта оплаты в момент запроса, так что это то же самое, что увидеть в сети своими глазами.</span><span class="en">Get the current status. It is read from the payment contract at request time, so it is the same as checking the chain yourself.</span></p>
+
+  <div class="endpoint"><span class="method m-get">GET</span>/api/v1/me</div>
+  <p><span class="ru">Проверить ключ: какой кошелёк, какая сеть, какие валюты.</span><span class="en">Check a key: which wallet, which network, which currencies.</span></p>
+
+  <h3><span class="ru">Статусы</span><span class="en">Statuses</span></h3>
+  <div class="tbl"><table>
+    <tr><td><span class="pill pending">pending</span></td><td><span class="ru">Ждём оплату.</span><span class="en">Waiting for payment.</span></td></tr>
+    <tr><td><span class="pill paid">paid</span></td><td><span class="ru">Оплачено полностью, в нужной валюте, вам. Подтверждено 12 блоками. Отдавайте товар.</span><span class="en">Paid in full, in the right currency, to you. Confirmed by 12 blocks. Fulfil the order.</span></td></tr>
+    <tr><td><span class="pill bad">underpaid</span></td><td><span class="ru">Заплатили меньше. Товар не отдавайте; деньги можно вернуть из NoN Wallet.</span><span class="en">Paid less than billed. Do not fulfil; you can refund from NoN Wallet.</span></td></tr>
+    <tr><td><span class="pill bad">wrong_currency</span></td><td><span class="ru">Заплатили другой валютой.</span><span class="en">Paid in a different currency.</span></td></tr>
+    <tr><td><span class="pill bad">refunded</span></td><td><span class="ru">Вы вернули деньги покупателю.</span><span class="en">You refunded the customer.</span></td></tr>
+    <tr><td><span class="pill">expired</span></td><td><span class="ru">Срок вышел, оплаты не было. Если оплата всё же придёт позже, статус станет <code>paid</code> с пометкой <code>paid_after_expiry</code>.</span><span class="en">Expired without payment. If a payment still arrives later, the status becomes <code>paid</code> with <code>paid_after_expiry</code>.</span></td></tr>
+  </table></div>
+</div>
+
+<!-- ===================== Вебхуки ===================== -->
+<div class="card" id="webhooks">
+  <h2><span class="ru">Вебхуки</span><span class="en">Webhooks</span></h2>
+  <p><span class="ru">Когда счёт оплачен, мы шлём POST на ваш адрес. Обычно — через несколько секунд после оплаты, самое позднее — через минуту.</span><span class="en">When an invoice is paid we POST to your URL, usually a few seconds after payment and at most a minute later.</span></p>
+  <div class="codebox"><pre><span class="c">POST /tavarov/webhook
+Content-Type: application/json
+Tavarov-Signature: t=1790000123,v1=5f2b…c0
+Tavarov-Event-Id: evt_6f1c…</span>
+
+{
+  "id": "evt_6f1c…",
+  "type": "invoice.paid",
+  "created": 1790000123,
+  "livemode": true,
+  "data": { <span class="c">/* the invoice, as in GET /invoices/{id} */</span>
+    "id": "0x6f1c…b9", "status": "paid", "order_id": "1001",
+    "amount": "12.5", "currency": "USDT", "metadata": {},
+    "payment": { "payer": "0x…", "amount": "12.5", "tx": "0x…", "block": 51234567 }
+  }
+}</pre></div>
+
+  <h3><span class="ru">Проверка подписи — обязательно</span><span class="en">Verify the signature, always</span></h3>
+  <p><span class="ru">Адрес вебхука может узнать кто угодно. Поэтому каждый вебхук подписан: <code>v1</code> — это HMAC-SHA256 от строки <code>t + "." + тело запроса</code> вашим секретом. Проверяйте подпись по <b>сырому</b> телу, до разбора JSON, и отклоняйте вебхуки старше 5 минут.</span><span class="en">Anyone can learn your webhook URL, so every webhook is signed: <code>v1</code> is the HMAC-SHA256 of <code>t + "." + raw body</code> with your secret. Verify it over the <b>raw</b> body, before parsing JSON, and reject events older than 5 minutes.</span></p>
+
+  <div class="codebox" data-group="hook">
+    <div class="codebar"><button data-tab="php">PHP</button><button data-tab="node">Node.js</button><button data-tab="python">Python</button><button class="copy"><span class="ru">Копировать</span><span class="en">Copy</span></button></div>
+<pre data-pane="php">&lt;?php
+$secret = getenv('TAVAROV_WEBHOOK_SECRET');
+$body   = file_get_contents('php://input');
+$header = $_SERVER['HTTP_TAVAROV_SIGNATURE'] ?? '';
+
+if (!preg_match('/^t=(\d+),v1=([0-9a-f]{64})$/', $header, $m)
+    || abs(time() - (int) $m[1]) &gt; 300
+    || !hash_equals(hash_hmac('sha256', $m[1] . '.' . $body, $secret), $m[2])) {
+  http_response_code(400);
+  exit;
+}
+
+$event = json_decode($body, true);
+if ($event['type'] === 'invoice.paid') {
+  $inv = $event['data'];
+  // Look up the order by $inv['order_id'], check that $inv['amount'] and
+  // $inv['currency'] match it, mark it paid. Ignore an $event['id'] you
+  // have already processed: a webhook may arrive more than once.
+}
+http_response_code(200);</pre>
+<pre data-pane="node">import crypto from 'node:crypto';
+import express from 'express';
+
+const app = express();
+app.post('/tavarov/webhook', express.raw({ type: 'application/json' }), (req, res) =&gt; {
+  const m = /^t=(\d+),v1=([0-9a-f]{64})$/.exec(req.get('Tavarov-Signature') || '');
+  if (!m || Math.abs(Date.now() / 1000 - Number(m[1])) &gt; 300) return res.sendStatus(400);
+  const expected = crypto.createHmac('sha256', process.env.TAVAROV_WEBHOOK_SECRET)
+    .update(m[1] + '.').update(req.body).digest('hex');
+  if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(m[2]))) return res.sendStatus(400);
+
+  const event = JSON.parse(req.body);
+  if (event.type === 'invoice.paid') {
+    const inv = event.data;
+    // Find the order by inv.order_id, check inv.amount and inv.currency,
+    // mark it paid. Skip an event.id you have already processed.
+  }
+  res.sendStatus(200);
+});</pre>
+<pre data-pane="python">import hmac, hashlib, json, os, re, time
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+
+@app.post('/tavarov/webhook')
+def tavarov_webhook():
+    m = re.fullmatch(r't=(\d+),v1=([0-9a-f]{64})', request.headers.get('Tavarov-Signature', ''))
+    if not m or abs(time.time() - int(m[1])) &gt; 300:
+        abort(400)
+    body = request.get_data()
+    expected = hmac.new(os.environ['TAVAROV_WEBHOOK_SECRET'].encode(),
+                        m[1].encode() + b'.' + body, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, m[2]):
+        abort(400)
+
+    event = json.loads(body)
+    if event['type'] == 'invoice.paid':
+        inv = event['data']
+        # Find the order by inv['order_id'], check inv['amount'] and
+        # inv['currency'], mark it paid. Skip an event['id'] already processed.
+    return '', 200</pre>
+  </div>
+
+  <h3><span class="ru">Правила доставки</span><span class="en">Delivery rules</span></h3>
+  <ul>
+    <li><span class="ru">Ответьте кодом 2xx за 10 секунд. Иначе повторим через 1 мин, 5 мин, 15 мин, 1 ч, 3 ч, 6 ч, 12 ч и 24 ч.</span><span class="en">Answer with a 2xx within 10 seconds. Otherwise we retry after 1 min, 5 min, 15 min, 1 h, 3 h, 6 h, 12 h and 24 h.</span></li>
+    <li><span class="ru">Один и тот же вебхук может прийти дважды — отсеивайте по <code>id</code> события.</span><span class="en">The same event can arrive twice. Deduplicate by the event <code>id</code>.</span></li>
+    <li><span class="ru">Возврат покупателя на <code>success_url</code> — не доказательство оплаты: этот адрес может открыть кто угодно. Товар отдавайте по вебхуку или по <code>GET /invoices/{id}</code>.</span><span class="en">A customer landing on your <code>success_url</code> is not proof of payment: anyone can open that URL. Fulfil on the webhook or on <code>GET /invoices/{id}</code>.</span></li>
+    <li><span class="ru">Не дошло? В кабинете у каждого оплаченного счёта есть кнопка «Отправить заново».</span><span class="en">Missed one? Every paid invoice in the dashboard has a “Resend” button.</span></li>
+  </ul>
+</div>
+
+<!-- ===================== Тест ===================== -->
+<div class="card" id="test">
+  <h2><span class="ru">Проверка без денег</span><span class="en">Testing without real money</span></h2>
+  <p><span class="ru">Ключ <code>tp_test_…</code> выставляет счета в тестовой сети BNB. Всё работает как по-настоящему — страница оплаты, вебхуки, статусы, — только доллары ненастоящие.</span><span class="en">A <code>tp_test_…</code> key creates invoices on the BNB testnet. Everything works for real (payment page, webhooks, statuses), only the dollars are play money.</span></p>
+  <ol>
+    <li><span class="ru">Нужен второй кошелёк — покупатель. Заплатить самому себе контракт не даст.</span><span class="en">You need a second wallet as the customer. The contract will not let you pay yourself.</span></li>
+    <li><span class="ru">В нём — немного тестового BNB на комиссию: <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener">кран BNB Chain</a>.</span><span class="en">It needs a little testnet BNB for gas: <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener">BNB Chain faucet</a>.</span></li>
+    <li><span class="ru">И тестовые доллары — напечатайте себе кнопкой (MetaMask спросит подтверждение):</span><span class="en">And test dollars. Mint some with this button (MetaMask will ask you to confirm):</span>
+      <div class="btns" style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="mintTest"><span class="ru">Получить 100 тестовых USDT</span><span class="en">Get 100 test USDT</span></button></div>
+      <div class="note hidden" id="mintMsg"></div>
+    </li>
+  </ol>
+</div>
+
+<!-- ===================== Ошибки ===================== -->
+<div class="card" id="errors">
+  <h2><span class="ru">Ошибки и ограничения</span><span class="en">Errors and limits</span></h2>
+  <p><span class="ru">Ошибка — это код HTTP и тело:</span><span class="en">An error is an HTTP status plus a body:</span> <code>{"error": {"code": "bad_amount", "message": "…"}}</code></p>
+  <div class="tbl"><table>
+    <tr><td><code>400</code></td><td><span class="ru">Неверное поле. В <code>code</code> сказано, какое.</span><span class="en">A field is wrong; <code>code</code> tells you which.</span></td></tr>
+    <tr><td><code>401</code></td><td><span class="ru">Нет ключа или ключ неверный / заменён.</span><span class="en">Missing, wrong or rolled key.</span></td></tr>
+    <tr><td><code>404</code></td><td><span class="ru">Счёта нет — или он выставлен другим ключом.</span><span class="en">No such invoice, or it belongs to another key.</span></td></tr>
+    <tr><td><code>409</code></td><td><span class="ru">Такой <code>order_id</code> уже есть с другой суммой (<code>order_exists</code>) или уже оплачен (<code>order_paid</code>).</span><span class="en">This <code>order_id</code> already exists with a different amount (<code>order_exists</code>) or is already paid (<code>order_paid</code>).</span></td></tr>
+    <tr><td><code>429</code></td><td><span class="ru">Больше 60 счетов в минуту на ключ.</span><span class="en">More than 60 invoices per minute per key.</span></td></tr>
+    <tr><td><code>5xx</code></td><td><span class="ru">Сеть или мы не ответили — повторите запрос. С тем же <code>order_id</code> второй счёт не появится.</span><span class="en">The network or we did not answer. Retry; with the same <code>order_id</code> no duplicate invoice is created.</span></td></tr>
+  </table></div>
+  <h3><span class="ru">Чего API не делает</span><span class="en">What the API does not do</span></h3>
+  <p class="muted"><span class="ru">Не держит ваши деньги и не может их задержать: платёж идёт от покупателя к вам через открытый контракт оплаты. Не видит ключей вашего кошелька — вход только по подписи. Если наш сервер однажды пропадёт, уже полученные деньги останутся у вас: оплату видно в самой сети.</span><span class="en">It never holds your money and cannot delay it: the payment goes from the customer to you through an open payment contract. It never sees your wallet keys; sign-in is by signature only. If our server ever went away, money you already received stays with you: every payment is visible on-chain.</span></p>
+  <p class="tiny"><span class="ru">Контракт оплаты:</span><span class="en">Payment contract:</span> <a class="mono" href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code" target="_blank" rel="noopener">0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35</a></p>
+</div>
+
+<footer>Tavarov Pay · <a href="https://tavarov.com">tavarov.com</a> · <a href="https://tavarov.com/privacy">
+  <span class="ru">Конфиденциальность</span><span class="en">Privacy</span></a></footer>
+</div>
+
+<script>
+'use strict';
+/* ===================== язык ===================== */
+const $ = id => document.getElementById(id);
+let LANG = 'en';
+/* Состояние кабинета объявлено до выбора языка: смена языка перерисовывает кабинет. */
+let SESS = null, ACCT = null, invMode = 'live', secretShown = false, INV = [];
+(() => {
+  let want = null;
+  try{ want = new URLSearchParams(location.search).get('lang'); } catch(e){}
+  if (!want){ try{ want = localStorage.getItem('tp.dev.lang'); } catch(e){} }
+  if (!want) want = /^(ru|uk|be|kk|uz|tg|ky)\b/i.test(navigator.language || '') ? 'ru' : 'en';
+  setLang(want === 'ru' ? 'ru' : 'en');
+})();
+function setLang(l){
+  LANG = l;
+  document.documentElement.lang = l;
+  document.documentElement.dataset.lang = l;
+  document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === l)));
+  try{ localStorage.setItem('tp.dev.lang', l); } catch(e){}
+  if (typeof renderAll === 'function') renderAll();
+}
+document.querySelectorAll('#langs button').forEach(b => b.onclick = () => setLang(b.dataset.l));
+const tr = (ru, en) => LANG === 'ru' ? ru : en;
+
+/* ===================== примеры кода: вкладки ===================== */
+let codeTab = 'curl';
+try{ codeTab = localStorage.getItem('tp.dev.code') || 'curl'; } catch(e){}
+function showTabs(){
+  document.querySelectorAll('.codebox[data-group]').forEach(box => {
+    const tabs = [...box.querySelectorAll('.codebar button[data-tab]')].map(b => b.dataset.tab);
+    const on = tabs.includes(codeTab) ? codeTab : tabs[0];
+    box.querySelectorAll('.codebar button[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === on)));
+    box.querySelectorAll('pre[data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== on));
+  });
+}
+document.querySelectorAll('.codebar button[data-tab]').forEach(b => b.onclick = () => {
+  codeTab = b.dataset.tab;
+  try{ localStorage.setItem('tp.dev.code', codeTab); } catch(e){}
+  showTabs();
+});
+document.querySelectorAll('.codebar .copy').forEach(b => b.onclick = () => {
+  const pre = [...b.closest('.codebox').querySelectorAll('pre')].find(p => !p.classList.contains('hidden'));
+  copy(pre.textContent, b);
+});
+showTabs();
+
+function copy(text, btn){
+  const done = () => { if (!btn) return; const was = btn.innerHTML; btn.textContent = tr('Скопировано', 'Copied'); setTimeout(() => { btn.innerHTML = was; }, 1400); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => fallback());
+  else fallback();
+  function fallback(){
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); } catch(e){}
+    ta.remove();
+  }
+}
+document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copy($(b.dataset.copy).textContent, b));
+
+/* ===================== сессия ===================== */
+try{ SESS = sessionStorage.getItem('tp.dev.sess'); } catch(e){}
+
+async function api(method, path, body){
+  const r = await fetch('/api/v1/dev' + path, { method, cache: 'no-store',
+    headers: Object.assign({ 'content-type': 'application/json' }, SESS ? { authorization: 'Session ' + SESS } : {}),
+    body: body === undefined ? undefined : JSON.stringify(body) });
+  let d = null; try{ d = await r.json(); } catch(e){}
+  if (r.status === 401 && path !== '/login'){ signOut(true); throw new Error(tr('Сессия закончилась — войдите снова.', 'Session ended. Please sign in again.')); }
+  if (!r.ok) throw new Error((d && d.error && d.error.message) || ('HTTP ' + r.status));
+  return d;
+}
+
+function loginText(address, ts){
+  return ['Tavarov Pay developer login', 'site: wallet.tavarov.com', 'wallet: ' + address.toLowerCase(), 'time: ' + ts].join('\n');
+}
+async function finishLogin(address, ts, sig){
+  const d = await api('POST', '/login', { address, ts, sig });
+  SESS = d.session;
+  try{ sessionStorage.setItem('tp.dev.sess', SESS); } catch(e){}
+  await loadAccount();
+}
+function showLoginError(e){
+  const box = $('loginErr');
+  box.textContent = (e && e.message) || String(e);
+  box.classList.remove('hidden');
+}
+
+/* ---------- MetaMask и другие кошельки в браузере ---------- */
+const found = [];
+window.addEventListener('eip6963:announceProvider', ev => { if (ev.detail && ev.detail.provider) found.push(ev.detail); });
+try{ window.dispatchEvent(new Event('eip6963:requestProvider')); } catch(e){}
+function pickProvider(){
+  const mm = found.find(d => /metamask/i.test((d.info && (d.info.rdns + d.info.name)) || ''));
+  if (mm) return mm.provider;
+  if (found[0]) return found[0].provider;
+  return window.ethereum || null;
+}
+const IS_PHONE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+function utf8Hex(s){ return '0x' + [...new TextEncoder().encode(s)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+
+$('mmLogin').onclick = async () => {
+  $('loginErr').classList.add('hidden');
+  const p = pickProvider();
+  if (!p){
+    if (IS_PHONE){ location.href = 'https://metamask.app.link/dapp/' + location.host + '/dev'; return; }
+    return showLoginError(new Error(tr('Кошелёк в браузере не найден. Поставьте MetaMask или войдите через NoN Wallet.', 'No browser wallet found. Install MetaMask or sign in with NoN Wallet.')));
+  }
+  const btn = $('mmLogin'); btn.disabled = true;
+  try{
+    const accs = await p.request({ method: 'eth_requestAccounts' });
+    const address = accs && accs[0];
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address || '')) throw new Error(tr('Кошелёк не дал адрес.', 'The wallet returned no address.'));
+    const ts = Math.floor(Date.now() / 1000);
+    const sig = await p.request({ method: 'personal_sign', params: [utf8Hex(loginText(address, ts)), address] });
+    await finishLogin(address, ts, sig);
+  } catch(e){
+    showLoginError(e && e.code === 4001 ? new Error(tr('Подпись отменена.', 'Signature cancelled.')) : e);
+  } finally { btn.disabled = false; }
+};
+$('nonLogin').onclick = () => $('nonHow').classList.toggle('hidden');
+
+/* ---------- вход из NoN Wallet: #login=адрес.время.подпись ----------
+   Кошелёк сам подписал вход и открыл эту страницу. Подпись лежит после
+   решётки — на сервер в журнал запросов она не уходит, а отсюда мы её
+   сразу убираем из адресной строки. */
+(async () => {
+  const m = location.hash.match(/[#&]login=(0x[0-9a-fA-F]{40})\.(\d{9,11})\.(0x[0-9a-fA-F]{130})/);
+  if (!m) return;
+  try{ history.replaceState(null, '', location.pathname + location.search + '#cabinet'); } catch(e){}
+  try{ await finishLogin(m[1], parseInt(m[2], 10), m[3]); }
+  catch(e){ showLoginError(e); }
+})();
+
+function signOut(silent){
+  if (!silent && SESS) api('POST', '/logout').catch(() => {});
+  SESS = null; ACCT = null;
+  try{ sessionStorage.removeItem('tp.dev.sess'); } catch(e){}
+  $('cabIn').classList.add('hidden');
+  $('cabOut').classList.remove('hidden');
+}
+$('logout').onclick = () => signOut(false);
+
+async function loadAccount(){
+  ACCT = await api('GET', '/account');
+  $('cabOut').classList.add('hidden');
+  $('cabIn').classList.remove('hidden');
+  $('loginErr').classList.add('hidden');
+  renderAll();
+  loadInvoices();
+}
+
+/* ===================== ключи ===================== */
+function fmtDate(ts){
+  try{ return new Date(ts * 1000).toLocaleString(LANG === 'ru' ? 'ru-RU' : 'en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+  catch(e){ return String(ts); }
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+function renderKeys(){
+  const box = $('keysBox'); box.innerHTML = '';
+  for (const mode of ['live', 'test']){
+    const k = ACCT.keys[mode];
+    const row = el('div', 'row');
+    const left = el('div');
+    left.appendChild(el('div', 'k', mode === 'live' ? tr('Боевой ключ', 'Live key') : tr('Тестовый ключ', 'Test key')));
+    left.appendChild(el('div', 'mono muted', k ? 'tp_' + mode + '_…' + k.tail + ' · ' + fmtDate(k.created_at) : tr('ещё нет', 'not created yet')));
+    const btns = el('div', 'btns');
+    const mk = el('button', 'btn btn-sm ' + (k ? 'btn-ghost' : 'btn-main'), k ? tr('Заменить', 'Roll') : tr('Создать', 'Create'));
+    mk.onclick = async () => {
+      if (k && !confirm(tr('Старый ключ перестанет работать сразу. Заменить?', 'The old key will stop working immediately. Roll it?'))) return;
+      mk.disabled = true;
+      try{
+        const d = await api('POST', '/keys', { mode });
+        ACCT = d; $('newKey').textContent = d.new_key; $('newKeyBox').classList.remove('hidden');
+        renderKeys();
+      } catch(e){ alertBox(e.message, true); } finally { mk.disabled = false; }
+    };
+    btns.appendChild(mk);
+    if (k){
+      const rv = el('button', 'btn btn-sm btn-ghost btn-danger', tr('Отозвать', 'Revoke'));
+      rv.onclick = async () => {
+        if (!confirm(tr('Ключ перестанет работать, и сайт не сможет выставлять счета. Отозвать?', 'The key stops working and your site can no longer create invoices. Revoke?'))) return;
+        try{ ACCT = await api('POST', '/keys/revoke', { mode }); $('newKeyBox').classList.add('hidden'); renderKeys(); }
+        catch(e){ alertBox(e.message, true); }
+      };
+      btns.appendChild(rv);
+    }
+    row.appendChild(left); row.appendChild(btns);
+    box.appendChild(row);
+  }
+}
+
+/* ===================== вебхук ===================== */
+function alertBox(text, bad){
+  const b = $('whMsg'); b.textContent = text;
+  b.className = 'note ' + (bad ? 'errbox' : 'okbox');
+}
+function renderWebhook(){
+  const wh = ACCT.webhook;
+  if (document.activeElement !== $('whUrl')) $('whUrl').value = wh ? wh.url : '';
+  $('whSecretBox').classList.toggle('hidden', !wh);
+  $('whSecret').textContent = wh && secretShown ? wh.secret : '••••••••••••••••••••••••';
+  $('whShow').innerHTML = secretShown ? tr('Скрыть', 'Hide') : tr('Показать', 'Reveal');
+}
+$('whSave').onclick = async () => {
+  const url = $('whUrl').value.trim();
+  if (!url) return alertBox(tr('Впишите адрес https://…', 'Enter an https://… address'), true);
+  try{ ACCT = await api('POST', '/webhook', { url }); renderWebhook(); alertBox(tr('Сохранено. Отправьте проверку — убедитесь, что сервер отвечает.', 'Saved. Send a test event to make sure your server answers.')); }
+  catch(e){ alertBox(e.message, true); }
+};
+$('whShow').onclick = () => { secretShown = !secretShown; renderWebhook(); };
+$('whCopy').onclick = () => copy(ACCT.webhook.secret, $('whCopy'));
+$('whRotate').onclick = async () => {
+  if (!confirm(tr('Старый секрет перестанет подходить сразу — обновите его у себя на сервере. Заменить?', 'The old secret stops matching immediately. Update it on your server. Roll it?'))) return;
+  try{ ACCT = await api('POST', '/webhook', { url: ACCT.webhook.url, rotate_secret: true }); secretShown = true; renderWebhook(); }
+  catch(e){ alertBox(e.message, true); }
+};
+$('whRemove').onclick = async () => {
+  if (!confirm(tr('Убрать вебхук? Об оплатах сервер узнавать перестанет — только через GET /invoices/{id}.', 'Remove the webhook? Your server will only learn about payments via GET /invoices/{id}.'))) return;
+  try{ ACCT = await api('POST', '/webhook', { url: null }); renderWebhook(); alertBox(tr('Вебхук убран.', 'Webhook removed.')); }
+  catch(e){ alertBox(e.message, true); }
+};
+$('whTest').onclick = async () => {
+  const b = $('whTest'); b.disabled = true;
+  alertBox(tr('Отправляем…', 'Sending…'));
+  try{
+    const d = await api('POST', '/webhook/test');
+    if (d.ok) alertBox(tr('Дошло: ваш сервер ответил ', 'Delivered: your server answered ') + d.status_code + ' · ' + d.ms + ' ms');
+    else alertBox(tr('Не дошло: ', 'Not delivered: ') + (d.error === 'timeout' ? tr('сервер не ответил за 10 секунд', 'no answer within 10 seconds')
+      : d.status_code ? tr('сервер ответил ', 'server answered ') + d.status_code : tr('не удалось соединиться', 'could not connect')), true);
+  } catch(e){ alertBox(e.message, true); }
+  finally { b.disabled = false; }
+};
+
+/* ===================== счета ===================== */
+const PILL = { paid: 'paid', pending: 'pending', underpaid: 'bad', wrong_currency: 'bad', refunded: 'bad', expired: '' };
+async function loadInvoices(){
+  if (!SESS) return;
+  $('invEmpty').textContent = tr('Загружаем…', 'Loading…');
+  try{ INV = (await api('GET', '/invoices?mode=' + invMode)).items || []; renderInvoices(); }
+  catch(e){ $('invEmpty').textContent = e.message; }
+}
+function renderInvoices(){
+  const body = $('invRows'); body.innerHTML = '';
+  $('invEmpty').textContent = INV.length ? '' : tr('Счетов пока нет. Выставьте первый запросом POST /api/v1/invoices.', 'No invoices yet. Create one with POST /api/v1/invoices.');
+  for (const it of INV){
+    const tr_ = el('tr');
+    tr_.appendChild(el('td', 'tiny', fmtDate(it.created_at)));
+    tr_.appendChild(el('td', 'mono', it.order_id || '—'));
+    tr_.appendChild(el('td', '', it.amount + ' ' + it.currency));
+    const st = el('td'); st.appendChild(el('span', 'pill ' + (PILL[it.status] || ''), it.status)); tr_.appendChild(st);
+    tr_.appendChild(el('td', 'tiny', it.status === 'paid' ? (it.webhook.delivered ? tr('доставлен', 'delivered') : tr('не доставлен', 'not delivered') + (it.webhook.attempts ? ' · ' + it.webhook.attempts : '')) : '—'));
+    const act = el('td');
+    if (it.status === 'paid'){
+      const b = el('button', 'btn btn-ghost btn-sm', tr('Отправить заново', 'Resend'));
+      b.onclick = async () => {
+        b.disabled = true;
+        try{ const d = await api('POST', '/invoices/' + it.id + '/resend'); Object.assign(it, d); renderInvoices(); }
+        catch(e){ alertBox(e.message, true); b.disabled = false; }
+      };
+      act.appendChild(b);
+    }
+    if (it.payment && it.payment.tx){
+      const a = el('a', 'tiny', 'tx');
+      a.href = (it.livemode ? 'https://bscscan.com/tx/' : 'https://testnet.bscscan.com/tx/') + it.payment.tx;
+      a.target = '_blank'; a.rel = 'noopener'; a.style.marginLeft = '8px';
+      act.appendChild(a);
+    }
+    tr_.appendChild(act);
+    body.appendChild(tr_);
+  }
+}
+document.querySelectorAll('#invMode button').forEach(b => b.onclick = () => {
+  invMode = b.dataset.m;
+  document.querySelectorAll('#invMode button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  loadInvoices();
+});
+$('invReload').onclick = loadInvoices;
+
+function renderAll(){
+  if (!ACCT) return;
+  $('meWallet').textContent = ACCT.wallet;
+  renderKeys(); renderWebhook(); renderInvoices();
+}
+
+/* ===================== тестовые доллары ===================== */
+$('mintTest').onclick = async () => {
+  const msg = $('mintMsg'); msg.classList.remove('hidden'); msg.className = 'note';
+  const p = pickProvider();
+  if (!p){ msg.textContent = tr('Нужен MetaMask в этом браузере.', 'You need MetaMask in this browser.'); return; }
+  try{
+    const accs = await p.request({ method: 'eth_requestAccounts' });
+    try{ await p.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x61' }] }); }
+    catch(e){
+      if (e && e.code === 4902) await p.request({ method: 'wallet_addEthereumChain', params: [{ chainId: '0x61', chainName: 'BNB Smart Chain Testnet',
+        nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 }, rpcUrls: ['https://bsc-testnet-rpc.publicnode.com'],
+        blockExplorerUrls: ['https://testnet.bscscan.com'] }] });
+      else throw e;
+    }
+    /* mint(100) в тестовом долларе: печатает сто ненастоящих долларов тому,
+       кто позвал. Настоящих денег эта кнопка не касается — сеть тестовая. */
+    const tx = await p.request({ method: 'eth_sendTransaction', params: [{ from: accs[0],
+      to: '0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e',
+      data: '0xa0712d68' + (100).toString(16).padStart(64, '0') }] });
+    msg.className = 'note okbox';
+    msg.textContent = tr('Готово: 100 тестовых USDT будут на кошельке через несколько секунд. ', 'Done: 100 test USDT will be in your wallet in a few seconds. ') + tx.slice(0, 12) + '…';
+  } catch(e){
+    msg.className = 'note errbox';
+    msg.textContent = e && e.code === 4001 ? tr('Отменено.', 'Cancelled.') : ((e && e.message) || String(e));
+  }
+};
+
+if (SESS) loadAccount().catch(() => signOut(true));
+</script>
+</body>
+</html>

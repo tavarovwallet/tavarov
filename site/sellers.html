@@ -222,7 +222,7 @@ footer p{margin:0 0 10px}
         <div class="step"><div class="n">3</div><p data-t="s3"><b>Покупатель платит</b> из NoN Wallet или из MetaMask, Trust, OKX — через контракт Tavarov Pay. Деньги оказываются на вашем адресе за секунды.</p></div>
         <div class="step"><div class="n">4</div><p data-t="s4"><b>Вы видите оплату.</b> Страница счёта и журнал счетов показывают «Оплачено», как только сеть подтвердит платёж.</p></div>
       </div>
-      <p class="note" style="max-width:62ch" data-t="s_note">Продаёте через сайт? Не выдавайте товар по словам браузера покупателя: проверяйте оплату на своём сервере — по номеру счёта у контракта, как это делает наша страница.</p>
+      <p class="note" style="max-width:62ch" data-t="s_note">Продаёте через сайт? Подключите <b><a href="https://wallet.tavarov.com/dev">Tavarov Pay API</a></b>: счёт одним запросом, вебхук об оплате, ключ — в кабинете, вход кошельком. Товар выдавайте по вебхуку, а не по словам браузера покупателя.</p>
     </div>
   </section>
 
@@ -280,7 +280,7 @@ const T = {
     s2:'<b>You send the link.</b> In chat, in email, on your site — wherever you already talk to buyers.',
     s3:'<b>The buyer pays</b> from NoN Wallet or from MetaMask, Trust or OKX — through the Tavarov Pay contract. The money lands on your address in seconds.',
     s4:'<b>You see the payment.</b> The invoice page and your invoice log show “Paid” as soon as the network confirms it.',
-    s_note:'Selling through a website? Never hand over goods because the buyer’s browser says so: check the payment on your own server — by the invoice number, with the contract, the way our page does.',
+    s_note:'Selling through a website? Connect the <b><a href="https://wallet.tavarov.com/dev">Tavarov Pay API</a></b>: an invoice in one request, a webhook when it is paid, keys in a dashboard you sign into with your wallet. Hand over goods on the webhook, never because the buyer’s browser says so.',
     ho_h:'Honestly',
     ho1:'<b>The contracts have no independent audit.</b> We checked them ourselves, many times, and the checks are public — but that is not the same thing. Start small.',
     ho2:'<b>Rules differ by country.</b> In some places paying with crypto for goods and services is restricted or forbidden. Check the rules where you are registered.',
@@ -313,7 +313,7 @@ const T = {
     s2:'<b>Envía el enlace.</b> Por chat, por correo, en su sitio: donde ya habla con el comprador.',
     s3:'<b>El comprador paga</b> desde NoN Wallet o desde MetaMask, Trust u OKX, a través del contrato de Tavarov Pay. El dinero llega a su dirección en segundos.',
     s4:'<b>Usted ve el pago.</b> La página de la factura y su registro muestran «Pagado» en cuanto la red lo confirma.',
-    s_note:'¿Vende desde un sitio web? No entregue el producto porque lo diga el navegador del comprador: compruebe el pago en su propio servidor, por el número de factura en el contrato, como hace nuestra página.',
+    s_note:'¿Vende desde un sitio web? Conecte la <b><a href="https://wallet.tavarov.com/dev">API de Tavarov Pay</a></b>: factura en una solicitud, webhook al recibir el pago y claves en un panel al que entra con su billetera. Entregue el producto con el webhook, nunca porque lo diga el navegador del comprador.',
     ho_h:'Con franqueza',
     ho1:'<b>Los contratos no tienen auditoría independiente.</b> Los revisamos nosotros, muchas veces, y las comprobaciones son públicas, pero no es lo mismo. Empiece con poco.',
     ho2:'<b>Las reglas cambian según el país.</b> En algunos, pagar con cripto por bienes y servicios está limitado o prohibido. Consulte las de donde esté registrado.',
@@ -346,7 +346,7 @@ const T = {
     s2:'<b>Bağlantıyı gönderirsiniz.</b> Sohbette, e-postada, sitenizde — alıcıyla zaten konuştuğunuz yerde.',
     s3:'<b>Alıcı öder,</b> NoN Wallet\'tan ya da MetaMask, Trust veya OKX\'ten — Tavarov Pay sözleşmesi üzerinden. Para saniyeler içinde adresinize geçer.',
     s4:'<b>Ödemeyi görürsünüz.</b> Ağ onaylar onaylamaz fatura sayfası ve fatura kaydınız «Ödendi» gösterir.',
-    s_note:'Siteden mi satıyorsunuz? Ürünü alıcının tarayıcısı öyle dedi diye teslim etmeyin: ödemeyi kendi sunucunuzda, sözleşmedeki fatura numarasıyla kontrol edin — bizim sayfamızın yaptığı gibi.',
+    s_note:'Siteden mi satıyorsunuz? <b><a href="https://wallet.tavarov.com/dev">Tavarov Pay API</a></b>’yi bağlayın: tek istekle fatura, ödemede webhook, cüzdanınızla girdiğiniz panelde anahtarlar. Ürünü webhook ile teslim edin, alıcının tarayıcısı öyle dedi diye değil.',
     ho_h:'Açıkça',
     ho1:'<b>Sözleşmelerin bağımsız denetimi yok.</b> Kendimiz defalarca denetledik ve denetimler herkese açık, ama bu aynı şey değil. Küçük tutarlarla başlayın.',
     ho2:'<b>Kurallar ülkeye göre değişir.</b> Bazı yerlerde mal ve hizmet için kripto ödemesi sınırlı ya da yasaktır. Kayıtlı olduğunuz yerin kurallarına bakın.',
@@ -379,7 +379,7 @@ const T = {
     s2:'<b>Você envia o link.</b> No chat, no e-mail, no seu site — onde você já fala com o comprador.',
     s3:'<b>O comprador paga</b> pela NoN Wallet ou pela MetaMask, Trust ou OKX — através do contrato da Tavarov Pay. O dinheiro chega ao seu endereço em segundos.',
     s4:'<b>Você vê o pagamento.</b> A página da fatura e o seu registro mostram «Pago» assim que a rede confirma.',
-    s_note:'Vende pelo site? Não entregue o produto porque o navegador do comprador disse que pagou: confira o pagamento no seu próprio servidor — pelo número da fatura, no contrato, como a nossa página faz.',
+    s_note:'Vende pelo site? Conecte a <b><a href="https://wallet.tavarov.com/dev">API da Tavarov Pay</a></b>: cobrança em uma requisição, webhook quando for paga e chaves num painel em que você entra com a carteira. Entregue o produto pelo webhook, nunca porque o navegador do comprador disse que pagou.',
     ho_h:'Com franqueza',
     ho1:'<b>Os contratos não têm auditoria independente.</b> Nós mesmos verificamos, muitas vezes, e as verificações são públicas — mas não é a mesma coisa. Comece pequeno.',
     ho2:'<b>As regras mudam de país para país.</b> Em alguns, pagar com cripto por bens e serviços é restrito ou proibido. Confira as do lugar onde você está registrado.',

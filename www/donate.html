@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Донат · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+/* ===================== Внешний вид =====================
+
+   Страницу оплаты видит человек, который про нас ничего не знает, — у
+   прилавка, с телефоном в руке, за секунду до того, как отдать деньги.
+   Плоский почти чёрный фон с серыми рамками читался как самодельная
+   страница, а самодельной странице денег не доверяют. Поэтому фон теперь
+   светится: мягкие фиолетовые пятна того же цвета, что знак, и карточки
+   поверх них — как стекло, а не как вырезанный картон.
+
+   Всё, что ниже, — только вид. Ни одна проверка не зависит от цвета. */
+:root{
+  --bg:#F4EEFF;
+  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
+  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
+  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
+  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
+  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
+  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
+     пятна света видны, а на чёрном они тонули. */
+  --bg:#140B2B;
+  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
+  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
+  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
+  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
+  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
+} }
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0; min-height:100vh; color:var(--label); font-family:var(--font);
+     font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased;
+     display:flex; align-items:flex-start; justify-content:center; padding:22px 16px 60px;
+     background:
+       radial-gradient(900px 520px at -10% -12%, var(--glow-1), transparent 62%),
+       radial-gradient(760px 460px at 112% 6%, var(--glow-2), transparent 60%),
+       radial-gradient(700px 520px at 50% 118%, var(--glow-3), transparent 64%),
+       var(--bg);
+     background-attachment:fixed}
+.box{width:100%; max-width:440px}
+.card{background:var(--card); border:1px solid var(--card-edge); border-radius:22px; padding:24px;
+      margin-bottom:14px; box-shadow:var(--card-hi), var(--shadow);
+      -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%)}
+h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
+.sum{font-size:44px; font-weight:800; letter-spacing:-.035em; margin:14px 0 2px; line-height:1.1;
+     font-variant-numeric:tabular-nums}
+.muted{color:var(--label-2); font-size:15px}
+.tiny{color:var(--label-3); font-size:13.5px}
+.qr{display:flex; justify-content:center; padding:16px; background:#fff; border-radius:18px; margin:20px 0 12px;
+    box-shadow:0 0 0 1px rgba(90,60,150,.10), 0 10px 26px -14px rgba(60,30,140,.35)}
+.qr img,.qr canvas{display:block; width:100%; max-width:220px; height:auto; image-rendering:pixelated}
+.btn{display:flex; align-items:center; justify-content:center; gap:9px; width:100%; text-align:center;
+     padding:15px 16px; border-radius:15px; font-weight:650; font-size:17px; border:1px solid transparent;
+     cursor:pointer; font-family:inherit; text-decoration:none; margin-bottom:10px; line-height:1.25;
+     transition:transform .12s ease, box-shadow .2s ease, opacity .2s ease}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.55; cursor:default; transform:none}
+.btn-main{color:#fff; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+          box-shadow:0 12px 26px -10px rgba(91,33,232,.60), inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-ghost{background:var(--ghost-bg); color:var(--label); border-color:var(--ghost-edge); font-size:16px}
+/* Значка у «другого кошелька» нет нарочно: с ним подпись на узком телефоне
+   переносилась или обрезалась многоточием, а без него помещается целиком. */
+.btn > span{min-width:0}
+.btn .ico{width:20px; height:20px; flex:0 0 auto}
+.row{display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px solid var(--sep); font-size:15.5px}
+.row:last-child{border-bottom:0}
+.row span{color:var(--label-2)} .row b{font-weight:650; text-align:right; word-break:break-all}
+.addr{font-family:var(--mono); font-size:12.5px}
+.state{display:flex; align-items:center; gap:10px; font-weight:650; font-size:16px}
+.dot{width:10px; height:10px; border-radius:50%; background:var(--orange); flex:0 0 auto;
+     box-shadow:0 0 0 4px color-mix(in srgb, var(--orange) 22%, transparent);
+     animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.ok .dot{background:var(--green); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--green) 22%, transparent)}
+.bad .dot{background:var(--red); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--red) 22%, transparent)}
+.info .dot{background:var(--label-3); animation:none; box-shadow:none}
+.note{background:var(--fill); border-radius:14px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:14px}
+.brand{display:flex; align-items:center; gap:10px; justify-content:center; margin:4px 0 16px;
+       color:var(--label); font-size:15px; font-weight:650; letter-spacing:-.01em}
+.brand svg{width:28px; height:28px; border-radius:8px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+.brand small{display:block; font-size:12px; font-weight:500; color:var(--label-3); letter-spacing:.01em}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:10px; padding:3px; margin:0 auto 16px; width:max-content}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:650;
+              color:var(--label-2); padding:5px 9px; border-radius:7px; line-height:1.2}
+.langs button[aria-pressed="true"]{background:var(--seg-on); color:var(--seg-on-text); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.hidden{display:none !important}
+
+/* ---------- Выбор кошелька ----------
+   Шторка снизу, как в системе. Сверху — кошельки, которые уже стоят в этом
+   браузере (их находит стандарт EIP-6963: каждый расширение-кошелёк само
+   называет себя и присылает значок). Ниже, на телефоне, — приложения:
+   страница откроется в их встроенном браузере, и оплата пройдёт там. */
+.sheet-bg{position:fixed; inset:0; background:rgba(12,6,28,.46); z-index:40;
+          -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+          display:flex; align-items:flex-end; justify-content:center; animation:fade .18s ease}
+.sheet{width:100%; max-width:480px; max-height:88vh; overflow:auto; background:var(--card-solid);
+       border-radius:24px 24px 0 0; padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+       box-shadow:0 -20px 50px -20px rgba(0,0,0,.45); animation:up .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{transform:translateY(40px); opacity:.4}to{transform:none; opacity:1}}
+.sheet .grab{width:38px; height:5px; border-radius:3px; background:var(--sep); margin:0 auto 14px}
+.sheet h2{font-size:20px; margin:0 0 4px; letter-spacing:-.015em}
+.sheet .sub{color:var(--label-2); font-size:14.5px; margin:0 0 14px}
+.sec{font-size:12.5px; font-weight:650; text-transform:uppercase; letter-spacing:.06em; color:var(--label-3); margin:16px 2px 8px}
+.wlist{display:flex; flex-direction:column; gap:8px}
+.wrow{display:flex; align-items:center; gap:13px; width:100%; padding:12px 14px; border-radius:16px;
+      background:var(--fill); border:1px solid transparent; color:var(--label); font:inherit; font-size:16.5px;
+      font-weight:600; text-align:left; cursor:pointer; text-decoration:none}
+.wrow:active{transform:scale(.99)}
+.wrow .wi{width:38px; height:38px; border-radius:11px; flex:0 0 auto; display:grid; place-items:center;
+          font-weight:800; font-size:17px; color:#fff; overflow:hidden; background:#6D28D9}
+.wrow .wi img{width:100%; height:100%; object-fit:cover}
+.wrow .wt{flex:1 1 auto; min-width:0}
+.wrow .wt small{display:block; font-size:13px; font-weight:500; color:var(--label-2)}
+.wrow .chev{color:var(--label-3); font-size:20px}
+.empty{color:var(--label-2); font-size:14.5px; padding:10px 2px}
+
+/* ---------- Шаги оплаты чужим кошельком ---------- */
+.steps{list-style:none; padding:0; margin:14px 0 4px}
+.steps li{display:flex; align-items:center; gap:12px; padding:9px 0; font-size:15.5px; color:var(--label-2)}
+.steps .n{width:26px; height:26px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center;
+          font-size:13px; font-weight:750; background:var(--fill); color:var(--label-2)}
+.steps li.run{color:var(--label)} .steps li.run .n{background:var(--accent); color:#fff; animation:pulse 1.4s infinite}
+.steps li.done{color:var(--label)} .steps li.done .n{background:var(--green); color:#fff}
+.steps li.fail .n{background:var(--red); color:#fff}
+.steps small{display:block; font-size:12.5px; color:var(--label-3); font-family:var(--mono)}
+</style>
+<style>
+/* Страница донатов — то же стекло и те же цвета, что у страницы оплаты:
+   зритель должен узнать нас с первого взгляда, когда дойдёт до оплаты. */
+.center-card{text-align:center}
+/* Приветствие автора и цель сбора — их пишет сам автор в приложении. */
+.greet{margin:14px auto 0; max-width:34ch; font-size:15.5px; line-height:1.55; color:var(--label); background:var(--fill);
+       border-radius:14px; padding:11px 14px; word-break:break-word}
+.goal-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:10px}
+.goal-top b{font-size:16.5px; text-align:right; word-break:break-word}
+.gbar{height:12px; border-radius:8px; background:var(--fill); overflow:hidden}
+.gbar i{display:block; height:100%; width:0; border-radius:8px; background:linear-gradient(90deg, var(--accent), #EC4899); transition:width .8s ease}
+.avatar{width:72px; height:72px; border-radius:50%; margin:0 auto 12px; display:grid; place-items:center;
+        font-size:32px; font-weight:800; color:#fff;
+        background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+        box-shadow:0 12px 26px -10px rgba(91,33,232,.6)}
+.addrline{margin-top:12px; word-break:break-all; line-height:1.4}
+.addrline b{display:block; margin-top:3px; font-size:12px; color:var(--label-2)}
+.lbl{font-size:13px; font-weight:650; text-transform:uppercase; letter-spacing:.05em; color:var(--label-3); margin-bottom:8px;
+     display:flex; justify-content:space-between; align-items:baseline}
+.chips{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-bottom:10px}
+.chip{border:1px solid var(--ghost-edge); background:var(--ghost-bg); color:var(--label); border-radius:12px;
+      padding:11px 0; font:inherit; font-weight:700; font-size:15.5px; cursor:pointer}
+.chip.on{color:#fff; border-color:transparent; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)}
+.field{display:flex; gap:8px; align-items:stretch}
+input, textarea{width:100%; font:inherit; font-size:17px; color:var(--label); background:var(--ghost-bg);
+       border:1px solid var(--ghost-edge); border-radius:14px; padding:12px 14px; outline:none; resize:vertical}
+input:focus, textarea:focus{border-color:var(--accent)}
+#amount{font-size:22px; font-weight:750; font-variant-numeric:tabular-nums}
+.seg{display:flex; gap:2px; background:var(--fill); border-radius:12px; padding:3px; flex:0 0 auto}
+.seg button{border:0; background:transparent; font:inherit; font-size:14px; font-weight:700; color:var(--label-2);
+            padding:0 12px; border-radius:9px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--seg-on); color:var(--seg-on-text); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.facts{margin:0; padding-left:18px; color:var(--label-2); font-size:14.5px}
+.facts li{margin:6px 0}
+@media (max-width:360px){ .chips{grid-template-columns:repeat(3, 1fr)} }
+</style>
+</head>
+<body>
+<div class="box">
+
+  <div class="brand">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+      </g>
+    </svg>
+    <span>Tavarov Pay<small data-t="brandSub">Донаты напрямую автору</small></span>
+  </div>
+  <div class="langs" id="langs"></div>
+
+  <div class="card hidden" id="tnCard">
+    <div class="state bad"><span class="dot"></span><span data-t="tnH">Это ТЕСТОВАЯ сеть</span></div>
+    <div class="note" data-t="tnNote">Деньги в ней ненастоящие. Настоящие USDT сюда не отправляйте.</div>
+  </div>
+
+  <div class="card" id="loading"><div class="state info"><span class="dot"></span><span data-t="loading">Ищем автора…</span></div></div>
+
+  <div class="card hidden" id="err">
+    <div class="state bad"><span class="dot"></span><span data-t="errH">Страница не найдена</span></div>
+    <div class="note" id="errText" data-t="errNote">Такого имени нет. Проверьте ссылку у автора.</div>
+  </div>
+
+  <div class="hidden" id="main">
+    <div class="card center-card">
+      <div class="avatar" id="avatar">?</div>
+      <h1 id="who">—</h1>
+      <div class="muted" data-t="support">Поддержать автора</div>
+      <div class="greet hidden" id="greet"></div>
+      <div class="addrline"><span class="tiny" data-t="wallet">Кошелёк автора</span> <b class="addr" id="addr">—</b></div>
+    </div>
+
+    <div class="card hidden" id="goalCard">
+      <div class="goal-top"><span class="lbl" style="margin:0" data-t="goalL">Цель сбора</span><b id="goalTitle"></b></div>
+      <div class="gbar"><i id="goalFill"></i></div>
+      <div class="tiny" style="margin-top:8px" id="goalText"></div>
+    </div>
+
+    <div class="card">
+      <div class="lbl" data-t="howMuch">Сколько</div>
+      <div class="chips" id="chips"></div>
+      <div class="field">
+        <input id="amount" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="amount">
+        <div class="seg" id="curSeg"></div>
+      </div>
+
+      <div class="lbl" style="margin-top:18px" data-t="nickL">Ваше имя (можно пусто)</div>
+      <input id="nick" maxlength="32" autocomplete="nickname" spellcheck="false">
+
+      <div class="lbl" style="margin-top:14px"><span data-t="msgL">Сообщение автору</span> <span class="tiny" id="msgCount">0/200</span></div>
+      <textarea id="msg" maxlength="200" rows="3"></textarea>
+
+      <button class="btn btn-main" id="go" style="margin-top:18px" disabled>—</button>
+      <div class="note hidden" id="goErr"></div>
+
+      <div class="tiny" style="margin-top:6px" id="split">—</div>
+    </div>
+
+    <div class="card">
+      <div class="lbl" data-t="howH">Как это работает</div>
+      <ul class="facts">
+        <li data-t="f1">Деньги идут с вашего кошелька прямо автору через открытый контракт Tavarov Pay — мы их не держим ни секунды.</li>
+        <li data-t="f2">Нужны USDT или USDC в сети BNB Chain и немного BNB на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.</li>
+        <li data-t="f3">Сообщение автор увидит только после оплаты. Оно не секретное: не пишите в нём ничего личного.</li>
+        <li data-t="f4">Донат — это подарок: вернуть его может только сам автор.</li>
+      </ul>
+    </div>
+
+    <a class="tiny" style="display:block; text-align:center; margin-top:4px" href="https://tavarov.com/" target="_blank" rel="noopener" data-t="whatIs">Что такое Tavarov Pay?</a>
+  </div>
+</div>
+
+<script>
+/* Страница донатов: wallet.tavarov.com/d/имя (или /d/0x…).
+
+   Что она делает — и чего нет.
+   Здесь нет своей оплаты. Страница собирает счёт (кому, сколько, в чём,
+   номер) и отдаёт его обычной странице оплаты /pay — той же, что у
+   магазинов: выбор кошелька, контракт, проверка «оплачено». Своя вторая
+   копия платёжного кода — это вторая копия ошибок.
+
+   Сообщение уходит на наш сервер ДО оплаты, под номером счёта. Сервер
+   покажет его автору только когда по этому номеру в контракте появится
+   оплата именно этому автору. Поэтому порядок здесь строгий: сначала текст,
+   потом переход к оплате. */
+const NETS = {
+  bnb:        { rpcs: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
+                names: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', curs: ['USDT', 'USDC'] },
+  bnbTestnet: { rpcs: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com'],
+                names: '0x718E52F81F0Ed871bF8aa834faF82D0b257aE27A', curs: ['USDT'] }
+};
+const SEL = { addressOf: '0xccf1454a', nameOf: '0xf5c57382' };
+const NAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
+const CHIPS = ['1', '3', '5', '10', '25'];
+const $ = id => document.getElementById(id);
+
+const T = {
+  ru: { brandSub:'Донаты напрямую автору', tnH:'Это ТЕСТОВАЯ сеть', tnNote:'Деньги в ней ненастоящие. Настоящие USDT сюда не отправляйте.',
+        loading:'Ищем автора…', errH:'Страница не найдена', errNote:'Такого имени нет. Проверьте ссылку у автора.',
+        errNet:'Сеть не ответила. Обновите страницу через минуту.', support:'Поддержать автора', wallet:'Кошелёк автора',
+        howMuch:'Сколько', nickL:'Ваше имя (можно пусто)', msgL:'Сообщение автору', go:'Задонатить {0}', goEmpty:'Выберите сумму',
+        split:'Автору придёт {0} {1}, комиссия сервиса 1%', badAmt:'Сумма — число больше нуля, например 5 или 2.5',
+        sending:'Готовим оплату…', postFail:'Сообщение не сохранилось: {0}. Можно задонатить без него.', goNoMsg:'Задонатить без сообщения',
+        howH:'Как это работает',
+        f1:'Деньги идут с вашего кошелька прямо автору через открытый контракт Tavarov Pay — мы их не держим ни секунды.',
+        f2:'Нужны USDT или USDC в сети BNB Chain и немного BNB на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.',
+        f3:'Сообщение автор увидит только после оплаты. Оно не секретное: не пишите в нём ничего личного.',
+        f4:'Донат — это подарок: вернуть его может только сам автор.', whatIs:'Что такое Tavarov Pay?', item:'Донат', goalL:'Цель сбора', goalOf:'Собрано {0} $ из {1} $' },
+  en: { brandSub:'Tips straight to the creator', tnH:'This is the TEST network', tnNote:'Money here is not real. Do not send real USDT here.',
+        loading:'Looking for the creator…', errH:'Page not found', errNote:'There is no such name. Check the link with the creator.',
+        errNet:'The network did not answer. Refresh the page in a minute.', support:'Support the creator', wallet:'Creator’s wallet',
+        howMuch:'Amount', nickL:'Your name (optional)', msgL:'Message to the creator', go:'Send {0}', goEmpty:'Choose an amount',
+        split:'The creator receives {0} {1}, service fee 1%', badAmt:'The amount must be a number above zero, e.g. 5 or 2.5',
+        sending:'Preparing the payment…', postFail:'The message was not saved: {0}. You can still send the tip without it.', goNoMsg:'Send without a message',
+        howH:'How it works',
+        f1:'The money goes from your wallet straight to the creator through the open Tavarov Pay contract — we never hold it, not even for a second.',
+        f2:'You need USDT or USDC on BNB Chain and a little BNB for the network fee. Pay with NoN Wallet, MetaMask, Trust Wallet and others.',
+        f3:'The creator sees your message only after the payment. It is not private: do not write anything personal.',
+        f4:'A tip is a gift: only the creator can send it back.', whatIs:'What is Tavarov Pay?', item:'Tip', goalL:'Goal', goalOf:'{0} $ raised of {1} $' },
+  es: { brandSub:'Donaciones directas al autor', tnH:'Esta es la red de PRUEBA', tnNote:'Aquí el dinero no es real. No envíes USDT reales.',
+        loading:'Buscando al autor…', errH:'Página no encontrada', errNote:'Ese nombre no existe. Revisa el enlace con el autor.',
+        errNet:'La red no respondió. Recarga la página en un minuto.', support:'Apoyar al autor', wallet:'Billetera del autor',
+        howMuch:'Cuánto', nickL:'Tu nombre (opcional)', msgL:'Mensaje para el autor', go:'Donar {0}', goEmpty:'Elige una cantidad',
+        split:'El autor recibe {0} {1}, comisión del servicio 1 %', badAmt:'La cantidad debe ser un número mayor que cero, por ejemplo 5 o 2.5',
+        sending:'Preparando el pago…', postFail:'El mensaje no se guardó: {0}. Puedes donar sin él.', goNoMsg:'Donar sin mensaje',
+        howH:'Cómo funciona',
+        f1:'El dinero va de tu billetera directamente al autor por el contrato abierto Tavarov Pay; no lo retenemos ni un segundo.',
+        f2:'Necesitas USDT o USDC en BNB Chain y un poco de BNB para la comisión de red. Paga con NoN Wallet, MetaMask, Trust Wallet y otras.',
+        f3:'El autor ve tu mensaje solo después del pago. No es privado: no escribas nada personal.',
+        f4:'Una donación es un regalo: solo el autor puede devolverla.', whatIs:'¿Qué es Tavarov Pay?', item:'Donación', goalL:'Meta', goalOf:'Recaudado {0} $ de {1} $' },
+  tr: { brandSub:'Doğrudan içerik üreticisine bağış', tnH:'Bu TEST ağı', tnNote:'Buradaki para gerçek değil. Gerçek USDT göndermeyin.',
+        loading:'İçerik üreticisi aranıyor…', errH:'Sayfa bulunamadı', errNote:'Böyle bir ad yok. Bağlantıyı üreticiyle kontrol edin.',
+        errNet:'Ağ yanıt vermedi. Bir dakika sonra sayfayı yenileyin.', support:'Üreticiyi destekle', wallet:'Üreticinin cüzdanı',
+        howMuch:'Tutar', nickL:'Adınız (isteğe bağlı)', msgL:'Üreticiye mesaj', go:'{0} bağışla', goEmpty:'Bir tutar seçin',
+        split:'Üreticiye {0} {1} gider, hizmet komisyonu %1', badAmt:'Tutar sıfırdan büyük bir sayı olmalı, örneğin 5 veya 2.5',
+        sending:'Ödeme hazırlanıyor…', postFail:'Mesaj kaydedilmedi: {0}. Mesajsız bağış yapabilirsiniz.', goNoMsg:'Mesajsız bağışla',
+        howH:'Nasıl çalışır',
+        f1:'Para cüzdanınızdan açık Tavarov Pay sözleşmesi üzerinden doğrudan üreticiye gider — bir saniye bile bizde durmaz.',
+        f2:'BNB Chain ağında USDT veya USDC ve ağ ücreti için biraz BNB gerekir. NoN Wallet, MetaMask, Trust Wallet ve diğerleriyle ödeyin.',
+        f3:'Üretici mesajınızı yalnızca ödemeden sonra görür. Gizli değildir: kişisel bir şey yazmayın.',
+        f4:'Bağış bir hediyedir: yalnızca üretici geri gönderebilir.', whatIs:'Tavarov Pay nedir?', item:'Bağış', goalL:'Hedef', goalOf:'{1} $ hedefin {0} $ kadarı toplandı' },
+  pt: { brandSub:'Doações direto para o criador', tnH:'Esta é a rede de TESTE', tnNote:'O dinheiro aqui não é real. Não envie USDT de verdade.',
+        loading:'Procurando o criador…', errH:'Página não encontrada', errNote:'Esse nome não existe. Confira o link com o criador.',
+        errNet:'A rede não respondeu. Atualize a página em um minuto.', support:'Apoiar o criador', wallet:'Carteira do criador',
+        howMuch:'Quanto', nickL:'Seu nome (opcional)', msgL:'Mensagem para o criador', go:'Doar {0}', goEmpty:'Escolha um valor',
+        split:'O criador recebe {0} {1}, taxa do serviço 1%', badAmt:'O valor deve ser um número maior que zero, por exemplo 5 ou 2.5',
+        sending:'Preparando o pagamento…', postFail:'A mensagem não foi salva: {0}. Você pode doar sem ela.', goNoMsg:'Doar sem mensagem',
+        howH:'Como funciona',
+        f1:'O dinheiro vai da sua carteira direto para o criador pelo contrato aberto Tavarov Pay — não ficamos com ele nem por um segundo.',
+        f2:'Você precisa de USDT ou USDC na BNB Chain e um pouco de BNB para a taxa da rede. Pague com NoN Wallet, MetaMask, Trust Wallet e outras.',
+        f3:'O criador vê sua mensagem só depois do pagamento. Ela não é privada: não escreva nada pessoal.',
+        f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $' }
+};
+const LANGS = ['ru', 'en', 'es', 'tr', 'pt'];
+let LANG = 'en';
+function t(k, a, b){
+  const s = (T[LANG] && T[LANG][k]) || T.ru[k] || k;
+  return s.replace('{0}', () => a === undefined ? '' : String(a)).replace('{1}', () => b === undefined ? '' : String(b));
+}
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  $('langs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+  render();
+  renderProfile();
+}
+
+/* ---------- приветствие и цель автора ----------
+   Только текстом: чужая строка разметкой не становится. «Собрано» считает
+   сервер из журнала контракта, а не со слов автора. */
+let PROFILE = null;
+function renderProfile(){
+  const p = PROFILE;
+  $('greet').classList.toggle('hidden', !(p && p.greeting));
+  if (p && p.greeting) $('greet').textContent = p.greeting;
+  const g = p && p.goal;
+  $('goalCard').classList.toggle('hidden', !g);
+  if (!g) return;
+  $('goalTitle').textContent = g.title;
+  const pct = Math.max(0, Math.min(100, (Number(g.raised) / Number(g.target)) * 100 || 0));
+  $('goalFill').style.width = pct.toFixed(1) + '%';
+  $('goalText').textContent = t('goalOf', g.raised, g.target) + ' · ' + Math.floor(pct) + '%';
+}
+async function loadProfile(){
+  if (!who) return;
+  try{
+    const r = await fetch('/api/donate?net=' + NET + '&to=' + who.addr + '&profile=1', { cache: 'no-store' });
+    const d = await r.json();
+    if (d && d.profile){ PROFILE = d.profile; renderProfile(); }
+  } catch(e){ /* без приветствия страница всё равно работает */ }
+}
+function pickLang(){
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q && T[q]) return q;
+  try{ const s = localStorage.getItem('tavarov.paylang.v1'); if (s && T[s]) return s; } catch(e){}
+  for (const l of (navigator.languages || [navigator.language || ''])){
+    const c = String(l).slice(0, 2).toLowerCase();
+    if (T[c]) return c;
+  }
+  return 'en';
+}
+LANGS.forEach(l => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.l = l; b.textContent = l.toUpperCase();
+  b.onclick = () => { LANG = l; try{ localStorage.setItem('tavarov.paylang.v1', l); } catch(e){} applyLang(); };
+  $('langs').appendChild(b);
+});
+
+/* ---------- чтение сети ---------- */
+async function rpc(net, to, data){
+  for (const url of NETS[net].rpcs){
+    try{
+      const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 9000);
+      const r = await fetch(url, { method:'POST', headers:{ 'content-type':'application/json' }, signal: ctl.signal,
+        body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{ to, data }, 'latest'] }) });
+      clearTimeout(tm);
+      const j = await r.json();
+      if (j && typeof j.result === 'string') return j.result;
+    } catch(e){}
+  }
+  throw new Error('net');
+}
+const hex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+function encString(s){
+  const h = hex(s);
+  return '0'.repeat(62) + '20' + (h.length / 2).toString(16).padStart(64, '0') + h.padEnd(Math.ceil(h.length / 64) * 64 || 64, '0');
+}
+function decString(raw){
+  const d = String(raw || '').replace(/^0x/, '');
+  if (d.length < 128) return '';
+  const len = parseInt(d.slice(64, 128), 16);
+  if (!len || len > 64) return '';
+  const bytes = d.slice(128, 128 + len * 2).match(/../g).map(x => parseInt(x, 16));
+  return new TextDecoder().decode(new Uint8Array(bytes));
+}
+
+/* ---------- кто автор ---------- */
+function target(){
+  const parts = location.pathname.split('/').filter(Boolean);
+  let v = parts[0] === 'd' && parts[1] ? decodeURIComponent(parts[1]) : '';
+  if (!v) v = new URLSearchParams(location.search).get('to') || '';
+  return v.trim().replace(/^@+/, '');
+}
+const NET = new URLSearchParams(location.search).get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+let who = null;           // { name, addr }
+let cur = NETS[NET].curs[0];
+let amount = '';
+
+async function resolve(){
+  const v = target();
+  if (/^0x[0-9a-fA-F]{40}$/.test(v)){
+    let name = '';
+    try{ name = decString(await rpc(NET, NETS[NET].names, SEL.nameOf + '0'.repeat(24) + v.slice(2).toLowerCase())); } catch(e){}
+    return { name: NAME_RE.test(name) ? name : '', addr: v };
+  }
+  const n = v.toLowerCase();
+  if (!NAME_RE.test(n)) return null;
+  const raw = await rpc(NET, NETS[NET].names, SEL.addressOf + encString(n));
+  const a = '0x' + String(raw).replace(/^0x/, '').slice(24, 64);
+  if (!/^0x[0-9a-f]{40}$/.test(a) || /^0x0{40}$/.test(a)) return null;
+  return { name: n, addr: a };
+}
+
+/* ---------- текст: чистим так же, как сервер ----------
+   Управляющие и невидимые символы, разворот текста и переносы строк сервер
+   не примет. Лучше убрать их здесь, чем показать человеку отказ. */
+function clean(s, max){
+  let out = '';
+  for (const ch of String(s || '')){
+    const c = ch.codePointAt(0);
+    if (c < 32 || (c >= 0x7f && c <= 0x9f) || c === 0x2028 || c === 0x2029 ||
+        (c >= 0x200b && c <= 0x200f) || (c >= 0x202a && c <= 0x202e) ||
+        (c >= 0x2066 && c <= 0x2069) || c === 0xfeff) continue;
+    out += ch;
+  }
+  return Array.from(out).slice(0, max).join('');
+}
+const okAmount = v => /^\d{1,9}(\.\d{1,6})?$/.test(v) && parseFloat(v) > 0;
+
+/* ---------- отрисовка ---------- */
+function render(){
+  if (!who) return;
+  $('who').textContent = who.name ? '@' + who.name : who.addr.slice(0, 6) + '…' + who.addr.slice(-4);
+  $('avatar').textContent = (who.name || 'x').slice(0, 1).toUpperCase();
+  $('addr').textContent = who.addr;
+  const chips = $('chips'); chips.innerHTML = '';
+  CHIPS.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (amount === v ? ' on' : ''); b.textContent = v + ' $';
+    b.onclick = () => { amount = v; $('amount').value = v; render(); };
+    chips.appendChild(b);
+  });
+  const seg = $('curSeg'); seg.innerHTML = '';
+  NETS[NET].curs.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = c; b.setAttribute('aria-pressed', String(c === cur));
+    b.onclick = () => { cur = c; render(); };
+    seg.appendChild(b);
+  });
+  const good = okAmount(amount);
+  $('go').disabled = !good;
+  $('go').textContent = good ? t('go', amount + ' ' + cur) : t('goEmpty');
+  $('split').textContent = good ? t('split', net99(amount), cur) : '';
+  $('msgCount').textContent = Array.from($('msg').value).length + '/200';
+}
+/* 99% от суммы — строкой, без плавающей точки: это деньги. */
+function net99(v){
+  const [w, f = ''] = String(v).split('.');
+  const units = BigInt(w + f.padEnd(6, '0'));
+  const got = units - units / 100n;
+  const s = got.toString().padStart(7, '0');
+  return (s.slice(0, -6) + '.' + s.slice(-6)).replace(/\.?0+$/, '');
+}
+
+$('amount').addEventListener('input', () => {
+  const v = $('amount').value.replace(',', '.').replace(/[^\d.]/g, '');
+  if (v !== $('amount').value) $('amount').value = v;
+  amount = v; render();
+});
+$('msg').addEventListener('input', () => {
+  const c = clean($('msg').value, 200);
+  if (c !== $('msg').value) $('msg').value = c;
+  render();
+});
+$('nick').addEventListener('input', () => {
+  const c = clean($('nick').value, 32);
+  if (c !== $('nick').value) $('nick').value = c;
+});
+
+function randomHash(){
+  const b = new Uint8Array(32); crypto.getRandomValues(b);
+  return '0x' + Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+}
+function b64url(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ''; bytes.forEach(x => { bin += String.fromCharCode(x); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function toPay(h){
+  const inv = { m: who.addr, a: amount, c: cur, h, net: NET,
+                n: who.name ? '@' + who.name : '', i: t('item'), o: 'donate',
+                t: Math.floor(Date.now() / 1000) + 3600 };
+  location.href = '/pay?lang=' + LANG + '#p=' + b64url(JSON.stringify(inv));
+}
+
+let busy = false;
+$('go').onclick = async () => {
+  if (busy || !who || !okAmount(amount)) return;
+  busy = true;
+  const btn = $('go'); btn.disabled = true; btn.textContent = t('sending');
+  $('goErr').classList.add('hidden');
+  const h = randomHash();
+  const nick = clean($('nick').value, 32).trim(), msg = clean($('msg').value, 200).trim();
+  /* Без текста и ника сообщение не нужно — но запись всё равно полезна:
+     по ней донат появится у автора в списке. */
+  try{
+    const r = await fetch('/api/donate', { method:'POST', headers:{ 'content-type':'application/json' },
+      body: JSON.stringify({ net: NET, to: who.addr, h, nick, msg }) });
+    if (!r.ok){
+      let e = ''; try{ e = (await r.json()).error || ''; } catch(x){}
+      throw new Error(e || ('HTTP ' + r.status));
+    }
+    toPay(h);
+  } catch(e){
+    busy = false; render();
+    const box = $('goErr');
+    box.textContent = t('postFail', String(e && e.message || e).slice(0, 80));
+    const b2 = document.createElement('button');
+    b2.className = 'btn btn-ghost'; b2.style.marginTop = '10px'; b2.textContent = t('goNoMsg');
+    b2.onclick = () => toPay(h);
+    box.appendChild(b2);
+    box.classList.remove('hidden');
+  }
+};
+
+/* ---------- старт ---------- */
+LANG = pickLang();
+if (NET === 'bnbTestnet') $('tnCard').classList.remove('hidden');
+applyLang();
+(async () => {
+  try{ who = await resolve(); }
+  catch(e){ $('loading').classList.add('hidden'); $('err').classList.remove('hidden'); $('errText').textContent = t('errNet'); return; }
+  $('loading').classList.add('hidden');
+  if (!who){ $('err').classList.remove('hidden'); return; }
+  document.title = (who.name ? '@' + who.name : who.addr.slice(0, 8)) + ' · ' + t('support');
+  $('main').classList.remove('hidden');
+  render();
+  loadProfile();
+})();
+</script>
+</body>
+</html>

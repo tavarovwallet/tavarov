@@ -1206,6 +1206,13 @@ async function watch(){
         done = true;
         clearInterval(watchTimer);
         paidNow();
+        /* Счёт выставлен через API — просим сервер сразу сообщить магазину,
+           не дожидаясь таймера. Решает всё равно сеть, а не эта просьба. */
+        if (inv.api) fetch('/api/v1/invoices/' + encodeURIComponent(inv.h) + '/check', { method: 'POST' }).catch(() => {});
+        /* Донат — подтверждаем сразу, чтобы сообщение зрителя не ждало, пока
+           автор откроет приложение. */
+        if (inv.o === 'donate') fetch('/api/donate?net=' + encodeURIComponent(inv.net || 'bnb') + '&to=' + encodeURIComponent(inv.m) +
+                                      '&h=' + encodeURIComponent(inv.h), { cache: 'no-store' }).catch(() => {});
         /* У кассы номер счёта общий для всех, кто навёл камеру в эти минуты.
            Заплатил первый — у второго не должно загореться «Оплачено»: он
            ушёл бы с товаром, ничего не заплатив, а кассир видел бы зелёное
@@ -1306,7 +1313,7 @@ const READ_RPCS = {
   bnb:        ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
   bnbTestnet: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com']
 };
-async function readRpc(net, method, params){
+async function readRpc(net, method, params, opts){
   let last = null;
   for (const url of (READ_RPCS[net] || [])){
     try{
@@ -1317,6 +1324,10 @@ async function readRpc(net, method, params){
       clearTimeout(timer);
       if (!r.ok){ last = 'HTTP ' + r.status; continue; }
       const d = await r.json();
+      /* «Отказ контракта» — это ответ, а не молчание сети. Кто спросил с
+         revertOk, получает null: так старый контракт без нужной функции
+         не выглядит как упавшая сеть. */
+      if (d.error && opts && opts.revertOk && /revert/i.test(d.error.message || '')) return null;
       if (d.error){ last = d.error.message || 'node error'; continue; }
       return d.result;
     } catch(e){ last = String(e && e.message || e); }
@@ -1395,7 +1406,7 @@ function b64urlEncode(str){
 }
 function paymentUrl(){
   const o = { m: inv.m, a: inv.a, c: inv.c || 'USDT', h: inv.h, net: inv.net || 'bnb' };
-  ['o', 'n', 'i', 'w', 'r', 't', 's', 'ft'].forEach(k => { if (inv[k]) o[k] = inv[k]; });
+  ['o', 'n', 'i', 'w', 'r', 't', 's', 'ft', 'api'].forEach(k => { if (inv[k]) o[k] = inv[k]; });
   return location.origin + location.pathname + '?p=' + b64urlEncode(JSON.stringify(o))
        + '&pick=1&lang=' + LANG;
 }
@@ -1670,7 +1681,10 @@ async function payWith(w){
        ДО подписи. У кассы номер наш собственный — берём новый: касса
        продавца следит за поступлением, а не за номером. У счёта магазина
        номер знает магазин — поменять его нельзя, и честно говорим почему. */
-    const raw = await readRpc(net, 'eth_call', [{ to: payAddr, data: SEL.saleOf + w32(inv.h) }, 'latest']);
+    /* Контракт тестовой сети — первой версии, saleOf в нём нет: он
+       отказывает. Там занятость номера проверить нечем, и это не повод
+       не дать заплатить. */
+    const raw = await readRpc(net, 'eth_call', [{ to: payAddr, data: SEL.saleOf + w32(inv.h) }, 'latest'], { revertOk: true });
     const taken = typeof raw === 'string' && raw.length >= 66 && !/^0+$/.test(raw.slice(26, 66));
     if (taken){
       if (inv.ft) inv.h = newLocalId();
