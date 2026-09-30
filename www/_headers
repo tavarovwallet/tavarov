@@ -9,11 +9,14 @@
 # невидимая рамка поверх чужой кнопки — самый дешёвый способ заставить
 # человека нажать «Отправить» в своём же кошельке, думая, что он нажимает
 # что-то другое. Правило общее на весь сайт: встраивать здесь нечего.
+# Strict-Transport-Security: браузер год ходит сюда только по https —
+# подменить страницу кошелька в открытом Wi-Fi не выйдет.
 /*
   X-Frame-Options: DENY
-  Content-Security-Policy: frame-ancestors 'none'; base-uri 'none'
+  Content-Security-Policy: frame-ancestors 'none'; base-uri 'none'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
+  Strict-Transport-Security: max-age=31536000
 
 # Само приложение и служебный работник — всегда проверять, нет ли свежего.
 # Файлы маленькие, задержки не видно. Без этого человек открывает сайт после

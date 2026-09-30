@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Приглашение · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F4EEFF;
+  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
+  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
+  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
+  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
+  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
+  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
+     пятна света видны, а на чёрном они тонули. */
+  --bg:#140B2B;
+  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
+  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
+  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
+  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
+  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
+} }
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0; min-height:100vh; color:var(--label); font-family:var(--font);
+     font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased;
+     display:flex; align-items:flex-start; justify-content:center; padding:22px 16px 60px;
+     background:
+       radial-gradient(900px 520px at -10% -12%, var(--glow-1), transparent 62%),
+       radial-gradient(760px 460px at 112% 6%, var(--glow-2), transparent 60%),
+       radial-gradient(700px 520px at 50% 118%, var(--glow-3), transparent 64%),
+       var(--bg);
+     background-attachment:fixed}
+.box{width:100%; max-width:440px}
+.card{background:var(--card); border:1px solid var(--card-edge); border-radius:22px; padding:24px;
+      margin-bottom:14px; box-shadow:var(--card-hi), var(--shadow);
+      -webkit-backdrop-filter:blur(18px) saturate(140%); backdrop-filter:blur(18px) saturate(140%)}
+h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
+.sum{font-size:44px; font-weight:800; letter-spacing:-.035em; margin:14px 0 2px; line-height:1.1;
+     font-variant-numeric:tabular-nums}
+.muted{color:var(--label-2); font-size:15px}
+.tiny{color:var(--label-3); font-size:13.5px}
+.qr{display:flex; justify-content:center; padding:16px; background:#fff; border-radius:18px; margin:20px 0 12px;
+    box-shadow:0 0 0 1px rgba(90,60,150,.10), 0 10px 26px -14px rgba(60,30,140,.35)}
+.qr img,.qr canvas{display:block; width:100%; max-width:220px; height:auto; image-rendering:pixelated}
+.btn{display:flex; align-items:center; justify-content:center; gap:9px; width:100%; text-align:center;
+     padding:15px 16px; border-radius:15px; font-weight:650; font-size:17px; border:1px solid transparent;
+     cursor:pointer; font-family:inherit; text-decoration:none; margin-bottom:10px; line-height:1.25;
+     transition:transform .12s ease, box-shadow .2s ease, opacity .2s ease}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.55; cursor:default; transform:none}
+.btn-main{color:#fff; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+          box-shadow:0 12px 26px -10px rgba(91,33,232,.60), inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-ghost{background:var(--ghost-bg); color:var(--label); border-color:var(--ghost-edge); font-size:16px}
+/* Значка у «другого кошелька» нет нарочно: с ним подпись на узком телефоне
+   переносилась или обрезалась многоточием, а без него помещается целиком. */
+.btn > span{min-width:0}
+.btn .ico{width:20px; height:20px; flex:0 0 auto}
+.row{display:flex; justify-content:space-between; gap:14px; padding:11px 0; border-bottom:1px solid var(--sep); font-size:15.5px}
+.row:last-child{border-bottom:0}
+.row span{color:var(--label-2)} .row b{font-weight:650; text-align:right; word-break:break-all}
+.addr{font-family:var(--mono); font-size:12.5px}
+.state{display:flex; align-items:center; gap:10px; font-weight:650; font-size:16px}
+.dot{width:10px; height:10px; border-radius:50%; background:var(--orange); flex:0 0 auto;
+     box-shadow:0 0 0 4px color-mix(in srgb, var(--orange) 22%, transparent);
+     animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.ok .dot{background:var(--green); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--green) 22%, transparent)}
+.bad .dot{background:var(--red); animation:none; box-shadow:0 0 0 4px color-mix(in srgb, var(--red) 22%, transparent)}
+.info .dot{background:var(--label-3); animation:none; box-shadow:none}
+.note{background:var(--fill); border-radius:14px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:14px}
+.brand{display:flex; align-items:center; gap:10px; justify-content:center; margin:4px 0 16px;
+       color:var(--label); font-size:15px; font-weight:650; letter-spacing:-.01em}
+.brand svg{width:28px; height:28px; border-radius:8px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+.brand small{display:block; font-size:12px; font-weight:500; color:var(--label-3); letter-spacing:.01em}
+.big{font-size:17px; line-height:1.55; margin:0 0 12px}
+.list{margin:10px 0 0; padding-left:20px; color:var(--label-2); font-size:15px}
+.list li{margin-bottom:6px}
+.wrow{display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px; border:1px solid var(--ghost-edge);
+      background:var(--ghost-bg); color:var(--label); text-decoration:none; margin-bottom:8px; font-weight:600}
+.wi{width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800}
+.hidden{display:none !important}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:10px; padding:3px; margin:0 auto 16px; width:max-content}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:650; padding:5px 10px; border-radius:8px; color:var(--label-2)}
+.langs button[aria-pressed="true"]{background:var(--seg-on); color:var(--seg-on-text)}
+a.link{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="brand">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
+      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
+        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
+        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
+        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
+      </g>
+    </svg>
+    <span>Tavarov Pay<small data-t="brandSub">Оплата напрямую продавцу</small></span>
+  </div>
+  <div class="langs" id="langs"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+
+  <div class="card" id="bad" hidden>
+    <div class="state bad"><span class="dot"></span><span data-t="badH"></span></div>
+    <div class="note" data-t="badT"></div>
+  </div>
+
+  <div id="main" class="hidden">
+    <div class="card">
+      <h1 data-t="h"></h1>
+      <p class="muted" style="margin:6px 0 14px" data-t="sub"></p>
+      <div class="row"><span data-t="who"></span><b class="addr" id="by">—</b></div>
+      <ul class="list">
+        <li data-t="p1"></li><li data-t="p2"></li><li data-t="p3"></li><li data-t="p4"></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <a class="btn btn-main" id="toApp" href="#" data-t="app"></a>
+      <div class="tiny" style="text-align:center; margin:-2px 0 16px" data-t="appNote"></div>
+
+      <div id="injBox" class="hidden">
+        <button class="btn btn-ghost" id="connectBtn" type="button" data-t="other"></button>
+      </div>
+      <div id="linksBox" class="hidden">
+        <div class="tiny" style="margin:6px 0 8px" data-t="openIn"></div>
+        <div id="links"></div>
+      </div>
+      <div id="stateBox" class="hidden" style="margin-top:12px">
+        <div class="state" id="stateLine"><span class="dot"></span><span id="stateText"></span></div>
+        <div class="note hidden" id="stateNote"></div>
+      </div>
+      <div id="bindBox" class="hidden" style="margin-top:14px">
+        <div class="row"><span data-t="yourWallet"></span><b class="addr" id="mine">—</b></div>
+        <button class="btn btn-main" id="bindBtn" type="button" style="margin-top:14px" data-t="bind"></button>
+        <div class="tiny" data-t="gas"></div>
+      </div>
+    </div>
+
+    <p class="tiny" style="text-align:center">
+      <a class="link" id="aboutLink" href="https://tavarov.com/partners" target="_blank" rel="noopener" data-t="about"></a> ·
+      <a class="link" href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code" target="_blank" rel="noopener" data-t="contract"></a>
+    </p>
+  </div>
+</div>
+<script>
+/* Приглашение продавца: wallet.tavarov.com/ref?by=0x… (или ?by=имя).
+
+   Продавец закрепляет пригласившего сам, подписью своего кошелька: одна
+   операция setReferrer в контракте оплаты. Мы при этом ничего не держим и
+   ничего не решаем. Закрепить можно один раз и только до первой продажи —
+   так записано в контракте, и поменять это не может никто, включая нас.
+
+   Пригласивший — только адрес. Имя принимаем на входе и сразу превращаем в
+   адрес, а адрес показываем целиком до подписи: имя можно освободить и
+   занять другим, и тогда доля ушла бы чужому. */
+const PAY = '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35';
+const NAMES = '0xd6E8A78634bE366bDbD041227D1E94F5b374338e';
+const RPCS = ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'];
+const SEL = { setReferrer: '0xa18a7bfc', referralOf: '0xde6c736d', hasSold: '0xed14f20a', addressOf: '0xccf1454a' };
+const ZERO = '0x0000000000000000000000000000000000000000';
+const $ = id => document.getElementById(id);
+
+const T = {
+  ru: { badH: 'Ссылка приглашения неверная', badT: 'В ней нет адреса пригласившего. Попросите прислать ссылку заново.',
+    badName: 'Такого имени нет. Попросите прислать ссылку с адресом кошелька.',
+    h: 'Вас пригласили в Tavarov Pay', sub: 'Приём оплаты в USDT и USDC: деньги сразу на ваш кошелёк, комиссия 1%.',
+    who: 'Пригласил', p1: 'Закрепите пригласившего — год ему будет идти пятая часть НАШЕЙ комиссии с ваших продаж.',
+    p2: 'Вы ничего не теряете: ваша выручка и цены для покупателей не меняются.',
+    p3: 'Закрепить можно один раз и только до первой продажи — так записано в контракте.',
+    p4: 'Это одна операция в сети BNB Chain, её комиссия — доли цента.',
+    app: 'Открыть в NoN Wallet', appNote: 'Нет кошелька — он создастся бесплатно за минуту, и партнёр подставится сам.',
+    other: 'Закрепить другим кошельком', openIn: 'Откройте эту страницу в своём кошельке:',
+    yourWallet: 'Ваш кошелёк', bind: 'Закрепить партнёра', gas: 'Кошелёк попросит подтвердить операцию. Нужно немного BNB на комиссию сети.',
+    connecting: 'Подключаем кошелёк…', checking: 'Проверяем ваш кошелёк…', ready: 'Можно закреплять',
+    self: 'Это ваш же адрес — пригласить самого себя нельзя.',
+    already: 'У вас уже закреплён партнёр: ', alreadySame: 'Этот партнёр у вас уже закреплён. Всё готово.',
+    sold: 'С этого кошелька уже были продажи — закрепить партнёра теперь нельзя. Так записано в контракте.',
+    net: 'Переключите кошелёк на сеть BNB Chain и попробуйте ещё раз.',
+    sending: 'Подтвердите операцию в кошельке…', waiting: 'Операция отправлена, ждём сеть…',
+    done: 'Готово! Партнёр закреплён до ', notYet: 'Сеть ещё не подтвердила. Проверьте позже — повторять не нужно.',
+    rejected: 'Операцию отменили в кошельке. Ничего не отправлено.', failed: 'Не получилось: ',
+    noNode: 'Нет связи с сетью BNB Chain. Проверьте интернет.',
+    about: 'Как работает партнёрская программа', contract: 'Контракт оплаты' },
+  en: { badH: 'The invitation link is wrong', badT: 'It has no inviter address. Ask for the link again.',
+    badName: 'There is no such name. Ask for a link with a wallet address.',
+    h: 'You were invited to Tavarov Pay', sub: 'Accept USDT and USDC: money straight to your wallet, 1% fee.',
+    who: 'Invited by', p1: 'Confirm your inviter — for a year they get a fifth of OUR fee on your sales.',
+    p2: 'You lose nothing: your revenue and your customers’ prices stay the same.',
+    p3: 'It can be done once and only before your first sale — that is how the contract works.',
+    p4: 'It is one transaction on BNB Chain; the network fee is a fraction of a cent.',
+    app: 'Open in NoN Wallet', appNote: 'No wallet? It is created for free in a minute, and the partner is filled in for you.',
+    other: 'Confirm with another wallet', openIn: 'Open this page in your wallet:',
+    yourWallet: 'Your wallet', bind: 'Confirm partner', gas: 'Your wallet will ask you to confirm. You need a little BNB for the network fee.',
+    connecting: 'Connecting the wallet…', checking: 'Checking your wallet…', ready: 'Ready to confirm',
+    self: 'This is your own address — you cannot invite yourself.',
+    already: 'You already have a partner: ', alreadySame: 'This partner is already confirmed. All done.',
+    sold: 'This wallet already had sales — a partner can no longer be set. That is how the contract works.',
+    net: 'Switch your wallet to BNB Chain and try again.',
+    sending: 'Confirm the transaction in your wallet…', waiting: 'Sent, waiting for the network…',
+    done: 'Done! Partner confirmed until ', notYet: 'The network has not confirmed yet. Check later — no need to repeat.',
+    rejected: 'The transaction was cancelled in the wallet. Nothing was sent.', failed: 'It did not work: ',
+    noNode: 'No connection to BNB Chain. Check your internet.',
+    about: 'How the partner program works', contract: 'Payment contract' }
+};
+let LANG = (() => {
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q && T[q]) return q;
+  const n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  return ['ru', 'uk', 'be', 'kk', 'ky', 'uz', 'tg'].includes(n) ? 'ru' : 'en';
+})();
+const t = k => (T[LANG] && T[LANG][k] !== undefined) ? T[LANG][k] : T.en[k];
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+  $('aboutLink').href = 'https://tavarov.com/' + (LANG === 'ru' ? '' : 'en/') + 'partners';
+  if (lastState) say(lastState.kind, lastState.text, lastState.note);
+}
+document.querySelectorAll('#langs button').forEach(b => b.onclick = () => { LANG = b.dataset.l; applyLang(); });
+
+const pad = a => a.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+async function rpc(method, params){
+  let last = null;
+  for (const url of RPCS){
+    try{
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+      const d = await r.json();
+      if (d.error){ last = d.error.message; continue; }
+      return d.result;
+    } catch(e){ last = String(e && e.message || e); }
+  }
+  throw new Error(last || 'no node');
+}
+const call = (to, data) => rpc('eth_call', [{ to, data }, 'latest']);
+function encString(s){
+  const b = new TextEncoder().encode(s);
+  const hexb = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+  return (32).toString(16).padStart(64, '0') + b.length.toString(16).padStart(64, '0') + hexb.padEnd(Math.ceil(hexb.length / 64) * 64 || 64, '0');
+}
+async function resolveBy(v){
+  if (/^0x[0-9a-fA-F]{40}$/.test(v)) return v;
+  const name = v.replace(/^@+/, '').toLowerCase();
+  if (!/^[a-z][a-z0-9_]{2,19}$/.test(name)) return null;
+  const r = await call(NAMES, SEL.addressOf + encString(name));
+  const a = '0x' + String(r).slice(-40);
+  return a.toLowerCase() === ZERO ? null : a;
+}
+
+let BY = null, account = null, provider = null, lastState = null;
+function say(kind, text, note){
+  lastState = { kind, text, note };
+  $('stateBox').classList.remove('hidden');
+  $('stateLine').className = 'state ' + (kind || '');
+  $('stateText').textContent = text;
+  $('stateNote').classList.toggle('hidden', !note);
+  $('stateNote').textContent = note || '';
+}
+
+/* Кошельки в этом браузере: сначала по новому стандарту (EIP-6963), иначе
+   window.ethereum. Нет ни одного — ссылки, открывающие страницу внутри
+   приложения кошелька. */
+const found = [];
+window.addEventListener('eip6963:announceProvider', e => { if (e.detail && e.detail.provider) found.push(e.detail.provider); });
+try{ window.dispatchEvent(new Event('eip6963:requestProvider')); } catch(e){}
+function injected(){ return found[0] || (window.ethereum && typeof window.ethereum.request === 'function' ? window.ethereum : null); }
+function walletLinks(){
+  const url = location.origin + location.pathname + '?by=' + BY + '&lang=' + LANG;
+  const bare = url.replace(/^https?:\/\//, '');
+  return [
+    { name: 'MetaMask', color: '#F6851B', href: 'https://metamask.app.link/dapp/' + bare },
+    { name: 'Trust Wallet', color: '#0500FF', href: 'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(url) },
+    { name: 'OKX Wallet', color: '#111111', href: 'https://web3.okx.com/download?deeplink=' + encodeURIComponent('okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(url)) }
+  ];
+}
+
+async function readRef(addr){
+  const [ro, sold] = await Promise.all([call(PAY, SEL.referralOf + pad(addr)), call(PAY, SEL.hasSold + pad(addr))]);
+  const d = String(ro).replace(/^0x/, '');
+  const ref = '0x' + d.slice(24, 64);
+  const until = parseInt(d.slice(64, 128) || '0', 16);
+  return { referrer: ref.toLowerCase() === ZERO ? null : ref, until, sold: parseInt(String(sold), 16) === 1 };
+}
+const dateOf = s => { try{ return new Date(s * 1000).toLocaleDateString(LANG, { day: 'numeric', month: 'long', year: 'numeric' }); } catch(e){ return new Date(s * 1000).toISOString().slice(0, 10); } };
+
+async function connect(){
+  provider = injected();
+  if (!provider) return;
+  say('', t('connecting'));
+  try{
+    const accs = await provider.request({ method: 'eth_requestAccounts' });
+    account = accs && accs[0];
+    if (!account) throw new Error('no account');
+    const chain = await provider.request({ method: 'eth_chainId' });
+    if (String(chain).toLowerCase() !== '0x38'){
+      try{ await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] }); }
+      catch(e){
+        if (e && e.code === 4902){
+          await provider.request({ method: 'wallet_addEthereumChain', params: [{ chainId: '0x38', chainName: 'BNB Smart Chain',
+            nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }, rpcUrls: [RPCS[0]], blockExplorerUrls: ['https://bscscan.com'] }] });
+        } else { say('bad', t('net')); return; }
+      }
+    }
+    await check();
+  } catch(e){ say('bad', e && e.code === 4001 ? t('rejected') : t('failed') + (e && e.message || e)); }
+}
+async function check(){
+  $('mine').textContent = account;
+  $('bindBox').classList.add('hidden');
+  if (account.toLowerCase() === BY.toLowerCase()){ say('bad', t('self')); return; }
+  say('', t('checking'));
+  let st;
+  try{ st = await readRef(account); } catch(e){ say('bad', t('noNode')); return; }
+  if (st.referrer){
+    if (st.referrer.toLowerCase() === BY.toLowerCase()) say('ok', t('alreadySame'));
+    else say('bad', t('already') + st.referrer);
+    return;
+  }
+  if (st.sold){ say('bad', t('sold')); return; }
+  say('info', t('ready'));
+  $('bindBox').classList.remove('hidden');
+}
+async function bind(){
+  const btn = $('bindBtn');
+  btn.disabled = true;
+  try{
+    say('', t('sending'));
+    const hash = await provider.request({ method: 'eth_sendTransaction', params: [{ from: account, to: PAY, data: SEL.setReferrer + pad(BY), value: '0x0' }] });
+    say('', t('waiting'));
+    for (let i = 0; i < 40; i++){
+      await new Promise(r => setTimeout(r, 3000));
+      let rc = null;
+      try{ rc = await rpc('eth_getTransactionReceipt', [hash]); } catch(e){}
+      if (rc && rc.blockNumber){
+        if (rc.status === '0x0'){ say('bad', t('failed') + 'reverted'); return; }
+        const st = await readRef(account).catch(() => null);
+        say('ok', t('done') + (st && st.until ? dateOf(st.until) : '—'));
+        $('bindBox').classList.add('hidden');
+        return;
+      }
+    }
+    say('info', t('notYet'));
+  } catch(e){
+    say('bad', e && e.code === 4001 ? t('rejected') : t('failed') + (e && e.message || e));
+  } finally { btn.disabled = false; }
+}
+
+(async function start(){
+  applyLang();
+  const raw = (new URLSearchParams(location.search).get('by') || '').trim();
+  let by = null;
+  try{ by = raw ? await resolveBy(raw) : null; } catch(e){ by = null; }
+  if (!by){
+    $('bad').hidden = false;
+    if (raw && !/^0x/.test(raw)){ $('bad').querySelector('.note').dataset.t = 'badName'; applyLang(); }
+    return;
+  }
+  BY = by;
+  $('by').textContent = BY;
+  $('toApp').href = 'https://wallet.tavarov.com/?ref=' + BY;
+  $('main').classList.remove('hidden');
+  if (injected()){
+    $('injBox').classList.remove('hidden');
+    $('connectBtn').onclick = connect;
+  } else {
+    $('linksBox').classList.remove('hidden');
+    const box = $('links');
+    walletLinks().forEach(w => {
+      const a = document.createElement('a'); a.className = 'wrow'; a.href = w.href; a.rel = 'noopener';
+      const i = document.createElement('span'); i.className = 'wi'; i.style.background = w.color; i.textContent = w.name[0];
+      const s = document.createElement('span'); s.textContent = w.name;
+      a.appendChild(i); a.appendChild(s); box.appendChild(a);
+    });
+  }
+  $('bindBtn').onclick = bind;
+})();
+</script>
+</body>
+</html>

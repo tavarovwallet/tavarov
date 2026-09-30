@@ -39,6 +39,7 @@
    API keys: the key that owns the money is the key that sets the price. */
 
 import { messageHash, recoverAddress } from './_crypto.js';
+import { overLimit, tooMany } from './_limit.js';
 
 const NETS = {
   bnb:        { rpcs: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org',
@@ -244,6 +245,7 @@ async function onPost({ request, env }){
   /* Тело — не больше двух килобайт, и проверяем это ДО разбора. Иначе
      мегабайтное поле в «clear» уходило в хеширование целиком и жгло секунду
      процессора на каждый запрос — бесплатный способ положить кассы всех. */
+  if (await overLimit(request, env, 'till', 60, 600)) return tooMany();
   let body = null;
   const len = parseInt(request.headers.get('content-length') || '0', 10);
   if (len > MAX_BODY) return json({ error: 'request too large' }, 413);

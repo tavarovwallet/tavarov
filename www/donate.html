@@ -464,7 +464,8 @@ function clean(s, max){
   }
   return Array.from(out).slice(0, max).join('');
 }
-const okAmount = v => /^\d{1,9}(\.\d{1,6})?$/.test(v) && parseFloat(v) > 0;
+/* Не меньше 10 центов: меньшие донаты сервер не выводит на стрим. */
+const okAmount = v => /^\d{1,9}(\.\d{1,6})?$/.test(v) && parseFloat(v) >= 0.1;
 
 /* ---------- отрисовка ---------- */
 function render(){

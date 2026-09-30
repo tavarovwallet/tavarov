@@ -29,7 +29,8 @@ minutes — better to hear it from us.
 * **TVR is loyalty points, not an investment.** They have no price, they trade
   on no exchange, and we are not going to arrange one. More than half the supply
   sits on a single wallet — ours. There is nothing to spend them on yet: the
-  name shop is written but deployed nowhere.
+  name shop is written but deployed nowhere. We are not raising money through
+  a token.
 * **One wallet owns the contracts.** It can change the fee (never above 2%, that
   limit is in the code), the treasury address and the list of accepted
   currencies. It cannot touch a merchant's revenue. `renounceOwnership` has not
@@ -45,16 +46,28 @@ minutes — better to hear it from us.
   September 2026 the honest answer here was "nothing at all"; now it is longer,
   and pretending otherwise would be found out by the first person to read
   `functions/api/till.js`.
+* **The Telegram bot keeps a little more.** If you use @tavarov_pay_bot, it
+  stores your Telegram chat id, the wallet address you gave it and the invoices
+  it created, so it can tell you when one is paid. Delete the chat and it has
+  nothing to send to. See `functions/api/tg/`.
+* **In-wallet swap charges 0.5%.** NoN Wallet swaps through the KyberSwap
+  aggregator; 0.5% of the swap goes to the development wallet. The wallet
+  decodes the route before signing and refuses it if the router, tokens,
+  receiver, amounts or fee differ from what you were shown.
 
 ## Mainnet contracts (BNB Chain, chainId 56)
 
-All seven are verified — source published and matched against the bytecode.
+All nine are verified — source published and matched against the bytecode.
+Payments go through **TavarovPay v3**; v2 and the first vault template stay
+on-chain for invoices created before the switch.
 
 | What | Address |
 |---|---|
+| **TavarovPay v3 — payments (current)** | `0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35` |
+| **MerchantVault v2 — vault template (current)** | `0x4934F57e6a255f18f6c911a50136879c75bEbBFf` |
 | TavarovPay v2 — payments | `0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c` |
 | TavarovToken — TVR points | `0x8Baa77344Fc122967902651D0C3193cdF4c48503` |
-| FeeSplitter — treasury | `0x4029B2699340d0356187bd5ed51BA7b61422508A` |
+| FeeSplitter — treasury of v2 (v3 sends fees to the development wallet `0x73BBCD23735257660A9f6BE57d057dC4A2ABf432`) | `0x4029B2699340d0356187bd5ed51BA7b61422508A` |
 | MerchantVault — vault template | `0x5046399643c387d93E1467BaD3Fd7eDF3FB459DA` |
 | TavarovCharges — invoices | `0x82a9D1b0795aC44e8045dB60F30526c4230daFF9` |
 | TavarovNames v2 — names | `0x45465B98a3Cc486740Be84fD3B1E21e0D3548360` |
@@ -63,7 +76,12 @@ All seven are verified — source published and matched against the bytecode.
 `TavarovNameShop.sol` in this repository is **deployed nowhere** — not on
 mainnet, not on testnet. It is written and waiting.
 
-Build settings: the first six use solc `0.8.20+commit.a1b79de6`, optimizer on,
+**Partner program.** TavarovPay v3 lets a merchant name a referrer once,
+before their first sale. For 12 months the referrer gets 20% of the protocol
+fee from that merchant's sales, paid by the contract in the same transaction.
+The merchant's revenue and the buyer's price do not change.
+
+Build settings: Pay v3, Vault v2 and the first six use solc `0.8.20+commit.a1b79de6`, optimizer on,
 200 runs, EVM `paris`. Names v3 uses solc `0.8.34+commit.80d5c536`, optimizer
 **off**, EVM `cancun`.
 
@@ -74,8 +92,12 @@ www/index.html      wallet and till — one app, one file
 www/invoice.html    seller's cabinet: create an invoice, watch it get paid
 www/pay.html        buyer's page; the invoice itself lives after the # in the URL
 www/sticker.html    prints the permanent counter sticker
-functions/api/      the two server-side parts: "has this been paid?" and
-                    "what is the till asking for right now?"
+www/donate.html     streamer donation page; www/alert.html is the OBS alert
+www/ref.html        partner invite page: pin a referrer in one transaction
+functions/api/      server side: "has this been paid?", "what is the till
+                    asking for right now?", the REST API (v1), the Telegram
+                    bot (tg) and the partner statistics (_ref.js)
+woocommerce/        the Tavarov Pay plugin for WooCommerce (GPL)
 site/               the tavarov.com website
 token/              contracts
 i18n/               dictionaries for five languages, and the build script

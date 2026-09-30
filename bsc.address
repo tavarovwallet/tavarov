@@ -1,0 +1,64 @@
+# Tavarov Pay / NoN Wallet - Deployed Contracts
+
+## BNB Smart Chain Mainnet (Chain ID: 56)
+
+### TavarovPayV3 - payments (current)
+Address: 0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35
+Explorer: https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35
+Verification: Verified on BscScan
+Source: token/TavarovPayV3.sol
+
+### MerchantVaultV2 - merchant vault template (current)
+Address: 0x4934F57e6a255f18f6c911a50136879c75bEbBFf
+Explorer: https://bscscan.com/address/0x4934F57e6a255f18f6c911a50136879c75bEbBFf
+Verification: Verified on BscScan
+Source: token/MerchantVaultV2.sol
+
+### TavarovNamesV3 - human-readable wallet names (current)
+Address: 0xd6E8A78634bE366bDbD041227D1E94F5b374338e
+Explorer: https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e
+Verification: Verified on BscScan
+Source: token/TavarovNamesV3.sol
+
+### TavarovCharges - invoices
+Address: 0x82a9D1b0795aC44e8045dB60F30526c4230daFF9
+Explorer: https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9
+Verification: Verified on BscScan
+Source: token/TavarovCharges.sol
+
+### TavarovToken - TVR loyalty points (no sale, no market)
+Address: 0x8Baa77344Fc122967902651D0C3193cdF4c48503
+Explorer: https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503
+Verification: Verified on BscScan
+Source: token/TavarovToken.sol
+
+### TavarovPayV2 - payments (earlier, replaced by v3)
+Address: 0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c
+Explorer: https://bscscan.com/address/0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c
+Verification: Verified on BscScan
+Status: Earlier deployment, replaced by v3
+
+### MerchantVault - vault template (earlier, replaced by v2)
+Address: 0x5046399643c387d93E1467BaD3Fd7eDF3FB459DA
+Explorer: https://bscscan.com/address/0x5046399643c387d93E1467BaD3Fd7eDF3FB459DA
+Verification: Verified on BscScan
+Status: Earlier deployment, replaced by v2
+
+### FeeSplitter - treasury of v2 (earlier)
+Address: 0x4029B2699340d0356187bd5ed51BA7b61422508A
+Explorer: https://bscscan.com/address/0x4029B2699340d0356187bd5ed51BA7b61422508A
+Verification: Verified on BscScan
+Status: Used by v2; v3 sends fees to the development wallet 0x73BBCD23735257660A9f6BE57d057dC4A2ABf432
+
+### TavarovNamesV2 - names (earlier, replaced by v3)
+Address: 0x45465B98a3Cc486740Be84fD3B1E21e0D3548360
+Explorer: https://bscscan.com/address/0x45465B98a3Cc486740Be84fD3B1E21e0D3548360
+Verification: Verified on BscScan
+Status: Earlier deployment, replaced by v3
+
+---
+
+Build settings: solc 0.8.20+commit.a1b79de6, optimizer on, 200 runs, EVM paris
+(Names v3: solc 0.8.34+commit.80d5c536, optimizer off, EVM cancun).
+
+Security: not audited by a third party. See README, section "Where this project honestly stands".

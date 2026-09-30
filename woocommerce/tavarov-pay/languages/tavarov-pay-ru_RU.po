@@ -1,0 +1,145 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tavarov Pay 1.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Domain: tavarov-pay\n"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Tavarov Pay needs WooCommerce to be installed and active."
+msgstr "Для Tavarov Pay нужен установленный и включённый WooCommerce."
+
+msgid "Tavarov Pay API key is missing or malformed."
+msgstr "Ключ API Tavarov Pay не указан или указан с ошибкой."
+
+msgid "USDT or USDC (crypto)"
+msgstr "USDT или USDC (криптовалюта)"
+
+msgid "Tavarov Pay (USDT / USDC)"
+msgstr "Tavarov Pay (USDT / USDC)"
+
+msgid "Accept USDT and USDC on BNB Chain. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment."
+msgstr "Приём USDT и USDC в сети BNB Chain. Покупатель платит с любого кошелька, деньги сразу приходят на ваш — Tavarov Pay их не держит. Комиссия: 1% с платежа."
+
+msgid "Enable"
+msgstr "Включить"
+
+msgid "Accept USDT / USDC with Tavarov Pay"
+msgstr "Принимать USDT / USDC через Tavarov Pay"
+
+msgid "Title"
+msgstr "Название"
+
+msgid "What the customer sees at checkout."
+msgstr "Что видит покупатель при оформлении заказа."
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Shown under the title at checkout."
+msgstr "Показывается под названием при оформлении заказа."
+
+msgid "Pay from any crypto wallet: MetaMask, Trust Wallet, NoN Wallet and others. USDT or USDC on BNB Chain."
+msgstr "Оплата с любого криптокошелька: MetaMask, Trust Wallet, NoN Wallet и других. USDT или USDC в сети BNB Chain."
+
+msgid "API key"
+msgstr "Ключ API"
+
+msgid "Get it in the developer cabinet at wallet.tavarov.com/dev (sign in with the wallet that should receive the money). Keys starting with tp_test_ work on the BNB test network with test dollars."
+msgstr "Возьмите его в кабинете разработчика wallet.tavarov.com/dev (войдите тем кошельком, на который должны приходить деньги). Ключи tp_test_ работают в тестовой сети BNB с тестовыми долларами."
+
+msgid "Webhook secret"
+msgstr "Секрет вебхука"
+
+msgid "Optional but recommended. In the cabinet, set the webhook URL shown above and paste the whsec_… secret here: payments are then confirmed within seconds."
+msgstr "Необязательно, но лучше указать. В кабинете впишите адрес вебхука, показанный выше, и вставьте сюда секрет whsec_… — тогда оплаты подтверждаются за секунды."
+
+msgid "Charge in"
+msgstr "Валюта оплаты"
+
+msgid "Invoice lifetime, minutes"
+msgstr "Срок жизни счёта, минут"
+
+msgid "Debug log"
+msgstr "Журнал отладки"
+
+msgid "Write events to WooCommerce → Status → Logs (source: tavarov-pay)"
+msgstr "Писать события в WooCommerce → Статус → Журналы (источник: tavarov-pay)"
+
+msgid "This does not look like a Tavarov Pay API key (tp_live_… or tp_test_…)."
+msgstr "Это не похоже на ключ API Tavarov Pay (tp_live_… или tp_test_…)."
+
+msgid "The webhook secret starts with whsec_ — copy it from the cabinet as is."
+msgstr "Секрет вебхука начинается с whsec_ — скопируйте его из кабинета как есть."
+
+msgid "Webhook URL for the cabinet:"
+msgstr "Адрес вебхука для кабинета:"
+
+msgid "1. Open wallet.tavarov.com/dev and sign in with your wallet. 2. Create a key and paste it below. 3. Set the webhook URL above and paste the secret below."
+msgstr "1. Откройте wallet.tavarov.com/dev и войдите своим кошельком. 2. Создайте ключ и вставьте его ниже. 3. Впишите в кабинете адрес вебхука выше и вставьте секрет ниже."
+
+msgid "Your store currency is %s. Tavarov Pay charges in US dollar stablecoins, so it is offered at checkout only when the store currency is USD."
+msgstr "Валюта магазина — %s. Tavarov Pay принимает оплату в долларовых стейблкоинах, поэтому способ оплаты показывается только при валюте магазина USD."
+
+msgid "Test mode: a tp_test_ key is set. Payments use test dollars on the BNB test network — switch to a tp_live_ key before selling."
+msgstr "Тестовый режим: указан ключ tp_test_. Оплата идёт тестовыми долларами в тестовой сети BNB — перед продажами поставьте ключ tp_live_."
+
+msgid "Could not start the crypto payment right now. Please try again in a minute or choose another payment method."
+msgstr "Сейчас не удалось начать оплату криптовалютой. Попробуйте через минуту или выберите другой способ оплаты."
+
+msgid "Tavarov Pay invoice created: %1$s %2$s, invoice %3$s %4$s"
+msgstr "Счёт Tavarov Pay выставлен: %1$s %2$s, счёт %3$s %4$s"
+
+msgid "(test network)"
+msgstr "(тестовая сеть)"
+
+msgid "Order #%s"
+msgstr "Заказ №%s"
+
+msgid "Tavarov Pay reports the invoice as paid, but its amount or currency does not match this order. The order was NOT marked paid — please check it manually."
+msgstr "Tavarov Pay сообщает, что счёт оплачен, но его сумма или валюта не совпадает с этим заказом. Заказ НЕ отмечен оплаченным — проверьте его вручную."
+
+msgid "Paid with Tavarov Pay: %1$s %2$s from %3$s. Transaction: %4$s %5$s"
+msgstr "Оплачено через Tavarov Pay: %1$s %2$s с адреса %3$s. Транзакция: %4$s %5$s"
+
+msgid "(TEST network — no real money)"
+msgstr "(ТЕСТОВАЯ сеть — деньги ненастоящие)"
+
+msgid "Tavarov Pay: the customer paid less than the invoice amount. Check the payment and contact the customer."
+msgstr "Tavarov Pay: покупатель заплатил меньше суммы счёта. Проверьте платёж и свяжитесь с покупателем."
+
+msgid "Tavarov Pay: the customer paid in a different currency than the invoice. Check the payment and contact the customer."
+msgstr "Tavarov Pay: покупатель заплатил не в той валюте, что указана в счёте. Проверьте платёж и свяжитесь с покупателем."
+
+msgid "Tavarov Pay: the payment for this invoice was refunded to the customer."
+msgstr "Tavarov Pay: оплата по этому счёту возвращена покупателю."
+
+msgid "Tavarov Pay: the invoice expired unpaid. If the customer pays the order again, a new invoice is created."
+msgstr "Tavarov Pay: срок счёта истёк без оплаты. Если покупатель снова начнёт оплату заказа, будет выставлен новый счёт."
+
+msgid "Payment received. Thank you!"
+msgstr "Оплата получена. Спасибо!"
+
+msgid "We received a payment that does not match the order. The shop will contact you."
+msgstr "Мы получили платёж, который не совпадает с заказом. Магазин свяжется с вами."
+
+msgid "We have not seen the payment yet. If you have just paid, it usually shows up within a minute — refresh this page."
+msgstr "Мы пока не видим оплату. Если вы только что заплатили, она обычно появляется в течение минуты — обновите страницу."
+
+msgid "Open the payment page"
+msgstr "Открыть страницу оплаты"
+
+msgid "Check Tavarov Pay payment"
+msgstr "Проверить оплату Tavarov Pay"
+
+msgid "Tavarov Pay: could not reach the API, try again later."
+msgstr "Tavarov Pay: не удалось связаться с API, попробуйте позже."
+
+msgid "Tavarov Pay: no payment for this order yet."
+msgstr "Tavarov Pay: оплаты по этому заказу пока нет."
+

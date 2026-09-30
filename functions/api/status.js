@@ -156,13 +156,15 @@ async function findDirectTransfer(cfg, merchant, want, since, safeBlock){
      The only way to tell them apart is the transaction itself: a contract
      payment carries logs from our payment contract. If they are there, that
      transfer already belongs to some invoice and must not close another one. */
-  const ourPay = (cfg.pay || '').toLowerCase();
+  /* Оба наших контракта: и нынешний, и прежний. Перевод через прежний тоже
+     уже принадлежит какому-то счёту и закрывать чужой счёт не должен. */
+  const ours = [cfg.pay, cfg.payOld].filter(Boolean).map(a => a.toLowerCase());
   for (const c of candidates.slice(0, 3)){
     let viaContract = false;
     try{
       const rec = await rpc(cfg.rpcs, 'eth_getTransactionReceipt', [c.tx]);
       viaContract = !!(rec && (rec.logs || []).some(
-        l => (l.address || '').toLowerCase() === ourPay));
+        l => ours.includes((l.address || '').toLowerCase())));
     } catch(e){
       /* Could not ask — stay silent. Saying "paid" without checking means
          handing over goods, one day, for someone else's payment. */

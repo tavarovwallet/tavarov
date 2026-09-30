@@ -277,6 +277,14 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
     </div>
   </div>
 
+  <!-- После «Оплачено» — предложение самому принимать оплату так же. Только
+       после: до оплаты ничто не должно уводить человека от кнопки «Оплатить». -->
+  <div class="card hidden" id="promoCard">
+    <div style="font-weight:750;font-size:17px;margin-bottom:4px" data-t="promoH">Тоже принимаете оплату?</div>
+    <div class="note" style="margin-top:0" data-t="promoT">С NoN Wallet деньги приходят прямо на ваш кошелёк: счета и касса с QR-кодом. Бесплатно, комиссия 1% с оплаты.</div>
+    <a class="btn btn-ghost" id="promoBtn" style="margin-top:12px" href="https://tavarov.com/#download" target="_blank" rel="noopener" data-t="promoBtn">Получить NoN Wallet</a>
+  </div>
+
   <!-- Каждый выставленный счёт показывают НОВОМУ человеку: покупателю, который
        про нас ничего не знает. До сих пор ему некуда было нажать, чтобы
        узнать, куда он вообще платит, — и это одновременно и недоверие, и
@@ -853,6 +861,39 @@ const T3 = {
     wNoAccount:'A carteira não deu um endereço. Abra-a, desbloqueie e tente de novo.'
   }
 };
+const T4 = {
+  ru: { promoDonH:'Тоже ведёте канал или стримите?',
+        promoDonT:'Принимайте донаты так же: USDT и USDC сразу на ваш кошелёк, оповещения в OBS, комиссия 1%. Бесплатно в NoN Wallet.',
+        promoDonBtn:'Подключить донаты',
+        promoH:'Тоже принимаете оплату?',
+        promoT:'С NoN Wallet деньги приходят прямо на ваш кошелёк: счета и касса с QR-кодом. Бесплатно, комиссия 1% с оплаты.',
+        promoBtn:'Получить NoN Wallet' },
+  en: { promoDonH:'Do you stream or run a channel too?',
+        promoDonT:'Take tips the same way: USDT and USDC straight to your wallet, OBS alerts, 1% fee. Free in NoN Wallet.',
+        promoDonBtn:'Set up tips',
+        promoH:'Want to get paid like this too?',
+        promoT:'With NoN Wallet the money lands straight in your wallet: invoices and a QR checkout. Free, 1% per payment.',
+        promoBtn:'Get NoN Wallet' },
+  es: { promoDonH:'¿También hace streams o tiene un canal?',
+        promoDonT:'Reciba donaciones igual: USDT y USDC directo a su monedero, alertas en OBS, 1% de comisión. Gratis en NoN Wallet.',
+        promoDonBtn:'Activar donaciones',
+        promoH:'¿También quiere cobrar así?',
+        promoT:'Con NoN Wallet el dinero llega directo a su monedero: facturas y caja con código QR. Gratis, 1% por pago.',
+        promoBtn:'Obtener NoN Wallet' },
+  tr: { promoDonH:'Siz de yayın yapıyor ya da kanal mı yönetiyorsunuz?',
+        promoDonT:'Bağışları aynı şekilde alın: USDT ve USDC doğrudan cüzdanınıza, OBS bildirimleri, yüzde 1 komisyon. NoN Wallet\'ta ücretsiz.',
+        promoDonBtn:'Bağışları aç',
+        promoH:'Siz de böyle ödeme almak ister misiniz?',
+        promoT:'NoN Wallet ile para doğrudan cüzdanınıza gelir: faturalar ve QR kodlu kasa. Ücretsiz, ödeme başına yüzde 1.',
+        promoBtn:'NoN Wallet\'ı edinin' },
+  pt: { promoDonH:'Você também faz lives ou tem um canal?',
+        promoDonT:'Receba doações do mesmo jeito: USDT e USDC direto na sua carteira, alertas no OBS, 1% de taxa. Grátis na NoN Wallet.',
+        promoDonBtn:'Ativar doações',
+        promoH:'Quer receber pagamentos assim também?',
+        promoT:'Com a NoN Wallet o dinheiro cai direto na sua carteira: faturas e caixa com código QR. Grátis, 1% por pagamento.',
+        promoBtn:'Obter a NoN Wallet' }
+};
+Object.keys(T4).forEach(code => { T3[code] = Object.assign(T3[code] || {}, T4[code]); });
 Object.keys(T3).forEach(code => {
   T[code] = Object.assign(T[code] || {}, T3[code]);
   T2[code] = Object.assign(T2[code] || {}, T3[code]);     // проверка переводов смотрит в T2
@@ -1247,6 +1288,19 @@ let watchTimer = null;
    контракт отказал бы в повторной оплате. */
 function paidNow(){
   ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+  const promo = $('promoCard');
+  if (promo){
+    /* Донат — предлагаем стримеру то же самое: зритель, который донатит,
+       часто и сам ведёт канал. Остальным — кошелёк для приёма оплаты. */
+    const don = !!(inv && inv.o === 'donate');
+    promo.dataset.kind = don ? 'don' : '';
+    [['promoH', 'promoDonH'], ['promoT', 'promoDonT'], ['promoBtn', 'promoDonBtn']].forEach(([a, b]) => {
+      const el = promo.querySelector('[data-t="' + a + '"],[data-t="' + b + '"]');
+      if (el){ el.dataset.t = don ? b : a; el.textContent = t(el.dataset.t); }
+    });
+    $('promoBtn').href = don ? 'https://tavarov.com/' + (LANG === 'ru' ? '' : 'en/') + 'crypto-donations' : 'https://tavarov.com/#download';
+    promo.classList.remove('hidden');
+  }
   if (typeof closeWalletSheet === 'function') closeWalletSheet(true);
 }
 

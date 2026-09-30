@@ -28,8 +28,11 @@
    счетов. Запись в хранилище — только когда что-то на самом деле
    изменилось. */
 
-import { messageHash, recoverAddress } from '../_crypto.js';
-import { promoteByHash } from '../donate.js';
+import { messageHash, recoverAddress, keccak256 } from '../_crypto.js';
+import { promoteByHash, migrateDonIndex } from '../donate.js';
+import { overLimit } from '../_limit.js';
+import { notifyPaid, notifyProblem } from '../_tg.js';
+import { scanReferrals, readPartner, partnerView } from '../_ref.js';
 
 const NETS = {
   bnb: {
@@ -80,6 +83,13 @@ function json(o, status, headers){
               'x-content-type-options': 'nosniff' };
   return new Response(JSON.stringify(o), { status: status || 200, headers: Object.assign(h, headers || {}) });
 }
+function safeEqual(a, b){
+  a = String(a); b = String(b);
+  let d = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return d === 0;
+}
+
 function fail(status, code, message, extra){
   return json({ error: Object.assign({ code, message }, extra || {}) }, status);
 }
@@ -186,6 +196,12 @@ async function byApiKey(request, env){
   const hash = await sha256hex(m[1]);
   const rec = await kvGet(env, kKey(hash));
   if (!rec || rec.mode !== m[2] || !okAddr(rec.w)) return null;
+  /* Ключ, который уже заменён более новым, не принимаем, даже если его
+     запись почему-то осталась (две выдачи ключа разом, запоздавшая копия
+     KV): иначе такой ключ жил бы вечно и отозвать его было бы нельзя. */
+  const acct = await kvGet(env, kAcct(rec.w.toLowerCase()));
+  const cur = acct && acct.keys && acct.keys[rec.mode];
+  if (cur && cur.hash !== hash && (cur.ct || 0) >= (rec.ct || 0)) return null;
   return { w: rec.w.toLowerCase(), mode: rec.mode, net: MODE_NET[rec.mode], hash };
 }
 
@@ -202,12 +218,38 @@ async function bySession(request, env){
 /* Текст, который продавец подписывает, чтобы войти. Слово «login» и адрес
    сайта в нём — чтобы подпись нельзя было выдать за что-то другое. Это
    подпись сообщения, а не операция: денег она не двигает. */
-export function loginText(address, ts){
-  return ['Tavarov Pay developer login',
-          'site: wallet.tavarov.com',
-          'wallet: ' + address.toLowerCase(),
-          'time: ' + ts].join('\n');
+/* Текст входа — в стандартном виде «Sign-In with Ethereum» (EIP-4361).
+
+   ЗАЧЕМ. Прежний текст был просто строчками. Его мог попросить подписать
+   любой сайт — кошелёк не отличил бы поддельную страницу от нашей, человек
+   подписал бы, а подделка вошла бы в кабинет и увидела секрет вебхука.
+   Текст в этом виде кошельки (MetaMask и другие) узнают и сверяют первую
+   строку с адресом сайта, который просит подпись: с чужого сайта — красное
+   предупреждение. Плюс одноразовый номер (Nonce): одна подпись — один вход.
+
+   Текст строится ТОЛЬКО здесь и побуквенно так же в приложении
+   (www/index.html, siweText) — сервер собирает его сам и проверяет подпись
+   под ним, поэтому подсунуть другой текст нельзя. */
+export const LOGIN_DOMAIN = 'wallet.tavarov.com';
+export function checksumAddress(address){
+  const a = String(address).toLowerCase().replace(/^0x/, '');
+  const h = [...keccak256(new TextEncoder().encode(a))].map(b => b.toString(16).padStart(2, '0')).join('');
+  let out = '0x';
+  for (let i = 0; i < 40; i++) out += parseInt(h[i], 16) >= 8 ? a[i].toUpperCase() : a[i];
+  return out;
 }
+export function loginText(address, nonce, ts){
+  return LOGIN_DOMAIN + ' wants you to sign in with your Ethereum account:\n' +
+    checksumAddress(address) + '\n\n' +
+    'Sign in to the Tavarov Pay developer cabinet.\n\n' +
+    'URI: https://' + LOGIN_DOMAIN + '/dev\n' +
+    'Version: 1\n' +
+    'Chain ID: 56\n' +
+    'Nonce: ' + nonce + '\n' +
+    'Issued At: ' + new Date(ts * 1000).toISOString();
+}
+const okNonce = v => typeof v === 'string' && /^[A-Za-z0-9]{16,64}$/.test(v);
+const kNonce = n => 'v1:nonce:' + n;
 
 /* Кто подписал — спрашиваем два разных узла, как и касса: один узел,
    который врёт, не должен уметь впустить чужого. */
@@ -286,7 +328,9 @@ function okWebhookUrl(v){
   if (!/^[a-z0-9.-]+$/.test(h) || !h.includes('.')) return null;
   if (/^[0-9.]+$/.test(h)) return null;                                  // голый IP — нет
   if (h === 'localhost' || /\.(localhost|local|internal|lan|home)$/.test(h)) return null;
-  if (h === 'tavarov.com' || h.endsWith('.tavarov.com') || OWN_HOSTS.includes(h)) return null;   // не на самих себя
+  if (h === 'tavarov.com' || h.endsWith('.tavarov.com') ||
+      OWN_HOSTS.some(o => h === o || h.endsWith('.' + o))) return null;      // не на самих себя, и не на наши пробные адреса
+  if (u.port !== '') return null;                                         // только обычный порт 443
   return u.href;
 }
 
@@ -360,16 +404,21 @@ async function readChain(env, rec, knownLog){
   const pay = { payer: sale.buyer, amount: amt, cur: curSym || sale.token,
                 refunded: fmtUnits(sale.refunded, dec),
                 tx: (same && rec.pay.tx) || null, block: (same && rec.pay.block) || null,
+                got: (same && rec.pay.got) || null,
                 late: (same && rec.pay.late) || false };
 
-  if (knownLog){ pay.tx = knownLog.transactionHash; pay.block = parseInt(knownLog.blockNumber, 16); }
+  /* got — сколько дошло до продавца (первое слово события Paid): для
+     сообщения в Telegram «на ваш кошелёк пришло …». */
+  if (knownLog){ pay.tx = knownLog.transactionHash; pay.block = parseInt(knownLog.blockNumber, 16);
+                 pay.got = fmtUnits(BigInt(word(knownLog.data, 0)), dec); }
   if (!pay.tx){
     try{
       const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pay,
         fromBlock: hex(safe - TX_LOOKBACK), toBlock: hex(safe), topics: [PAID_TOPIC, pad(rec.w)] }]);
       for (const l of (logs || [])){
         if (word(l.data, 3).toLowerCase() !== rec.h) continue;
-        pay.tx = l.transactionHash; pay.block = parseInt(l.blockNumber, 16); break;
+        pay.tx = l.transactionHash; pay.block = parseInt(l.blockNumber, 16);
+        pay.got = fmtUnits(BigInt(word(l.data, 0)), dec); break;
       }
     } catch(e){ /* номер транзакции — для удобства; на «оплачено» не влияет */ }
   }
@@ -424,8 +473,12 @@ async function sendWebhook(acct, event){
 /* Счёт оплачен — сообщаем магазину. Возвращает, когда пробовать снова (или
    ничего). Сам очередь не пишет: этим занимается тот, кто позвал. */
 async function deliver(env, rec, origin){
-  const acct = await kvGet(env, kAcct(rec.w));
-  const res = await sendWebhook(acct, paidEvent(rec, origin));
+  /* Счёт из Telegram-бота: вместо вебхука магазину — сообщение в чат
+     продавца. Вебхук кабинета для таких счетов не шлём: у магазина с
+     сайтом нет такого заказа, и «оплачено» по нему его бы только сбило. */
+  let res;
+  if (rec.tg) res = await notifyPaid(env, rec);
+  else res = await sendWebhook(await kvGet(env, kAcct(rec.w)), paidEvent(rec, origin));
   const wh = rec.wh || { n: 0 };
   if (res.none){ rec.wh = { none: true, n: wh.n || 0 }; return null; }
   wh.n = (wh.n || 0) + 1;
@@ -442,9 +495,12 @@ const webhookDone = rec => !!(rec.wh && (rec.wh.ok || rec.wh.none || rec.wh.dead
    ждёт повтора, и время пришло), сообщить магазину. */
 async function refresh(env, rec, origin, opts){
   const o = opts || {};
-  const before = JSON.stringify([rec.st || 'pending', rec.pay || null, rec.wh || null]);
+  const before = JSON.stringify([rec.st || 'pending', rec.pay || null, rec.wh || null, rec.tgw || 0]);
   const chain = await readChain(env, rec, o.log);
   if (chain.st){ rec.st = chain.st; rec.pay = chain.pay; }
+  if (rec.tg && (rec.st === 'underpaid' || rec.st === 'wrong_currency') && !rec.tgw){
+    try{ if (await notifyProblem(env, rec)) rec.tgw = 1; } catch(e){ /* повторим при следующей проверке */ }
+  }
   let retryAt = null;
   if (o.noDeliver){
     /* Чтение магазином вебхук не шлёт. Иначе обработчик вебхука, который
@@ -456,7 +512,7 @@ async function refresh(env, rec, origin, opts){
   else if (rec.st === 'paid' && !webhookDone(rec) && (o.force || !(rec.wh && rec.wh.next > sec())))
     retryAt = await deliver(env, rec, origin);
   else if (rec.st === 'paid' && rec.wh && rec.wh.next) retryAt = rec.wh.next;
-  const after = JSON.stringify([rec.st || 'pending', rec.pay || null, rec.wh || null]);
+  const after = JSON.stringify([rec.st || 'pending', rec.pay || null, rec.wh || null, rec.tgw || 0]);
   if (after !== before) await kvPut(env, kInv(rec.h), rec, INV_TTL);
   return { retryAt };
 }
@@ -653,7 +709,65 @@ async function runCron(env, origin){
     } catch(err){ /* сеть молчит — попробуем в следующую минуту */ }
   }
   if (JSON.stringify(q) !== qBefore) await kvPut(env, K_QUEUE, q.slice(-500));
+  try{ const mig = await migrateDonIndex(env); if (mig) out.migrated = mig; } catch(e){ /* в следующую минуту */ }
+  /* Партнёрская программа: дочитываем журнал контракта оплаты. */
+  try{
+    const cfg = netConfig('bnb', env);
+    const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
+    out.referrals = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay, Math.max(0, latest - CONFIRMATIONS), refTokens());
+  } catch(e){ out.referrals = 'error'; }
   return json(out);
+}
+
+/* ===================== партнёрская программа ===================== */
+
+function refTokens(){
+  const out = {};
+  const t = NETS.bnb.tokens;
+  for (const sym of Object.keys(t)) out[t[sym].a.toLowerCase()] = { sym, d: t[sym].d };
+  return out;
+}
+export async function partnerInfo(env, w){
+  return partnerView(await readPartner(env, w), refTokens(), Number(await env.TILL.get('ref:cur')) || null);
+}
+
+/* ===================== для Telegram-бота ===================== */
+
+/* Бот выставляет счёт той же записью, что и API: таймер и страница оплаты
+   находят оплату одинаково, а вместо вебхука бот пишет продавцу в чат.
+   Сеть — только основная, валюта — USDT или USDC. */
+export const TG_TTL = 24 * 3600;
+export async function createTgInvoice(env, o){
+  const cfg = netConfig('bnb', env);
+  const tk = cfg.tokens[o.c];
+  if (!tk || !okAddr(o.w)) return null;
+  const units = toUnits(o.a, tk.d);
+  if (units === null || units <= 0n) return null;
+  /* h и ct можно задать: счёт из встроенного режима (@бот 25 в чужом чате)
+     создаётся, когда покупатель впервые открыл ссылку, а номер у него
+     выведен из подписанной ссылки — второе нажатие найдёт тот же счёт. */
+  const now = o.ct || sec();
+  if (o.h && !okHash(o.h)) return null;
+  const rec = { h: o.h || randomHex32(), w: checksumAddress(o.w), mode: 'live', net: 'bnb', a: fmtUnits(units, tk.d), c: o.c,
+                o: '', i: o.i || '', n: o.n || '', r: '', md: { source: o.src || 'telegram' }, l: o.tl === 'en' ? 'en' : 'ru',
+                ct: now, t: now + (o.ttl || TG_TTL), st: 'pending', tg: String(o.chat), tl: o.tl === 'en' ? 'en' : 'ru' };
+  await kvPut(env, kInv(rec.h), rec, INV_TTL);
+  return { rec, url: payUrl(rec, 'https://wallet.tavarov.com') };
+}
+export const tgPayUrl = rec => payUrl(rec, 'https://wallet.tavarov.com');
+export async function readTgInvoice(env, h){
+  if (!okHash(h)) return null;
+  const rec = await kvGet(env, kInv(h));
+  return rec && rec.tg ? { rec, st: statusOf(rec) } : null;
+}
+/* Кнопка «Проверить оплату»: сверить с сетью; если оплачено — уведомление
+   уйдёт тем же путём, что и из таймера. */
+export async function checkTgInvoice(env, h, chat){
+  const got = await readTgInvoice(env, h);
+  if (!got || got.rec.tg !== String(chat)) return null;
+  const { retryAt } = await refresh(env, got.rec, 'https://wallet.tavarov.com');
+  if (retryAt) await enqueue(env, got.rec.h, retryAt);
+  return { rec: got.rec, st: statusOf(got.rec) };
 }
 
 /* ===================== кабинет ===================== */
@@ -661,16 +775,22 @@ async function runCron(env, origin){
 async function login(request, env){
   const rb = await readBody(request);
   if (rb.tooBig || rb.bad) return fail(400, 'bad_json', 'Body must be a JSON object.');
-  const { address, ts, sig } = rb.body;
+  const { address, ts, sig, nonce } = rb.body;
   if (!okAddr(address)) return fail(400, 'bad_address', 'Bad wallet address.');
+  if (nonce === undefined)
+    return fail(400, 'login_outdated', 'Sign-in has changed. Reload this page, or update NoN Wallet and sign in again.');
+  if (!okNonce(nonce)) return fail(400, 'bad_nonce', 'Bad nonce.');
   if (!Number.isInteger(ts) || Math.abs(sec() - ts) > LOGIN_SLACK)
     return fail(400, 'bad_time', 'The signature is too old or the clock is off. Sign again.');
   if (typeof sig !== 'string' || !/^0x[0-9a-fA-F]{130}$/.test(sig)) return fail(400, 'bad_signature', 'Bad signature format.');
   let signer = null;
   try{
-    signer = await recoverByQuorum(netConfig('bnb', env).rpcs, messageHash(loginText(address, ts)), sig);
+    signer = await recoverByQuorum(netConfig('bnb', env).rpcs, messageHash(loginText(address, nonce, ts)), sig);
   } catch(e){ return fail(503, 'network', 'Could not check the signature right now, try again.'); }
   if (!signer || signer !== address.toLowerCase()) return fail(403, 'wrong_signer', 'This login was not signed by that wallet.');
+  /* Одна подпись — один вход: подсмотренную подпись второй раз не примем. */
+  if (await env.TILL.get(kNonce(nonce))) return fail(409, 'nonce_used', 'This signature was already used. Sign in again.');
+  await env.TILL.put(kNonce(nonce), '1', { expirationTtl: 1800 });
   const token = 'sess_' + randomToken(32);
   await kvPut(env, kSess(await sha256hex(token)), { w: signer, exp: sec() + SESS_TTL }, SESS_TTL);
   return json({ session: token, wallet: signer, expires_at: sec() + SESS_TTL });
@@ -680,12 +800,29 @@ function accountView(acct, w){
   const a = acct || {};
   const k = m => a.keys && a.keys[m] ? { tail: a.keys[m].tail, created_at: a.keys[m].ct } : null;
   return { wallet: w, keys: { live: k('live'), test: k('test') },
-           webhook: a.webhook ? { url: a.webhook.url, secret: a.webhook.secret } : null };
+           /* Секрет целиком — только один раз, когда он создан (new_secret в
+              ответе). Потом — лишь хвост: кто завладел сессией, не должен
+              получить секрет и слать магазину поддельные «оплачено». */
+           webhook: a.webhook ? { url: a.webhook.url, secret_tail: String(a.webhook.secret || '').slice(-4) } : null };
 }
 
 async function devRoute(parts, request, env, origin, waitUntil){
   const method = request.method;
-  if (parts[0] === 'login' && method === 'POST') return login(request, env);
+  /* Текст для подписи — чтобы страница кабинета не собирала его сама (ей
+     пришлось бы тащить keccak ради заглавных букв в адресе). Ничего не
+     пишет и ничего не открывает: подпись всё равно проверяется при входе. */
+  if (parts[0] === 'login-message' && method === 'GET'){
+    const q = new URL(request.url).searchParams;
+    const address = q.get('address') || '';
+    if (!okAddr(address)) return fail(400, 'bad_address', 'Bad wallet address.');
+    const nonce = [...crypto.getRandomValues(new Uint8Array(12))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const ts = sec();
+    return json({ message: loginText(address, nonce, ts), nonce, ts });
+  }
+  if (parts[0] === 'login' && method === 'POST'){
+    if (await overLimit(request, env, 'v1login', 10, 600)) return fail(429, 'rate_limited', 'Too many sign-ins. Try again in a few minutes.');
+    return login(request, env);
+  }
 
   const who = await bySession(request, env);
   if (!who) return fail(401, 'no_session', 'Sign in again.');
@@ -719,8 +856,11 @@ async function devRoute(parts, request, env, origin, waitUntil){
     return json(Object.assign(accountView(acct, who.w), { new_key: key }));
   }
 
+  if (method === 'POST' && await overLimit(request, env, 'v1dev', 30, 600))
+    return fail(429, 'rate_limited', 'Too many changes. Try again in a few minutes.');
   if (parts[0] === 'webhook' && parts[1] === 'test' && method === 'POST'){
     if (!acct.webhook) return fail(400, 'no_webhook', 'Set a webhook URL first.');
+    if (await overLimit(request, env, 'v1whtest', 5, 60)) return fail(429, 'rate_limited', 'At most 5 test events a minute.');
     const res = await sendWebhook(acct, { id: 'evt_test_' + randomToken(9), type: 'ping', created: sec(),
       livemode: false, data: { message: 'Tavarov Pay webhook test. If you see this, your endpoint works.' } });
     return json({ ok: !!res.ok, status_code: res.code || 0, ms: res.ms || 0, error: res.error || null });
@@ -730,15 +870,20 @@ async function devRoute(parts, request, env, origin, waitUntil){
     const rb = await readBody(request);
     if (rb.tooBig || rb.bad) return fail(400, 'bad_json', 'Body must be a JSON object.');
     const b = rb.body;
+    let fresh = null;
     if (b.url === null || b.url === ''){ acct.webhook = null; }
     else {
       const url = okWebhookUrl(b.url);
       if (!url) return fail(400, 'bad_url', 'Webhook URL must be https:// on your own domain (no IP addresses, no localhost).');
-      const secret = (acct.webhook && acct.webhook.secret && !b.rotate_secret) ? acct.webhook.secret : 'whsec_' + randomToken(32);
-      acct.webhook = { url, secret, ct: sec() };
+      /* Новый адрес — новый секрет. Иначе тот, кто перевёл вебхук на свой
+         сервер, получал бы подписи, годные и для настоящего адреса. */
+      const keep = acct.webhook && acct.webhook.secret && !b.rotate_secret && acct.webhook.url === url;
+      const secret = keep ? acct.webhook.secret : 'whsec_' + randomToken(32);
+      acct.webhook = { url, secret, ct: keep ? acct.webhook.ct : sec() };
+      if (!keep) fresh = secret;
     }
     await kvPut(env, kAcct(who.w), acct);
-    return json(accountView(acct, who.w));
+    return json(Object.assign(accountView(acct, who.w), fresh ? { new_secret: fresh } : {}));
   }
 
   if (parts[0] === 'invoices' && !parts[1] && method === 'GET'){
@@ -784,10 +929,24 @@ export async function handle(request, env, waitUntil){
   if (!env || !env.TILL) return fail(503, 'no_storage', 'Storage is not configured on this deployment.');
 
   try{
-    if (parts[0] === 'cron' && (method === 'GET' || method === 'POST')) return await runCron(env, origin);
+    if (parts[0] === 'cron' && (method === 'GET' || method === 'POST')){
+      /* Таймер — только с секретом. Без него любой мог бы дёргать обход
+         сети и повторы вебхуков сколько угодно раз и параллельно. */
+      if (env.CRON_SECRET && !safeEqual((request.headers.get('authorization') || '').trim(), 'Bearer ' + String(env.CRON_SECRET).trim()))
+        return fail(404, 'not_found', 'No such method. See ' + origin + '/dev');
+      return await runCron(env, origin);
+    }
     if (parts[0] === 'dev') return await devRoute(parts.slice(1), request, env, origin, wait);
-    if (parts[0] === 'invoices' && okHash(parts[1]) && parts[2] === 'check' && method === 'POST')
+    /* Кабинет партнёра: кого привёл и сколько заработал. Всё это и так
+       открыто в сети — здесь только собрано вместе. */
+    if (parts[0] === 'partners' && okAddr(parts[1]) && !parts[2] && method === 'GET'){
+      if (await overLimit(request, env, 'v1ref', 60, 600)) return fail(429, 'rate_limited', 'Too many requests. Try again in a few minutes.');
+      return json(await partnerInfo(env, parts[1]), 200, { 'access-control-allow-origin': '*' });
+    }
+    if (parts[0] === 'invoices' && okHash(parts[1]) && parts[2] === 'check' && method === 'POST'){
+      if (await overLimit(request, env, 'v1check', 30, 60)) return fail(429, 'rate_limited', 'Too many checks. Try again in a minute.');
       return await checkInvoice(env, parts[1], origin, wait);
+    }
 
     if (parts[0] === 'invoices' || parts[0] === 'me'){
       const who = await byApiKey(request, env);

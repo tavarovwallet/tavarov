@@ -212,9 +212,8 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
     <div id="whSecretBox" class="hidden">
       <div class="tiny"><span class="ru">Секрет подписи — им вы проверяете, что вебхук пришёл от нас:</span><span class="en">Signing secret, used to check that a webhook really came from us:</span></div>
       <div class="secret">
-        <span class="mono" id="whSecret">••••••••••••••••</span>
-        <button class="btn btn-ghost btn-sm" id="whShow"><span class="ru">Показать</span><span class="en">Reveal</span></button>
-        <button class="btn btn-ghost btn-sm" id="whCopy"><span class="ru">Копировать</span><span class="en">Copy</span></button>
+        <span class="mono" id="whSecret">whsec_…</span>
+        <button class="btn btn-ghost btn-sm hidden" id="whCopy"><span class="ru">Копировать</span><span class="en">Copy</span></button>
         <button class="btn btn-ghost btn-sm btn-danger" id="whRotate"><span class="ru">Заменить</span><span class="en">Roll</span></button>
       </div>
       <div class="btns">
@@ -222,6 +221,7 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
         <button class="btn btn-ghost btn-sm btn-danger" id="whRemove"><span class="ru">Убрать вебхук</span><span class="en">Remove webhook</span></button>
       </div>
     </div>
+    <div class="note hidden" id="whOnce"><span class="ru">Скопируйте секрет сейчас и положите на свой сервер: целиком мы его показываем только один раз. Потерялся — нажмите «Заменить».</span><span class="en">Copy the secret now and put it on your server: we show it in full only once. Lost it? Press Roll.</span></div>
     <div class="note hidden" id="whMsg"></div>
 
     <h3 style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
@@ -247,6 +247,7 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
     <li><span class="ru">Всё работает — замените тестовый ключ на боевой <code>tp_live_…</code>. Больше ничего менять не нужно.</span><span class="en">Once it all works, swap the test key for a live one, <code>tp_live_…</code>. Nothing else changes.</span></li>
   </ol>
   <p class="muted"><span class="ru">Адрес API:</span><span class="en">Base URL:</span> <code>https://wallet.tavarov.com/api/v1</code>. <span class="ru">Ключ передаётся заголовком</span><span class="en">Send your key in the header</span> <code>Authorization: Bearer tp_live_…</code>. <span class="ru">Запросы и ответы — JSON.</span><span class="en">Requests and responses are JSON.</span></p>
+  <p class="muted"><span class="ru">Магазин на WordPress? Готовый <a href="https://tavarov.com/woocommerce">плагин для WooCommerce</a> делает всё это сам: вставьте ключ и секрет вебхука — и всё.</span><span class="en">On WordPress? The ready-made <a href="https://tavarov.com/en/woocommerce">WooCommerce plugin</a> does all of this for you: paste the key and the webhook secret, and you are done.</span></p>
 </div>
 
 <!-- ===================== Счета ===================== -->
@@ -521,7 +522,7 @@ def tavarov_webhook():
 const $ = id => document.getElementById(id);
 let LANG = 'en';
 /* Состояние кабинета объявлено до выбора языка: смена языка перерисовывает кабинет. */
-let SESS = null, ACCT = null, invMode = 'live', secretShown = false, INV = [];
+let SESS = null, ACCT = null, invMode = 'live', NEW_SECRET = null, INV = [];
 (() => {
   let want = null;
   try{ want = new URLSearchParams(location.search).get('lang'); } catch(e){}
@@ -588,11 +589,12 @@ async function api(method, path, body){
   return d;
 }
 
-function loginText(address, ts){
-  return ['Tavarov Pay developer login', 'site: wallet.tavarov.com', 'wallet: ' + address.toLowerCase(), 'time: ' + ts].join('\n');
-}
-async function finishLogin(address, ts, sig){
-  const d = await api('POST', '/login', { address, ts, sig });
+/* Вход — подписью текста в стандартном виде «Sign-In with Ethereum».
+   Текст собирает сервер (с одноразовым номером), мы его только показываем
+   кошельку. Кошелёк сверит первую строку с адресом этой страницы: если
+   кто-то подсунет этот текст на чужом сайте, кошелёк предупредит. */
+async function finishLogin(address, nonce, ts, sig){
+  const d = await api('POST', '/login', { address, nonce, ts, sig });
   SESS = d.session;
   try{ sessionStorage.setItem('tp.dev.sess', SESS); } catch(e){}
   await loadAccount();
@@ -628,24 +630,27 @@ $('mmLogin').onclick = async () => {
     const accs = await p.request({ method: 'eth_requestAccounts' });
     const address = accs && accs[0];
     if (!/^0x[0-9a-fA-F]{40}$/.test(address || '')) throw new Error(tr('Кошелёк не дал адрес.', 'The wallet returned no address.'));
-    const ts = Math.floor(Date.now() / 1000);
-    const sig = await p.request({ method: 'personal_sign', params: [utf8Hex(loginText(address, ts)), address] });
-    await finishLogin(address, ts, sig);
+    const lm = await api('GET', '/login-message?address=' + encodeURIComponent(address));
+    const sig = await p.request({ method: 'personal_sign', params: [utf8Hex(lm.message), address] });
+    await finishLogin(address, lm.nonce, lm.ts, sig);
   } catch(e){
     showLoginError(e && e.code === 4001 ? new Error(tr('Подпись отменена.', 'Signature cancelled.')) : e);
   } finally { btn.disabled = false; }
 };
 $('nonLogin').onclick = () => $('nonHow').classList.toggle('hidden');
 
-/* ---------- вход из NoN Wallet: #login=адрес.время.подпись ----------
+/* ---------- вход из NoN Wallet: #login=адрес.номер.время.подпись ----------
    Кошелёк сам подписал вход и открыл эту страницу. Подпись лежит после
    решётки — на сервер в журнал запросов она не уходит, а отсюда мы её
    сразу убираем из адресной строки. */
 (async () => {
-  const m = location.hash.match(/[#&]login=(0x[0-9a-fA-F]{40})\.(\d{9,11})\.(0x[0-9a-fA-F]{130})/);
-  if (!m) return;
+  const m = location.hash.match(/[#&]login=(0x[0-9a-fA-F]{40})\.([A-Za-z0-9]{16,64})\.(\d{9,11})\.(0x[0-9a-fA-F]{130})/);
+  const old = !m && /[#&]login=0x[0-9a-fA-F]{40}\.\d{9,11}\.0x/.test(location.hash);
+  if (!m && !old) return;
   try{ history.replaceState(null, '', location.pathname + location.search + '#cabinet'); } catch(e){}
-  try{ await finishLogin(m[1], parseInt(m[2], 10), m[3]); }
+  if (old) return showLoginError(new Error(tr('Вход в кабинет изменился — обновите NoN Wallet (tavarov.com) и войдите снова.',
+                                              'Sign-in has changed. Update NoN Wallet (tavarov.com) and sign in again.')));
+  try{ await finishLogin(m[1], m[2], parseInt(m[3], 10), m[4]); }
   catch(e){ showLoginError(e); }
 })();
 
@@ -717,25 +722,34 @@ function renderWebhook(){
   const wh = ACCT.webhook;
   if (document.activeElement !== $('whUrl')) $('whUrl').value = wh ? wh.url : '';
   $('whSecretBox').classList.toggle('hidden', !wh);
-  $('whSecret').textContent = wh && secretShown ? wh.secret : '••••••••••••••••••••••••';
-  $('whShow').innerHTML = secretShown ? tr('Скрыть', 'Hide') : tr('Показать', 'Reveal');
+  if (!wh) NEW_SECRET = null;
+  $('whSecret').textContent = NEW_SECRET ? NEW_SECRET : 'whsec_…' + ((wh && wh.secret_tail) || '');
+  $('whCopy').classList.toggle('hidden', !NEW_SECRET);
+  $('whOnce').className = 'note' + (NEW_SECRET ? '' : ' hidden');
 }
+/* Ответ сервера: new_secret приходит только когда секрет только что создан. */
+function takeAccount(d){ ACCT = d; if (d && d.new_secret) NEW_SECRET = d.new_secret; }
 $('whSave').onclick = async () => {
   const url = $('whUrl').value.trim();
   if (!url) return alertBox(tr('Впишите адрес https://…', 'Enter an https://… address'), true);
-  try{ ACCT = await api('POST', '/webhook', { url }); renderWebhook(); alertBox(tr('Сохранено. Отправьте проверку — убедитесь, что сервер отвечает.', 'Saved. Send a test event to make sure your server answers.')); }
+  try{
+    const had = !!ACCT.webhook;
+    const d = await api('POST', '/webhook', { url }); takeAccount(d); renderWebhook();
+    alertBox(d.new_secret && had
+      ? tr('Сохранено. Новый адрес — новый секрет подписи: обновите его у себя на сервере, затем отправьте проверку.', 'Saved. A new URL gets a new signing secret: update it on your server, then send a test event.')
+      : tr('Сохранено. Отправьте проверку — убедитесь, что сервер отвечает.', 'Saved. Send a test event to make sure your server answers.'));
+  }
   catch(e){ alertBox(e.message, true); }
 };
-$('whShow').onclick = () => { secretShown = !secretShown; renderWebhook(); };
-$('whCopy').onclick = () => copy(ACCT.webhook.secret, $('whCopy'));
+$('whCopy').onclick = () => { if (NEW_SECRET) copy(NEW_SECRET, $('whCopy')); };
 $('whRotate').onclick = async () => {
   if (!confirm(tr('Старый секрет перестанет подходить сразу — обновите его у себя на сервере. Заменить?', 'The old secret stops matching immediately. Update it on your server. Roll it?'))) return;
-  try{ ACCT = await api('POST', '/webhook', { url: ACCT.webhook.url, rotate_secret: true }); secretShown = true; renderWebhook(); }
+  try{ takeAccount(await api('POST', '/webhook', { url: ACCT.webhook.url, rotate_secret: true })); renderWebhook(); }
   catch(e){ alertBox(e.message, true); }
 };
 $('whRemove').onclick = async () => {
   if (!confirm(tr('Убрать вебхук? Об оплатах сервер узнавать перестанет — только через GET /invoices/{id}.', 'Remove the webhook? Your server will only learn about payments via GET /invoices/{id}.'))) return;
-  try{ ACCT = await api('POST', '/webhook', { url: null }); renderWebhook(); alertBox(tr('Вебхук убран.', 'Webhook removed.')); }
+  try{ takeAccount(await api('POST', '/webhook', { url: null })); renderWebhook(); alertBox(tr('Вебхук убран.', 'Webhook removed.')); }
   catch(e){ alertBox(e.message, true); }
 };
 $('whTest').onclick = async () => {

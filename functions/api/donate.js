@@ -38,7 +38,6 @@ const DONE_TTL    = 180 * 86400;
 const MAX_BODY    = 2048;
 const MAX_MSG     = 200;
 const MAX_NICK    = 32;
-const CHECK_PER_READ = 10;     // сколько ожиданий проверяем в сети за один запрос
 const SALE_OF = '0x38d56afe';
 
 const okAddr = v => /^0x[0-9a-fA-F]{40}$/.test(v || '');
@@ -80,6 +79,7 @@ async function rpc(urls, method, params){
 }
 
 import { messageHash, recoverAddress } from './_crypto.js';
+import { overLimit, tooMany } from './_limit.js';
 
 const PAID_TOPIC = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
 const hexN = n => '0x' + Math.max(0, n).toString(16);
@@ -155,25 +155,48 @@ function tokenOf(cfg, addr){
 }
 
 const pKey = (net, to, h) => 'donp:' + net + ':' + to.toLowerCase() + ':' + h.toLowerCase();
-/* Новые — первыми: KV отдаёт ключи по алфавиту, поэтому время пишем
-   «наоборот». */
-const dKey = (net, to, ts, h) => 'don:' + net + ':' + to.toLowerCase() + ':' +
-  String(9999999999 - Math.floor(ts / 1000)).padStart(10, '0') + ':' + h.toLowerCase();
 const hKey = h => 'donh:' + h.toLowerCase();
+/* Список донатов автора — одним значением. Раньше список собирался
+   перебором ключей (list), а перебор на бесплатном KV — тысяча в сутки на
+   всех: пятьсот запросов с чужими адресами, и лента донатов лежит до
+   полуночи. Одно чтение ключа таких ограничений почти не знает. */
+const iKey = (net, to) => 'donidx:' + net + ':' + to.toLowerCase();
+const INDEX_MAX = 500;
+async function readIndex(env, net, to){
+  const v = await env.TILL.get(iKey(net, to));
+  if (!v) return [];
+  try{ const a = JSON.parse(v); return Array.isArray(a) ? a : []; } catch(e){ return []; }
+}
+async function addToIndex(env, net, to, meta){
+  const list = await readIndex(env, net, to);
+  const h = String(meta.h).toLowerCase();
+  if (list.some(m => String(m.h).toLowerCase() === h)) return;
+  list.unshift(meta);
+  const cut = Date.now() - DONE_TTL * 1000;
+  await env.TILL.put(iKey(net, to), JSON.stringify(list.filter(m => m.ts >= cut).slice(0, INDEX_MAX)), { expirationTtl: DONE_TTL });
+}
+/* Сообщение на экран стрима — только за настоящие деньги: USDT или USDC и
+   не меньше 10 центов. Иначе любой выпустит свою пустую монету, «заплатит»
+   ею миллион единиц за копейки комиссии и выведет на чужой стрим что
+   угодно. */
+const DONATE_TOKENS = ['USDT', 'USDC'];
+const MIN_CENTS = 10;
 
 async function promote(env, cfg, net, to, entry){
   const sale = await paidSale(cfg, entry.h, to, entry.ts || Math.floor(Date.now() / 1000) - PENDING_TTL);
   if (!sale) return null;
   const tk = tokenOf(cfg, sale.token);
+  if (!tk || !DONATE_TOKENS.includes(tk.sym)) return null;
+  if (sale.amount / (10n ** BigInt(Math.max(0, tk.d - 2))) < BigInt(MIN_CENTS)) return null;
   const ts = Date.now();
   const meta = { h: entry.h, n: entry.n, m: entry.m, ts,
                  a: sale.amount.toString(), t: sale.token.toLowerCase(), p: sale.buyer.toLowerCase(),
                  s: tk ? tk.sym : '', d: tk ? tk.d : 18 };
-  await env.TILL.put(dKey(net, to, ts, entry.h), JSON.stringify(meta), { expirationTtl: DONE_TTL, metadata: meta });
   /* И под номером счёта — чтобы экран стрима находил донат одним чтением,
      без перебора списка (перебор на бесплатном тарифе — тысяча в сутки на
      всех, а экран спрашивает часто). */
   await env.TILL.put(hKey(entry.h), JSON.stringify(Object.assign({ to: to.toLowerCase(), net }, meta)), { expirationTtl: DONE_TTL });
+  await addToIndex(env, net, to, meta);
   await env.TILL.delete(pKey(net, to, entry.h));
   return meta;
 }
@@ -336,7 +359,11 @@ async function onPost({ request, env }){
   if (!b || typeof b !== 'object') return json({ error: 'bad json' }, 400);
 
   const net = b.net === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
-  if (b.action === 'profile') return saveProfile(env, net, b);
+  if (b.action === 'profile'){
+    if (await overLimit(request, env, 'donprof', 10, 600)) return tooMany();
+    return saveProfile(env, net, b);
+  }
+  if (await overLimit(request, env, 'donpost', 20, 600)) return tooMany();
   const to = String(b.to || ''), h = String(b.h || '');
   const nick = b.nick === undefined ? '' : b.nick, msg = b.msg === undefined ? '' : b.msg;
   if (!okAddr(to)) return json({ error: 'bad address' }, 400);
@@ -411,43 +438,28 @@ async function onGet({ request, env }){
   if (url.searchParams.get('stats') === '1'){
     const since = Date.now() - 30 * 86400 * 1000;
     const hours = {}, seenS = new Set();
-    let cursor = undefined, count = 0;
-    for (let page = 0; page < 5; page++){
-      const res = await env.TILL.list({ prefix: 'don:' + net + ':' + to.toLowerCase() + ':', limit: 1000, cursor });
-      let stop = false;
-      for (const k of (res.keys || [])){
-        const m = k.metadata;
-        if (!m) continue;
-        if (m.ts < since){ stop = true; break; }            // ключи идут от новых к старым
-        const hh = String(m.h).toLowerCase();
-        if (seenS.has(hh)) continue;
-        seenS.add(hh);
-        const c = toCents(m);
-        if (c === null) continue;
-        const hr = Math.floor(m.ts / 3600000);
-        hours[hr] = (hours[hr] || 0) + c;
-        count++;
-      }
-      if (stop || res.list_complete || !res.cursor) break;
-      cursor = res.cursor;
+    let count = 0;
+    for (const m of await readIndex(env, net, to)){
+      if (!m || m.ts < since) continue;
+      const hh = String(m.h).toLowerCase();
+      if (seenS.has(hh)) continue;
+      seenS.add(hh);
+      const c = toCents(m);
+      if (c === null) continue;
+      const hr = Math.floor(m.ts / 3600000);
+      hours[hr] = (hours[hr] || 0) + c;
+      count++;
     }
     return json({ stats: { hours, count } });
   }
 
-  /* Сначала — ожидания: вдруг их уже оплатили. */
-  try{
-    const pend = await env.TILL.list({ prefix: 'donp:' + net + ':' + to.toLowerCase() + ':', limit: CHECK_PER_READ });
-    for (const k of (pend.keys || [])){
-      const e = k.metadata || JSON.parse(await env.TILL.get(k.name) || 'null');
-      if (e && okHash(e.h)) { try{ await promote(env, cfg, net, to, e); } catch(err){} }
-    }
-  } catch(e){ /* узел или хранилище молчит — отдадим то, что уже подтверждено */ }
-
+  /* Ожидания здесь больше не перебираем: их подтверждают таймер API (раз в
+     минуту по журналу контракта), страница оплаты сразу после «Оплачено» и
+     экран стрима. */
   const lim = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
-  const done = await env.TILL.list({ prefix: 'don:' + net + ':' + to.toLowerCase() + ':', limit: lim });
   const items = [], seenH = new Set();
-  for (const k of (done.keys || [])){
-    const m = k.metadata || JSON.parse(await env.TILL.get(k.name) || 'null');
+  for (const m of await readIndex(env, net, to)){
+    if (items.length >= lim) break;
     if (!m) continue;
     /* Один донат могли подтвердить два запроса разом (экран стрима и
        страница оплаты) — в списке он всё равно один. */
@@ -475,3 +487,35 @@ export const onRequestOptions = ctx => cors(ctx.request, new Response(null, { st
   'access-control-allow-headers': 'content-type',
   'access-control-max-age': '600'
 } }));
+
+/* Один раз после выкладки: перенести донаты, записанные до списка одним
+   значением (по ключу на донат), в списки авторов. Зовёт таймер API; после
+   успеха ставит отметку и больше не перебирает ничего. */
+export async function migrateDonIndex(env){
+  if (!env || !env.TILL) return null;
+  if (await env.TILL.get('donidx:migrated')) return null;
+  const groups = {};
+  let cursor, pages = 0;
+  do{
+    const res = await env.TILL.list({ prefix: 'don:', limit: 1000, cursor });
+    for (const k of (res.keys || [])){
+      const m = k.metadata; if (!m || !m.h) continue;
+      const p = k.name.split(':');                     // don:net:to:rts:h
+      if (p.length < 5 || !NETS[p[1]] || !okAddr(p[2])) continue;
+      (groups[p[1] + ':' + p[2]] = groups[p[1] + ':' + p[2]] || []).push(m);
+    }
+    cursor = res.list_complete ? null : res.cursor;
+  } while (cursor && ++pages < 20);
+  let n = 0;
+  for (const g of Object.keys(groups)){
+    const [net, to] = g.split(':');
+    const have = await readIndex(env, net, to);
+    const seen = new Set(have.map(m => String(m.h).toLowerCase()));
+    const all = have.concat(groups[g].filter(m => !seen.has(String(m.h).toLowerCase())));
+    all.sort((a, b) => b.ts - a.ts);
+    await env.TILL.put(iKey(net, to), JSON.stringify(all.slice(0, INDEX_MAX)), { expirationTtl: DONE_TTL });
+    n++;
+  }
+  await env.TILL.put('donidx:migrated', String(Date.now()));
+  return { authors: n };
+}

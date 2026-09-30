@@ -230,6 +230,9 @@ async function poll(){
            показываем первым. */
         order = order.then(() => lookup(h, 8)).then(item => {
           if (!item) return;
+          /* Только настоящие доллары: USDT и USDC. Сервер и так не отдаёт
+             другое, но экран на стриме — последнее место, где это ловить. */
+          if (item.cur !== 'USDT' && item.cur !== 'USDC') return;
           if (Number(item.amount) < MIN) return;
           enqueue(item);
         }).catch(() => {});

@@ -1,0 +1,143 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tavarov Pay 1.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: tavarov-pay\n"
+
+msgid "Settings"
+msgstr ""
+
+msgid "Tavarov Pay needs WooCommerce to be installed and active."
+msgstr ""
+
+msgid "Tavarov Pay API key is missing or malformed."
+msgstr ""
+
+msgid "USDT or USDC (crypto)"
+msgstr ""
+
+msgid "Tavarov Pay (USDT / USDC)"
+msgstr ""
+
+msgid "Accept USDT and USDC on BNB Chain. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment."
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Accept USDT / USDC with Tavarov Pay"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "What the customer sees at checkout."
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Shown under the title at checkout."
+msgstr ""
+
+msgid "Pay from any crypto wallet: MetaMask, Trust Wallet, NoN Wallet and others. USDT or USDC on BNB Chain."
+msgstr ""
+
+msgid "API key"
+msgstr ""
+
+msgid "Get it in the developer cabinet at wallet.tavarov.com/dev (sign in with the wallet that should receive the money). Keys starting with tp_test_ work on the BNB test network with test dollars."
+msgstr ""
+
+msgid "Webhook secret"
+msgstr ""
+
+msgid "Optional but recommended. In the cabinet, set the webhook URL shown above and paste the whsec_… secret here: payments are then confirmed within seconds."
+msgstr ""
+
+msgid "Charge in"
+msgstr ""
+
+msgid "Invoice lifetime, minutes"
+msgstr ""
+
+msgid "Debug log"
+msgstr ""
+
+msgid "Write events to WooCommerce → Status → Logs (source: tavarov-pay)"
+msgstr ""
+
+msgid "This does not look like a Tavarov Pay API key (tp_live_… or tp_test_…)."
+msgstr ""
+
+msgid "The webhook secret starts with whsec_ — copy it from the cabinet as is."
+msgstr ""
+
+msgid "Webhook URL for the cabinet:"
+msgstr ""
+
+msgid "1. Open wallet.tavarov.com/dev and sign in with your wallet. 2. Create a key and paste it below. 3. Set the webhook URL above and paste the secret below."
+msgstr ""
+
+msgid "Your store currency is %s. Tavarov Pay charges in US dollar stablecoins, so it is offered at checkout only when the store currency is USD."
+msgstr ""
+
+msgid "Test mode: a tp_test_ key is set. Payments use test dollars on the BNB test network — switch to a tp_live_ key before selling."
+msgstr ""
+
+msgid "Could not start the crypto payment right now. Please try again in a minute or choose another payment method."
+msgstr ""
+
+msgid "Tavarov Pay invoice created: %1$s %2$s, invoice %3$s %4$s"
+msgstr ""
+
+msgid "(test network)"
+msgstr ""
+
+msgid "Order #%s"
+msgstr ""
+
+msgid "Tavarov Pay reports the invoice as paid, but its amount or currency does not match this order. The order was NOT marked paid — please check it manually."
+msgstr ""
+
+msgid "Paid with Tavarov Pay: %1$s %2$s from %3$s. Transaction: %4$s %5$s"
+msgstr ""
+
+msgid "(TEST network — no real money)"
+msgstr ""
+
+msgid "Tavarov Pay: the customer paid less than the invoice amount. Check the payment and contact the customer."
+msgstr ""
+
+msgid "Tavarov Pay: the customer paid in a different currency than the invoice. Check the payment and contact the customer."
+msgstr ""
+
+msgid "Tavarov Pay: the payment for this invoice was refunded to the customer."
+msgstr ""
+
+msgid "Tavarov Pay: the invoice expired unpaid. If the customer pays the order again, a new invoice is created."
+msgstr ""
+
+msgid "Payment received. Thank you!"
+msgstr ""
+
+msgid "We received a payment that does not match the order. The shop will contact you."
+msgstr ""
+
+msgid "We have not seen the payment yet. If you have just paid, it usually shows up within a minute — refresh this page."
+msgstr ""
+
+msgid "Open the payment page"
+msgstr ""
+
+msgid "Check Tavarov Pay payment"
+msgstr ""
+
+msgid "Tavarov Pay: could not reach the API, try again later."
+msgstr ""
+
+msgid "Tavarov Pay: no payment for this order yet."
+msgstr ""
+
