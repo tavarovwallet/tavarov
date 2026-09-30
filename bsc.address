@@ -26,7 +26,7 @@ Explorer: https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9
 Verification: Verified on BscScan
 Source: token/TavarovCharges.sol
 
-### TavarovToken - TVR loyalty points (no sale, no market)
+### TavarovToken - TVR loyalty points (no sale, no market; team's 60% burned to 0x...dEaD on 30 Sep 2026, the rest is the cashback pool in TavarovPayV3)
 Address: 0x8Baa77344Fc122967902651D0C3193cdF4c48503
 Explorer: https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503
 Verification: Verified on BscScan

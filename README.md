@@ -27,8 +27,10 @@ minutes — better to hear it from us.
   gone through the mainnet contract are our own test ones. Everything we say
   about speed and convenience is our expectation, not someone else's experience.
 * **TVR is loyalty points, not an investment.** They have no price, they trade
-  on no exchange, and we are not going to arrange one. More than half the supply
-  sits on a single wallet — ours. There is nothing to spend them on yet: the
+  on no exchange, and we are not going to arrange one. On 30 September 2026 we
+  burned our own 60% of the supply (60,000,000 TVR sent to
+  `0x000000000000000000000000000000000000dEaD`). The rest, about 40%, sits in the
+  payment contract's cashback pool; the team holds none. There is nothing to spend them on yet: the
   name shop is written but deployed nowhere. We are not raising money through
   a token.
 * **One wallet owns the contracts.** It can change the fee (never above 2%, that
