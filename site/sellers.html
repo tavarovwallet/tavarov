@@ -223,6 +223,7 @@ footer p{margin:0 0 10px}
         <div class="step"><div class="n">4</div><p data-t="s4"><b>Вы видите оплату.</b> Страница счёта и журнал счетов показывают «Оплачено», как только сеть подтвердит платёж.</p></div>
       </div>
       <p class="note" style="max-width:62ch" data-t="s_note">Продаёте через сайт? Подключите <b><a href="https://wallet.tavarov.com/dev">Tavarov Pay API</a></b>: счёт одним запросом, вебхук об оплате, ключ — в кабинете, вход кошельком. Товар выдавайте по вебхуку, а не по словам браузера покупателя.</p>
+      <p class="note" style="max-width:62ch" data-t="ref_note">Знаете другого продавца? Пригласите его по своей ссылке из приложения (вкладка «Кешбэк») — 20% нашей комиссии с его продаж будут ваши 12 месяцев. Платит сам контракт, сразу при каждой продаже.</p>
     </div>
   </section>
 
@@ -257,6 +258,7 @@ footer p{margin:0 0 10px}
    берём из разметки — так он не может разойтись с тем, что в исходнике. */
 const T = {
   en: {
+    ref_note:"Know another seller? Invite them with your link from the app (Cashback tab) and 20% of our fee on their sales is yours for 12 months. The contract pays you itself, on every sale.",
     back:'← Main page',
     h1:'Your processor can freeze&nbsp;you. We cannot.',
     lead:'Take payment in USDT for keys, accounts, licences, subscriptions — anything digital. The money goes straight to your wallet; we never hold it. Tavarov Pay keeps 1% of each purchase.',
@@ -290,6 +292,7 @@ const T = {
     f4:'NoN Wallet is a non-custodial wallet: we do not keep your keys and have no access to your money. © 2026 Tavarov'
   },
   es: {
+    ref_note:"¿Conoce a otro vendedor? Invítelo con su enlace de la app (pestaña Cashback) y el 20 % de nuestra comisión sobre sus ventas será suyo durante 12 meses. Paga el propio contrato, en cada venta.",
     back:'← Página principal',
     h1:'Su procesador puede congelarle. Nosotros no.',
     lead:'Cobre en USDT por claves, cuentas, licencias, suscripciones: por todo lo digital. El dinero va directo a su monedero; nosotros no lo retenemos. Tavarov Pay se queda con el 1% de cada compra.',
@@ -323,6 +326,7 @@ const T = {
     f4:'NoN Wallet es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. © 2026 Tavarov'
   },
   tr: {
+    ref_note:"Başka bir satıcı tanıyor musunuz? Uygulamadaki bağlantınızla davet edin (Nakit iade sekmesi); onun satışlarından aldığımız komisyonun %20’si 12 ay boyunca sizin. Her satışta ödemeyi sözleşme kendisi yapar.",
     back:'← Ana sayfa',
     h1:'Ödeme kuruluşunuz sizi dondurabilir. Biz donduramayız.',
     lead:'Anahtarlar, hesaplar, lisanslar, abonelikler — dijital olan her şey için USDT ile ödeme alın. Para doğrudan cüzdanınıza gider; biz tutmayız. Tavarov Pay her alışverişten %1 alır.',
@@ -356,6 +360,7 @@ const T = {
     f4:'NoN Wallet saklamasız bir cüzdandır: anahtarlarınızı tutmayız ve paranıza erişimimiz yoktur. © 2026 Tavarov'
   },
   pt: {
+    ref_note:"Conhece outro vendedor? Convide pelo seu link no app (aba Cashback) e 20% da nossa taxa sobre as vendas dele serão seus por 12 meses. O próprio contrato paga, a cada venda.",
     back:'← Página inicial',
     h1:'Seu processador pode congelar você. Nós não.',
     lead:'Receba em USDT por chaves, contas, licenças, assinaturas — por tudo que é digital. O dinheiro vai direto para a sua carteira; nós não o seguramos. A Tavarov Pay fica com 1% de cada compra.',

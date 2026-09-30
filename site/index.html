@@ -142,6 +142,8 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
             border:1px solid var(--sep); background:#120B22;
             box-shadow:0 18px 50px rgba(40,20,80,.16)}
 .demo figcaption{margin-top:12px; text-align:center; color:var(--label-2); font-size:14.5px}
+.demo figure + figure{margin-top:44px}
+.demo .vtitle{margin:0 0 12px; font-size:20px; letter-spacing:-.01em; text-align:center}
 @media (max-width:640px){ .demo{margin-top:32px; padding:0 16px} .demo video{border-radius:14px} }
 /* Надстрочник над заголовком. Он объясняет имя, и это не украшение:
    слово non-custodial знают в крипте и почти нигде больше, а «ключи только
@@ -199,19 +201,42 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
     <p class="note" data-t="hnote">Открывается в браузере, ставится на домашний экран. iPhone и Android.</p>
   </div>
 
-  <!-- ================= ролик ================= -->
+  <!-- ================= ролики =================
+       Три ролика, у каждого подпись сверху: что показано. Сняты на двух
+       языках: русскому показываем русский, остальным — английский. Играют
+       без звука и только когда видны на экране — три видео разом на телефоне
+       съели бы трафик впустую. -->
   <div class="demo">
     <figure>
-      <video id="demoVideo" muted loop playsinline autoplay preload="metadata"
+      <h3 class="vtitle" data-t="v1h">Оплата по QR-коду</h3>
+      <video class="dv" data-v="demo" muted loop playsinline preload="metadata"
              poster="./video/demo-poster.jpg" width="1280" height="720"
              aria-label="Как выставить счёт и получить оплату">
-        <!-- Два формата нарочно: webm первым, mp4 запасным. Браузер берёт
-             первый, который умеет, — и ролик открывается везде, а не только
-             там, где есть проприетарный кодек. -->
-        <source id="demoWebm" src="./video/demo-en.webm" type="video/webm">
-        <source id="demoMp4"  src="./video/demo-en.mp4"  type="video/mp4">
+        <!-- Два формата нарочно: webm первым, mp4 запасным. -->
+        <source data-f="webm" src="./video/demo-en.webm" type="video/webm">
+        <source data-f="mp4"  src="./video/demo-en.mp4"  type="video/mp4">
       </video>
       <figcaption data-t="demo_c">Продавец выставил счёт, покупатель открыл ссылку, деньги пришли. Тридцать секунд, без монтажа.</figcaption>
+    </figure>
+    <figure>
+      <h3 class="vtitle" data-t="v2h">Донаты и оповещения в OBS</h3>
+      <video class="dv" data-v="obs" data-poster="1" muted loop playsinline preload="none"
+             poster="./video/obs-poster-en.jpg" width="1280" height="720"
+             aria-label="Донат со страницы автора и оповещение на стриме">
+        <source data-f="webm" src="./video/obs-en.webm" type="video/webm">
+        <source data-f="mp4"  src="./video/obs-en.mp4"  type="video/mp4">
+      </video>
+      <figcaption data-t="v2c">Зритель донатит с телефона — на стриме всплывает ник, сумма и сообщение.</figcaption>
+    </figure>
+    <figure>
+      <h3 class="vtitle" data-t="v3h">API для сайта</h3>
+      <video class="dv" data-v="api" data-poster="1" muted loop playsinline preload="none"
+             poster="./video/api-poster-en.jpg" width="1280" height="720"
+             aria-label="Счёт через API, оплата и вебхук">
+        <source data-f="webm" src="./video/api-en.webm" type="video/webm">
+        <source data-f="mp4"  src="./video/api-en.mp4"  type="video/mp4">
+      </video>
+      <figcaption data-t="v3c">Сайт выставил счёт одним запросом, покупатель оплатил — сайт получил вебхук с подписью.</figcaption>
     </figure>
   </div>
 
@@ -232,6 +257,10 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
     <figure class="shot" style="margin:0">
       <img src="./shots/ru/send.webp" data-shot="send" width="414" height="896" loading="lazy" alt="">
       <span data-t="sh4">Перевод по имени, а не по длинному адресу</span>
+    </figure>
+    <figure class="shot" style="margin:0">
+      <img src="./shots/ru/author.webp" data-shot="author" width="414" height="896" loading="lazy" alt="">
+      <span data-t="sh5">Режим «Автор»: донаты, итоги и цель сбора</span>
     </figure>
   </div>
 
@@ -274,8 +303,41 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
           <p data-t="s4t">Платёж приходит вам на кошелёк за секунды. Карты переводят через несколько дней, и до тех пор деньги не ваши.</p>
         </div>
       </div>
+      <div class="rows" style="margin-top:22px">
+        <div>
+          <h3 data-t="s5h">API для своего сайта</h3>
+          <p data-t="s5t">Счёт одним запросом, вебхук с подписью, когда оплатили. Ключ — в кабинете, вход кошельком, без заявок и договоров. Есть тестовый режим.</p>
+        </div>
+        <div>
+          <h3 data-t="s6h">Приглашайте других</h3>
+          <p data-t="s6t">Привели продавца или автора по своей ссылке — 20% нашей комиссии с его продаж ваши 12 месяцев. Платит контракт, сам и сразу.</p>
+        </div>
+      </div>
       <p style="margin-top:26px"><a href="https://wallet.tavarov.com/invoice" data-t="s_link">Выставить счёт прямо сейчас →</a></p>
+      <p style="margin-top:10px"><a href="https://wallet.tavarov.com/dev" data-t="s_api">Документация и кабинет API →</a></p>
       <p style="margin-top:10px"><a href="./sellers" data-t="s_digital">Продаёте цифровые товары? Возвратов через банк не бывает →</a></p>
+    </div>
+  </section>
+
+  <!-- ================= авторам ================= -->
+  <section id="creators">
+    <div class="wrap">
+      <h2 data-t="a_h">Авторам</h2>
+      <div class="rows">
+        <div>
+          <h3 data-t="a1h">Донаты по ссылке</h3>
+          <p data-t="a1t">Ссылка вида wallet.tavarov.com/d/ваше_имя — в описание канала. Зритель платит USDT или USDC с любого кошелька, вам сразу приходит 99%.</p>
+        </div>
+        <div>
+          <h3 data-t="a2h">Оповещения в OBS</h3>
+          <p data-t="a2t">Донат всплывает на стриме со звуком: ник, сумма и сообщение. Сообщение видно только после настоящей оплаты — бесплатно написать гадость нельзя.</p>
+        </div>
+        <div>
+          <h3 data-t="a3h">Цель сбора</h3>
+          <p data-t="a3t">«На новый микрофон — 300 $»: полоса прогресса на странице доната и на стриме. Собранное считается из блокчейна, накрутить нельзя.</p>
+        </div>
+      </div>
+      <p style="margin-top:22px; color:var(--label-2)" data-t="a_how">Включается в приложении: Настройки → Режим работы → «Автор». Там же ссылка, QR, приветствие для зрителей и итоги за день, неделю и месяц.</p>
     </div>
   </section>
 
@@ -323,7 +385,7 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
         <ul style="list-style:none; padding:0; margin:0">
           <li style="margin-bottom:10px"><span data-t="c1">Оплата и возвраты</span> — <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35"><code>0x1Fc6…Ca35</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c2">Токен TVR</span> — <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503"><code>0x8Baa…8503</code></a></li>
-          <li style="margin-bottom:10px"><span data-t="c3">Казна</span> — <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432"><code>0x73BB…f432</code></a></li>
+          <li style="margin-bottom:10px"><span data-t="c3">Кошелёк сервиса, сюда приходит 1%</span> — <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432"><code>0x73BB…f432</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c4">Счёт в сети</span> — <a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9"><code>0x82a9…aFF9</code></a></li>
           <li style="margin-bottom:10px"><span data-t="c5">Имена</span> — <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e"><code>0xd6E8…338e</code></a></li>
           <li><span data-t="c6">Имена, прошлая версия</span> — <a href="https://bscscan.com/address/0x45465B98a3Cc486740Be84fD3B1E21e0D3548360"><code>0x4546…8360</code></a></li>
@@ -351,6 +413,10 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
         <p data-t="a4">Баллы за покупки. Созревают долями за девяносто дней — так в контракте, ускорить не может никто. Цены у них нет, продать негде.</p>
       </details>
       <details>
+        <summary data-t="q7">Кому подходит приложение?</summary>
+        <p data-t="a7">В нём три режима: продавец — касса, счета и API для сайта; покупатель — оплата по коду и переводы; автор — донаты от зрителей. Кошелёк один и тот же, режим переключается в настройках в любой момент.</p>
+      </details>
+      <details>
         <summary data-t="q6">В какой сети всё это работает?</summary>
         <p data-t="a6">BNB Chain. Комиссия сети там доли цента, а USDT и USDC — те же самые, что на биржах. Контракты открыты, ссылки на них внизу страницы.</p>
       </details>
@@ -365,9 +431,10 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
       <a href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
       <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35" data-t="f_a3">Контракт оплаты</a>
       <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503" data-t="f_a4">Токен TVR</a>
-      <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432" data-t="f_a5">Казна</a>
+      <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432" data-t="f_a5">Кошелёк сервиса</a>
       <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Контракт имён</a>
       <a href="./sellers" data-t="f_a8">Цифровым магазинам</a>
+      <a href="https://wallet.tavarov.com/dev" data-t="f_a10">API для сайтов</a>
       <a href="https://github.com/tavarovwallet/tavarov" data-t="f_a9">Исходный код</a>
       <a href="https://t.me/tavarovpay" target="_blank" rel="noopener" data-t="f_tg">Новости в Telegram</a>
       <a href="https://x.com/TavarovWallet" target="_blank" rel="noopener" data-t="f_x">Мы в X</a>
@@ -386,12 +453,36 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
    разметки — так он не может разойтись с тем, что видно в исходнике. */
 const T = {
   en: {
+    c3:"Service wallet, the 1% fee lands here",
+    f_a5:"Service wallet",
+    s5h:"An API for your own website",
+    s5t:"An invoice in one request, a signed webhook when it is paid. Your key lives in a dashboard you sign into with your wallet: no applications, no contracts. Test mode included.",
+    s6h:"Invite others",
+    s6t:"Bring in a seller or a creator with your link and 20% of our fee on their sales is yours for 12 months. The contract pays you itself, instantly.",
+    s_api:"API docs and dashboard →",
+    a_h:"For creators",
+    a1h:"Tips by link",
+    a1t:"A link like wallet.tavarov.com/d/your_name for your channel description. Viewers pay in USDT or USDC from any wallet, and 99% reaches you instantly.",
+    a2h:"OBS alerts",
+    a2t:"A tip pops up on your stream with a sound: nickname, amount and message. Messages appear only after a real payment, so nobody can post abuse for free.",
+    a3h:"Fundraising goal",
+    a3t:"“New microphone — $300”: a progress bar on your tip page and on stream. The total is read from the blockchain, so it cannot be faked.",
+    a_how:"Turn it on in the app: Settings → Mode → Creator. You will also find your link, a QR code, a greeting for viewers and totals for the day, week and month.",
+    sh5:"Creator mode: tips, totals and a goal",
+    q7:"Who is the app for?",
+    a7:"It has three modes: seller — a till, invoices and an API for your site; buyer — pay by code and send money; creator — tips from viewers. The wallet is the same, and you can switch modes in settings at any time.",
+    f_a10:"API for websites",
+    v1h:"Paying by QR code",
+    v2h:"Tips and OBS alerts",
+    v2c:"A viewer tips from their phone, and the nickname, amount and message pop up on stream.",
+    v3h:"API for your website",
+    v3c:"The site creates an invoice with one request, the customer pays, and the site gets a signed webhook.",
     demo_c:'The seller made an invoice, the buyer opened the link, the money arrived. Thirty seconds, no edits.',
     c_h:'Contracts',
     c_intro:'Everything the app does lives in open contracts. You can read them in a block explorer instead of taking our word for it.',
     c1:'Payments and refunds',
     c2:'TVR token',
-    c3:'Treasury',
+    
     c4:'On-chain invoice',
     c5:'Names',
     c6:'Names, previous version',
@@ -450,17 +541,41 @@ const T = {
     q6:'Which network does this run on?',
     a6:'BNB Chain. The network fee there is a fraction of a cent, and USDT and USDC are the same ones you know from exchanges. The contracts are open — links at the bottom of this page.',
     f_a1:'Open the wallet', f_a2:'Create an invoice', f_a3:'Payment contract',
-    f_a4:'TVR token', f_a5:'Treasury', f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers', f_a9:'Source code', f_tg:'News on Telegram', f_x:'We are on X',
+    f_a4:'TVR token',  f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers', f_a9:'Source code', f_tg:'News on Telegram', f_x:'We are on X',
     disc:'NoN Wallet is a non-custodial wallet: we do not store your keys and have no access to your money. Nothing on this page is investment advice. Crypto changes in price and you can lose all of it. TVR is not for sale, has no price and promises no return. In a number of countries paying for goods and services with crypto is restricted or banned — check the rules where you live.'
   },
 
   es: {
+    c3:"Billetera del servicio, aquí llega el 1 %",
+    f_a5:"Billetera del servicio",
+    s5h:"API para su propio sitio",
+    s5t:"Una factura en una sola solicitud y un webhook firmado cuando se paga. La clave está en un panel al que entra con su billetera: sin solicitudes ni contratos. Incluye modo de prueba.",
+    s6h:"Invite a otros",
+    s6t:"Traiga a un vendedor o a un autor con su enlace y el 20 % de nuestra comisión sobre sus ventas es suyo durante 12 meses. Paga el contrato, solo y al instante.",
+    s_api:"Documentación y panel de la API →",
+    a_h:"Para autores",
+    a1h:"Donaciones por enlace",
+    a1t:"Un enlace como wallet.tavarov.com/d/tu_nombre para la descripción del canal. Tu audiencia paga en USDT o USDC desde cualquier billetera y te llega el 99 % al instante.",
+    a2h:"Alertas en OBS",
+    a2t:"La donación aparece en tu directo con sonido: apodo, cantidad y mensaje. El mensaje solo se ve tras un pago real, así que nadie puede insultar gratis.",
+    a3h:"Meta de recaudación",
+    a3t:"«Micrófono nuevo — 300 $»: una barra de progreso en tu página de donaciones y en el directo. Lo recaudado se lee de la blockchain, no se puede inflar.",
+    a_how:"Se activa en la app: Ajustes → Modo → Autor. Ahí están también tu enlace, el QR, un saludo para tu audiencia y los totales del día, la semana y el mes.",
+    sh5:"Modo Autor: donaciones, totales y meta",
+    q7:"¿Para quién es la app?",
+    a7:"Tiene tres modos: vendedor — caja, facturas y API para su sitio; comprador — pagar con código y enviar dinero; autor — donaciones de la audiencia. La billetera es la misma y el modo se cambia en ajustes cuando quiera.",
+    f_a10:"API para sitios web",
+    v1h:"Pago con código QR",
+    v2h:"Donaciones y alertas en OBS",
+    v2c:"Alguien dona desde el teléfono y en el directo aparecen el apodo, la cantidad y el mensaje.",
+    v3h:"API para su sitio",
+    v3c:"El sitio crea una factura con una solicitud, el cliente paga y el sitio recibe un webhook firmado.",
     demo_c:'El vendedor creó una factura, el comprador abrió el enlace, el dinero llegó. Treinta segundos, sin cortes.',
     c_h:'Contratos',
     c_intro:'Todo lo que hace la aplicación está en contratos abiertos. Puede leerlos en un explorador de bloques en vez de creernos.',
     c1:'Pagos y devoluciones',
     c2:'Token TVR',
-    c3:'Tesorería',
+    
     c4:'Factura en la cadena',
     c5:'Nombres',
     c6:'Nombres, versión anterior',
@@ -519,17 +634,41 @@ const T = {
     q6:'¿En qué red funciona todo esto?',
     a6:'BNB Chain. Allí la comisión de red es una fracción de céntimo, y USDT y USDC son los mismos que conoce de los exchanges. Los contratos están abiertos: los enlaces están al pie de la página.',
     f_a1:'Abrir el monedero', f_a2:'Crear una factura', f_a3:'Contrato de pago',
-    f_a4:'Token TVR', f_a5:'Tesorería', f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales', f_a9:'Código fuente', f_tg:'Novedades en Telegram', f_x:'Estamos en X',
+    f_a4:'Token TVR',  f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales', f_a9:'Código fuente', f_tg:'Novedades en Telegram', f_x:'Estamos en X',
     disc:'NoN Wallet es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. Nada en esta página es asesoramiento de inversión. Las criptomonedas cambian de precio y se puede perder todo. TVR no está a la venta, no tiene precio y no promete rendimiento. En varios países pagar bienes y servicios con criptomonedas está restringido o prohibido: consulte las reglas de su país.'
   },
 
   tr: {
+    c3:"Hizmet cüzdanı, %1 buraya gelir",
+    f_a5:"Hizmet cüzdanı",
+    s5h:"Kendi siteniz için API",
+    s5t:"Tek istekle fatura, ödendiğinde imzalı webhook. Anahtar, cüzdanınızla girdiğiniz panelde: başvuru yok, sözleşme yok. Test modu da var.",
+    s6h:"Başkalarını davet edin",
+    s6t:"Bağlantınızla bir satıcı veya üretici getirin; onun satışlarından aldığımız komisyonun %20’si 12 ay boyunca sizin. Ödemeyi sözleşme kendisi, anında yapar.",
+    s_api:"API belgeleri ve paneli →",
+    a_h:"Üreticilere",
+    a1h:"Bağlantıyla bağış",
+    a1t:"Kanal açıklaması için wallet.tavarov.com/d/adiniz gibi bir bağlantı. İzleyiciler herhangi bir cüzdandan USDT veya USDC ile öder, %99 anında size gelir.",
+    a2h:"OBS bildirimleri",
+    a2t:"Bağış yayında sesli bir kartla belirir: takma ad, tutar ve mesaj. Mesaj yalnızca gerçek ödemeden sonra görünür, kimse bedava hakaret yazamaz.",
+    a3h:"Bağış hedefi",
+    a3t:"«Yeni mikrofon — 300 $»: bağış sayfanızda ve yayında ilerleme çubuğu. Toplanan tutar blokzincirinden okunur, şişirilemez.",
+    a_how:"Uygulamada açılır: Ayarlar → Mod → Üretici. Bağlantınız, QR kodu, izleyicilere karşılama mesajı ve günlük, haftalık, aylık toplamlar da orada.",
+    sh5:"Üretici modu: bağışlar, toplamlar ve hedef",
+    q7:"Uygulama kimler için?",
+    a7:"Üç modu var: satıcı — kasa, faturalar ve siteniz için API; alıcı — kodla ödeme ve para gönderme; üretici — izleyicilerden bağış. Cüzdan aynıdır, mod ayarlardan istediğiniz zaman değişir.",
+    f_a10:"Web siteleri için API",
+    v1h:"QR kodla ödeme",
+    v2h:"Bağışlar ve OBS bildirimleri",
+    v2c:"İzleyici telefondan bağış yapar, yayında takma ad, tutar ve mesaj belirir.",
+    v3h:"Siteniz için API",
+    v3c:"Site tek istekle fatura oluşturur, müşteri öder, site imzalı webhook alır.",
     demo_c:'Satıcı fatura oluşturdu, alıcı bağlantıyı açtı, para geldi. Otuz saniye, kurgusuz.',
     c_h:'Sözleşmeler',
     c_intro:'Uygulamanın yaptığı her şey açık sözleşmelerde duruyor. Bize inanmak yerine blok gezgininde okuyabilirsiniz.',
     c1:'Ödemeler ve iadeler',
     c2:'TVR token',
-    c3:'Hazine',
+    
     c4:'Zincirdeki fatura',
     c5:'İsimler',
     c6:'İsimler, önceki sürüm',
@@ -588,17 +727,41 @@ const T = {
     q6:'Bütün bunlar hangi ağda çalışıyor?',
     a6:'BNB Chain. Oradaki ağ ücreti bir sentin küçük bir kısmı, USDT ve USDC ise borsalardan bildiğiniz aynı paralar. Sözleşmeler açık — bağlantılar sayfanın altında.',
     f_a1:'Cüzdanı aç', f_a2:'Fatura oluştur', f_a3:'Ödeme sözleşmesi',
-    f_a4:'TVR token', f_a5:'Hazine', f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için', f_a9:'Kaynak kod', f_tg:'Telegram\'da haberler', f_x:'X\'teyiz',
+    f_a4:'TVR token',  f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için', f_a9:'Kaynak kod', f_tg:'Telegram\'da haberler', f_x:'X\'teyiz',
     disc:'NoN Wallet saklamasız (non-custodial) bir cüzdandır: anahtarlarınızı saklamayız ve paranıza erişimimiz yoktur. Bu sayfadaki hiçbir şey yatırım tavsiyesi değildir. Kripto paraların fiyatı değişir ve tamamını kaybedebilirsiniz. TVR satılık değildir, fiyatı yoktur ve getiri vaat etmez. Bazı ülkelerde mal ve hizmet için kripto ile ödeme kısıtlı ya da yasaktır — yaşadığınız yerin kurallarına bakın.'
   },
 
   pt: {
+    c3:"Carteira do serviço, aqui chega o 1%",
+    f_a5:"Carteira do serviço",
+    s5h:"API para o seu próprio site",
+    s5t:"Uma cobrança em uma requisição e um webhook assinado quando for paga. A chave fica num painel em que você entra com a carteira: sem cadastro nem contrato. Tem modo de teste.",
+    s6h:"Convide outros",
+    s6t:"Traga um vendedor ou um criador pelo seu link e 20% da nossa taxa sobre as vendas dele são seus por 12 meses. O contrato paga sozinho, na hora.",
+    s_api:"Documentação e painel da API →",
+    a_h:"Para criadores",
+    a1h:"Doações por link",
+    a1t:"Um link como wallet.tavarov.com/d/seu_nome para a descrição do canal. Os espectadores pagam em USDT ou USDC de qualquer carteira, e 99% chega na hora para você.",
+    a2h:"Alertas no OBS",
+    a2t:"A doação aparece na live com som: apelido, valor e mensagem. A mensagem só aparece depois de um pagamento real, então ninguém xinga de graça.",
+    a3h:"Meta de arrecadação",
+    a3t:"«Microfone novo — 300 $»: uma barra de progresso na sua página de doações e na live. O total vem da blockchain, não dá para inflar.",
+    a_how:"Ativa no app: Ajustes → Modo → Criador. Lá também ficam o seu link, o QR, uma mensagem para os espectadores e os totais do dia, da semana e do mês.",
+    sh5:"Modo Criador: doações, totais e meta",
+    q7:"Para quem é o app?",
+    a7:"Ele tem três modos: vendedor — caixa, cobranças e API para o seu site; comprador — pagar por código e enviar dinheiro; criador — doações dos espectadores. A carteira é a mesma, e o modo muda nas configurações quando quiser.",
+    f_a10:"API para sites",
+    v1h:"Pagamento por QR code",
+    v2h:"Doações e alertas no OBS",
+    v2c:"O espectador doa pelo celular, e na live aparecem o apelido, o valor e a mensagem.",
+    v3h:"API para o seu site",
+    v3c:"O site cria uma cobrança com uma requisição, o cliente paga e o site recebe um webhook assinado.",
     demo_c:'O vendedor criou a fatura, o comprador abriu o link, o dinheiro chegou. Trinta segundos, sem cortes.',
     c_h:'Contratos',
     c_intro:'Tudo o que o aplicativo faz está em contratos abertos. Você pode lê-los num explorador de blocos em vez de acreditar em nós.',
     c1:'Pagamentos e estornos',
     c2:'Token TVR',
-    c3:'Tesouro',
+    
     c4:'Fatura na rede',
     c5:'Nomes',
     c6:'Nomes, versão anterior',
@@ -657,7 +820,7 @@ const T = {
     q6:'Em que rede tudo isso funciona?',
     a6:'BNB Chain. A taxa de rede lá é uma fração de centavo, e USDT e USDC são os mesmos que você conhece das corretoras. Os contratos estão abertos — os links estão no rodapé.',
     f_a1:'Abrir a carteira', f_a2:'Criar uma cobrança', f_a3:'Contrato de pagamento',
-    f_a4:'Token TVR', f_a5:'Tesouro', f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais', f_a9:'Código-fonte', f_tg:'Novidades no Telegram', f_x:'Estamos no X',
+    f_a4:'Token TVR',  f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais', f_a9:'Código-fonte', f_tg:'Novidades no Telegram', f_x:'Estamos no X',
     disc:'NoN Wallet é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. Nada nesta página é recomendação de investimento. As criptomoedas mudam de preço e é possível perder tudo. TVR não está à venda, não tem preço e não promete rendimento. Em vários países pagar bens e serviços com cripto é restrito ou proibido — verifique as regras do seu país.'
   }
 };
@@ -697,20 +860,31 @@ function apply(code){
      адресе, и её хранилище про наш выбор ничего не знает. */
   /* Ролик снят на двух языках. Русскому показываем русский, всем остальным —
      английский: подписи в кадре читать должны, а не угадывать. */
-  const v  = document.getElementById('demoVideo');
-  const vw = document.getElementById('demoWebm'), vm = document.getElementById('demoMp4');
-  if (v && vw && vm){
+  document.querySelectorAll('video.dv').forEach(v => {
     const one = (code === 'ru' ? 'ru' : 'en');
-    if (!vw.getAttribute('src').includes('-' + one + '.')){
-      vw.src = './video/demo-' + one + '.webm';
-      vm.src = './video/demo-' + one + '.mp4';
-      v.load(); v.play().catch(()=>{});
-    }
-  }
+    const w = v.querySelector('source[data-f="webm"]'), m = v.querySelector('source[data-f="mp4"]');
+    if (!w || !m || w.getAttribute('src').includes('-' + one + '.')) return;
+    w.src = './video/' + v.dataset.v + '-' + one + '.webm';
+    m.src = './video/' + v.dataset.v + '-' + one + '.mp4';
+    if (v.dataset.poster) v.poster = './video/' + v.dataset.v + '-poster-' + one + '.jpg';
+    const was = !v.paused;
+    v.load();
+    if (was) v.play().catch(() => {});
+  });
   document.querySelectorAll('a[href*="wallet.tavarov.com/invoice"]').forEach(a => {
     a.href = 'https://wallet.tavarov.com/invoice?lang=' + code;
   });
 }
+
+/* Ролики играют, только пока их видно. */
+(() => {
+  const vids = document.querySelectorAll('video.dv');
+  if (!('IntersectionObserver' in window)){ vids.forEach(v => v.play().catch(() => {})); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting){ e.target.play().catch(() => {}); } else { e.target.pause(); }
+  }), { threshold: 0.35 });
+  vids.forEach(v => io.observe(v));
+})();
 
 const box = document.getElementById('langs');
 Object.keys(NAMES).forEach(code => {

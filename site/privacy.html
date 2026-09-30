@@ -88,10 +88,10 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 
 <main class="wrap">
   <h1 data-t="h1">Политика конфиденциальности</h1>
-  <div class="date"><span data-t="upd">Обновлено</span>: 23.09.2026 · Tavarov Pay · NoN Wallet</div>
+  <div class="date"><span data-t="upd">Обновлено</span>: 24.09.2026 · Tavarov Pay · NoN Wallet</div>
 
   <div class="box">
-    <p data-t="short"><b>Коротко.</b> Приложение не собирает о вас ничего: ни учётных записей, ни счётчиков, ни рекламы. Ключи от кошелька создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем. На этой странице-витрине стоит счётчик посещений — он считает просмотры страниц, не ставит cookie и не следит за вами на других сайтах. В самом кошельке, кассе и на странице оплаты его нет.</p>
+    <p data-t="short"><b>Коротко.</b> Кошелёк не собирает о вас ничего: ни учётных записей, ни счётчиков, ни рекламы. Ключи создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем. Единственное место с «входом» — кабинет разработчика для магазинов, и вход там — подпись кошелька, без почты и пароля. На этой странице-витрине стоит счётчик посещений — он считает просмотры, не ставит cookie и не следит за вами на других сайтах. В самом кошельке, кассе и на странице оплаты его нет.</p>
   </div>
 
   <h2 data-t="h_till">Что у нас лежит, первое: наклейка на кассе</h2>
@@ -108,7 +108,10 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   лежит и суммы.</p>
 
   <h2 data-t="h_don">Что у нас лежит, второе: сообщения к донатам</h2>
-  <p data-t="p_don">На странице донатов (wallet.tavarov.com/d/имя) зритель может написать автору ник и короткое сообщение. Оно лежит у нас под номером счёта и показывается автору только после того, как по этому номеру в блокчейне пришла оплата именно ему; неоплаченные сообщения стираются через два часа, оплаченные — через 180 дней. Вместе с сообщением хранятся сумма, валюта и адрес плательщика — те же, что и так публично видны в блокчейне. Больше ничего о зрителе мы не храним. Сообщение не секретное: автор видит его, а позже может показать на стриме.</p>
+  <p data-t="p_don">На странице донатов (wallet.tavarov.com/d/имя) зритель может написать автору ник и короткое сообщение. Оно лежит у нас под номером счёта и показывается автору только после того, как по этому номеру в блокчейне пришла оплата именно ему; неоплаченные сообщения стираются через два часа, оплаченные — через 180 дней. Вместе с сообщением хранятся сумма, валюта и адрес плательщика — те же, что и так публично видны в блокчейне. Больше ничего о зрителе мы не храним. Сообщение не секретное: автор видит его, а позже может показать на стриме. Ещё автор сам может положить на свою страницу приветствие и цель сбора — они лежат у нас, пока он их не поменяет, и видны всем, кто откроет страницу.</p>
+
+  <h2 data-t="h_api">Что у нас лежит, третье: магазины на API</h2>
+  <p data-t="p_api">Магазин, который подключает оплату к своему сайту, входит в кабинет разработчика подписью своего кошелька. У нас лежат: адрес его кошелька; отпечатки ключей API (сам ключ мы не храним — его видит только магазин, один раз); адрес для уведомлений и секрет, которым мы их подписываем; счета, которые магазин выставил через API, — сумма, валюта, номер заказа, описание, его собственные пометки и, после оплаты, адрес плательщика из блокчейна. Счета хранятся 90 дней, вход в кабинет — 12 часов. О покупателе сверх адреса плательщика, который и так публичен, мы ничего не знаем.</p>
 
   <h2 data-t="h_no">Чего мы не собираем</h2>
   <p data-t="p_no">Мы не просим и не получаем: имя, почту, телефон, документы, местоположение, список контактов, рекламные идентификаторы. Регистрации нет вовсе — приложение начинает работать сразу.</p>
@@ -116,7 +119,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <h2 data-t="h_dev">Что хранится на вашем устройстве</h2>
   <ul>
     <li data-t="d1">Ключи кошелька и фраза из двенадцати слов — в зашифрованном виде, под вашим паролем.</li>
-    <li data-t="d2">Настройки: язык, роль, выбранная сеть, добавленные вами токены, адрес сайта для счетов.</li>
+    <li data-t="d2">Настройки: язык, режим работы, выбранная сеть, добавленные вами токены, адрес сайта для счетов, настройки оповещений для OBS.</li>
     <li data-t="d3">Журнал ваших операций — чтобы история открывалась мгновенно и работала без сети.</li>
   </ul>
   <p data-t="p_dev">Всё это лежит только на устройстве. На наши серверы не уходит и в облако не копируется. Удалите приложение — исчезнет вместе с ним, поэтому резервную копию стоит сделать заранее.</p>
@@ -126,7 +129,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <ul>
     <li data-t="n1"><b>Узлы BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com и подобные) — остатки, комиссии, отправка операций.</li>
     <li data-t="n2"><b>CoinGecko</b> — курсы монет, чтобы показать примерную сумму в долларах. Запрашиваются только названия монет, ваш адрес туда не уходит.</li>
-    <li data-t="n3"><b>Наш сайт</b> — сама страница приложения и страница оплаты по ссылке. Журналы веб-хостинга (Cloudflare) при этом видят обычные для интернета данные: IP, время, адрес страницы.</li>
+    <li data-t="n3"><b>Наш сайт</b> — сама страница приложения, страницы оплаты и донатов, кабинет разработчика. Журналы веб-хостинга (Cloudflare) при этом видят обычные для интернета данные: IP, время, адрес страницы.</li>
     <li data-t="n4"><b>BscScan</b> — только если вы сами нажмёте ссылку «посмотреть в обозревателе».</li>
     <li data-t="n5"><b>Приложения-кошельки</b> (MetaMask, Trust Wallet, OKX) — только если на странице оплаты вы сами выберете «открыть в приложении». Тогда ссылка на эту оплату — продавец, сумма и товар — проходит через их сервер ссылок (metamask.app.link, link.trustwallet.com, web3.okx.com), чтобы открыть страницу в их браузере.</li>
   </ul>
@@ -166,25 +169,27 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 <script>
 const T = {
   en: {
+    h_api:"What we keep, part three: shops using the API",
+    p_api:"A shop that connects payments to its website signs in to the developer dashboard by signing with its wallet. We keep: its wallet address; fingerprints of its API keys (not the key itself — only the shop sees it, once); its webhook address and the secret we sign webhooks with; the invoices it created through the API — amount, currency, order number, description, its own metadata and, once paid, the payer address from the blockchain. Invoices are kept for 90 days, a dashboard sign-in lasts 12 hours. Beyond the payer address, which is public anyway, we know nothing about the customer.",
     h1:'Privacy policy', upd:'Updated',
-    short:'<b>In short.</b> The app collects nothing about you: no accounts, no analytics, no advertising. The wallet keys are created on your device and stay there: we cannot see them and cannot obtain them. This marketing site does have a visit counter — it counts page views, sets no cookies and does not follow you across other sites. There is none of it in the wallet, the till or the payment page.',
+    short:"<b>In short.</b> The wallet collects nothing about you: no accounts, no analytics, no advertising. The keys are created on your device and stay there: we cannot see them and cannot obtain them. The only place with a “sign-in” is the developer dashboard for shops, and signing in there means signing with your wallet, with no email and no password. This marketing site does have a visit counter — it counts page views, sets no cookies and does not follow you across other sites. There is none of it in the wallet, the till or the payment page.",
     h_till:'What we keep, part one: the till sticker',
     p_till:'A seller may have a printed sticker on the counter. It carries no amount: the seller names the price on their own phone, and for ten minutes we hold it so the buyer can see it when they point a camera at the sticker. What is held is exactly this: the seller’s address, the till number, the amount, the currency, the item name, the order and invoice numbers, and the time. After ten minutes the record deletes itself.',
     p_till2:'Nothing about the buyer is kept: not a wallet address, not a device, not the payment itself — whether an invoice was paid we read from the blockchain. But to be honest about logs: while the buyer waits for the amount, their page asks our server every few seconds what the till is asking for, and that question contains the seller’s address and the till number. So the hosting logs (Cloudflare) keep an ordinary entry: such-and-such IP asked about such-and-such till at such-and-such time. The buyer’s name, wallet and amount are not in it. If a seller uses the on-chain charge instead of the sticker, we do not hold the amount either.',
     h_don:'What we keep, part two: messages attached to tips',
-    p_don:'On the tips page (wallet.tavarov.com/d/name) a viewer can leave the creator a nickname and a short message. We keep it under the invoice number and show it to the creator only after a payment to that very creator arrives on the blockchain under that number; unpaid messages are erased after two hours, paid ones after 180 days. Stored with the message are the amount, the currency and the payer address — the same things that are already public on the blockchain. Nothing else about the viewer is kept. The message is not private: the creator sees it and may later show it on stream.',
+    p_don:"On the tips page (wallet.tavarov.com/d/name) a viewer can leave the creator a nickname and a short message. We keep it under the invoice number and show it to the creator only after a payment to that very creator arrives on the blockchain under that number; unpaid messages are erased after two hours, paid ones after 180 days. Stored with the message are the amount, the currency and the payer address — the same things that are already public on the blockchain. Nothing else about the viewer is kept. The message is not private: the creator sees it and may later show it on stream. A creator can also put a greeting and a fundraising goal on their page — we keep them until the creator changes them, and anyone who opens the page can see them.",
     h_no:'What we do not collect',
     p_no:'We neither ask for nor receive: name, email, phone number, documents, location, contacts, advertising identifiers. There is no sign-up at all — the app simply starts working.',
     h_dev:'What is stored on your device',
     d1:'The wallet keys and the twelve-word phrase — encrypted, under your password.',
-    d2:'Settings: language, role, the chosen network, tokens you added yourself, the site address used for invoices.',
+    d2:"Settings: language, mode, the chosen network, tokens you added yourself, the site address used for invoices, your OBS alert settings.",
     d3:'A journal of your own operations — so that history opens instantly and works without a connection.',
     p_dev:'All of it lives on the device only. It is not sent to our servers and not copied to any cloud. Delete the app and it goes with it, which is why a backup is worth making in advance.',
     h_net:'Where requests go',
     p_net:'A wallet cannot work without asking the blockchain. These requests go straight from your device, bypassing us, and their recipients can see your IP address and what you asked about:',
     n1:'<b>BNB Chain nodes</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com and similar) — balances, fees, sending operations.',
     n2:'<b>CoinGecko</b> — coin rates, to show an approximate amount in dollars. Only coin names are requested; your address never goes there.',
-    n3:'<b>Our site</b> — the app page itself and the payment page behind a link. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.',
+    n3:"<b>Our site</b> — the app page itself, the payment and tip pages, the developer dashboard. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.",
     n4:'<b>BscScan</b> — only if you press "view in the explorer" yourself.',
     n5:'<b>Wallet apps</b> (MetaMask, Trust Wallet, OKX) — only if you choose “open in an app” on the payment page yourself. Then the link to this payment — seller, amount and item — goes through their link service (metamask.app.link, link.trustwallet.com, web3.okx.com) so the page opens in their browser.',
     p_net2:'None of these services receives your keys, phrase or password from us: we do not have them.',
@@ -205,25 +210,27 @@ const T = {
     f1:'About the app', f2:'Open the wallet'
   },
   es: {
+    h_api:"Qué guardamos, tercero: tiendas con la API",
+    p_api:"Una tienda que conecta los pagos a su sitio entra en el panel de desarrollador firmando con su billetera. Guardamos: la dirección de su billetera; las huellas de sus claves API (no la clave: solo la ve la tienda, una vez); la dirección para avisos y el secreto con el que los firmamos; las facturas que creó por la API: cantidad, moneda, número de pedido, descripción, sus propios metadatos y, tras el pago, la dirección de quien pagó según la blockchain. Las facturas se guardan 90 días; la sesión del panel dura 12 horas. Más allá de la dirección de pago, que ya es pública, no sabemos nada del cliente.",
     h1:'Política de privacidad', upd:'Actualizado',
-    short:'<b>En resumen.</b> La aplicación no recoge nada sobre usted: ni cuentas, ni analítica, ni publicidad. Las claves del monedero se crean en su dispositivo y allí se quedan: no podemos verlas ni obtenerlas. Este sitio de presentación sí tiene un contador de visitas: cuenta páginas vistas, no pone cookies y no le sigue por otros sitios. En el monedero, la caja y la página de pago no hay nada de eso.',
+    short:"<b>En resumen.</b> La billetera no recoge nada sobre usted: ni cuentas, ni analítica, ni publicidad. Las claves se crean en su dispositivo y se quedan allí: no podemos verlas ni obtenerlas. El único lugar con «inicio de sesión» es el panel de desarrollador para tiendas, y allí se entra firmando con la billetera, sin correo ni contraseña. Este sitio de presentación sí tiene un contador de visitas: cuenta páginas vistas, no pone cookies y no le sigue por otros sitios. En la billetera, la caja y la página de pago no hay nada de eso.",
     h_till:'Lo que guardamos, primero: la pegatina de la caja',
     p_till:'El vendedor puede tener una pegatina impresa en el mostrador. No lleva importe: el vendedor dice el precio desde su teléfono y durante diez minutos lo guardamos para que el comprador lo vea al apuntar la cámara. Se guarda exactamente esto: la dirección del vendedor, el número de caja, el importe, la moneda, el nombre del producto, los números de pedido y de factura, y la hora. A los diez minutos el registro se borra solo.',
     p_till2:'Del comprador no se guarda nada: ni la dirección del monedero, ni el dispositivo, ni el propio pago; si una factura está pagada lo leemos de la cadena de bloques. Pero sobre los registros, con franqueza: mientras el comprador espera el importe, su página pregunta a nuestro servidor cada pocos segundos qué pide la caja, y esa pregunta lleva la dirección del vendedor y el número de caja. Por eso en los registros del alojamiento (Cloudflare) queda una entrada corriente: tal IP preguntó por tal caja a tal hora. No contiene ni el nombre, ni el monedero, ni el importe del comprador. Si el vendedor usa la factura en la cadena en vez de la pegatina, tampoco guardamos el importe.',
     h_don:'Lo que guardamos, segundo: los mensajes de las donaciones',
-    p_don:'En la página de donaciones (wallet.tavarov.com/d/nombre) quien dona puede dejar al autor un apodo y un mensaje corto. Lo guardamos con el número de factura y se lo mostramos al autor solo cuando en la cadena de bloques llega un pago a ese mismo autor con ese número; los mensajes sin pagar se borran a las dos horas, los pagados a los 180 días. Junto al mensaje se guardan el importe, la moneda y la dirección de quien paga: lo mismo que ya es público en la cadena. Nada más sobre quien dona. El mensaje no es privado: el autor lo ve y puede mostrarlo en directo.',
+    p_don:"En la página de donaciones (wallet.tavarov.com/d/nombre) quien dona puede dejar al autor un apodo y un mensaje corto. Lo guardamos bajo el número de factura y se lo mostramos al autor solo cuando en la blockchain llega un pago a ese mismo autor con ese número; los mensajes no pagados se borran a las dos horas y los pagados, a los 180 días. Junto al mensaje se guardan la cantidad, la moneda y la dirección de quien paga, lo mismo que ya es público en la blockchain. No guardamos nada más sobre quien dona. El mensaje no es privado: el autor lo ve y puede mostrarlo en su directo. Además, el autor puede poner en su página un saludo y una meta de recaudación: los guardamos hasta que él los cambie y los ve cualquiera que abra la página.",
     h_no:'Lo que no recogemos',
     p_no:'Ni pedimos ni recibimos: nombre, correo, teléfono, documentos, ubicación, contactos, identificadores publicitarios. No hay registro alguno: la aplicación simplemente empieza a funcionar.',
     h_dev:'Qué se guarda en su dispositivo',
     d1:'Las claves del monedero y la frase de doce palabras, cifradas con su contraseña.',
-    d2:'Ajustes: idioma, rol, la red elegida, los tokens que usted añadió, la dirección del sitio para las cobranzas.',
+    d2:"Ajustes: idioma, modo, la red elegida, los tokens que añadió usted, la dirección del sitio para facturas y los ajustes de las alertas de OBS.",
     d3:'Un registro de sus propias operaciones, para que el historial se abra al instante y funcione sin conexión.',
     p_dev:'Todo eso vive solo en el dispositivo. No se envía a nuestros servidores ni se copia a ninguna nube. Si borra la aplicación, se va con ella: por eso conviene hacer una copia de seguridad con antelación.',
     h_net:'Adónde van las peticiones',
     p_net:'Un monedero no puede funcionar sin preguntar a la blockchain. Esas peticiones salen directamente de su dispositivo, sin pasar por nosotros, y quien las recibe ve su dirección IP y lo que preguntó:',
     n1:'<b>Nodos de BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com y similares): saldos, comisiones, envío de operaciones.',
     n2:'<b>CoinGecko</b>: cotizaciones, para mostrar un importe aproximado en dólares. Solo se piden nombres de monedas; su dirección no llega allí.',
-    n3:'<b>Nuestro sitio</b>: la propia página de la aplicación y la página de pago del enlace. Los registros del alojamiento web (Cloudflare) ven entonces lo que ve cualquier sitio: IP, hora, dirección de la página.',
+    n3:"<b>Nuestro sitio</b>: la página de la app, las páginas de pago y de donaciones, el panel de desarrollador. Los registros del hosting (Cloudflare) ven lo que ve cualquier sitio: IP, hora, dirección de la página.",
     n4:'<b>BscScan</b>: solo si usted mismo pulsa «ver en el explorador».',
     n5:'<b>Aplicaciones de monedero</b> (MetaMask, Trust Wallet, OKX): solo si usted mismo elige «abrir en una aplicación» en la página de pago. Entonces el enlace a ese pago —vendedor, importe y producto— pasa por su servicio de enlaces (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir la página en su navegador.',
     p_net2:'Ninguno de esos servicios recibe de nosotros sus claves, su frase ni su contraseña: no las tenemos.',
@@ -244,25 +251,27 @@ const T = {
     f1:'Sobre la aplicación', f2:'Abrir el monedero'
   },
   tr: {
+    h_api:"Bizde ne duruyor, üçüncüsü: API kullanan mağazalar",
+    p_api:"Ödemeyi kendi sitesine bağlayan mağaza, geliştirici paneline cüzdanıyla imzalayarak girer. Bizde duranlar: cüzdan adresi; API anahtarlarının parmak izleri (anahtarın kendisi değil — onu yalnızca mağaza, bir kez görür); bildirim adresi ve bildirimleri imzaladığımız gizli anahtar; mağazanın API ile oluşturduğu faturalar — tutar, para birimi, sipariş numarası, açıklama, kendi notları ve ödemeden sonra blokzincirden ödeyen adresi. Faturalar 90 gün saklanır, panel oturumu 12 saat sürer. Zaten herkese açık olan ödeyen adresi dışında müşteri hakkında hiçbir şey bilmeyiz.",
     h1:'Gizlilik politikası', upd:'Güncellendi',
-    short:'<b>Kısaca.</b> Uygulama sizinle ilgili hiçbir şey toplamaz: hesap yok, ölçümleme yok, reklam yok. Cüzdan anahtarları sizin cihazınızda oluşur ve orada kalır: onları ne görebiliriz ne de elde edebiliriz. Bu tanıtım sitesinde bir ziyaret sayacı var: sayfa görüntülemelerini sayar, çerez koymaz ve sizi başka sitelerde izlemez. Cüzdanda, kasada ve ödeme sayfasında böyle bir şey yok.',
+    short:"<b>Kısaca.</b> Cüzdan sizin hakkınızda hiçbir şey toplamaz: hesap yok, analiz yok, reklam yok. Anahtarlar cihazınızda oluşturulur ve orada kalır: onları göremeyiz ve alamayız. «Giriş» olan tek yer mağazalar için geliştirici panelidir; oraya e-posta ve şifre olmadan, cüzdanınızla imzalayarak girilir. Bu tanıtım sayfasında ziyaret sayacı var: sayfa görüntülemelerini sayar, çerez koymaz ve sizi başka sitelerde izlemez. Cüzdanda, kasada ve ödeme sayfasında bu yok.",
     h_till:'Bizde duranlar, birincisi: kasa etiketi',
     p_till:'Satıcının tezgâhında basılı bir etiket olabilir. İçinde tutar yoktur: satıcı fiyatı kendi telefonundan söyler ve müşteri kamerayı etikete doğrulttuğunda görebilsin diye o tutarı on dakika bizde tutarız. Tutulan tam olarak şudur: satıcının adresi, kasa numarası, tutar, para birimi, ürün adı, sipariş ve fatura numaraları ile saat. On dakika sonra kayıt kendiliğinden silinir.',
     p_till2:'Müşteriye dair hiçbir şey saklanmaz: ne cüzdan adresi, ne cihaz, ne de ödemenin kendisi — faturanın ödenip ödenmediğini blok zincirinden okuyoruz. Ama kayıtlar konusunda dürüst olalım: müşteri tutarı beklerken sayfası birkaç saniyede bir sunucumuza kasanın ne istediğini sorar ve bu soruda satıcının adresi ile kasa numarası vardır. Bu yüzden barındırma kayıtlarında (Cloudflare) sıradan bir kayıt kalır: şu IP şu kasayı şu saatte sordu. Müşterinin adı, cüzdanı ve tutarı bu kayıtta yoktur. Satıcı etiket yerine zincir üstü faturayı kullanıyorsa tutar da bizde durmaz.',
     h_don:'Bizde duranlar, ikincisi: bağış mesajları',
-    p_don:'Bağış sayfasında (wallet.tavarov.com/d/ad) izleyici üreticiye bir takma ad ve kısa bir mesaj bırakabilir. Mesajı fatura numarasıyla saklarız ve üreticiye yalnızca bu numarayla blokzincirde tam o üreticiye ödeme geldikten sonra gösteririz; ödenmemiş mesajlar iki saat sonra, ödenenler 180 gün sonra silinir. Mesajla birlikte tutar, para birimi ve ödeyenin adresi saklanır — bunlar zaten blokzincirde herkese açıktır. İzleyici hakkında başka hiçbir şey tutulmaz. Mesaj gizli değildir: üretici onu görür ve yayında gösterebilir.',
+    p_don:"Bağış sayfasında (wallet.tavarov.com/d/ad) izleyici üreticiye bir takma ad ve kısa bir mesaj bırakabilir. Onu fatura numarasıyla saklarız ve üreticiye yalnızca blokzincirde bu numarayla tam o üreticiye ödeme geldikten sonra gösteririz; ödenmeyen mesajlar iki saat sonra, ödenenler 180 gün sonra silinir. Mesajla birlikte tutar, para birimi ve ödeyen adresi saklanır — bunlar zaten blokzincirde herkese açıktır. İzleyici hakkında başka bir şey saklamayız. Mesaj gizli değildir: üretici onu görür ve daha sonra yayında gösterebilir. Üretici ayrıca sayfasına bir karşılama mesajı ve bağış hedefi koyabilir — üretici değiştirene kadar bizde durur ve sayfayı açan herkes görür.",
     h_no:'Toplamadıklarımız',
     p_no:'İsim, e-posta, telefon, belge, konum, rehber, reklam kimliği istemiyoruz ve almıyoruz. Kayıt diye bir şey yok — uygulama doğrudan çalışmaya başlar.',
     h_dev:'Cihazınızda ne saklanır',
     d1:'Cüzdan anahtarları ve on iki kelimelik ifade — parolanızla şifrelenmiş hâlde.',
-    d2:'Ayarlar: dil, rol, seçilen ağ, kendi eklediğiniz tokenlar, faturalar için site adresi.',
+    d2:"Ayarlar: dil, mod, seçilen ağ, kendi eklediğiniz tokenlar, faturalar için site adresi, OBS bildirim ayarları.",
     d3:'Kendi işlemlerinizin kaydı — geçmiş anında açılsın ve bağlantı olmadan da çalışsın diye.',
     p_dev:'Bunların hepsi yalnızca cihazda durur. Sunucularımıza gitmez, buluta kopyalanmaz. Uygulamayı silerseniz onunla birlikte gider; bu yüzden yedeği önceden almakta fayda var.',
     h_net:'İstekler nereye gider',
     p_net:'Bir cüzdan blok zincirine sormadan çalışamaz. Bu istekler doğrudan cihazınızdan gider, bizden geçmez; alan taraf IP adresinizi ve ne sorduğunuzu görür:',
     n1:'<b>BNB Chain düğümleri</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com ve benzerleri) — bakiyeler, ücretler, işlem gönderimi.',
     n2:'<b>CoinGecko</b> — dolar karşılığını yaklaşık göstermek için kur bilgisi. Yalnızca para birimi adları sorulur; adresiniz oraya gitmez.',
-    n3:'<b>Bizim sitemiz</b> — uygulamanın kendi sayfası ve bağlantıdaki ödeme sayfası. Web barındırmanın (Cloudflare) günlükleri her sitenin gördüğünü görür: IP, saat, sayfa adresi.',
+    n3:"<b>Sitemiz</b> — uygulama sayfası, ödeme ve bağış sayfaları, geliştirici paneli. Barındırma günlükleri (Cloudflare) her sitenin gördüğünü görür: IP, zaman, sayfa adresi.",
     n4:'<b>BscScan</b> — yalnızca «gezginde görüntüle» bağlantısına siz basarsanız.',
     n5:'<b>Cüzdan uygulamaları</b> (MetaMask, Trust Wallet, OKX) — yalnızca ödeme sayfasında «bir uygulamada aç» seçeneğini kendiniz seçerseniz. O zaman bu ödemenin bağlantısı — satıcı, tutar ve ürün — sayfayı onların tarayıcısında açmak için bağlantı sunucularından (metamask.app.link, link.trustwallet.com, web3.okx.com) geçer.',
     p_net2:'Bu hizmetlerin hiçbiri bizden anahtarlarınızı, ifadenizi ya da parolanızı almaz: bizde yoklar.',
@@ -283,25 +292,27 @@ const T = {
     f1:'Uygulama hakkında', f2:'Cüzdanı aç'
   },
   pt: {
+    h_api:"O que guardamos, terceiro: lojas com a API",
+    p_api:"Uma loja que conecta pagamentos ao seu site entra no painel de desenvolvedor assinando com a carteira. Guardamos: o endereço da carteira; as impressões digitais das chaves de API (não a chave — só a loja a vê, uma vez); o endereço para avisos e o segredo com que os assinamos; as cobranças que a loja criou pela API — valor, moeda, número do pedido, descrição, os próprios metadados e, depois do pagamento, o endereço de quem pagou segundo a blockchain. As cobranças ficam 90 dias; a sessão do painel dura 12 horas. Além do endereço de quem pagou, que já é público, não sabemos nada sobre o cliente.",
     h1:'Política de privacidade', upd:'Atualizado',
-    short:'<b>Em resumo.</b> O aplicativo não coleta nada sobre você: nem contas, nem análises, nem publicidade. As chaves da carteira são criadas no seu aparelho e ficam nele: não podemos vê-las nem obtê-las. Este site de apresentação tem, sim, um contador de visitas: conta visualizações de páginas, não usa cookies e não o segue por outros sites. Na carteira, no caixa e na página de pagamento não há nada disso.',
+    short:"<b>Resumindo.</b> A carteira não coleta nada sobre você: nem contas, nem análises, nem anúncios. As chaves são criadas no seu aparelho e ficam nele: não conseguimos vê-las nem obtê-las. O único lugar com «login» é o painel de desenvolvedor para lojas, e lá se entra assinando com a carteira, sem e-mail nem senha. Este site de apresentação tem um contador de visitas: conta visualizações, não coloca cookies e não segue você por outros sites. Na carteira, no caixa e na página de pagamento não há nada disso.",
     h_till:'O que guardamos, primeiro: o adesivo do caixa',
     p_till:'O vendedor pode ter um adesivo impresso no balcão. Ele não traz valor: o vendedor diz o preço no próprio telefone e, por dez minutos, guardamos esse valor para o comprador ver ao apontar a câmera. Guarda-se exatamente isto: o endereço do vendedor, o número do caixa, o valor, a moeda, o nome do produto, os números do pedido e da fatura, e a hora. Depois de dez minutos o registro se apaga sozinho.',
     p_till2:'Do comprador não se guarda nada: nem o endereço da carteira, nem o aparelho, nem o próprio pagamento — se a fatura foi paga, lemos da blockchain. Mas sobre os registros, com franqueza: enquanto o comprador espera o valor, a página dele pergunta ao nosso servidor a cada poucos segundos o que o caixa está pedindo, e essa pergunta traz o endereço do vendedor e o número do caixa. Por isso nos registros da hospedagem (Cloudflare) fica uma entrada comum: tal IP perguntou por tal caixa a tal hora. Não há nela nome, carteira nem valor do comprador. Se o vendedor usa a fatura na blockchain em vez do adesivo, também não guardamos o valor.',
     h_don:'O que guardamos, segundo: mensagens das doações',
-    p_don:'Na página de doações (wallet.tavarov.com/d/nome) o espectador pode deixar para o criador um apelido e uma mensagem curta. Guardamos a mensagem com o número da fatura e só a mostramos ao criador depois que chega na blockchain um pagamento para esse mesmo criador com esse número; mensagens não pagas são apagadas em duas horas, as pagas em 180 dias. Junto com a mensagem ficam o valor, a moeda e o endereço de quem pagou — o mesmo que já é público na blockchain. Nada mais sobre o espectador é guardado. A mensagem não é privada: o criador a vê e pode mostrá-la na live.',
+    p_don:"Na página de doações (wallet.tavarov.com/d/nome) o espectador pode deixar para o criador um apelido e uma mensagem curta. Guardamos sob o número da cobrança e mostramos ao criador só depois que chega na blockchain um pagamento para esse mesmo criador com esse número; mensagens não pagas são apagadas em duas horas, as pagas em 180 dias. Junto com a mensagem ficam o valor, a moeda e o endereço de quem pagou — o mesmo que já é público na blockchain. Nada mais sobre o espectador é guardado. A mensagem não é privada: o criador a vê e pode mostrá-la na live. O criador também pode pôr na sua página uma mensagem de boas-vindas e uma meta de arrecadação — ficam conosco até ele mudar, e qualquer pessoa que abrir a página vê.",
     h_no:'O que não coletamos',
     p_no:'Não pedimos nem recebemos: nome, e-mail, telefone, documentos, localização, contatos, identificadores de publicidade. Não existe cadastro algum — o aplicativo simplesmente começa a funcionar.',
     h_dev:'O que fica guardado no seu aparelho',
     d1:'As chaves da carteira e a frase de doze palavras — criptografadas com a sua senha.',
-    d2:'Configurações: idioma, papel, a rede escolhida, os tokens que você mesmo adicionou, o endereço do site para as cobranças.',
+    d2:"Configurações: idioma, modo, a rede escolhida, tokens que você adicionou, o endereço do site para cobranças, as configurações dos alertas do OBS.",
     d3:'Um registro das suas próprias operações — para que o histórico abra na hora e funcione sem conexão.',
     p_dev:'Tudo isso vive apenas no aparelho. Não vai para os nossos servidores nem é copiado para nenhuma nuvem. Se apagar o aplicativo, vai junto com ele: por isso vale a pena fazer uma cópia de segurança antes.',
     h_net:'Para onde vão os pedidos',
     p_net:'Uma carteira não funciona sem perguntar ao blockchain. Esses pedidos saem direto do seu aparelho, sem passar por nós, e quem os recebe vê o seu endereço IP e o que foi perguntado:',
     n1:'<b>Nós da BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com e semelhantes) — saldos, taxas, envio de operações.',
     n2:'<b>CoinGecko</b> — cotações, para mostrar um valor aproximado em dólares. Só são pedidos nomes de moedas; o seu endereço não vai para lá.',
-    n3:'<b>Nosso site</b> — a própria página do aplicativo e a página de pagamento do link. Os registros da hospedagem (Cloudflare) veem o que qualquer site vê: IP, hora, endereço da página.',
+    n3:"<b>Nosso site</b> — a página do app, as páginas de pagamento e de doações, o painel de desenvolvedor. Os registros da hospedagem (Cloudflare) veem o que qualquer site vê: IP, horário, endereço da página.",
     n4:'<b>BscScan</b> — apenas se você mesmo clicar em «ver no explorador».',
     n5:'<b>Aplicativos de carteira</b> (MetaMask, Trust Wallet, OKX) — apenas se você mesmo escolher «abrir num aplicativo» na página de pagamento. Então o link deste pagamento — vendedor, valor e produto — passa pelo serviço de links deles (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir a página no navegador deles.',
     p_net2:'Nenhum desses serviços recebe de nós as suas chaves, a sua frase ou a sua senha: nós não as temos.',
