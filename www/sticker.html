@@ -7,23 +7,29 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
 <style>
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
-  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
-  --red:#E5342A; --fill:rgba(124,58,237,.08);
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --bg:#F5F5F7; --card:rgba(255,255,255,.94); --label:#0D0D10; --label-2:rgba(22,22,30,.64);
+  --label-3:rgba(22,22,30,.42); --sep:rgba(20,20,40,.10); --accent:#6A35F2;
+  --red:#E5342A; --fill:rgba(20,20,40,.06);
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
-  --bg:#140B2B; --card:#221642; --label:#fff; --label-2:rgba(235,225,255,.68);
-  --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
-  --red:#FF6B61; --fill:rgba(169,123,255,.12);
+  --bg:#0A0A0C; --card:rgba(24,24,28,.82); --label:#fff; --label-2:rgba(235,235,242,.66);
+  --label-3:rgba(235,235,242,.42); --sep:rgba(255,255,255,.10); --accent:#A98BFF;
+  --red:#FF6B61; --fill:rgba(255,255,255,.08);
 } }
 *{box-sizing:border-box}
 html{background:var(--bg)}
 body{margin:0; min-height:100vh; background:
-       radial-gradient(900px 520px at -10% -12%, color-mix(in srgb, #7C3AED 28%, transparent), transparent 62%),
-       radial-gradient(760px 460px at 112% 6%, color-mix(in srgb, #4B1FE8 20%, transparent), transparent 60%),
+       radial-gradient(900px 520px at -10% -12%, color-mix(in srgb, #6A35F2 7%, transparent), transparent 62%),
+       radial-gradient(760px 460px at 112% 6%, color-mix(in srgb, #1A1A28 3%, transparent), transparent 60%),
        var(--bg);
      background-attachment:fixed; color:var(--label); font-family:var(--font);
      font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased}

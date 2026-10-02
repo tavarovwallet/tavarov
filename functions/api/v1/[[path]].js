@@ -29,10 +29,11 @@
    изменилось. */
 
 import { messageHash, recoverAddress, keccak256 } from '../_crypto.js';
-import { promoteByHash, migrateDonIndex } from '../donate.js';
+import { promoteByHash, migrateDonIndex, promoteSolDonations } from '../donate.js';
 import { overLimit } from '../_limit.js';
 import { notifyPaid, notifyProblem } from '../_tg.js';
 import { scanReferrals, readPartner, partnerView } from '../_ref.js';
+import { SOL, SOLNETS, solCheckInvoice, isSolWallet } from '../_sol.js';
 
 const NETS = {
   bnb: {
@@ -48,9 +49,56 @@ const NETS = {
     rpcs: ['https://bsc-testnet-rpc.publicnode.com', 'https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
     pay: '0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6',
     tokens: { USDT: { a: '0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e', d: 6 } }
+  },
+  /* Ethereum и Base (1 октября 2026). Адрес контракта вписывается после
+     выпуска; пока pay = null, счёт в этой сети не выставить, а таймер её
+     не обходит. Знаков у USDT и USDC шесть. USDT в Base нет нарочно — он
+     там мостовой. Глубина подтверждения своя у каждой сети: блок в
+     Ethereum раз в 12 секунд, в Base — раз в 2. */
+  eth: {
+    mode: 'live', conf: 3, txLookback: 300,
+    rpcs: ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'],
+    pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+    tokens: { USDT: { a: '0xdAC17F958D2ee523a2206206994597C13D831ec7', d: 6 },
+              USDC: { a: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d: 6 } }
+  },
+  base: {
+    mode: 'live', conf: 6, txLookback: 1800,
+    rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
+    pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+    tokens: { USDC: { a: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d: 6 } }
   }
 };
 const MODE_NET = { live: 'bnb', test: 'bnbTestnet' };
+/* Поле network в запросе: как его пишет магазин → сеть для боевого и
+   тестового ключа. Не указано — BNB Chain, как было всегда. Тестовые
+   Sepolia, Base Sepolia и Solana devnet убраны 1 октября 2026: тестовый
+   ключ работает только в тестовом BNB. */
+const NETWORK_PARAM = {
+  bnb:      { live: 'bnb',  test: 'bnbTestnet' },
+  bsc:      { live: 'bnb',  test: 'bnbTestnet' },
+  ethereum: { live: 'eth',  test: null },
+  eth:      { live: 'eth',  test: null },
+  base:     { live: 'base', test: null },
+  solana:   { live: 'solana', test: null }
+};
+const isSolNet = n => n === 'solana';
+/* Очередь неоплаченных счетов в Solana. В Solana нет журнала контракта,
+   который таймер мог бы пролистать: оплату ищут по метке каждого счёта.
+   Поэтому неоплаченные счета Solana держим списком и обходим их сами. */
+const K_SOLQ = 'v1:solq';
+/* Сети этого режима, где контракт уже выпущен, — с их валютами. */
+function liveNetworks(mode){
+  const out = {};
+  for (const [name, m] of Object.entries({ bnb: NETWORK_PARAM.bnb, ethereum: NETWORK_PARAM.ethereum, base: NETWORK_PARAM.base })){
+    const n = NETS[m[mode]];
+    if (n && n.pay) out[name] = Object.keys(n.tokens);
+  }
+  /* В Solana контракта нет — касса работает всегда, где задан кошелёк развития. */
+  const sn = SOLNETS[NETWORK_PARAM.solana[mode]];
+  if (sn && sn.treasury) out.solana = Object.keys(sn.tokens);
+  return out;
+}
 
 const PAID_TOPIC = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
 const SALE_OF = '0x38d56afe';
@@ -151,7 +199,9 @@ function netConfig(net, env){
   return { net, mode: base.mode,
            rpcs: e.TAVAROV_RPC ? [e.TAVAROV_RPC] : base.rpcs,
            pay: e.TAVAROV_PAY || base.pay,
-           tokens: base.tokens };
+           tokens: base.tokens,
+           conf: base.conf || CONFIRMATIONS,
+           txLookback: base.txLookback || TX_LOOKBACK };
 }
 
 async function rpc(urls, method, params){
@@ -270,7 +320,7 @@ async function recoverByQuorum(urls, hash, sig){
 function b64urlText(s){ return b64url(new TextEncoder().encode(s)); }
 
 function payUrl(rec, origin){
-  const o = { m: rec.w, a: rec.a, c: rec.c, h: rec.h, net: rec.net, api: 1, t: rec.t };
+  const o = { m: rec.sm || rec.w, a: rec.a, c: rec.c, h: rec.h, net: rec.net, api: 1, t: rec.t };
   if (rec.o) o.o = rec.o;
   if (rec.n) o.n = rec.n;
   if (rec.i) o.i = rec.i;
@@ -291,6 +341,7 @@ function publicInvoice(rec, origin){
     livemode: rec.mode === 'live',
     network: rec.net,
     merchant: rec.w,
+    solana_address: rec.sm || undefined,
     amount: rec.a,
     currency: rec.c,
     order_id: rec.o || null,
@@ -358,9 +409,21 @@ function okMetadata(v){
    же, что у /api/status: «оплачено» только если совпало всё — этот счёт,
    этот продавец, эта валюта и сумма не меньше выставленной. */
 async function readChain(env, rec, knownLog){
+  if (isSolNet(rec.net)){
+    const r = await solCheckInvoice(rec.net, { h: rec.h, merchant: rec.sm, amount: rec.a, cur: rec.c }, env);
+    if (r.paid){
+      const same = !!(rec.pay && rec.pay.tx === r.tx);
+      const pay = { payer: r.payer, amount: rec.a, cur: rec.c, refunded: '0', tx: r.tx, block: null,
+                    got: fmtUnits(BigInt(r.toMerchant), SOLNETS[rec.net].tokens[rec.c].d),
+                    late: (same && rec.pay.late) || (!same && sec() > rec.t) };
+      return { st: 'paid', pay };
+    }
+    if (r.underpaid) return { st: 'underpaid', pay: rec.pay || null };
+    return { st: null };
+  }
   const cfg = netConfig(rec.net, env);
   const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-  const safe = Math.max(0, latest - CONFIRMATIONS);
+  const safe = Math.max(0, latest - cfg.conf);
   let raw = null, sale = null;
   try{
     raw = await rpc(cfg.rpcs, 'eth_call', [{ to: cfg.pay, data: SALE_OF + rec.h.slice(2) }, hex(safe)]);
@@ -414,7 +477,7 @@ async function readChain(env, rec, knownLog){
   if (!pay.tx){
     try{
       const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pay,
-        fromBlock: hex(safe - TX_LOOKBACK), toBlock: hex(safe), topics: [PAID_TOPIC, pad(rec.w)] }]);
+        fromBlock: hex(safe - cfg.txLookback), toBlock: hex(safe), topics: [PAID_TOPIC, pad(rec.w)] }]);
       for (const l of (logs || [])){
         if (word(l.data, 3).toLowerCase() !== rec.h) continue;
         pay.tx = l.transactionHash; pay.block = parseInt(l.blockNumber, 16);
@@ -563,7 +626,27 @@ async function createInvoice(request, env, who, origin){
   if (rb.tooBig) return fail(413, 'too_large', 'Request body is larger than 8 KB.');
   if (rb.bad) return fail(400, 'bad_json', 'Body must be a JSON object.');
   const b = rb.body;
-  const cfg = netConfig(who.net, env);
+  let net = who.net;
+  if (b.network !== undefined && b.network !== null && b.network !== ''){
+    const m = Object.prototype.hasOwnProperty.call(NETWORK_PARAM, String(b.network).toLowerCase())
+      ? NETWORK_PARAM[String(b.network).toLowerCase()] : null;
+    if (!m) return fail(400, 'bad_network', 'network: one of bnb, ethereum, base, solana.');
+    net = m[who.mode];
+    if (!net) return fail(400, 'network_unavailable', 'Test keys work on the BNB testnet only. Use a live key for ' + b.network + '.');
+    if (!isSolNet(net) && (!NETS[net] || (!NETS[net].pay && !(env && env.TAVAROV_PAY))))   // TAVAROV_PAY — только для проверок
+      return fail(400, 'network_unavailable', 'Payments on ' + b.network + ' are not live yet. Available: ' + Object.keys(liveNetworks(who.mode)).join(', ') + '.');
+  }
+  /* Solana: адрес кошелька Solana продавца — в запросе. Вход в кабинет и
+     ключ — по кошельку сети Ethereum, а деньги в Solana приходят на адрес
+     Solana; связать их за продавца мы не можем, поэтому он называет его сам. */
+  let sm = null;
+  if (isSolNet(net)){
+    sm = String(b.solana_address || '').trim();
+    if (!isSolWallet(sm)) return fail(400, 'bad_solana_address', 'solana_address: your Solana wallet address (base58) is required for network "solana".');
+  }
+  const cfg = isSolNet(net)
+    ? { net, mode: who.mode, tokens: Object.fromEntries(Object.entries(SOLNETS[net].tokens).map(([k, v]) => [k, { a: v.mint, d: v.d }])) }
+    : netConfig(net, env);
 
   const c = String(b.currency || 'USDT').toUpperCase();
   if (!Object.prototype.hasOwnProperty.call(cfg.tokens, c))
@@ -601,8 +684,8 @@ async function createInvoice(request, env, who, origin){
         const st = statusOf(prev);
         if (st === 'paid') return fail(409, 'order_paid', 'This order_id is already paid.', { invoice: prev.h });
         if (st === 'pending'){
-          if (prev.a !== a || prev.c !== c)
-            return fail(409, 'order_exists', 'A pending invoice with this order_id exists with a different amount or currency.', { invoice: prev.h });
+          if (prev.a !== a || prev.c !== c || (prev.net || who.net) !== net)
+            return fail(409, 'order_exists', 'A pending invoice with this order_id exists with a different amount, currency or network.', { invoice: prev.h });
           return json(publicInvoice(prev, origin), 200, { 'tavarov-idempotent-replay': 'true' });
         }
       }
@@ -610,9 +693,17 @@ async function createInvoice(request, env, who, origin){
   }
 
   const now = sec();
-  const rec = { h: randomHex32(), w: who.w, mode: who.mode, net: who.net, a, c,
+  const rec = { h: randomHex32(), w: who.w, mode: who.mode, net, a, c,
                 o, i, n, r, md, l, ct: now, t: now + ttl, st: 'pending' };
+  if (sm) rec.sm = sm;
   await kvPut(env, kInv(rec.h), rec, INV_TTL);
+  if (sm){
+    try{
+      const q = ((await kvGet(env, K_SOLQ)) || []).filter(e => e.t > now - 86400);
+      q.push({ h: rec.h, t: rec.t });
+      await kvPut(env, K_SOLQ, q.slice(-300));
+    } catch(e){ /* таймер не увидит — увидит проверка страницей или GET */ }
+  }
   if (orderKey) await env.TILL.put(orderKey, rec.h, { expirationTtl: ttl + 86400 });
   try{
     const list = (await kvGet(env, kRecent(who.w, who.mode))) || [];
@@ -666,10 +757,11 @@ async function runCron(env, origin){
   const push = (h, at) => { q = q.filter(e => e.h !== h); if (at) q.push({ h, n: at }); };
 
   for (const net of Object.keys(NETS)){
+    if (!NETS[net].pay && !env.TAVAROV_PAY) continue;     // контракт в сети ещё не выпущен
     try{
       const cfg = netConfig(net, env);
       const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-      const safe = Math.max(0, latest - CONFIRMATIONS);
+      const safe = Math.max(0, latest - cfg.conf);
       const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pay,
         fromBlock: hex(safe - SCAN_BLOCKS), toBlock: hex(safe), topics: [PAID_TOPIC] }]);
       out.scanned[net] = (logs || []).length;
@@ -698,6 +790,30 @@ async function runCron(env, origin){
     } catch(e){ out.scanned[net] = 'error'; }
   }
 
+  /* Solana: обходим неоплаченные счета по их меткам. Просроченные больше
+     суток назад выбрасываем — платить по ним уже некому. */
+  try{
+    let sq = (await kvGet(env, K_SOLQ)) || [];
+    const sqBefore = JSON.stringify(sq);
+    let checked = 0;
+    /* По двадцать за проход, окно сдвигается каждую минуту — без записи в
+       хранилище (бесплатных записей в сутки всего тысяча). */
+    const start = sq.length > 20 ? (Math.floor(now / 60) * 20) % sq.length : 0;
+    const batch = sq.length > 20 ? sq.slice(start).concat(sq.slice(0, start)).slice(0, 20) : sq.slice();
+    for (const e of batch){
+      const rec = await kvGet(env, kInv(e.h));
+      if (!rec || !isSolNet(rec.net)){ sq = sq.filter(x => x.h !== e.h); continue; }
+      if (rec.st === 'paid' && webhookDone(rec)){ sq = sq.filter(x => x.h !== e.h); continue; }
+      if (e.t < now - 86400){ sq = sq.filter(x => x.h !== e.h); continue; }
+      checked++;
+      const { retryAt } = await refresh(env, rec, origin, {});
+      if (retryAt) push(e.h, retryAt);
+      if (rec.st === 'paid' && webhookDone(rec)) sq = sq.filter(x => x.h !== e.h);
+    }
+    if (JSON.stringify(sq) !== sqBefore) await kvPut(env, K_SOLQ, sq);
+    out.scanned.solana = checked;
+  } catch(e){ out.scanned.solana = 'error'; }
+
   const due = q.filter(e => e.n <= now).slice(0, 10);
   for (const e of due){
     try{
@@ -710,6 +826,8 @@ async function runCron(env, origin){
   }
   if (JSON.stringify(q) !== qBefore) await kvPut(env, K_QUEUE, q.slice(-500));
   try{ const mig = await migrateDonIndex(env); if (mig) out.migrated = mig; } catch(e){ /* в следующую минуту */ }
+  /* Донаты в Solana: журнала контракта нет, ждущие лежат в своей очереди. */
+  try{ const sd = await promoteSolDonations(env); if (sd && (sd.promoted || sd.waiting)) out.solDonations = sd; } catch(e){ /* в следующую минуту */ }
   /* Партнёрская программа: дочитываем журнал контракта оплаты. */
   try{
     const cfg = netConfig('bnb', env);
@@ -737,10 +855,20 @@ export async function partnerInfo(env, w){
    находят оплату одинаково, а вместо вебхука бот пишет продавцу в чат.
    Сеть — только основная, валюта — USDT или USDC. */
 export const TG_TTL = 24 * 3600;
+/* Счёт из Telegram-бота. Сеть — та, что продавец выбрал в боте (/network):
+   BNB, Ethereum, Base или Solana. В Base нет USDT — счёт будет в USDC
+   (доллар есть доллар); в Solana деньги приходят на его адрес Solana. */
+const TG_NETS = ['bnb', 'eth', 'base', 'solana'];
 export async function createTgInvoice(env, o){
-  const cfg = netConfig('bnb', env);
-  const tk = cfg.tokens[o.c];
+  const net = TG_NETS.includes(o.net) ? o.net : 'bnb';
+  const sol = isSolNet(net);
+  if (!sol && !(NETS[net] && (NETS[net].pay || (env && env.TAVAROV_PAY)))) return null;
+  const tokens = sol ? Object.fromEntries(Object.entries(SOLNETS[net].tokens).map(([k, v]) => [k, { a: v.mint, d: v.d }]))
+                     : netConfig(net, env).tokens;
+  const c = (o.c === 'USDT' || o.c === 'USDC') && tokens[o.c] ? o.c : (tokens.USDC ? 'USDC' : null);
+  const tk = c && tokens[c];
   if (!tk || !okAddr(o.w)) return null;
+  if (sol && !isSolWallet(o.sm || '')) return null;
   const units = toUnits(o.a, tk.d);
   if (units === null || units <= 0n) return null;
   /* h и ct можно задать: счёт из встроенного режима (@бот 25 в чужом чате)
@@ -748,10 +876,18 @@ export async function createTgInvoice(env, o){
      выведен из подписанной ссылки — второе нажатие найдёт тот же счёт. */
   const now = o.ct || sec();
   if (o.h && !okHash(o.h)) return null;
-  const rec = { h: o.h || randomHex32(), w: checksumAddress(o.w), mode: 'live', net: 'bnb', a: fmtUnits(units, tk.d), c: o.c,
+  const rec = { h: o.h || randomHex32(), w: checksumAddress(o.w), mode: 'live', net, a: fmtUnits(units, tk.d), c,
                 o: '', i: o.i || '', n: o.n || '', r: '', md: { source: o.src || 'telegram' }, l: o.tl === 'en' ? 'en' : 'ru',
                 ct: now, t: now + (o.ttl || TG_TTL), st: 'pending', tg: String(o.chat), tl: o.tl === 'en' ? 'en' : 'ru' };
+  if (sol) rec.sm = o.sm;
   await kvPut(env, kInv(rec.h), rec, INV_TTL);
+  /* В Solana нет журнала контракта — таймер находит оплату по очереди. */
+  if (sol){
+    try{
+      const q = ((await kvGet(env, K_SOLQ)) || []).filter(e => e.t > now - 86400);
+      if (!q.some(e => e.h === rec.h)){ q.push({ h: rec.h, t: rec.t }); await kvPut(env, K_SOLQ, q.slice(-300)); }
+    } catch(e){ /* увидит кнопка «Проверить оплату» */ }
+  }
   return { rec, url: payUrl(rec, 'https://wallet.tavarov.com') };
 }
 export const tgPayUrl = rec => payUrl(rec, 'https://wallet.tavarov.com');
@@ -953,7 +1089,8 @@ export async function handle(request, env, waitUntil){
       if (!who) return fail(401, 'bad_key', 'Missing or wrong API key. Send it as: Authorization: Bearer tp_live_…');
       if (parts[0] === 'me' && method === 'GET')
         return json({ merchant: who.w, livemode: who.mode === 'live', network: who.net,
-                      currencies: Object.keys(NETS[who.net].tokens) });
+                      currencies: Object.keys(NETS[who.net].tokens),
+                      networks: liveNetworks(who.mode) });
       if (parts[0] === 'invoices' && !parts[1] && method === 'POST') return await createInvoice(request, env, who, origin);
       if (parts[0] === 'invoices' && parts[1] && !parts[2] && method === 'GET')
         return await getInvoice(env, who, String(parts[1]).toLowerCase(), origin, wait);

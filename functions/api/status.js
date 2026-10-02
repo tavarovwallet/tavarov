@@ -21,6 +21,9 @@
    anyone who saw it could pay one cent against the same id and the page would
    tell the shop "paid". */
 
+import { SOL, solCheckInvoice } from './_sol.js';
+import { overLimit, tooMany } from './_limit.js';
+
 const PAID_TOPIC =
   '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
 
@@ -42,8 +45,24 @@ const NETS = {
                 pay: '0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6',
                 payOld: null,
                 tokens: { USDT: { a:'0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e', d:6  },
-                          TVR:  { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } } }
+                          TVR:  { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } } },
+  /* Ethereum and Base (1 October 2026). Same contract code as on BNB Chain;
+     the address goes into pay once it is deployed (tavarov.com/vypusk-seti).
+     Until then pay is null and the endpoint answers 503 for that network.
+     Six decimals here, not eighteen as on BNB Chain. Base has no USDT on
+     purpose: the one there is bridged, not Tether's own.
+
+     The depth numbers differ per network because blocks do: Ethereum makes
+     one every 12 seconds, Base every 2, BNB Chain every 0.75. */
+  eth:        { rpcs: ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'],
+                pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da', payOld: null, conf: 3, blockSeconds: 12, transferLookback: 300, lookback: 300,
+                tokens: { USDT: { a:'0xdAC17F958D2ee523a2206206994597C13D831ec7', d:6 },
+                          USDC: { a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d:6 } } },
+  base:       { rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
+                pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da', payOld: null, conf: 6, blockSeconds: 2, transferLookback: 1800, lookback: 1800,
+                tokens: { USDC: { a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } } }
 };
+const NET_KEYS = Object.keys(NETS);
 
 /* Distance from the head of the chain. Telling a shop "paid" about a
    transaction in the very latest block means handing over goods, one day, for
@@ -119,12 +138,14 @@ const BLOCK_SECONDS = 0.75;
 async function findDirectTransfer(cfg, merchant, want, since, safeBlock){
   /* A payment for this invoice cannot predate the invoice itself. If the
      creation time was not passed (an older link), scan the whole window. */
-  let from = Math.max(0, safeBlock - TRANSFER_LOOKBACK);
+  const lookbackT = cfg.transferLookback || TRANSFER_LOOKBACK;
+  const blockSec = cfg.blockSeconds || BLOCK_SECONDS;
+  let from = Math.max(0, safeBlock - lookbackT);
   if (since > 0){
     const ago = Math.floor(Date.now() / 1000) - since;
     if (ago >= 0){
-      const blocks = Math.ceil(ago / BLOCK_SECONDS) + 20;   // slack for uneven block times
-      from = Math.max(from, safeBlock - Math.min(blocks, TRANSFER_LOOKBACK));
+      const blocks = Math.ceil(ago / blockSec) + 20;   // slack for uneven block times
+      from = Math.max(from, safeBlock - Math.min(blocks, lookbackT));
     }
   }
 
@@ -189,19 +210,64 @@ function netConfig(net, env){
     rpcs: e.TAVAROV_RPC ? [e.TAVAROV_RPC] : base.rpcs,
     pay:  e.TAVAROV_PAY || base.pay,
     payOld: e.TAVAROV_PAY_OLD || (e.TAVAROV_PAY ? null : base.payOld),
-    tokens: base.tokens
+    tokens: base.tokens,
+    conf: base.conf || CONFIRMATIONS,
+    lookback: base.lookback || LOOKBACK,
+    transferLookback: base.transferLookback || TRANSFER_LOOKBACK,
+    blockSeconds: base.blockSeconds || BLOCK_SECONDS
   };
 }
 
 export async function onRequestGet({ request, env }){
+  /* Аудит 2.10.2026: без предела один запрос в Solana — до двадцати
+     обращений к узлу; щедро для касс и страниц оплаты. */
+  if (await overLimit(request, env, 'status', 300, 60)) return tooMany();
   const url = new URL(request.url);
   const h = (url.searchParams.get('h') || '').toLowerCase();
   const m = url.searchParams.get('m') || '';
-  const net = url.searchParams.get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+  /* No network is the main one, as before: old links carry no net at all.
+     A known one is taken as is. A network we do not serve (the Sepolia,
+     Base Sepolia and Solana devnet links from before 1 October 2026) is
+     refused out loud — quietly checking BNB instead would answer "not
+     paid" about a payment we never looked for. */
+  const askedNet = url.searchParams.get('net') || 'bnb';
+  if (askedNet !== 'solana' && !NET_KEYS.includes(askedNet))
+    return json({ error: 'unknown network: ' + String(askedNet).slice(0, 20), paid: false }, 400);
+  const net = askedNet === 'solana' ? 'bnb' : askedNet;
   const wantAmount = url.searchParams.get('a') || '';
   const wantCur = (url.searchParams.get('c') || '').toUpperCase();
 
   if (!/^0x[0-9a-f]{64}$/.test(h))    return json({ error: 'bad invoice id' }, 400);
+
+  /* Solana: контракта нет, оплату ищем по метке счёта (Solana Pay). Метка —
+     это сам номер счёта в base58, так что сверять номер не нужно: чужая
+     операция под эту метку попасть не может, не заплатив ровно этому
+     продавцу. Подробности — functions/api/_sol.js. */
+  const solNet = url.searchParams.get('net');
+  if (solNet === 'solana'){
+    /* Один такой запрос — до двадцати с лишним обращений к узлу Solana,
+       которым сервер сам проверяет оплаты: свой, более строгий предел. */
+    if (await overLimit(request, env, 'statussol', 60, 60)) return tooMany();
+    if (!SOL.isAddress(m)) return json({ error: 'bad merchant address' }, 400);
+    if (!wantAmount || !wantCur) return json({ error: 'amount (a) and currency (c) are required', paid: false }, 400);
+    try{
+      /* c=USD — «любой доллар сети»: так спрашивает касса с наклейкой,
+         где покупатель сам выбирает и сеть, и монету. */
+      if (wantCur === 'USD'){
+        let last = { paid: false };
+        for (const cur of ['USDC', 'USDT']){
+          const r = await solCheckInvoice(solNet, { h, merchant: m, amount: wantAmount, cur }, env);
+          if (r.paid || r.bad) return json(r, r.bad ? 400 : 200);
+          last = r;
+        }
+        return json(last);
+      }
+      const r = await solCheckInvoice(solNet, { h, merchant: m, amount: wantAmount, cur: wantCur }, env);
+      return json(r, r.bad ? 400 : 200);
+    } catch(e){
+      return json({ error: 'network did not answer: ' + String(e && e.message || e).slice(0, 120), paid: false }, 502);
+    }
+  }
   if (!/^0x[0-9a-fA-F]{40}$/.test(m)) return json({ error: 'bad merchant address' }, 400);
 
   const cfg = netConfig(net, env);
@@ -217,7 +283,20 @@ export async function onRequestGet({ request, env }){
   if (!wantAmount || !wantCur)
     return json({ error: 'amount (a) and currency (c) are required', paid: false }, 400);
   let want = null;
-  {
+  /* c=USD: any dollar of this network (USDT or USDC), each at its own
+     decimals. The till sticker asks this way: the buyer picks the network
+     and the coin, the seller only named the amount. */
+  if (wantCur === 'USD'){
+    const tokens = {};
+    for (const k of ['USDT', 'USDC']){
+      if (!cfg.tokens[k]) continue;
+      const u = toUnits(wantAmount, cfg.tokens[k].d);
+      if (u === null || u <= 0n) return json({ error: 'bad invoice amount' }, 400);
+      tokens[cfg.tokens[k].a.toLowerCase()] = u;
+    }
+    want = { any: tokens };
+  }
+  if (!want){
     const tk = Object.prototype.hasOwnProperty.call(cfg.tokens, wantCur) ? cfg.tokens[wantCur] : null;
     if (!tk) return json({ paid: false, unknown: true,
       error: 'currency ' + (wantCur || '—') + ' is unknown on this network, nothing to check the amount against' });
@@ -228,7 +307,7 @@ export async function onRequestGet({ request, env }){
 
   try{
     const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-    const safe = Math.max(0, latest - CONFIRMATIONS);
+    const safe = Math.max(0, latest - cfg.conf);
 
     /* Contract storage, at a depth a reorg can no longer reach. Everything
        needed is there: who was paid, how much before the fee, in what, and how
@@ -274,7 +353,7 @@ export async function onRequestGet({ request, env }){
        uncertain: a transfer carries no invoice id, so the page must not
        paint it the same green as a contract payment. */
     const since = parseInt(url.searchParams.get('s') || '0', 10);
-    if (noSale && want && since > 0){
+    if (noSale && want && !want.any && since > 0){
       const direct = await findDirectTransfer(cfg, m, want, since, safe);
       if (direct) return json(Object.assign(direct, { uncertain: true }));
     }
@@ -283,6 +362,10 @@ export async function onRequestGet({ request, env }){
       if (sale.merchant === '0x' + '0'.repeat(40)) return json({ paid: false });
       /* Someone else's invoice with the same id is not our payment. */
       if (sale.merchant.toLowerCase() !== m.toLowerCase()) return json({ paid: false });
+      if (want && want.any){
+        want = { token: sale.token.toLowerCase(), units: want.any[sale.token.toLowerCase()] };
+        if (!want.units) return json({ paid: false, wrongToken: true, token: sale.token, error: 'paid in the wrong currency' });
+      }
       if (want){
         if (sale.token.toLowerCase() !== want.token)
           return json({ paid: false, wrongToken: true, token: sale.token,
@@ -302,7 +385,7 @@ export async function onRequestGet({ request, env }){
       let tx = null, block = null;
       try{
         const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{
-          address: saleHub, fromBlock: hex(Math.max(0, safe - LOOKBACK)), toBlock: hex(safe),
+          address: saleHub, fromBlock: hex(Math.max(0, safe - cfg.lookback)), toBlock: hex(safe),
           topics: [PAID_TOPIC, pad(m)]
         }]);
         for (const l of (logs || [])){
@@ -320,7 +403,7 @@ export async function onRequestGet({ request, env }){
        which means a day-old invoice will not be found through them — and the
        answer says so honestly. */
     const to = safe;
-    const from = Math.max(0, to - LOOKBACK);
+    const from = Math.max(0, to - cfg.lookback);
     const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{
       address: cfg.pay, fromBlock: hex(from), toBlock: hex(to), topics: [PAID_TOPIC, pad(m)]
     }]);
@@ -330,6 +413,11 @@ export async function onRequestGet({ request, env }){
       const toMerchant = BigInt(word(l.data, 0));
       const fee = BigInt(word(l.data, 1));
       const token = '0x' + l.topics[3].slice(-40);
+      if (want && want.any){
+        const u = want.any[token.toLowerCase()];
+        if (!u) return json({ paid: false, wrongToken: true, token, error: 'paid in the wrong currency' });
+        want = { token: token.toLowerCase(), units: u };
+      }
       if (want){
         if (token.toLowerCase() !== want.token)
           return json({ paid: false, wrongToken: true, token, error: 'paid in the wrong currency' });

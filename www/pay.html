@@ -17,32 +17,38 @@
    поверх них — как стекло, а не как вырезанный картон.
 
    Всё, что ниже, — только вид. Ни одна проверка не зависит от цвета. */
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F4EEFF;
-  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
-  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --bg:#F5F5F7;
+  --glow-1:rgba(106,53,242,.07); --glow-2:rgba(20,20,40,.03); --glow-3:rgba(20,20,40,0);
+  --card:rgba(255,255,255,.94); --card-solid:#FFFFFF; --card-edge:rgba(20,20,40,.09);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
-  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
-  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
-  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
-  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
-  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
-  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --shadow:0 1px 2px rgba(20,20,40,.04), 0 12px 32px -14px rgba(20,20,40,.18);
+  --label:#0D0D10; --label-2:rgba(22,22,30,.64); --label-3:rgba(22,22,30,.42);
+  --sep:rgba(20,20,40,.10); --accent:#6A35F2; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(20,20,40,.06);
+  --ghost-bg:rgba(255,255,255,.85); --ghost-edge:rgba(20,20,40,.14);
+  --seg-on:#FFFFFF; --seg-on-text:#0D0D10;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
   /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
      пятна света видны, а на чёрном они тонули. */
-  --bg:#140B2B;
-  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
-  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --bg:#0A0A0C;
+  --glow-1:rgba(124,77,255,.16); --glow-2:rgba(255,255,255,.03); --glow-3:rgba(255,255,255,0);
+  --card:rgba(24,24,28,.82); --card-solid:#161619; --card-edge:rgba(255,255,255,.08);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
-  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
-  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
-  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
-  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --label:#fff; --label-2:rgba(235,235,242,.66); --label-3:rgba(235,235,242,.42);
+  --sep:rgba(255,255,255,.10); --accent:#A98BFF; --accent-2:#7447FF;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(255,255,255,.08);
+  --ghost-bg:rgba(255,255,255,.05); --ghost-edge:rgba(255,255,255,.14);
   --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
 } }
 *{box-sizing:border-box}
@@ -77,6 +83,11 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
 .btn-main{color:#fff; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
           box-shadow:0 12px 26px -10px rgba(91,33,232,.60), inset 0 1px 0 rgba(255,255,255,.18)}
 .btn-ghost{background:var(--ghost-bg); color:var(--label); border-color:var(--ghost-edge); font-size:16px}
+/* Выбор сети у наклейки кассы */
+.netpick{display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; margin-top:8px}
+.netpick button{border:1.5px solid var(--sep); background:transparent; color:var(--label); border-radius:12px; padding:11px 8px;
+  font:inherit; font-size:15px; font-weight:650; cursor:pointer}
+.netpick button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent); color:#fff}
 /* Значка у «другого кошелька» нет нарочно: с ним подпись на узком телефоне
    переносилась или обрезалась многоточием, а без него помещается целиком. */
 .btn > span{min-width:0}
@@ -203,6 +214,12 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
            суммы, прежде чем платить. -->
       <div class="tiny" id="tillAge" style="margin-top:6px"></div>
       <div class="note hidden" id="tillChanged" data-t="tillChanged">Продавец только что поменял сумму — проверьте её заново.</div>
+      <!-- С 1 октября 2026 касса может принять оплату в любой из наших сетей:
+           покупатель платит там, где у него доллары. -->
+      <div id="tillNetBox" class="hidden" style="margin-top:14px">
+        <div class="tiny" data-t="tillNetL">В какой сети платите — где у вас доллары:</div>
+        <div class="netpick" id="tillNets"></div>
+      </div>
       <button class="btn btn-main" style="margin-top:16px" id="tillPay" data-t="tillPayBtn">Оплатить</button>
     </div>
 
@@ -248,6 +265,10 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
     <a class="btn btn-main" id="openWallet" href="#">
       <svg class="ico" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#fff"/></svg>
       <span data-t="open">Оплатить в NoN Wallet</span></a>
+    <!-- iPhone открывает ссылки только в Safari. Кошелёк, поставленный на
+         экран «Домой», живёт отдельно от Safari, и кнопка выше приведёт в
+         пустой Safari. Честно говорим, как заплатить из самого приложения. -->
+    <p class="tiny hidden" id="iosHint" data-t="iosHint" style="text-align:center; margin:10px 4px 0">iPhone не открывает кошелёк с экрана «Домой» по ссылке — так устроено у Apple. Нажмите «Скопировать ссылку», откройте NoN Wallet → «Сканер» → «Вставить скопированную ссылку». Если код на другом экране — просто наведите на него камеру.</p>
     <!-- Раньше здесь был «ethereum:…» — обычный перевод по стандарту EIP-681.
          Его понимал любой кошелёк, но у него было два недостатка, и оба
          дорогие. Первый: телефон сам решал, каким кошельком его открыть, —
@@ -261,6 +282,14 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
          как покупка. -->
     <button class="btn btn-ghost" id="openOther" type="button">
       <span data-t="openOther">Оплатить другим кошельком</span></button>
+    <!-- Solana с телефона: свой экран не отсканировать. Кнопка открывает эту
+         же оплату в браузере Phantom или Solflare, а там — платит сразу. -->
+    <div id="solWallets" class="hidden">
+      <button class="btn btn-main hidden" id="solPayHere" type="button" data-t="solPayHere">Оплатить этим кошельком</button>
+      <a class="btn btn-ghost hidden" id="solPhantom" href="#" rel="noopener" data-t="solPhantom">Оплатить в Phantom</a>
+      <a class="btn btn-ghost hidden" id="solSolflare" href="#" rel="noopener" data-t="solSolflare">Оплатить в Solflare</a>
+      <div class="note hidden" id="solPayErr"></div>
+    </div>
     <button class="btn btn-ghost" id="copyLink" data-t="copy">Скопировать ссылку</button>
 
     <div style="margin-top:18px">
@@ -363,7 +392,15 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
    счёта считается из них же, и подделанный магазин просто не узнает. */
 
 const $ = id => document.getElementById(id);
-const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet' };
+const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet', eth:'Ethereum', base:'Base', solana:'Solana' };
+/* Сети, в которых работает страница. Незнакомая сеть в ссылке — ошибка или
+   подлог: такой счёт не показываем. */
+/* Тестовые Sepolia, Base Sepolia и Solana devnet убраны 1 октября 2026.
+   Тестовый BNB остался для тестовых ключей API (tp_test_…). */
+const KNOWN_NETS = ['bnb', 'bnbTestnet', 'eth', 'base', 'solana'];
+const isSolNet = n => n === 'solana';
+/* Монета, которой сеть берёт комиссию. */
+const NATIVE_SYM = { bnb:'BNB', bnbTestnet:'tBNB', eth:'ETH', base:'ETH', solana:'SOL' };
 
 /* ================= ЯЗЫКИ =================
    Счёт выставляют в одной стране, открывают в другой. Язык берём из браузера
@@ -375,6 +412,7 @@ const RU = {
   tnH:'Это ТЕСТОВАЯ сеть',
   tnNote:'Деньги в ней ненастоящие: их раздают бесплатно кому угодно. Настоящий магазин так счёт не выставляет. Если вам предлагают заплатить по этой ссылке за товар — вас обманывают. Ничего не платите и не отправляйте продавцу ничего другого.',
   qrHint:'Наведите камеру из приложения Tavarov',
+  qrHintSol:'Отсканируйте в Phantom, Solflare или NoN Wallet',
   open:'Открыть в кошельке',
   copy:'Скопировать ссылку', copied:'Скопировано',
   copyManual:'Скопируйте ссылку вручную:',
@@ -400,6 +438,12 @@ const RU = {
   tillWaitNote:'Кассир наберёт её на своём телефоне, и она появится здесь сама. Закрывать страницу не нужно.',
   tillChanged:'Продавец только что поменял сумму — проверьте её заново.',
   tillPayBtn:'Оплатить',
+  tillNetL:'В какой сети платите — где у вас доллары:',
+  solPayHere:'Оплатить этим кошельком',
+  solPhantom:'Оплатить в Phantom',
+  solSolflare:'Оплатить в Solflare',
+  solPayBusy:'Подтвердите оплату в кошельке…',
+  solPayFail:'Кошелёк не провёл оплату: ',
   tillOwnBtn:'Ввести сумму самому',
   tillOwnLabel:'Сколько платим',
   tillOwnNote:'Сумму вы вводите сами — сверьте её с продавцом, прежде чем платить. Ошибётесь в свою сторону — придётся доплачивать, в его — деньги уже не вернутся сами.',
@@ -418,6 +462,7 @@ const T = {
     tnH:'This is a TEST network',
     tnNote:'The money in it is not real: anyone can get it for free. A real shop does not issue invoices this way. If someone asks you to pay for goods through this link, you are being deceived. Pay nothing and send the seller nothing else either.',
     qrHint:'Point the camera from the Tavarov app',
+    qrHintSol:'Scan with Phantom, Solflare or NoN Wallet',
     open:'Open in the wallet',
     copy:'Copy the link', copied:'Copied',
     copyManual:'Copy the link by hand:',
@@ -443,6 +488,12 @@ const T = {
     tillWaitNote:'The cashier will type it on their phone and it will appear here by itself. You do not need to close this page.',
     tillChanged:'The seller has just changed the amount — check it again.',
     tillPayBtn:'Pay',
+    tillNetL:'Which network you pay on — where your dollars are:',
+    solPayHere:'Pay with this wallet',
+    solPhantom:'Pay in Phantom',
+    solSolflare:'Pay in Solflare',
+    solPayBusy:'Confirm the payment in your wallet…',
+    solPayFail:'The wallet did not make the payment: ',
     tillOwnBtn:'Enter the amount myself',
     tillOwnLabel:'How much to pay',
     tillOwnNote:'You are typing the amount yourself — check it with the seller before paying. Too little and you will have to pay again; too much and the money will not come back on its own.',
@@ -459,6 +510,7 @@ const T = {
     tnH:'Esta es una red DE PRUEBAS',
     tnNote:'El dinero de esta red no es real: se reparte gratis a cualquiera. Una tienda de verdad no emite facturas así. Si le piden pagar un producto con este enlace, le están engañando. No pague nada ni envíe nada más al vendedor.',
     qrHint:'Apunte con la cámara desde la aplicación Tavarov',
+    qrHintSol:'Escanee con Phantom, Solflare o NoN Wallet',
     open:'Abrir en el monedero',
     copy:'Copiar el enlace', copied:'Copiado',
     copyManual:'Copie el enlace a mano:',
@@ -484,6 +536,12 @@ const T = {
     tillWaitNote:'El cajero lo escribirá en su teléfono y aparecerá aquí solo. No hace falta cerrar esta página.',
     tillChanged:'El vendedor acaba de cambiar el importe: compruébelo otra vez.',
     tillPayBtn:'Pagar',
+    tillNetL:'En qué red paga — donde tiene sus dólares:',
+    solPayHere:'Pagar con esta billetera',
+    solPhantom:'Pagar en Phantom',
+    solSolflare:'Pagar en Solflare',
+    solPayBusy:'Confirme el pago en su billetera…',
+    solPayFail:'La billetera no hizo el pago: ',
     tillOwnBtn:'Escribir el importe yo mismo',
     tillOwnLabel:'Cuánto se paga',
     tillOwnNote:'El importe lo escribe usted: compruébelo con el vendedor antes de pagar. Si pone de menos, tendrá que pagar otra vez; si pone de más, el dinero no vuelve solo.',
@@ -500,6 +558,7 @@ const T = {
     tnH:'Bu bir TEST ağı',
     tnNote:'Buradaki para gerçek değil: isteyene bedava dağıtılıyor. Gerçek bir mağaza faturayı böyle kesmez. Bu bağlantıyla bir ürünün parasını ödemeniz isteniyorsa, kandırılıyorsunuz. Hiçbir şey ödemeyin ve satıcıya başka bir şey de göndermeyin.',
     qrHint:'Tavarov uygulamasından kamerayı doğrultun',
+    qrHintSol:'Phantom, Solflare veya NoN Wallet ile tarayın',
     open:'Cüzdanda aç',
     copy:'Bağlantıyı kopyala', copied:'Kopyalandı',
     copyManual:'Bağlantıyı elle kopyalayın:',
@@ -525,6 +584,12 @@ const T = {
     tillWaitNote:'Kasiyer tutarı kendi telefonuna yazacak ve burada kendiliğinden görünecek. Sayfayı kapatmanıza gerek yok.',
     tillChanged:'Satıcı tutarı az önce değiştirdi — yeniden kontrol edin.',
     tillPayBtn:'Öde',
+    tillNetL:'Hangi ağda ödüyorsunuz — dolarlarınız neredeyse:',
+    solPayHere:'Bu cüzdanla öde',
+    solPhantom:'Phantom’da öde',
+    solSolflare:'Solflare’de öde',
+    solPayBusy:'Ödemeyi cüzdanınızda onaylayın…',
+    solPayFail:'Cüzdan ödemeyi yapmadı: ',
     tillOwnBtn:'Tutarı kendim gireyim',
     tillOwnLabel:'Ne kadar ödenecek',
     tillOwnNote:'Tutarı siz giriyorsunuz — ödemeden önce satıcıyla doğrulayın. Eksik girerseniz tekrar ödemeniz gerekir; fazla girerseniz para kendiliğinden geri gelmez.',
@@ -541,6 +606,7 @@ const T = {
     tnH:'Esta é uma rede DE TESTE',
     tnNote:'O dinheiro dela não é real: é distribuído de graça para qualquer um. Uma loja de verdade não emite fatura assim. Se pedirem que você pague um produto por este link, você está sendo enganado. Não pague nada e não envie mais nada ao vendedor.',
     qrHint:'Aponte a câmera pelo aplicativo Tavarov',
+    qrHintSol:'Escaneie com Phantom, Solflare ou NoN Wallet',
     open:'Abrir na carteira',
     copy:'Copiar o link', copied:'Copiado',
     copyManual:'Copie o link manualmente:',
@@ -566,6 +632,12 @@ const T = {
     tillWaitNote:'O caixa vai digitar no telefone dele e o valor aparece aqui sozinho. Não precisa fechar esta página.',
     tillChanged:'O vendedor acabou de mudar o valor — confira de novo.',
     tillPayBtn:'Pagar',
+    tillNetL:'Em qual rede você paga — onde estão seus dólares:',
+    solPayHere:'Pagar com esta carteira',
+    solPhantom:'Pagar no Phantom',
+    solSolflare:'Pagar no Solflare',
+    solPayBusy:'Confirme o pagamento na sua carteira…',
+    solPayFail:'A carteira não fez o pagamento: ',
     tillOwnBtn:'Digitar o valor eu mesmo',
     tillOwnLabel:'Quanto vai pagar',
     tillOwnNote:'O valor é digitado por você — confirme com o vendedor antes de pagar. Se faltar, vai ter que pagar de novo; se sobrar, o dinheiro não volta sozinho.',
@@ -862,31 +934,36 @@ const T3 = {
   }
 };
 const T4 = {
-  ru: { promoDonH:'Тоже ведёте канал или стримите?',
+  ru: { iosHint:'iPhone не открывает кошелёк с экрана «Домой» по ссылке — так устроено у Apple. Нажмите «Скопировать ссылку», откройте NoN Wallet → «Сканер» → «Вставить скопированную ссылку». Если код на другом экране — просто наведите на него камеру.',
+        promoDonH:'Тоже ведёте канал или стримите?',
         promoDonT:'Принимайте донаты так же: USDT и USDC сразу на ваш кошелёк, оповещения в OBS, комиссия 1%. Бесплатно в NoN Wallet.',
         promoDonBtn:'Подключить донаты',
         promoH:'Тоже принимаете оплату?',
         promoT:'С NoN Wallet деньги приходят прямо на ваш кошелёк: счета и касса с QR-кодом. Бесплатно, комиссия 1% с оплаты.',
         promoBtn:'Получить NoN Wallet' },
-  en: { promoDonH:'Do you stream or run a channel too?',
+  en: { iosHint:'iPhone cannot open a Home Screen wallet from a link — that is how Apple built it. Tap “Copy the link”, open NoN Wallet → Scan → Paste a copied link. If the code is on another screen, just point the camera at it.',
+        promoDonH:'Do you stream or run a channel too?',
         promoDonT:'Take tips the same way: USDT and USDC straight to your wallet, OBS alerts, 1% fee. Free in NoN Wallet.',
         promoDonBtn:'Set up tips',
         promoH:'Want to get paid like this too?',
         promoT:'With NoN Wallet the money lands straight in your wallet: invoices and a QR checkout. Free, 1% per payment.',
         promoBtn:'Get NoN Wallet' },
-  es: { promoDonH:'¿También hace streams o tiene un canal?',
+  es: { iosHint:'El iPhone no abre desde un enlace un monedero de la pantalla de inicio: así lo hizo Apple. Toque «Copiar el enlace», abra NoN Wallet → Escanear → Pegar un enlace copiado. Si el código está en otra pantalla, apunte la cámara.',
+        promoDonH:'¿También hace streams o tiene un canal?',
         promoDonT:'Reciba donaciones igual: USDT y USDC directo a su monedero, alertas en OBS, 1% de comisión. Gratis en NoN Wallet.',
         promoDonBtn:'Activar donaciones',
         promoH:'¿También quiere cobrar así?',
         promoT:'Con NoN Wallet el dinero llega directo a su monedero: facturas y caja con código QR. Gratis, 1% por pago.',
         promoBtn:'Obtener NoN Wallet' },
-  tr: { promoDonH:'Siz de yayın yapıyor ya da kanal mı yönetiyorsunuz?',
+  tr: { iosHint:'iPhone, ana ekrandaki cüzdanı bağlantıdan açamaz — Apple böyle yaptı. «Bağlantıyı kopyala»ya dokunun, NoN Wallet\'ı açın → Tara → Kopyalanan bağlantıyı yapıştır. Kod başka bir ekrandaysa kamerayı tutmanız yeter.',
+        promoDonH:'Siz de yayın yapıyor ya da kanal mı yönetiyorsunuz?',
         promoDonT:'Bağışları aynı şekilde alın: USDT ve USDC doğrudan cüzdanınıza, OBS bildirimleri, yüzde 1 komisyon. NoN Wallet\'ta ücretsiz.',
         promoDonBtn:'Bağışları aç',
         promoH:'Siz de böyle ödeme almak ister misiniz?',
         promoT:'NoN Wallet ile para doğrudan cüzdanınıza gelir: faturalar ve QR kodlu kasa. Ücretsiz, ödeme başına yüzde 1.',
         promoBtn:'NoN Wallet\'ı edinin' },
-  pt: { promoDonH:'Você também faz lives ou tem um canal?',
+  pt: { iosHint:'O iPhone não abre por link uma carteira da Tela de Início — foi assim que a Apple fez. Toque em «Copiar o link», abra a NoN Wallet → Escanear → Colar um link copiado. Se o código estiver em outra tela, é só apontar a câmera.',
+        promoDonH:'Você também faz lives ou tem um canal?',
         promoDonT:'Receba doações do mesmo jeito: USDT e USDC direto na sua carteira, alertas no OBS, 1% de taxa. Grátis na NoN Wallet.',
         promoDonBtn:'Ativar doações',
         promoH:'Quer receber pagamentos assim também?',
@@ -906,9 +983,274 @@ let stateNow = { kind:'', k:'waiting', nk:'waitNote', arg:null };
 const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
 const LANG_KEY = 'tavarov.site.lang';
 let LANG = 'ru';
+/* ===================== Solana: оплата одной операцией =====================
+   Общий код для кошелька (www/index.html), страницы оплаты (www/pay.html)
+   и сервера (functions/api/solpay.js). Держится в одном файле и вставляется
+   в три места как есть — проверка t85 следит, чтобы копии не разошлись.
+
+   Зачем свой, а не библиотека Solana. Нужны четыре вещи: адрес счёта монеты
+   (PDA), сборка операции, разбор адреса base58 и проверка «точка ли это на
+   кривой». Библиотека для этого — полмегабайта на страницу, которую
+   открывают у прилавка по мобильному интернету.
+
+   КАК УСТРОЕНА ОПЛАТА. Контракта (программы) у нас в Solana нет и не нужно:
+   одна операция Solana может содержать несколько переводов, и проходят они
+   только все вместе. Поэтому в операции:
+     1) завести счёт монеты продавцу, если его ещё нет (createIdempotent —
+        если есть, ничего не делает и ничего не стоит);
+     2) то же для кошелька развития;
+     3) продавцу — сумма минус 1%, с меткой счёта (reference): по этой
+        метке сервер находит именно эту оплату, как в стандарте Solana Pay;
+     4) кошельку развития — 1%.
+   Переводы — transferChecked: в нём указаны монета и число знаков, и сеть
+   сама отклонит операцию, если кто-то подменит монету.                    */
+const SOL = (() => {
+  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  function b58enc(bytes){
+    let num = 0n;
+    for (const b of bytes) num = num * 256n + BigInt(b);
+    let out = '';
+    while (num > 0n){ out = B58[Number(num % 58n)] + out; num /= 58n; }
+    for (let i = 0; i < bytes.length && bytes[i] === 0; i++) out = '1' + out;
+    return out;
+  }
+  function b58dec(str, len){
+    if (typeof str !== 'string' || !str) throw new Error('bad base58');
+    let num = 0n;
+    for (const ch of str){ const i = B58.indexOf(ch); if (i < 0) throw new Error('bad base58'); num = num * 58n + BigInt(i); }
+    const bytes = [];
+    while (num > 0n){ bytes.unshift(Number(num & 255n)); num >>= 8n; }
+    for (const ch of str){ if (ch === '1') bytes.unshift(0); else break; }
+    if (len !== undefined){
+      if (bytes.length > len) throw new Error('bad length');
+      while (bytes.length < len) bytes.unshift(0);
+    }
+    return new Uint8Array(bytes);
+  }
+  /* Адрес Solana — 32 байта. Пустая строка, лишние буквы, 31 байт — нет. */
+  function isAddress(s){
+    if (typeof s !== 'string' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)) return false;
+    try{ return b58dec(s).length === 32; } catch(e){ return false; }
+  }
+  const cat = (...a) => { const n = a.reduce((s, x) => s + x.length, 0); const o = new Uint8Array(n); let p = 0; for (const x of a){ o.set(x, p); p += x.length; } return o; };
+  const u8 = n => new Uint8Array([n]);
+  function u64(v){ const b = new Uint8Array(8); let x = BigInt(v); for (let i = 0; i < 8; i++){ b[i] = Number(x & 255n); x >>= 8n; } return b; }
+  function cu16(n){ const o = []; for (;;){ let e = n & 0x7f; n >>= 7; if (n){ o.push(e | 0x80); } else { o.push(e); break; } } return new Uint8Array(o); }
+  async function sha256(bytes){ return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)); }
+  const eq = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+
+  /* ---------- Точка ли на кривой ed25519 ----------
+     Адрес счёта монеты (PDA) обязан НЕ лежать на кривой: у такой точки нет
+     закрытого ключа, и деньгами на ней распоряжается только программа. Чтобы
+     найти правильный адрес, перебираем «bump» от 255 вниз, пока хеш не
+     окажется вне кривой. Проверка — распаковка точки: y из байт, x² из
+     уравнения кривой; если x² не квадрат по модулю p — точки нет. */
+  const P = 2n ** 255n - 19n;
+  const D = (-121665n * modInv(121666n)) % P;
+  function mod(a){ const r = a % P; return r >= 0n ? r : r + P; }
+  function pow(b, e){ let r = 1n; b = mod(b); while (e > 0n){ if (e & 1n) r = r * b % P; b = b * b % P; e >>= 1n; } return r; }
+  function modInv(a){ return pow(a, P - 2n); }
+  function isOnCurve(bytes){
+    let y = 0n;
+    for (let i = 31; i >= 0; i--) y = (y << 8n) | BigInt(i === 31 ? bytes[i] & 0x7f : bytes[i]);
+    if (y >= P) return false;
+    const y2 = y * y % P;
+    const u = mod(y2 - 1n), v = mod(D * y2 + 1n);
+    const x2 = u * modInv(v) % P;
+    if (x2 === 0n) return true;
+    return pow(x2, (P - 1n) / 2n) === 1n;      // критерий Эйлера: квадрат ли
+  }
+  async function findPda(seeds, programId){
+    for (let bump = 255; bump >= 0; bump--){
+      const h = await sha256(cat(...seeds, u8(bump), programId, new TextEncoder().encode('ProgramDerivedAddress')));
+      if (!isOnCurve(h)) return h;
+    }
+    throw new Error('no PDA');
+  }
+
+  const SYSTEM = new Uint8Array(32);
+  const COMPUTE = b58dec('ComputeBudget111111111111111111111111111111', 32);
+  const TOKEN = b58dec('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 32);
+  const ATA_PROGRAM = b58dec('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL', 32);
+  /* Счёт монеты для владельца — тот самый, который заводят все кошельки. */
+  function ata(owner, mint){ return findPda([owner, TOKEN, mint], ATA_PROGRAM); }
+
+  /* ---------- Сборка операции (legacy) ----------
+     Порядок адресов задан сетью: сначала подписывающие с записью (плательщик
+     комиссии — самым первым), потом подписывающие без записи, потом
+     остальные с записью, потом остальные только для чтения. */
+  function compile(payer, blockhash, ixs){
+    const keys = [];
+    const find = k => keys.findIndex(x => eq(x.k, k));
+    const add = (k, s, w) => { const i = find(k); if (i < 0) keys.push({ k, s, w }); else { keys[i].s = keys[i].s || s; keys[i].w = keys[i].w || w; } };
+    add(payer, true, true);
+    for (const ix of ixs){ for (const a of ix.keys) add(a.k, a.s, a.w); add(ix.program, false, false); }
+    const rank = x => eq(x.k, payer) ? -1 : (x.s && x.w) ? 0 : x.s ? 1 : x.w ? 2 : 3;
+    const sorted = keys.map((x, i) => ({ x, i })).sort((a, b) => rank(a.x) - rank(b.x) || a.i - b.i).map(o => o.x);
+    const idx = k => sorted.findIndex(x => eq(x.k, k));
+    const nSig = sorted.filter(x => x.s).length;
+    const nRoSig = sorted.filter(x => x.s && !x.w).length;
+    const nRo = sorted.filter(x => !x.s && !x.w).length;
+    const parts = [u8(nSig), u8(nRoSig), u8(nRo), cu16(sorted.length), ...sorted.map(x => x.k), blockhash, cu16(ixs.length)];
+    for (const ix of ixs){
+      parts.push(u8(idx(ix.program)), cu16(ix.keys.length), new Uint8Array(ix.keys.map(a => idx(a.k))), cu16(ix.data.length), ix.data);
+    }
+    return { message: cat(...parts), signers: nSig };
+  }
+
+  const createAtaIx = (payer, ataAddr, owner, mint) => ({ program: ATA_PROGRAM, data: u8(1), keys: [
+    { k: payer, s: true, w: true }, { k: ataAddr, s: false, w: true }, { k: owner, s: false, w: false },
+    { k: mint, s: false, w: false }, { k: SYSTEM, s: false, w: false }, { k: TOKEN, s: false, w: false } ] });
+  const transferCheckedIx = (src, mint, dst, owner, amount, decimals, extra) => ({ program: TOKEN,
+    data: cat(u8(12), u64(amount), u8(decimals)),
+    keys: [ { k: src, s: false, w: true }, { k: mint, s: false, w: false }, { k: dst, s: false, w: true },
+            { k: owner, s: true, w: false }, ...(extra || []).map(k => ({ k, s: false, w: false })) ] });
+
+  /* Небольшая «надбавка за скорость»: без неё в часы нагрузки операция
+     может не попасть в блок вовсе. 50 000 микролампортов за единицу при
+     пределе 80 000 единиц — это 4 000 лампортов, сотые доли цента. */
+  const u32 = n => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; };
+  const budgetIxs = () => [
+    { program: COMPUTE, data: cat(u8(2), u32(80000)), keys: [] },
+    { program: COMPUTE, data: cat(u8(3), u64(50000)), keys: [] } ];
+
+  /* Сколько уходит продавцу и сколько — комиссия. Комиссия округляется вниз:
+     лишняя доля цента остаётся продавцу, а не нам. */
+  function split(units, feeBps){
+    const fee = BigInt(units) * BigInt(feeBps) / 10000n;
+    return { fee, toMerchant: BigInt(units) - fee };
+  }
+
+  /* Операция оплаты. Все адреса — строками base58, сумма — в мельчайших
+     долях монеты (BigInt или строка). Возвращает неподписанное сообщение. */
+  async function buildPayment(o){
+    for (const k of ['payer', 'merchant', 'treasury', 'mint', 'reference', 'blockhash'])
+      if (!isAddress(o[k])) throw new Error('bad ' + k);
+    if (o.merchant === o.payer) throw new Error('cannot pay yourself');
+    const payer = b58dec(o.payer, 32), merchant = b58dec(o.merchant, 32), treasury = b58dec(o.treasury, 32);
+    const mint = b58dec(o.mint, 32), ref = b58dec(o.reference, 32), bh = b58dec(o.blockhash, 32);
+    const { fee, toMerchant } = split(o.units, o.feeBps === undefined ? 100 : o.feeBps);
+    if (toMerchant <= 0n) throw new Error('bad amount');
+    const [src, dstM, dstT] = await Promise.all([ata(payer, mint), ata(merchant, mint), ata(treasury, mint)]);
+    const ixs = [ ...budgetIxs(), createAtaIx(payer, dstM, merchant, mint) ];
+    if (fee > 0n && !eq(treasury, merchant)) ixs.push(createAtaIx(payer, dstT, treasury, mint));
+    ixs.push(transferCheckedIx(src, mint, dstM, payer, toMerchant, o.decimals, [ref]));
+    if (fee > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee, o.decimals));
+    const { message } = compile(payer, bh, ixs);
+    return { message, fee, toMerchant, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT) } };
+  }
+
+  /* Обычный перевод: SOL — системной программой, монета — transferChecked
+     в счёт монеты получателя (заводим его, если нет: иначе перевод на
+     новый кошелёк просто отклоняется). */
+  async function buildTransfer(o){
+    for (const k of ['payer', 'to', 'blockhash']) if (!isAddress(o[k])) throw new Error('bad ' + k);
+    const payer = b58dec(o.payer, 32), to = b58dec(o.to, 32), bh = b58dec(o.blockhash, 32);
+    const units = BigInt(o.units);
+    if (units <= 0n) throw new Error('bad amount');
+    const extra = o.reference && isAddress(o.reference) ? [b58dec(o.reference, 32)] : [];
+    let ixs;
+    if (!o.mint){
+      ixs = [ { program: SYSTEM, data: cat(u32(2), u64(units)),
+                keys: [ { k: payer, s: true, w: true }, { k: to, s: false, w: true }, ...extra.map(k => ({ k, s: false, w: false })) ] } ];
+    } else {
+      const mint = b58dec(o.mint, 32);
+      const [src, dst] = await Promise.all([ata(payer, mint), ata(to, mint)]);
+      ixs = [ createAtaIx(payer, dst, to, mint), transferCheckedIx(src, mint, dst, payer, units, o.decimals, extra) ];
+    }
+    return { message: compile(payer, bh, [...budgetIxs(), ...ixs]).message };
+  }
+
+  /* Операция целиком: число подписей, подписи, сообщение. Пустая подпись —
+     нули: так операцию отдают кошельку на подпись (Solana Pay). */
+  function serialize(message, signatures){
+    return cat(cu16(signatures.length), ...signatures, message);
+  }
+
+  /* ---------- Найдена ли оплата ----------
+     По метке счёта сеть отдаёт номера операций; каждую разбираем и верим
+     только тому, что совпало ВСЁ: успешна, монета та, продавцу пришло не
+     меньше положенного, кошельку развития — не меньше 1%, и метка стоит
+     В САМОМ ПЕРЕВОДЕ продавцу (как в стандарте Solana Pay), а не где-то в
+     операции. Иначе одна операция с десятком чужих меток «оплатила» бы
+     десяток счетов (аудит 2 октября 2026). Поэтому разбор — по «сырому»
+     ответу узла (encoding: 'json'): в jsonParsed лишние адреса перевода,
+     в том числе метка, теряются. Адреса из таблиц (v0) — в loadedAddresses. */
+  function checkPayment(tx, o){
+    if (!tx || !tx.meta || tx.meta.err) return { ok: false, why: 'failed' };
+    const msg = tx.transaction && tx.transaction.message;
+    if (!msg) return { ok: false, why: 'no message' };
+    const la = tx.meta.loadedAddresses || {};
+    const keys = [...(msg.accountKeys || []), ...(la.writable || []), ...(la.readonly || [])].map(k => typeof k === 'string' ? k : k && k.pubkey);
+    const tokenProg = b58enc(TOKEN);
+    const bps = o.feeBps === undefined ? 100 : o.feeBps;
+    const want = split(o.units, bps);
+    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toAll = 0n, nAll = 0, payer = null;
+    const ixs = [...(msg.instructions || [])];
+    for (const inner of (tx.meta.innerInstructions || [])) ixs.push(...(inner.instructions || []));
+    for (const ix of ixs){
+      if (!ix || typeof ix.programIdIndex !== 'number' || keys[ix.programIdIndex] !== tokenProg) continue;
+      let d; try{ d = b58dec(String(ix.data || '')); } catch(e){ continue; }
+      if (d.length !== 10 || d[0] !== 12) continue;                 // transferChecked
+      const acc = (ix.accounts || []).map(i => keys[i]);
+      if (acc.length < 4 || acc[1] !== o.mint) continue;
+      let amt = 0n; for (let i = 8; i >= 1; i--) amt = (amt << 8n) | BigInt(d[i]);
+      if (acc[2] !== o.treasuryAta){ toAll += amt; nAll++; }
+      if (acc[2] === o.merchantAta){
+        toMAll += amt; nM++;
+        /* Ровно одна метка и это наша: с несколькими метками в одном
+           переводе одна оплата закрыла бы несколько счетов. */
+        if (acc.length === 5 && acc[4] === o.reference){ toM += amt; payer = payer || acc[3]; }
+      } else if (acc[2] === o.treasuryAta) toT += amt;
+    }
+    if (toM === 0n) return { ok: false, why: toMAll > 0n ? 'no reference' : 'not to merchant' };
+    if (toM < want.toMerchant) return { ok: false, why: 'underpaid', got: toM.toString() };
+    if (toT < want.fee) return { ok: false, why: 'no fee', got: toM.toString() };
+    /* Несколько переводов в одной операции (тому же или другим продавцам) —
+       1% нужен со всех: один перевод в казну на всех не в счёт. */
+    if (bps > 0 && toT * BigInt(10000 - bps) + BigInt(nAll) * 10000n < toAll * BigInt(bps)) return { ok: false, why: 'no fee', got: toM.toString() };
+    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
+             toAll: toAll.toString(), transfersAll: nAll };
+  }
+
+  /* Номер счёта (0x + 64 знака) и метка Solana Pay — одно и то же число:
+     метка — это те же 32 байта в base58. Сервер, страница и кошелёк
+     получают её из номера счёта одинаково и не могут разойтись. */
+  function refFromInvoice(h){
+    if (!/^0x[0-9a-fA-F]{64}$/.test(h || '')) throw new Error('bad invoice');
+    const b = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) b[i] = parseInt(h.slice(2 + i * 2, 4 + i * 2), 16);
+    return b58enc(b);
+  }
+  /* Сумма «12.5» → мельчайшие доли, строкой, без дробных чисел. */
+  function toUnits(amount, decimals){
+    const s = String(amount).trim();
+    if (!/^\d{1,12}(\.\d+)?$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    if (f.length > decimals && /[1-9]/.test(f.slice(decimals))) return null;
+    return BigInt(w + f.padEnd(decimals, '0').slice(0, decimals));
+  }
+
+  return { b58enc, b58dec, isAddress, isOnCurve, findPda, ata, compile, buildPayment, buildTransfer, serialize, split, checkPayment,
+           refFromInvoice, toUnits,
+           TOKEN, ATA_PROGRAM, SYSTEM };
+})();
+
+/* Подписи вроде «понадобится немного BNB» написаны для BNB Chain. Для счёта
+   в другой сети меняем название сети и монеты комиссии прямо в тексте —
+   одной заменой на все пять языков, а не пятью копиями каждой строки. */
+const TR_SUFFIX = { 'Ethereum':'’a', 'Base':'’e' };
+function netWords(v){
+  let net = 'bnb';
+  try{ net = (inv && inv.net) || (till && till.net) || 'bnb'; } catch(e){}   // до объявления inv — значит, ещё BNB
+  if (net === 'bnb' || net === 'bnbTestnet' || typeof v !== 'string' || v.indexOf('BNB') < 0) return v;
+  const name = NET_NAMES[net] || net, coin = NATIVE_SYM[net] || 'ETH';
+  return v.replace(/BNB Chain’e/g, name + (TR_SUFFIX[name] || '’e'))
+          .replace(/BNB Chain/g, name).replace(/\bBNB\b/g, coin);
+}
 function t(k, a){
   const d = T[LANG] || RU;
-  let v = (d[k] !== undefined) ? d[k] : (RU[k] !== undefined ? RU[k] : k);
+  let v = netWords((d[k] !== undefined) ? d[k] : (RU[k] !== undefined ? RU[k] : k));
   /* Функцией, а не строкой: у строки-замены свои спецсимволы — «$&»
      подставил бы найденное. Кошелёк с именем «X$&» превращал заголовок в
      «Оплата через X%s». */
@@ -1026,7 +1368,10 @@ function readInvoice(){
   if (!raw) return null;
   try{
     const o = JSON.parse(b64urlDecode(raw));
-    if (!/^0x[0-9a-fA-F]{40}$/.test(o.m || '')) return null;
+    /* Продавец: адрес сети типа Ethereum или, для счёта в Solana, адрес
+       Solana. Чужое в поле — счёт не показываем. */
+    if (isSolNet(o.net) ? !SOL.isAddress(o.m || '') : !/^0x[0-9a-fA-F]{40}$/.test(o.m || '')) return null;
+    if (isSolNet(o.net) && o.c !== undefined && !['USDC', 'USDT'].includes(String(o.c))) return null;
     /* Сумма — только цифры и точка. «1,000» раньше показывалось как тысяча,
        а платилась одна монета; «1e3» показывалось как есть и не платилось
        вовсе. Такой счёт не показываем: его выписали с ошибкой. */
@@ -1041,7 +1386,10 @@ function readInvoice(){
        незнакомая — это ошибка или подлог, и молча делать из неё основную
        нельзя: человек заплатил бы настоящими деньгами по «тестовому» счёту. */
     if (o.net === undefined || o.net === null || o.net === '') o.net = 'bnb';
-    if (o.net !== 'bnb' && o.net !== 'bnbTestnet') return null;
+    if (!KNOWN_NETS.includes(o.net)) return null;
+    /* В Solana без валюты — USDC, как и в самой оплате; иначе страница
+       показала бы USDT, а ждала бы не той монеты. */
+    if (isSolNet(o.net) && (o.c === undefined || o.c === null || o.c === '')) o.c = 'USDC';
     return o;
   } catch(e){ return null; }
 }
@@ -1106,13 +1454,17 @@ applyLang(NAMES[startLang] ? startLang : 'en');
    имеют восемнадцать знаков после точки — не шесть, как привыкли те, кто
    имел дело с Ethereum. Ошибка здесь не «показалось не то число», а
    платёж в миллион раз меньше нужного. */
-const CHAIN_IDS = { bnb: 56, bnbTestnet: 97 };
+const CHAIN_IDS = { bnb: 56, bnbTestnet: 97, eth: 1, base: 8453 };
+/* В Ethereum и Base у USDT и USDC шесть знаков — не восемнадцать, как в BNB. */
 const TOKENS = {
   bnb:        { USDT:{ a:'0x55d398326f99059fF775485246999027B3197955', d:18 },
                 USDC:{ a:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', d:18 },
                 TVR: { a:'0x8Baa77344Fc122967902651D0C3193cdF4c48503', d:18 } },
   bnbTestnet: { USDT:{ a:'0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e', d:6 },
-                TVR: { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } }
+                TVR: { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } },
+  eth:        { USDT:{ a:'0xdAC17F958D2ee523a2206206994597C13D831ec7', d:6 },
+                USDC:{ a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d:6 } },
+  base:       { USDC:{ a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } }
 };
 
 /* «12.5» в целые единицы — строкой, без дробных чисел. В них 0.1 + 0.2 не
@@ -1126,6 +1478,7 @@ function toUnits(amount, decimals){
 }
 
 
+function expiredNow(){ return !!(inv && inv.t && Math.floor(Date.now() / 1000) >= inv.t); }
 function payLink(){
   const p = [];
   const add = (k, v) => { if (v) p.push(k + '=' + encodeURIComponent(v)); };
@@ -1145,19 +1498,113 @@ function renderText(){
   $('to').textContent    = inv.m;
   $('net').textContent   = NET_NAMES[inv.net || 'bnb'] || inv.net;
   $('order').textContent = inv.o || '—';
+  if (isSolNet(inv.net)){ const qh = $('qrHint'); if (qh) qh.textContent = t('qrHintSol'); }
 }
+
+/* ---------- Solana: оплата кошельком в его же браузере ----------
+   Phantom (и совместимые с ним) встраивает в страницу свой провайдер.
+   Операцию собирает наш сервер (/api/solpay — та же, что по QR-коду:
+   продавцу 99%, кошельку развития 1%, с меткой счёта), кошелёк её
+   показывает человеку, подписывает и отправляет. Ключа мы не видим. */
+function solProvider(){
+  const w = window;
+  const cands = [w.phantom && w.phantom.solana, w.solflare, w.trustwallet && w.trustwallet.solana, w.solana];
+  return cands.find(p => p && typeof p.connect === 'function') || null;
+}
+function solPayQuery(){
+  const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c || 'USDC', r: SOL.refFromInvoice(inv.h) });
+  if (inv.n) q.set('n', String(inv.n).slice(0, 48));
+  if (inv.i) q.set('i', String(inv.i).slice(0, 64));
+  return q;
+}
+function solWalletPageUrl(){
+  /* Те же поля, что у обычной ссылки, включая ft/s (общий счёт кассы):
+     без них в браузере кошелька чужая оплата того же счёта показалась бы
+     «оплачено» и этому покупателю (аудит 2.10.2026). */
+  const o = { m: inv.m, a: inv.a, c: inv.c || 'USDC', h: inv.h, net: inv.net };
+  ['o', 'n', 'i', 'r', 't', 's', 'ft', 'api'].forEach(k => { if (inv[k]) o[k] = inv[k]; });
+  return location.origin + location.pathname + '?p=' + b64urlEncode(JSON.stringify(o)) + '&lang=' + LANG;
+}
+function renderSolWallets(){
+  const box = $('solWallets');
+  const on = !!(inv && isSolNet(inv.net)) && !expiredNow();
+  box.classList.toggle('hidden', !on);
+  if (!on) return;
+  const prov = solProvider();
+  $('solPayHere').classList.toggle('hidden', !prov);
+  const url = solWalletPageUrl(), ref = encodeURIComponent(location.origin);
+  $('solPhantom').href = 'https://phantom.app/ul/browse/' + encodeURIComponent(url) + '?ref=' + ref;
+  $('solSolflare').href = 'https://solflare.com/ul/v1/browse/' + encodeURIComponent(url) + '?ref=' + ref;
+  $('solPhantom').classList.toggle('hidden', !!prov);
+  $('solSolflare').classList.toggle('hidden', !!prov);
+}
+let solBusy = false;
+async function solPayInjected(){
+  const p = solProvider();
+  if (!p || solBusy) return;
+  solBusy = true;
+  const err = $('solPayErr'); err.classList.add('hidden');
+  const btn = $('solPayHere'); const old = btn.textContent; btn.disabled = true; btn.textContent = t('solPayBusy');
+  try{
+    const c = await p.connect();
+    const pk = String((c && c.publicKey) || p.publicKey || '');
+    if (!SOL.isAddress(pk)) throw new Error('no account');
+    inv.payer = pk;                       // это мы платим: «оплачено» — наше, а не чужое
+    const r = await fetch('/api/solpay?' + solPayQuery().toString(), { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ account: pk }) });
+    const d = await r.json();
+    if (!r.ok || !d || typeof d.transaction !== 'string') throw new Error((d && d.error) || ('HTTP ' + r.status));
+    const raw = Uint8Array.from(atob(d.transaction), ch => ch.charCodeAt(0));
+    if (raw[0] !== 1) throw new Error('unexpected transaction');
+    const msg = raw.slice(1 + 64);
+    if (typeof p.request === 'function'){
+      await p.request({ method: 'signAndSendTransaction', params: { message: SOL.b58enc(msg) } });
+    } else {
+      await p.signAndSendTransaction({ serializeMessage: () => msg, serialize: () => raw });
+    }
+    /* Отправлено — дальше обычное слежение за оплатой по метке счёта. */
+  } catch(e){
+    err.textContent = t('solPayFail') + String(e && e.message || e).slice(0, 120);
+    err.classList.remove('hidden');
+  } finally {
+    solBusy = false; btn.disabled = false; btn.textContent = old;
+  }
+}
+$('solPayHere').onclick = () => solPayInjected();
 
 function render(){
   renderText();
-  if (inv.net === 'bnbTestnet') $('testnetWarn').classList.remove('hidden');
+  if (/Testnet$/.test(inv.net || '')) $('testnetWarn').classList.remove('hidden');
 
   const link = payLink();
+  /* В Solana код на экране — Solana Pay: его читают Phantom, Solflare и
+     наш кошелёк. Операцию собирает наш сервер (/api/solpay): продавцу
+     сумма минус 1%, кошельку развития 1%, с меткой этого счёта. */
+  let qrText = link;
+  renderSolWallets();
+  if (isSolNet(inv.net)){
+    const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c || 'USDC', r: SOL.refFromInvoice(inv.h) });
+    if (inv.n) q.set('n', String(inv.n).slice(0, 48));
+    if (inv.i) q.set('i', String(inv.i).slice(0, 64));
+    const sp = () => 'solana:' + encodeURIComponent((inv.w || 'https://wallet.tavarov.com') + '/api/solpay?' + q.toString());
+    /* Ссылка кодируется дважды, и каждая русская буква становится
+       двенадцатью знаками. Длинное название делает код таким плотным, что
+       камера его не читает, — тогда название и товар в код не кладём:
+       оплата от этого не меняется, только подпись в кошельке короче. */
+    qrText = sp();
+    if (qrText.length > 360){ q.delete('i'); qrText = sp(); }
+    if (qrText.length > 360){ q.delete('n'); qrText = sp(); }
+  }
   /* Запасной адрес кошелька: он берётся из самого счёта, а сюда попадают
      только счета, выписанные до того, как поле появилось. Старый адрес тут
      держать нельзя — покупателя увело бы на площадку, которую мы больше не
      обновляем. */
   const walletUrl = (inv.w || 'https://wallet.tavarov.com') + '/?pay=' + encodeURIComponent(link);
   $('openWallet').href = walletUrl;
+  /* iPhone и не приложение с экрана «Домой», не встроенный браузер кошелька. */
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') && !navigator.standalone
+              && !/MetaMask|Trust|OKApp|TokenPocket|BitKeep|Bitget/i.test(navigator.userAgent || '');
+  const ih = $('iosHint'); if (ih) ih.classList.toggle('hidden', !ios || !!expiredNow());
 
   /* Чужой кошелёк — только если монета есть в таблице этой сети: иначе
      контракту нечего отдать в оплату, и шторка открылась бы впустую. */
@@ -1176,10 +1623,10 @@ function render(){
      столько не вмещает и рисуется пустым квадратом. */
   try{
     $('qr').innerHTML = '';        // в режиме кассы сюда можно прийти не с пустого места
-    new QRCode($('qr'), { text: link, width: 230, height: 230,
+    new QRCode($('qr'), { text: qrText, width: 230, height: 230,
                           correctLevel: QRCode.CorrectLevel.M });
   } catch(e){
-    try{ new QRCode($('qr'), { text: link, width: 230, height: 230,
+    try{ new QRCode($('qr'), { text: qrText, width: 230, height: 230,
                                correctLevel: QRCode.CorrectLevel.L }); }
     catch(e2){ $('qr').textContent = t('qrFail'); }
   }
@@ -1198,7 +1645,7 @@ function tick(){
       /* Магазин просроченный счёт не примет — значит и платить по нему не
          даём. Раньше надпись менялась, а кнопки оставались, и шторка из
          приложения-кошелька открывалась сама. */
-      ['openWallet', 'openOther', 'qr', 'qrHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+      ['openWallet', 'openOther', 'qr', 'qrHint', 'iosHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
       if (typeof closeWalletSheet === 'function') closeWalletSheet(true);
       return;
     }
@@ -1287,7 +1734,7 @@ let watchTimer = null;
    бы второе разрешение (и заплатил за него комиссию сети), прежде чем
    контракт отказал бы в повторной оплате. */
 function paidNow(){
-  ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+  ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint', 'iosHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
   const promo = $('promoCard');
   if (promo){
     /* Донат — предлагаем стримеру то же самое: зритель, который донатит,
@@ -1328,8 +1775,11 @@ function paidNow(){
    · WalletConnect. Он требует регистрации проекта у третьей стороны, и
      без неё работать не будет. Когда понадобится — это отдельный шаг. */
 
+/* Ethereum и Base: адреса вписываются после выпуска (tavarov.com/vypusk-seti).
+   Пока null — оплата чужим кошельком в этой сети не предлагается. */
 const PAY_CONTRACT = { bnb:'0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35',
-                       bnbTestnet:'0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6' };
+                       bnbTestnet:'0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6',
+                       eth: '0x5046399643c387d93e1467bad3fd7edf3fb459da', base: '0x5046399643c387d93e1467bad3fd7edf3fb459da' };
 const CHAIN_PARAMS = {
   bnb: { chainId:'0x38', chainName:'BNB Smart Chain',
          nativeCurrency:{ name:'BNB', symbol:'BNB', decimals:18 },
@@ -1337,7 +1787,13 @@ const CHAIN_PARAMS = {
   bnbTestnet: { chainId:'0x61', chainName:'BNB Smart Chain Testnet',
          nativeCurrency:{ name:'tBNB', symbol:'tBNB', decimals:18 },
          rpcUrls:['https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
-         blockExplorerUrls:['https://testnet.bscscan.com'] }
+         blockExplorerUrls:['https://testnet.bscscan.com'] },
+  eth: { chainId:'0x1', chainName:'Ethereum',
+         nativeCurrency:{ name:'Ether', symbol:'ETH', decimals:18 },
+         rpcUrls:['https://ethereum-rpc.publicnode.com'], blockExplorerUrls:['https://etherscan.io'] },
+  base: { chainId:'0x2105', chainName:'Base',
+         nativeCurrency:{ name:'Ether', symbol:'ETH', decimals:18 },
+         rpcUrls:['https://mainnet.base.org'], blockExplorerUrls:['https://basescan.org'] }
 };
 /* Первые четыре байта keccak256 от подписи функции. */
 const SEL = { balanceOf:'0x70a08231', allowance:'0xdd62ed3e', approve:'0x095ea7b3',
@@ -1365,7 +1821,9 @@ function tokenOf(net, c){
    теперь кончается понятной ошибкой, а не вечным кружком. */
 const READ_RPCS = {
   bnb:        ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
-  bnbTestnet: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com']
+  bnbTestnet: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com'],
+  eth:        ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'],
+  base:       ['https://base-rpc.publicnode.com', 'https://mainnet.base.org', 'https://base.drpc.org']
 };
 async function readRpc(net, method, params, opts){
   let last = null;
@@ -1472,7 +1930,7 @@ function walletApps(){
   return [
     { name:'MetaMask',     color:'#F6851B', letter:'M', href:'https://metamask.app.link/dapp/' + bare },
     { name:'Trust Wallet', color:'#0500FF', letter:'T',
-      href:'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(url) },
+      href:'https://link.trustwallet.com/open_url?coin_id=' + ({ eth:60, base:8453 }[inv.net] || 20000714) + '&url=' + encodeURIComponent(url) },
     { name:'OKX Wallet',   color:'#111111', letter:'O',
       href:'https://web3.okx.com/download?deeplink=' +
            encodeURIComponent('okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(url)) }
@@ -1754,6 +2212,18 @@ async function payWith(w){
     if (allowed < BigInt(units)){
       await ensureChain(req, net, cs);             // сеть могли переключить, пока человек думал
       alive();
+      /* USDT в Ethereum не даёт менять ненулевое разрешение на другое
+         ненулевое. Остаток от прошлой, сорвавшейся оплаты сначала обнуляем. */
+      if (allowed > 0n){
+        const h0 = await req('eth_sendTransaction', [{ from: me, to: tk.a,
+          data: SEL.approve + w32(payAddr) + wNum(0) }], 300000);
+        alive();
+        if (!isHash(h0)) throw human('wNoHash');
+        stepSet('approve', 'run', h0.slice(0, 10) + '…');
+        await waitReceipt(net, h0, gen);
+        alive();
+        if ((await call(tk.a, SEL.allowance + w32(me) + w32(payAddr))) !== 0n) throw human('wReverted');
+      }
       $('wHint').classList.add('hidden');
       const hint1 = setTimeout(() => { if (gen === payGen) $('wHint').classList.remove('hidden'); }, 9000);
       const h1 = await req('eth_sendTransaction', [{ from: me, to: tk.a,
@@ -1956,10 +2426,39 @@ async function askTill(){
   }
 }
 
+/* Сети, в которых касса примет оплату. Список даёт сервер: его подписал
+   продавец вместе с суммой (адрес в Solana — тоже). Без списка — только
+   сеть наклейки, как раньше. */
+let tillPickNet = null;
+function tillNetsOf(d){
+  const list = (d && Array.isArray(d.nets) ? d.nets : []).filter(n => KNOWN_NETS.includes(n) && (n !== 'solana' || SOL.isAddress(d.sm || '')));
+  return list.length ? list : [till ? till.net : 'bnb'];
+}
+/* Монета в выбранной сети: та, что назвал продавец, а если её там нет
+   (USDT в Base) — USDC. Доллар есть доллар. */
+function curOn(net, c){
+  if (isSolNet(net)) return ['USDC', 'USDT'].includes(c) ? c : 'USDC';
+  return (TOKENS[net] && TOKENS[net][c]) ? c : 'USDC';
+}
+function renderTillNets(d){
+  const nets = tillNetsOf(d);
+  if (!nets.includes(tillPickNet)) tillPickNet = nets[0];
+  const box = $('tillNets');
+  $('tillNetBox').classList.toggle('hidden', nets.length < 2);
+  box.innerHTML = '';
+  nets.forEach(n => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = NET_NAMES[n] || n;
+    b.setAttribute('aria-pressed', String(n === tillPickNet));
+    b.onclick = () => { tillPickNet = n; drawTillAmount(); };
+    box.appendChild(b);
+  });
+}
 function drawTillAmount(){
   const d = tillNow;
   if (!d) return;
-  $('tillAmount').textContent = d.amount + ' ' + (d.cur || 'USDT');
+  renderTillNets(d);
+  $('tillAmount').textContent = d.amount + ' ' + curOn(tillPickNet, d.cur || 'USDT');
   $('tillItem').textContent   = d.item || '';
 
   /* Возраст считаем от часов сервера, а не от часов телефона: у телефона
@@ -1983,8 +2482,10 @@ function drawTillAmount(){
 /* Из того, что назвала касса, — обычный счёт. Дальше страница работает ровно
    так же, как по присланной ссылке: тот же код, то же слежение за оплатой. */
 function fromTill(d){
-  return { m: till.m, a: d.amount, c: d.cur || 'USDT', o: d.order || '',
-           n: till.n || t('payDefault'), i: d.item || '', net: till.net, w: till.w,
+  const nets = tillNetsOf(d);
+  const net = nets.includes(tillPickNet) ? tillPickNet : nets[0];
+  return { m: isSolNet(net) ? d.sm : till.m, a: d.amount, c: curOn(net, d.cur || 'USDT'), o: d.order || '',
+           n: till.n || t('payDefault'), i: d.item || '', net: net, w: till.w,
            t: d.expiresAt || null,
            s: d.setAt || Math.floor(Date.now() / 1000),
            h: /^0x[0-9a-fA-F]{64}$/.test(d.h || '') ? d.h : newLocalId(),

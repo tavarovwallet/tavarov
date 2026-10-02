@@ -40,6 +40,7 @@
 
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
+import { SOL } from './_sol.js';
 
 const NETS = {
   bnb:        { rpcs: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org',
@@ -127,9 +128,19 @@ function signedText(o){
     'item: '     + (o.i || ''),
     'order: '    + (o.o || ''),
     'invoice: '  + (o.h || ''),
+    /* Две строки — только если касса их прислала (с 1 октября 2026): тогда
+       покупатель с наклейки сам выбирает сеть. Без них текст прежний, и
+       старые приложения продавцов подписывают ровно то же, что и раньше. */
+    ...(o.x ? ['networks: all'] : []),
+    ...(o.s ? ['solana: ' + o.s] : []),
     'time: '     + o.ts
   ].join('\n');
 }
+/* Сети, в которых покупатель с наклейки может заплатить. Адрес продавца в
+   BNB, Ethereum и Base один и тот же; в Solana — свой, и его продавец
+   подписал вместе с суммой своим ключом. */
+const MULTI_NETS = ['bnb', 'eth', 'base'];
+const okSolAddr = v => { if (!SOL.isAddress(v || '')) return false; try{ return SOL.isOnCurve(SOL.b58dec(v, 32)); } catch(e){ return false; } };
 
 const slot = (net, m, k) => 'till:' + net + ':' + m.toLowerCase() + ':' + k;
 
@@ -278,6 +289,17 @@ async function onPost({ request, env }){
   const fields = { action, m, k, net, ts,
                    c: body.c || '', a: body.a || '', i: body.i || '',
                    o: body.o || '', h: body.h || '' };
+  if (body.x){
+    /* Выбор сети — только в основной сети и только за доллары: TVR есть
+       лишь в BNB, а в тестовой сети других сетей нет. */
+    if (net !== 'bnb' || action !== 'set' || !['USDT', 'USDC'].includes(fields.c))
+      return json({ error: 'network choice is only for USDT or USDC on the main network' }, 400);
+    fields.x = 1;
+    if (body.s){
+      if (!okSolAddr(String(body.s))) return json({ error: 'bad solana address' }, 400);
+      fields.s = String(body.s);
+    }
+  } else if (body.s) return json({ error: 'a solana address comes only with the network choice' }, 400);
 
   if (action === 'set'){
     if (!okAmount(fields.a))   return json({ error: 'bad amount' }, 400);
@@ -334,6 +356,10 @@ async function onPost({ request, env }){
 
   const value = { amount: fields.a, cur: fields.c, item: fields.i, order: fields.o,
                   h: fields.h, setAt: ts, expiresAt: now + TTL, ts };
+  if (fields.x){
+    value.nets = MULTI_NETS.concat(fields.s ? ['solana'] : []);
+    if (fields.s) value.sm = fields.s;
+  }
   try{
     await env.TILL.put(key, JSON.stringify(value), { expirationTtl: TTL });
   } catch(e){

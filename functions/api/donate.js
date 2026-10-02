@@ -26,12 +26,42 @@ const NETS = {
                        '0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c'],   // v2
                 tokens: { USDT: { a:'0x55d398326f99059fF775485246999027B3197955', d:18 },
                           USDC: { a:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', d:18 },
-                          TVR:  { a:'0x8Baa77344Fc122967902651D0C3193cdF4c48503', d:18 } } },
+                          TVR:  { a:'0x8Baa77344Fc122967902651D0C3193cdF4c48503', d:18 } },
+                blockSec: 0.45, logStep: 5000, goalStep: 20000, confirm: 12 },
   bnbTestnet: { rpcs: ['https://bsc-testnet-rpc.publicnode.com'],
                 pays: ['0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6'],
                 tokens: { USDT: { a:'0xb4ac75E8CF7c768FFd9fAfeAF1bF77B48209524e', d:6  },
-                          TVR:  { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } } }
+                          TVR:  { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } },
+                blockSec: 0.45, logStep: 5000, goalStep: 20000, confirm: 12 },
+  /* Ethereum и Base — тот же контракт оплаты (v3), выпущен 1 октября 2026.
+     Доллары там с шестью знаками. На Base только USDC: USDT там нет. */
+  eth:        { rpcs: ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'],
+                pays: ['0x5046399643c387d93e1467bad3fd7edf3fb459da'],
+                tokens: { USDT: { a:'0xdAC17F958D2ee523a2206206994597C13D831ec7', d:6 },
+                          USDC: { a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d:6 } },
+                blockSec: 12, logStep: 5000, goalStep: 5000, confirm: 3 },
+  base:       { rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
+                pays: ['0x5046399643c387d93e1467bad3fd7edf3fb459da'],
+                tokens: { USDC: { a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } },
+                blockSec: 2, logStep: 3000, goalStep: 3000, confirm: 6 },
+  /* Solana — без контракта: одна операция переводит 99% автору и 1% в
+     казну, а номер счёта лежит в ней меткой (reference). Проверка — в
+     functions/api/_sol.js, той же, что у страницы оплаты. */
+  solana:        { sol: true }
 };
+const isSol = net => !!(NETS[net] && NETS[net].sol);
+/* Адрес как ключ: в EVM регистр букв ничего не значит, в Solana (base58)
+   — значит всё. Приводить base58 к строчным нельзя: два разных кошелька
+   могли бы стать одним ключом. */
+const ak = (net, to) => isSol(net) ? String(to) : String(to).toLowerCase();
+function okTo(net, v){
+  if (!isSol(net)) return okAddr(v);
+  /* Только настоящий кошелёк (точка на кривой): у адреса программы нет
+     ключа, донаты на него было бы некому забрать. */
+  if (!SOL.isAddress(v)) return false;
+  try{ return SOL.isOnCurve(SOL.b58dec(v, 32)); } catch(e){ return false; }
+}
+function parseNet(v){ return Object.prototype.hasOwnProperty.call(NETS, v) ? v : 'bnb'; }
 
 const PENDING_TTL = 2 * 3600;
 const DONE_TTL    = 180 * 86400;
@@ -56,10 +86,16 @@ const json = (o, code) => new Response(JSON.stringify(o), {
 function netConfig(net, env){
   const base = NETS[net];
   const e = env || {};
+  if (base.sol){
+    const sn = SOLNETS[net], tokens = {};
+    for (const k of Object.keys(sn.tokens)) tokens[k] = { a: sn.tokens[k].mint, d: sn.tokens[k].d };
+    return { sol: true, net, env, tokens, treasury: sn.treasury, feeBps: sn.feeBps };
+  }
   return {
     rpcs: e.TAVAROV_RPC ? [e.TAVAROV_RPC] : base.rpcs,
     pays: e.TAVAROV_PAY ? [e.TAVAROV_PAY] : base.pays,
-    tokens: base.tokens
+    tokens: base.tokens,
+    blockSec: base.blockSec, logStep: base.logStep, goalStep: base.goalStep, confirm: base.confirm
   };
 }
 
@@ -80,6 +116,7 @@ async function rpc(urls, method, params){
 
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
+import { SOL, SOLNETS, solRpc, solRefSigs } from './_sol.js';
 
 const PAID_TOPIC = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
 const hexN = n => '0x' + Math.max(0, n).toString(16);
@@ -93,10 +130,11 @@ const padA = a => '0x' + '0'.repeat(24) + a.toLowerCase().replace(/^0x/, '');
    этим путём не присвоить. */
 async function paidFromLog(cfg, hub, h, to, since){
   const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-  const back = Math.min(20000, Math.ceil((Math.floor(Date.now() / 1000) - since + 60) / 0.45) + 50);
+  const step = cfg.logStep || 5000;
+  const back = Math.min(step * 4, Math.ceil((Math.floor(Date.now() / 1000) - since + 60) / (cfg.blockSec || 0.45)) + 50);
   const from = Math.max(0, latest - back);
-  for (let hi = latest; hi >= from; hi -= 5000){
-    const lo = Math.max(from, hi - 4999);
+  for (let hi = latest; hi >= from; hi -= step){
+    const lo = Math.max(from, hi - step + 1);
     const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: hub, fromBlock: hexN(lo), toBlock: hexN(hi),
       topics: [PAID_TOPIC, padA(to)] }]);
     for (const l of (logs || [])){
@@ -110,9 +148,46 @@ async function paidFromLog(cfg, hub, h, to, since){
   return null;
 }
 
+/* Solana: операции с меткой счёта, где этому автору пришли USDC или USDT,
+   а в казну — её 1%. Сумма доната — всё, что заплатил зритель (автору плюс
+   комиссия), как и в контракте других сетей. Узел молчит — ошибка, а не
+   «не оплачено». */
+async function solPaid(cfg, h, to){
+  const reference = SOL.refFromInvoice(h);
+  const owner = SOL.b58dec(to, 32), treasury = SOL.b58dec(cfg.treasury, 32);
+  const sigs = await solRefSigs(cfg.net, reference, cfg.env);
+  for (const s of sigs){
+    const tx = await solRpc(cfg.net, 'getTransaction', [s.signature, { encoding: 'json', commitment: 'confirmed', maxSupportedTransactionVersion: 0 }], cfg.env);
+    for (const k of Object.keys(cfg.tokens)){
+      const mint = cfg.tokens[k].a;
+      const mb = SOL.b58dec(mint, 32);
+      const merchantAta = SOL.b58enc(await SOL.ata(owner, mb));
+      const treasuryAta = SOL.b58enc(await SOL.ata(treasury, mb));
+      /* Сначала узнаём, сколько пришло автору, потом проверяем, что 1% в
+         казну тоже есть: для этого «счёт» — это ровно уплаченная сумма. */
+      const probe = SOL.checkPayment(tx, { reference, mint, merchantAta, treasuryAta, units: 1n, feeBps: 0 });
+      if (!probe.ok) continue;
+      const toM = BigInt(probe.toMerchant), toT = BigInt(probe.fee);
+      if (toM === 0n) continue;
+      /* Сумма доната — то, что пришло автору, плюс положенный с этого 1%
+         (а не всё, что ушло в казну: один перевод в казну мог быть общим на
+         несколько переводов). И 1% должен быть со всех переводов операции. */
+      const bps = BigInt(cfg.feeBps);
+      const feeOwn = (toM * bps + (10000n - bps) - 1n) / (10000n - bps);
+      const total = toM + feeOwn;
+      if (SOL.split(total, cfg.feeBps).fee > toT) continue;
+      const all = BigInt(probe.toAll || probe.toMerchant);
+      if (toT * (10000n - bps) + BigInt(probe.transfersAll || 1) * 10000n < all * bps) continue;
+      return { amount: total, buyer: probe.payer || '', refunded: 0n, token: mint };
+    }
+  }
+  return null;
+}
+
 /* Оплата по номеру счёта — в любом из контрактов оплаты, но только этому
    блогеру. Чужая оплата с тем же номером не в счёт. */
 async function paidSale(cfg, h, to, since){
+  if (cfg.sol) return solPaid(cfg, h, to);
   let silent = 0;
   for (const hub of cfg.pays){
     let raw = null;
@@ -154,13 +229,13 @@ function tokenOf(cfg, addr){
   return null;
 }
 
-const pKey = (net, to, h) => 'donp:' + net + ':' + to.toLowerCase() + ':' + h.toLowerCase();
+const pKey = (net, to, h) => 'donp:' + net + ':' + ak(net, to) + ':' + h.toLowerCase();
 const hKey = h => 'donh:' + h.toLowerCase();
 /* Список донатов автора — одним значением. Раньше список собирался
    перебором ключей (list), а перебор на бесплатном KV — тысяча в сутки на
    всех: пятьсот запросов с чужими адресами, и лента донатов лежит до
    полуночи. Одно чтение ключа таких ограничений почти не знает. */
-const iKey = (net, to) => 'donidx:' + net + ':' + to.toLowerCase();
+const iKey = (net, to) => 'donidx:' + net + ':' + ak(net, to);
 const INDEX_MAX = 500;
 async function readIndex(env, net, to){
   const v = await env.TILL.get(iKey(net, to));
@@ -190,12 +265,12 @@ async function promote(env, cfg, net, to, entry){
   if (sale.amount / (10n ** BigInt(Math.max(0, tk.d - 2))) < BigInt(MIN_CENTS)) return null;
   const ts = Date.now();
   const meta = { h: entry.h, n: entry.n, m: entry.m, ts,
-                 a: sale.amount.toString(), t: sale.token.toLowerCase(), p: sale.buyer.toLowerCase(),
+                 a: sale.amount.toString(), t: ak(net, sale.token), p: ak(net, sale.buyer),
                  s: tk ? tk.sym : '', d: tk ? tk.d : 18 };
   /* И под номером счёта — чтобы экран стрима находил донат одним чтением,
      без перебора списка (перебор на бесплатном тарифе — тысяча в сутки на
      всех, а экран спрашивает часто). */
-  await env.TILL.put(hKey(entry.h), JSON.stringify(Object.assign({ to: to.toLowerCase(), net }, meta)), { expirationTtl: DONE_TTL });
+  await env.TILL.put(hKey(entry.h), JSON.stringify(Object.assign({ to: ak(net, to), net }, meta)), { expirationTtl: DONE_TTL });
   await addToIndex(env, net, to, meta);
   await env.TILL.delete(pKey(net, to, entry.h));
   return meta;
@@ -205,7 +280,7 @@ async function promote(env, cfg, net, to, entry){
    «Оплачено» — чтобы донат не пропал, если автор в эти два часа не
    открывал ни приложение, ни экран OBS. */
 export async function promoteByHash(env, net, to, h){
-  if (!env || !env.TILL || !NETS[net] || !okAddr(to) || !okHash(h)) return null;
+  if (!env || !env.TILL || !Object.prototype.hasOwnProperty.call(NETS, net) || !okTo(net, to) || !okHash(h)) return null;
   if ((await env.TILL.get(hKey(h))) !== '1') return null;
   const raw = await env.TILL.get(pKey(net, to, h));
   let e = null; try{ e = raw ? JSON.parse(raw) : null; } catch(x){}
@@ -214,6 +289,65 @@ export async function promoteByHash(env, net, to, h){
 }
 const view = m => ({ h: m.h, nick: m.n || '', msg: m.m || '', ts: m.ts,
                      amount: fmtUnits(m.a || '0', Number(m.d) || 18), cur: m.s || '', payer: m.p || '' });
+
+
+/* ---------- Solana: подпись и очередь ---------- */
+async function edVerify(addr, sigB58, text){
+  if (typeof sigB58 !== 'string' || !/^[1-9A-HJ-NP-Za-km-z]{60,100}$/.test(sigB58)) throw new Error('format');
+  const sig = SOL.b58dec(sigB58, 64);
+  if (sig.length !== 64) throw new Error('format');
+  const raw = SOL.b58dec(addr, 32), data = new TextEncoder().encode(text);
+  /* Стандартное имя алгоритма; старые Workers знали его как NODE-ED25519. */
+  try{
+    const key = await crypto.subtle.importKey('raw', raw, { name: 'Ed25519' }, false, ['verify']);
+    return await crypto.subtle.verify({ name: 'Ed25519' }, key, sig, data);
+  } catch(e){
+    const alg = { name: 'NODE-ED25519', namedCurve: 'NODE-ED25519' };
+    const key = await crypto.subtle.importKey('raw', raw, alg, false, ['verify']);
+    return crypto.subtle.verify(alg, key, sig, data);
+  }
+}
+
+/* Ждущие донаты Solana — одним значением, не больше SOLQ_MAX. Пишем его,
+   только когда что-то поменялось: бесплатный KV — тысяча записей в сутки. */
+const K_SOLQ = 'donsolq';
+const SOLQ_MAX = 300;
+async function readSolQueue(env){
+  const v = await env.TILL.get(K_SOLQ);
+  if (!v) return [];
+  try{ const a = JSON.parse(v); return Array.isArray(a) ? a : []; } catch(e){ return []; }
+}
+/* Проверить до max ждущих (отбор — pick), подтвердить оплаченные, убрать
+   подтверждённые и просроченные. Таймер зовёт каждую минуту и смотрит
+   каждый раз следующее окно очереди, чтобы до каждого дошла очередь. */
+async function checkSolQueue(env, pick, max, rotate){
+  const all = await readSolQueue(env);
+  const now = Math.floor(Date.now() / 1000);
+  const live = all.filter(e => e && okHash(e.h) && isSol(e.net) && now - e.ts < PENDING_TTL);
+  let drop = new Set();
+  let cand = live.filter(pick || (() => true));
+  if (rotate && cand.length > max){
+    const start = (Math.floor(now / 60) * max) % cand.length;
+    cand = cand.slice(start).concat(cand.slice(0, start));
+  }
+  let promoted = 0, checked = 0;
+  for (const e of cand.slice(0, max)){
+    checked++;
+    try{
+      const flag = await env.TILL.get(hKey(e.h));
+      if (flag !== '1'){ drop.add(e.h); continue; }               // уже подтверждён другим путём
+      if (await promoteByHash(env, e.net, e.to, e.h)){ promoted++; drop.add(e.h); }
+    } catch(err){ /* узел молчит — в следующий раз */ }
+  }
+  const rest = live.filter(e => !drop.has(e.h));
+  if (rest.length !== all.length) await env.TILL.put(K_SOLQ, JSON.stringify(rest), { expirationTtl: PENDING_TTL + 600 });
+  return { checked, promoted, waiting: rest.length };
+}
+/* Для таймера API (functions/api/v1). */
+export async function promoteSolDonations(env){
+  if (!env || !env.TILL) return null;
+  return checkSolQueue(env, null, 8, true);
+}
 
 /* ===================== страница автора =====================
    Приветствие и цель сбора. Пишет их только сам автор: запрос подписан
@@ -225,7 +359,7 @@ const view = m => ({ h: m.h, nick: m.n || '', msg: m.m || '', ts: m.ts,
    того блока, когда цель поставлена. Так число нельзя ни подкрутить, ни
    сбить двумя одновременными запросами: любой пересчёт из сети даёт то же
    самое. Храним только «до какого блока досчитали» и сумму на тот блок. */
-const kProf = (net, to) => 'donprof:' + net + ':' + to.toLowerCase();
+const kProf = (net, to) => 'donprof:' + net + ':' + ak(net, to);
 const MAX_GREETING = 200, MAX_GOAL_TITLE = 48;
 const CONFIRM_BLOCKS = 12;
 const GOAL_STEP = 20000;           // сколько блоков журнала спрашиваем за раз
@@ -233,7 +367,7 @@ const GOAL_MAX_STEPS = 6;          // и сколько раз за один з�
 
 export function profileText(o){
   return ['Tavarov donation page',
-          'wallet: ' + String(o.to).toLowerCase(),
+          'wallet: ' + ak(o.net, o.to),
           'network: ' + o.net,
           'greeting: ' + (o.greeting || ''),
           'goal: ' + (o.goal || ''),
@@ -273,7 +407,7 @@ async function recoverByQuorum(urls, hash, sig){
 
 async function saveProfile(env, net, b){
   const to = String(b.to || '');
-  if (!okAddr(to)) return json({ error: 'bad address' }, 400);
+  if (!okTo(net, to)) return json({ error: 'bad address' }, 400);
   const greeting = b.greeting === undefined ? '' : b.greeting;
   const goal = b.goal === undefined ? '' : b.goal;
   if (!okText(greeting, MAX_GREETING)) return json({ error: 'greeting: up to 200 characters, one line' }, 400);
@@ -284,13 +418,21 @@ async function saveProfile(env, net, b){
   const ts = Number(b.ts);
   const now = Math.floor(Date.now() / 1000);
   if (!Number.isInteger(ts) || Math.abs(now - ts) > 300) return json({ error: 'the signature is too old, sign again' }, 400);
-  if (typeof b.sig !== 'string' || !/^0x[0-9a-fA-F]{130}$/.test(b.sig)) return json({ error: 'bad signature format' }, 400);
-
   const text = profileText({ to, net, greeting, goal, target: b.target === undefined ? '' : String(b.target), restart: !!b.restart, ts });
-  let signer = null;
-  try{ signer = await recoverByQuorum(netConfig('bnb', env).rpcs, messageHash(text), b.sig); }
-  catch(e){ return json({ error: 'could not check the signature right now, try again' }, 503); }
-  if (!signer || signer !== to.toLowerCase()) return json({ error: 'this page was not signed by its owner' }, 403);
+  if (isSol(net)){
+    /* Solana: подпись ed25519 ключом кошелька (base58, 64 байта) — как
+       «подписать сообщение» в Phantom. Проверяем здесь, сеть не нужна. */
+    let good = false;
+    try{ good = await edVerify(to, b.sig, text); }
+    catch(e){ return json({ error: 'bad signature format' }, 400); }
+    if (!good) return json({ error: 'this page was not signed by its owner' }, 403);
+  } else {
+    if (typeof b.sig !== 'string' || !/^0x[0-9a-fA-F]{130}$/.test(b.sig)) return json({ error: 'bad signature format' }, 400);
+    let signer = null;
+    try{ signer = await recoverByQuorum(netConfig('bnb', env).rpcs, messageHash(text), b.sig); }
+    catch(e){ return json({ error: 'could not check the signature right now, try again' }, 503); }
+    if (!signer || signer !== to.toLowerCase()) return json({ error: 'this page was not signed by its owner' }, 403);
+  }
 
   const old = (await readProfile(env, net, to)) || {};
   /* Старую подпись второй раз не принимаем: иначе подсмотренный запрос
@@ -304,8 +446,10 @@ async function saveProfile(env, net, b){
     else {
       const cfg = netConfig(net, env);
       let start = 0;
-      try{ start = Math.max(0, parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16) - CONFIRM_BLOCKS); }
-      catch(e){ return json({ error: 'network is not answering, try again' }, 503); }
+      if (!cfg.sol){
+        try{ start = Math.max(0, parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16) - cfg.confirm); }
+        catch(e){ return json({ error: 'network is not answering, try again' }, 503); }
+      }
       p.goal = { t: goal.trim(), c: target, s: now, b: start, x: start, r: 0 };
     }
   }
@@ -318,14 +462,28 @@ async function saveProfile(env, net, b){
    бесплатный KV — тысяча записей в сутки на всё сразу. */
 async function refreshGoal(env, cfg, net, to, p){
   const g = p.goal;
+  /* Solana: журнала контракта нет — считаем подтверждённые донаты этому
+     автору с момента, когда цель поставлена. Каждый из них проверен в сети
+     (см. solPaid), так что и это число не подкрутить. Записей не нужно. */
+  if (cfg.sol){
+    let r = 0;
+    for (const m of await readIndex(env, net, to)){
+      if (!m || m.ts < g.s * 1000) continue;
+      const c = toCents(m);
+      if (c !== null) r += c;
+    }
+    g.r = r;
+    return;
+  }
   const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-  const safe = latest - CONFIRM_BLOCKS;
+  const safe = latest - (cfg.confirm || CONFIRM_BLOCKS);
   const origX = g.x;
   let from = g.x + 1, added = 0, steps = 0;
   const stable = {};
   for (const k of ['USDT', 'USDC']) if (cfg.tokens[k]) stable[cfg.tokens[k].a.toLowerCase()] = cfg.tokens[k].d;
-  while (from <= safe && steps < GOAL_MAX_STEPS){
-    const to2 = Math.min(safe, from + GOAL_STEP - 1);
+  const gstep = cfg.goalStep || GOAL_STEP;
+  while (from <= safe && steps < GOAL_MAX_STEPS * Math.max(1, Math.round(GOAL_STEP / gstep / 2))){
+    const to2 = Math.min(safe, from + gstep - 1);
     const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pays[0], fromBlock: hexN(from), toBlock: hexN(to2),
       topics: [PAID_TOPIC, padA(to)] }]);
     for (const l of (logs || [])){
@@ -338,7 +496,7 @@ async function refreshGoal(env, cfg, net, to, p){
     g.x = to2; from = to2 + 1; steps++;
   }
   if (added > 0) g.r += added;
-  if (added > 0 || g.x - origX >= 50000){
+  if (added > 0 || g.x - origX >= (cfg.goalStep || GOAL_STEP) * 2.5){
     const cur = await readProfile(env, net, to);
     /* Пока считали, автор мог поменять цель — тогда наш пересчёт уже ни к чему. */
     if (cur && cur.goal && cur.goal.s === g.s && cur.goal.b === g.b && (cur.goal.x || 0) < g.x){
@@ -358,7 +516,7 @@ async function onPost({ request, env }){
   let b; try{ b = JSON.parse(text); } catch(e){ return json({ error: 'bad json' }, 400); }
   if (!b || typeof b !== 'object') return json({ error: 'bad json' }, 400);
 
-  const net = b.net === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+  const net = parseNet(b.net);
   if (b.action === 'profile'){
     if (await overLimit(request, env, 'donprof', 10, 600)) return tooMany();
     return saveProfile(env, net, b);
@@ -366,7 +524,7 @@ async function onPost({ request, env }){
   if (await overLimit(request, env, 'donpost', 20, 600)) return tooMany();
   const to = String(b.to || ''), h = String(b.h || '');
   const nick = b.nick === undefined ? '' : b.nick, msg = b.msg === undefined ? '' : b.msg;
-  if (!okAddr(to)) return json({ error: 'bad address' }, 400);
+  if (!okTo(net, to)) return json({ error: 'bad address' }, 400);
   if (!okHash(h))  return json({ error: 'bad invoice id' }, 400);
   if (!okText(nick, MAX_NICK)) return json({ error: 'bad nick' }, 400);
   if (!okText(msg, MAX_MSG))   return json({ error: 'bad message' }, 400);
@@ -387,16 +545,47 @@ async function onPost({ request, env }){
   await env.TILL.put(hKey(h), '1', { expirationTtl: DONE_TTL });
   const entry = { h, n: nick.trim(), m: msg.trim(), ts: Math.floor(Date.now() / 1000) };
   await env.TILL.put(pKey(net, to, h), JSON.stringify(entry), { expirationTtl: PENDING_TTL, metadata: entry });
+  /* В Solana нет журнала контракта, по которому таймер находит оплаты, —
+     поэтому кладём счёт в короткую очередь, её таймер и проверяет. */
+  if (isSol(net)){
+    try{
+      const q = await readSolQueue(env);
+      q.push({ net, to, h: h.toLowerCase(), ts: entry.ts });
+      await env.TILL.put(K_SOLQ, JSON.stringify(q.slice(-SOLQ_MAX)), { expirationTtl: PENDING_TTL + 600 });
+    } catch(e){ /* не беда: подтвердят страница оплаты и экран OBS */ }
+  }
   return json({ ok: true });
 }
 
 async function onGet({ request, env }){
   if (!env || !env.TILL) return json({ error: 'storage is not configured' }, 503);
   const url = new URL(request.url);
-  const net = url.searchParams.get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+  const net = parseNet(url.searchParams.get('net'));
   const to = url.searchParams.get('to') || '';
-  if (!okAddr(to)) return json({ error: 'bad address' }, 400);
+  if (!okTo(net, to)) return json({ error: 'bad address' }, 400);
   const cfg = netConfig(net, env);
+
+  /* Solana, экран OBS: адреса долларовых счетов автора. По ним экран сам
+     видит в сети новые поступления и только тогда спрашивает нас. */
+  if (cfg.sol && url.searchParams.get('atas') === '1'){
+    const owner = SOL.b58dec(to, 32), atas = {};
+    for (const k of Object.keys(cfg.tokens)) atas[k] = SOL.b58enc(await SOL.ata(owner, SOL.b58dec(cfg.tokens[k].a, 32)));
+    return json({ atas });
+  }
+  /* Solana, экран OBS увидел поступление: проверяем ждущие донаты этого
+     автора и отдаём подтверждённые после since (мс). */
+  if (cfg.sol && url.searchParams.get('recent') === '1'){
+    if (await overLimit(request, env, 'donrecent', 40, 60)) return tooMany();
+    try{ await checkSolQueue(env, e => e.net === net && e.to === to, 5); } catch(e){}
+    const since = Number(url.searchParams.get('since')) || (Date.now() - 600000);
+    const items = [];
+    for (const m of await readIndex(env, net, to)){
+      if (!m || m.ts < since) break;
+      items.push(view(m));
+      if (items.length >= 20) break;
+    }
+    return json({ items });
+  }
 
   /* Один донат по номеру счёта — так спрашивает экран стрима (alert.html):
      он сам видит оплату в сети и за текстом приходит сюда. Без перебора
@@ -408,7 +597,7 @@ async function onGet({ request, env }){
     if (!v) return json({ item: null });
     if (v !== '1'){
       let m = null; try{ m = JSON.parse(v); } catch(e){}
-      if (!m || m.to !== to.toLowerCase() || m.net !== net) return json({ item: null });
+      if (!m || m.to !== ak(net, to) || m.net !== net) return json({ item: null });
       return json({ item: view(m) });
     }
     const raw = await env.TILL.get(pKey(net, to, one));
@@ -501,7 +690,7 @@ export async function migrateDonIndex(env){
     for (const k of (res.keys || [])){
       const m = k.metadata; if (!m || !m.h) continue;
       const p = k.name.split(':');                     // don:net:to:rts:h
-      if (p.length < 5 || !NETS[p[1]] || !okAddr(p[2])) continue;
+      if (p.length < 5 || !NETS[p[1]] || NETS[p[1]].sol || !okAddr(p[2])) continue;
       (groups[p[1] + ':' + p[2]] = groups[p[1] + ':' + p[2]] || []).push(m);
     }
     cursor = res.list_complete ? null : res.cursor;

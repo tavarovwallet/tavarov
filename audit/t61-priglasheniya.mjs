@@ -64,7 +64,7 @@ R.ok('в напоминании — кто пригласил', /0x5B38/i.test(a
 await cashback();
 R.ok('ВО ВКЛАДКЕ «КЕШБЭК» ЕСТЬ ПРИГЛАШЕНИЯ', await vis('#refBox'));
 const link = await page.textContent('#refLink');
-R.ok('МОЯ ССЫЛКА — НАШ ДОМЕН И МОЙ АДРЕС', link === 'https://wallet.tavarov.com/?ref=' + me, link);
+R.ok('МОЯ ССЫЛКА — НАШ ДОМЕН И МОЙ АДРЕС (страница приглашения для любого кошелька)', link === 'https://wallet.tavarov.com/ref?by=' + me, link);
 R.ok('доля названа числом из контракта — 20%', /20% /.test(await page.textContent('#refShareLine')), await page.textContent('#refShareLine'));
 R.ok('поступления можно проверить в обозревателе', /bscscan\.com\/address\/0x/i.test(await page.getAttribute('#refScanLink', 'href')));
 R.ok('ПРОДАВЦУ ПРЕДЛОЖЕНО ЗАКРЕПИТЬ ПРИГЛАСИВШЕГО', await vis('#refBindBox'));

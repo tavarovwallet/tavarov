@@ -1,6 +1,6 @@
 # Tavarov Pay
 
-Take payments in USDT and USDC on BNB Chain, with no bank in the middle.
+Take payments in USDT and USDC on BNB Chain, Ethereum, Base and Solana, with no bank in the middle.
 
 A seller fills in an amount and gets a payment link with a QR code. The buyer
 pays, and the money goes **from their wallet straight to the seller's wallet**.
@@ -53,9 +53,37 @@ minutes — better to hear it from us.
   it created, so it can tell you when one is paid. Delete the chat and it has
   nothing to send to. See `functions/api/tg/`.
 * **In-wallet swap charges 0.5%.** NoN Wallet swaps through the KyberSwap
-  aggregator; 0.5% of the swap goes to the development wallet. The wallet
-  decodes the route before signing and refuses it if the router, tokens,
-  receiver, amounts or fee differ from what you were shown.
+  aggregator (BNB Chain, Ethereum, Base) and Jupiter (Solana), and between
+  networks through Relay; 0.5% of the swap goes to the development wallet. The
+  wallet decodes the route before signing and refuses it if the router, tokens,
+  receiver, amounts or fee differ from what you were shown. On Solana it also
+  simulates the transaction and refuses it if any of your token accounts other
+  than the one you are swapping from would lose a single unit.
+* **Four networks, not all equal.** BNB Chain is home: TVR points and names
+  live only there. On Ethereum and Base the same payment contract is deployed
+  (same source, same compiler settings), but it is **not yet verified on
+  Etherscan/Basescan** — until it is, compare the bytecode yourself. Solana has
+  no contract of ours at all: a payment is one transaction the buyer signs,
+  99% to the merchant and 1% to the development wallet, found by its Solana Pay
+  reference (see `solana/`). The 1% on Solana is set by our server code, not
+  enforced by a contract.
+
+## Ethereum and Base
+
+| Network | What | Address |
+|---|---|---|
+| Ethereum (chainId 1) | TavarovPay — payments | `0x5046399643c387d93e1467bad3fd7edf3fb459da` |
+| Ethereum (chainId 1) | TavarovCharges — invoices | `0x45465b98a3cc486740be84fd3b1e21e0d3548360` |
+| Base (chainId 8453) | TavarovPay — payments | `0x5046399643c387d93e1467bad3fd7edf3fb459da` |
+| Base (chainId 8453) | TavarovCharges — invoices | `0xca4fe6e5df7159910b2165acfa9bb8b19810d65c` |
+
+No TVR and no names on these networks.
+
+## Solana
+
+No program of ours. `solana/solcore.js` builds and verifies the payment
+transaction; `functions/api/solpay.js` is the Solana Pay transaction-request
+endpoint; development wallet: `Ew2cTsGyPv7pmn6CyLzV1X1K8A6nBWvJvmkvMY1sM4KU`.
 
 ## Mainnet contracts (BNB Chain, chainId 56)
 
@@ -98,7 +126,9 @@ www/donate.html     streamer donation page; www/alert.html is the OBS alert
 www/ref.html        partner invite page: pin a referrer in one transaction
 functions/api/      server side: "has this been paid?", "what is the till
                     asking for right now?", the REST API (v1), the Telegram
-                    bot (tg) and the partner statistics (_ref.js)
+                    bot (tg), the partner statistics (_ref.js), Solana Pay
+                    (solpay.js, _sol.js) and a narrow Solana RPC fallback
+solana/             a dependency-free Solana Pay library (see its README)
 woocommerce/        the Tavarov Pay plugin for WooCommerce (GPL)
 site/               the tavarov.com website
 token/              contracts

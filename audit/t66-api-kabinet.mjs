@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 const require = createRequire(import.meta.url);
 const { chromium } = require('/home/claude/.npm-global/lib/node_modules/playwright');
 const E = require('/home/claude/apk/www/lib/ethers.umd.min.js');
@@ -69,13 +70,14 @@ const shop = E.Wallet.createRandom(), stranger = E.Wallet.createRandom();
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
 const errors = [];
 const sent = [];
+const signedTexts = [];
 
 async function fresh(opts = {}, withWallet = true){
   const ctx = await browser.newContext(Object.assign({ viewport: { width: 1200, height: 900 }, locale: 'ru-RU' }, opts));
   if (withWallet){
     await ctx.exposeFunction('__wallet', async (method, params) => {
       if (method === 'eth_requestAccounts') return [shop.address];
-      if (method === 'personal_sign') return shop.signMessage(E.utils.arrayify(params[0]));
+      if (method === 'personal_sign'){ signedTexts.push(Buffer.from(E.utils.arrayify(params[0])).toString('utf8')); return shop.signMessage(E.utils.arrayify(params[0])); }
       if (method === 'wallet_switchEthereumChain') return null;
       if (method === 'eth_sendTransaction'){ sent.push(params[0]); return '0x' + 'ab'.repeat(32); }
       throw Object.assign(new Error('unsupported ' + method), { code: 4200 });
@@ -111,6 +113,8 @@ ok('код в примере не испорчен разметкой (<?php, =>
 await page.click('#mmLogin');
 await page.waitForSelector('#cabIn:not(.hidden)', { timeout: 8000 }).catch(() => {});
 ok('ВХОД ЧЕРЕЗ MetaMask: кабинет открыт', await vis(page, '#cabIn'));
+ok('MetaMask ПОДПИСАЛ ТЕКСТ В ВИДЕ SIGN-IN WITH ETHEREUM (домен сайта в первой строке)',
+  /^wallet\.tavarov\.com wants you to sign in with your Ethereum account:\n0x[0-9a-fA-F]{40}\n/.test(signedTexts[0] || '') && /\nNonce: [0-9a-f]{24}\n/.test(signedTexts[0] || ''), (signedTexts[0] || '').slice(0, 60));
 ok('показан кошелёк для приёма денег', (await txt(page, '#meWallet')) === shop.address.toLowerCase());
 ok('ключей ещё нет', (await txt(page, '#keysBox')).includes('ещё нет'));
 
@@ -129,10 +133,11 @@ ok('вебхук на http:// не принят, сказано почему', (
 await page.fill('#whUrl', 'https://shop.example/hook');
 await page.click('#whSave');
 await page.waitForSelector('#whSecretBox:not(.hidden)', { timeout: 5000 }).catch(() => {});
-ok('вебхук сохранён, секрет скрыт точками', await vis(page, '#whSecretBox') && (await txt(page, '#whSecret')).startsWith('•'));
-await page.click('#whShow');
 const secret = await txt(page, '#whSecret');
-ok('секрет показывается по кнопке', /^whsec_/.test(secret));
+ok('вебхук сохранён, новый секрет показан ЦЕЛИКОМ один раз и с предупреждением', await vis(page, '#whSecretBox') && /^whsec_[A-Za-z0-9_-]{40,}$/.test(secret) && await vis(page, '#whOnce') && await vis(page, '#whCopy'), secret.slice(0, 12));
+await page.reload();
+await page.waitForSelector('#cabIn:not(.hidden)', { timeout: 5000 }).catch(() => {});
+ok('ПОСЛЕ ПЕРЕЗАГРУЗКИ — ТОЛЬКО ХВОСТ СЕКРЕТА, копировать нечего', (await txt(page, '#whSecret')) === 'whsec_…' + secret.slice(-4) && !(await vis(page, '#whCopy')) && !(await vis(page, '#whOnce')), await txt(page, '#whSecret'));
 await page.click('#whTest');
 await page.waitForFunction(() => /200/.test(document.getElementById('whMsg').innerText), null, { timeout: 5000 }).catch(() => {});
 ok('ПРОВЕРОЧНЫЙ ВЕБХУК ДОШЁЛ — кабинет так и говорит', (await txt(page, '#whMsg')).includes('200') && hooks.length === 1 && JSON.parse(hooks[0].body).type === 'ping');
@@ -167,8 +172,9 @@ await ctx.close();
 // ======================= вход из NoN Wallet по ссылке =======================
 ({ ctx, page } = await fresh({}, false));
 let ts = Math.floor(Date.now() / 1000);
-let sig = await shop.signMessage(API.loginText(shop.address, ts));
-await page.goto(B + '/dev#login=' + shop.address + '.' + ts + '.' + sig);
+let nonce = crypto.randomBytes(12).toString('hex');
+let sig = await shop.signMessage(API.loginText(shop.address, nonce, ts));
+await page.goto(B + '/dev#login=' + shop.address + '.' + nonce + '.' + ts + '.' + sig);
 await page.waitForSelector('#cabIn:not(.hidden)', { timeout: 8000 }).catch(() => {});
 ok('ВХОД ИЗ NoN Wallet ПО ПОДПИСИ В АДРЕСЕ', await vis(page, '#cabIn'));
 ok('подпись сразу убрана из адресной строки', !(await page.evaluate(() => location.href)).includes('login='));
@@ -176,10 +182,17 @@ ok('ключ, взятый раньше, на месте', (await txt(page, '#ke
 await ctx.close();
 
 ({ ctx, page } = await fresh({}, false));
-sig = await stranger.signMessage(API.loginText(shop.address, ts));
-await page.goto(B + '/dev#login=' + shop.address + '.' + ts + '.' + sig);
+nonce = crypto.randomBytes(12).toString('hex');
+sig = await stranger.signMessage(API.loginText(shop.address, nonce, ts));
+await page.goto(B + '/dev#login=' + shop.address + '.' + nonce + '.' + ts + '.' + sig);
 await page.waitForSelector('#loginErr:not(.hidden)', { timeout: 8000 }).catch(() => {});
 ok('ЧУЖАЯ ПОДПИСЬ В АДРЕСЕ — НЕ ВПУСКАЕМ', !(await vis(page, '#cabIn')) && await vis(page, '#loginErr'), await txt(page, '#loginErr'));
+await ctx.close();
+
+({ ctx, page } = await fresh({}, false));
+await page.goto(B + '/dev#login=' + shop.address + '.' + ts + '.0x' + '1'.repeat(130));
+await page.waitForSelector('#loginErr:not(.hidden)', { timeout: 8000 }).catch(() => {});
+ok('ССЫЛКА ИЗ СТАРОГО ПРИЛОЖЕНИЯ — просьба обновить NoN Wallet', !(await vis(page, '#cabIn')) && /NoN Wallet/.test(await txt(page, '#loginErr')), await txt(page, '#loginErr'));
 await ctx.close();
 
 // без кошелька в браузере

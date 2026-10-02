@@ -7,32 +7,38 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
 <style>
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F4EEFF;
-  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
-  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --bg:#F5F5F7;
+  --glow-1:rgba(106,53,242,.07); --glow-2:rgba(20,20,40,.03); --glow-3:rgba(20,20,40,0);
+  --card:rgba(255,255,255,.94); --card-solid:#FFFFFF; --card-edge:rgba(20,20,40,.09);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
-  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
-  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
-  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
-  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
-  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
-  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --shadow:0 1px 2px rgba(20,20,40,.04), 0 12px 32px -14px rgba(20,20,40,.18);
+  --label:#0D0D10; --label-2:rgba(22,22,30,.64); --label-3:rgba(22,22,30,.42);
+  --sep:rgba(20,20,40,.10); --accent:#6A35F2; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(20,20,40,.06);
+  --ghost-bg:rgba(255,255,255,.85); --ghost-edge:rgba(20,20,40,.14);
+  --seg-on:#FFFFFF; --seg-on-text:#0D0D10;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
   /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
      пятна света видны, а на чёрном они тонули. */
-  --bg:#140B2B;
-  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
-  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --bg:#0A0A0C;
+  --glow-1:rgba(124,77,255,.16); --glow-2:rgba(255,255,255,.03); --glow-3:rgba(255,255,255,0);
+  --card:rgba(24,24,28,.82); --card-solid:#161619; --card-edge:rgba(255,255,255,.08);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
-  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
-  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
-  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
-  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --label:#fff; --label-2:rgba(235,235,242,.66); --label-3:rgba(235,235,242,.42);
+  --sep:rgba(255,255,255,.10); --accent:#A98BFF; --accent-2:#7447FF;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(255,255,255,.08);
+  --ghost-bg:rgba(255,255,255,.05); --ghost-edge:rgba(255,255,255,.14);
   --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
 } }
 *{box-sizing:border-box}

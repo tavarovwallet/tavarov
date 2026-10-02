@@ -13,28 +13,34 @@
    она шире страницы оплаты и в ней много кода. Цвета — те же, что у
    страницы оплаты: покупатель увидит их через минуту, и магазину полезно
    знать, как это будет выглядеть. */
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F4EEFF;
-  --glow-1:rgba(124,58,237,.20); --glow-2:rgba(75,31,232,.14);
-  --card:rgba(255,255,255,.82); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
-  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -14px rgba(60,30,140,.22);
-  --label:#1C1330; --label-2:rgba(48,33,79,.70); --label-3:rgba(48,33,79,.46);
-  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
-  --green:#15935A; --orange:#B86E00; --red:#D92D22; --fill:rgba(124,58,237,.08);
-  --ghost-bg:rgba(255,255,255,.66); --ghost-edge:rgba(109,40,217,.22);
+  --bg:#F5F5F7;
+  --glow-1:rgba(106,53,242,.07); --glow-2:rgba(20,20,40,.03);
+  --card:rgba(255,255,255,.94); --card-solid:#FFFFFF; --card-edge:rgba(20,20,40,.09);
+  --shadow:0 1px 2px rgba(20,20,40,.04), 0 12px 32px -14px rgba(20,20,40,.18);
+  --label:#0D0D10; --label-2:rgba(22,22,30,.64); --label-3:rgba(22,22,30,.42);
+  --sep:rgba(20,20,40,.10); --accent:#6A35F2; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#B86E00; --red:#D92D22; --fill:rgba(20,20,40,.06);
+  --ghost-bg:rgba(255,255,255,.85); --ghost-edge:rgba(20,20,40,.14);
   --code-bg:#1B1233; --code-fg:#EDE7FF; --code-dim:#A89BD0; --code-str:#B6F0C8; --code-key:#C9B6FF;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
-  --bg:#140B2B;
-  --glow-1:rgba(124,58,237,.38); --glow-2:rgba(75,31,232,.30);
-  --card:rgba(34,22,66,.70); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --bg:#0A0A0C;
+  --glow-1:rgba(124,77,255,.16); --glow-2:rgba(255,255,255,.03);
+  --card:rgba(24,24,28,.82); --card-solid:#161619; --card-edge:rgba(255,255,255,.08);
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
-  --label:#fff; --label-2:rgba(236,228,255,.74); --label-3:rgba(236,228,255,.48);
-  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
-  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.13);
-  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.26);
+  --label:#fff; --label-2:rgba(235,235,242,.66); --label-3:rgba(235,235,242,.42);
+  --sep:rgba(255,255,255,.10); --accent:#A98BFF; --accent-2:#7447FF;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(255,255,255,.08);
+  --ghost-bg:rgba(255,255,255,.05); --ghost-edge:rgba(255,255,255,.14);
   --code-bg:#0E0820;
 } }
 *{box-sizing:border-box}
@@ -337,6 +343,8 @@ return redirect(invoice['payment_url'])</pre>
     <tr><th><span class="ru">Поле</span><span class="en">Field</span></th><th></th><th><span class="ru">Что это</span><span class="en">Meaning</span></th></tr>
     <tr><td><code>amount</code></td><td><span class="ru">обязательно</span><span class="en">required</span></td><td><span class="ru">Сумма строкой: <code>"12.50"</code>. Точка, без запятых и степеней.</span><span class="en">Amount as a string: <code>"12.50"</code>. A dot, no commas, no exponents.</span></td></tr>
     <tr><td><code>currency</code></td><td><code>USDT</code></td><td><span class="ru"><code>USDT</code> или <code>USDC</code>. В тестовой сети — только <code>USDT</code>.</span><span class="en"><code>USDT</code> or <code>USDC</code>. The testnet has <code>USDT</code> only.</span></td></tr>
+    <tr><td><code>network</code></td><td><code>bnb</code></td><td><span class="ru">Сеть оплаты: <code>bnb</code>, <code>ethereum</code>, <code>base</code> или <code>solana</code>. В Base — только <code>USDC</code>. Для <code>solana</code> нужно ещё поле <code>solana_address</code>. Какие сети уже работают для вашего ключа — в ответе <code>GET /me</code>, поле <code>networks</code>; в остальных счёт не выставится (<code>network_unavailable</code>).</span><span class="en">Payment network: <code>bnb</code>, <code>ethereum</code>, <code>base</code> or <code>solana</code>. Base takes <code>USDC</code> only. For <code>solana</code> also send <code>solana_address</code>. Which networks are live for your key is in <code>GET /me</code>, field <code>networks</code>; elsewhere the invoice is refused (<code>network_unavailable</code>).</span></td></tr>
+    <tr><td><code>solana_address</code></td><td><span class="ru">для solana</span><span class="en">for solana</span></td><td><span class="ru">Ваш кошелёк Solana (base58), куда придут USDC или USDT. В Solana нет контракта: покупатель одной операцией платит 99% вам и 1% сервису, номер счёта лежит в ней меткой (Solana Pay). Платят Phantom, Solflare, Trust Wallet, NoN Wallet. Подтверждение — <code>confirmed</code>, за секунды.</span><span class="en">Your Solana wallet (base58) that receives USDC or USDT. Solana has no contract: the customer pays 99% to you and 1% service fee in one transaction, tagged with the invoice id as a Solana Pay reference. Phantom, Solflare, Trust Wallet and NoN Wallet can pay. Confirmation is <code>confirmed</code>, within seconds.</span></td></tr>
     <tr><td><code>order_id</code></td><td></td><td><span class="ru">Ваш номер заказа, до 64 знаков. Повтор запроса с тем же номером вернёт тот же счёт, а не второй.</span><span class="en">Your order number, up to 64 chars. Repeating a request with the same order_id returns the same invoice instead of a new one.</span></td></tr>
     <tr><td><code>description</code></td><td></td><td><span class="ru">Что покупают, до 64 знаков. Видно покупателю.</span><span class="en">What is being bought, up to 64 chars. Shown to the customer.</span></td></tr>
     <tr><td><code>shop_name</code></td><td></td><td><span class="ru">Название магазина, до 48 знаков. Видно покупателю.</span><span class="en">Your shop name, up to 48 chars. Shown to the customer.</span></td></tr>
@@ -375,7 +383,7 @@ return redirect(invoice['payment_url'])</pre>
   <h3><span class="ru">Статусы</span><span class="en">Statuses</span></h3>
   <div class="tbl"><table>
     <tr><td><span class="pill pending">pending</span></td><td><span class="ru">Ждём оплату.</span><span class="en">Waiting for payment.</span></td></tr>
-    <tr><td><span class="pill paid">paid</span></td><td><span class="ru">Оплачено полностью, в нужной валюте, вам. Подтверждено 12 блоками. Отдавайте товар.</span><span class="en">Paid in full, in the right currency, to you. Confirmed by 12 blocks. Fulfil the order.</span></td></tr>
+    <tr><td><span class="pill paid">paid</span></td><td><span class="ru">Оплачено полностью, в нужной валюте, вам. Подтверждено сетью: 12 блоков в BNB Chain, 3 в Ethereum, 6 в Base, в Solana — confirmed. Отдавайте товар.</span><span class="en">Paid in full, in the right currency, to you. Confirmed by the network: 12 blocks on BNB Chain, 3 on Ethereum, 6 on Base, confirmed on Solana. Fulfil the order.</span></td></tr>
     <tr><td><span class="pill bad">underpaid</span></td><td><span class="ru">Заплатили меньше. Товар не отдавайте; деньги можно вернуть из NoN Wallet.</span><span class="en">Paid less than billed. Do not fulfil; you can refund from NoN Wallet.</span></td></tr>
     <tr><td><span class="pill bad">wrong_currency</span></td><td><span class="ru">Заплатили другой валютой.</span><span class="en">Paid in a different currency.</span></td></tr>
     <tr><td><span class="pill bad">refunded</span></td><td><span class="ru">Вы вернули деньги покупателю.</span><span class="en">You refunded the customer.</span></td></tr>
@@ -484,7 +492,7 @@ def tavarov_webhook():
 <!-- ===================== Тест ===================== -->
 <div class="card" id="test">
   <h2><span class="ru">Проверка без денег</span><span class="en">Testing without real money</span></h2>
-  <p><span class="ru">Ключ <code>tp_test_…</code> выставляет счета в тестовой сети BNB. Всё работает как по-настоящему — страница оплаты, вебхуки, статусы, — только доллары ненастоящие.</span><span class="en">A <code>tp_test_…</code> key creates invoices on the BNB testnet. Everything works for real (payment page, webhooks, statuses), only the dollars are play money.</span></p>
+  <p><span class="ru">Ключ <code>tp_test_…</code> выставляет счета в тестовой сети BNB. Всё работает как по-настоящему — страница оплаты, вебхуки, статусы, — только доллары ненастоящие. Тестовая сеть есть только у BNB: счета в Ethereum, Base и Solana выставляет лишь боевой ключ.</span><span class="en">A <code>tp_test_…</code> key creates invoices on the BNB testnet. Everything works for real (payment page, webhooks, statuses), only the dollars are play money. Only BNB has a testnet here: invoices on Ethereum, Base and Solana need a live key.</span></p>
   <ol>
     <li><span class="ru">Нужен второй кошелёк — покупатель. Заплатить самому себе контракт не даст.</span><span class="en">You need a second wallet as the customer. The contract will not let you pay yourself.</span></li>
     <li><span class="ru">В нём — немного тестового BNB на комиссию: <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener">кран BNB Chain</a>.</span><span class="en">It needs a little testnet BNB for gas: <a href="https://www.bnbchain.org/en/testnet-faucet" target="_blank" rel="noopener">BNB Chain faucet</a>.</span></li>

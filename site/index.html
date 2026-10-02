@@ -8,279 +8,636 @@
 <meta property="og:title" content="NoN Wallet">
 <meta property="og:description" content="Ключи на вашем телефоне. Приём оплаты в USDT и USDC — деньги сразу к вам.">
 <meta property="og:type" content="website">
+<meta name="theme-color" content="#FBF9FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07040F" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%234B1FE8'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%23BFA6FF'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%23BFA6FF'/%3E%3C/g%3E%3C/svg%3E">
-
+<script>document.documentElement.classList.add('js')</script>
 <style>
+/* =====================================================================
+   Витрина NoN Wallet, версия «ночь» — 30 сентября 2026.
+
+   Всё своё: ни шрифтов, ни картинок, ни скриптов со стороны. Страница
+   открывается мгновенно и не сообщает третьим лицам, кто её смотрит.
+   Движение — только transform и opacity, и оно выключается целиком,
+   если человек попросил систему поменьше анимаций.
+   ===================================================================== */
+/* Шрифты лежат у нас же, в ./fonts: Manrope для текста, Unbounded для
+   заголовков. Оба под лицензией SIL OFL. Грузятся только нужные алфавиты:
+   русскому не качается турецкий набор, и наоборот. */
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Unbounded'; font-style:normal; font-display:swap; font-weight:200 900;
+  src:url(./fonts/unbounded-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Unbounded'; font-style:normal; font-display:swap; font-weight:200 900;
+  src:url(./fonts/unbounded-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Unbounded'; font-style:normal; font-display:swap; font-weight:200 900;
+  src:url(./fonts/unbounded-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
-  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
-  --orange:#C97400; --fill:rgba(124,58,237,.08); --r:16px;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
-  --page-bg:
-    radial-gradient(circle at 8% -8%, #EBDDFD 0%, transparent 50%),
-    radial-gradient(circle at 102% 4%, #E2D2FB 0%, transparent 46%),
-    linear-gradient(170deg, #FFFFFF 0%, #F7F2FE 55%, #EFE5FD 100%);
- --eyebrow:#6D28D9;
-  }
+  --bg:#FFFFFF; --bg-2:#F5F5F7; --band:#F5F5F7; --card:rgba(255,255,255,.9); --card-solid:#FFFFFF;
+  --label:#0D0D10; --label-2:#5B5B66; --label-3:#8E8E99;
+  --sep:#E7E7EC; --sep-2:#D5D5DC;
+  --accent:#6A35F2; --accent-2:#4B1FE8; --lilac:#BFA6FF; --mint:#0C9F63; --amber:#B86E00;
+  --glow:rgba(106,53,242,.22); --grid:rgba(20,20,30,.045);
+  --blob-1:#EEE9FF; --blob-2:#F0F0F3; --blob-3:#ECEEF3;
+  --ink:#0D0D10; --ink-2:#FFFFFF; --silver:#8E8E99;
+  --phone:#1C1C22; --shadow:0 30px 80px -24px rgba(20,20,40,.28);
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --display:'Unbounded','Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  --r:22px; --ease:cubic-bezier(.2,.7,.2,1);
+}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.68);
-    --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
-    --orange:#E7A33A; --fill:rgba(169,123,255,.12);
-    --eyebrow:#C9ADFF;
-    --page-bg:
-      radial-gradient(circle at 8% -8%, #1F1235 0%, transparent 52%),
-      radial-gradient(circle at 102% 4%, #1B1030 0%, transparent 48%),
-      linear-gradient(170deg, #120A20 0%, #0D0716 60%);
+    --bg:#0A0A0C; --bg-2:#111114; --band:#0F0F12; --card:rgba(22,22,26,.78); --card-solid:#141417;
+    --label:#FFFFFF; --label-2:#A3A3AD; --label-3:#6F6F7A;
+    --sep:rgba(255,255,255,.08); --sep-2:rgba(255,255,255,.15);
+    --accent:#A98BFF; --accent-2:#7447FF; --mint:#3BE39A; --amber:#F2B04B;
+    --glow:rgba(124,77,255,.38); --grid:rgba(255,255,255,.035);
+    --blob-1:#2A2050; --blob-2:#1E1E26; --blob-3:#23232C;
+    --ink:#FFFFFF; --ink-2:#0A0A0C; --silver:#8E8E99;
+    --phone:#26262E; --shadow:0 40px 100px -24px rgba(0,0,0,.8);
   }
 }
+:root[data-theme="dark"]{
+    --bg:#0A0A0C; --bg-2:#111114; --band:#0F0F12; --card:rgba(22,22,26,.78); --card-solid:#141417;
+    --label:#FFFFFF; --label-2:#A3A3AD; --label-3:#6F6F7A;
+    --sep:rgba(255,255,255,.08); --sep-2:rgba(255,255,255,.15);
+    --accent:#A98BFF; --accent-2:#7447FF; --mint:#3BE39A; --amber:#F2B04B;
+    --glow:rgba(124,77,255,.38); --grid:rgba(255,255,255,.035);
+    --blob-1:#2A2050; --blob-2:#1E1E26; --blob-3:#23232C;
+    --ink:#FFFFFF; --ink-2:#0A0A0C; --silver:#8E8E99;
+    --phone:#26262E; --shadow:0 40px 100px -24px rgba(0,0,0,.8);
+}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0; background:var(--bg); background-image:var(--page-bg); background-attachment:fixed;
-  color:var(--label); font-family:var(--font); font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased}
-.wrap{max-width:880px; margin:0 auto; padding:0 22px}
+html{scroll-behavior:smooth; overflow-x:clip}
+body{margin:0; background:var(--bg); color:var(--label); font-family:var(--font); font-size:17px;
+  line-height:1.6; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overflow-x:clip}
+::selection{background:var(--accent); color:#fff}
 a{color:var(--accent); text-decoration:none}
-a:hover{text-decoration:underline}
-h1,h2,h3{line-height:1.2; margin:0; letter-spacing:-.02em}
-h1{font-size:clamp(32px,6vw,52px); font-weight:800}
-h2{font-size:clamp(23px,3.4vw,30px); font-weight:750; margin-bottom:24px}
-h3{font-size:17.5px; font-weight:700; margin-bottom:5px}
+a:hover{text-decoration:underline; text-underline-offset:3px}
+h1,h2,h3{margin:0; line-height:1.08; letter-spacing:-.03em}
 p{margin:0 0 14px}
-section{padding:56px 0; border-top:1px solid var(--sep)}
-.lead{font-size:19px; color:var(--label-2); max-width:60ch}
+code{font-family:var(--mono); font-size:.86em}
+.wrap{max-width:1180px; margin:0 auto; padding:0 28px}
+.hidden{display:none !important}
+section{position:relative; padding:104px 0; scroll-margin-top:72px}
 
-header{position:sticky; top:0; z-index:20;
-  backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
-  background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--sep)}
-.bar{display:flex; align-items:center; gap:14px; height:60px}
-/* Знак стоит НЕ рядом со словом, а вместо буквы «о» внутри него. Это и есть
-   вся мысль имени: две скобы разведены и монету не держат. Пока значок лежал
-   сбоку, его надо было объяснять; внутри слова он объясняет себя сам. */
-.brand{display:flex; align-items:baseline; gap:0; font-weight:800; color:var(--label);
-  font-size:26px; letter-spacing:-.035em; line-height:1}
-.brand .oo{ width:.86em; height:.86em; margin:0 .01em; align-self:center;
-  position:relative; top:.02em; border-radius:0; flex:0 0 auto }
-.brand .wo{ font-weight:750; margin-left:.30em; letter-spacing:-.02em; opacity:.94 }
+/* ---------- живой фон: три пятна света медленно плывут ---------- */
+.aurora{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden}
+.aurora i{position:absolute; width:62vmax; height:62vmax; border-radius:50%; opacity:.55;
+  background:radial-gradient(closest-side, var(--c), transparent 72%); will-change:transform}
+.aurora i:nth-child(1){--c:var(--blob-1); top:-28vmax; left:-18vmax; animation:drift1 26s var(--ease) infinite alternate}
+.aurora i:nth-child(2){--c:var(--blob-2); top:10vmax; right:-30vmax; animation:drift2 32s var(--ease) infinite alternate}
+.aurora i:nth-child(3){--c:var(--blob-3); bottom:-36vmax; left:18vmax; animation:drift3 38s var(--ease) infinite alternate}
+@keyframes drift1{to{transform:translate(14vmax,10vmax) scale(1.15)}}
+@keyframes drift2{to{transform:translate(-12vmax,14vmax) scale(.9)}}
+@keyframes drift3{to{transform:translate(10vmax,-12vmax) scale(1.1)}}
+.aurora::after{content:''; position:absolute; inset:0; opacity:.5;
+  background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+          mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%)}
+
+/* ---------- шапка ---------- */
+header{position:sticky; top:0; z-index:40; transition:background .3s, border-color .3s, backdrop-filter .3s;
+  border-bottom:1px solid transparent}
+header.scrolled{background:color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px); border-bottom-color:var(--sep)}
+.bar{display:flex; align-items:center; gap:18px; height:68px}
+/* Знак стоит вместо буквы «о»: две скобы разведены и монету не держат. */
+.brand{display:flex; align-items:baseline; font-weight:800; color:var(--label); font-size:25px;
+  letter-spacing:-.04em; line-height:1}
 .brand:hover{text-decoration:none}
-
-.bar nav{margin-left:auto}
-.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px}
-.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
-  color:var(--label-2); padding:5px 9px; border-radius:7px}
-.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
-/* Языков пять, и на узком телефоне их ряд вместе с названием не влезал в
-   строку: страница уезжала вбок целиком. Ужимаем ряд, а не прячем языки —
-   человек, которому нужен свой язык, должен его видеть сразу. */
+.oo{width:.86em; height:.86em; margin:0 .01em; align-self:center; position:relative; top:.02em; flex:0 0 auto; display:block; overflow:visible}
+.oo .l{animation:armL 5s var(--ease) infinite} .oo .r{animation:armR 5s var(--ease) infinite}
+.oo .c{transform-origin:60px 60px; animation:coin 5s var(--ease) infinite}
+@keyframes armL{0%,100%{transform:translateX(0)}45%,60%{transform:translateX(-6px)}}
+@keyframes armR{0%,100%{transform:translateX(0)}45%,60%{transform:translateX(6px)}}
+@keyframes coin{0%,100%{transform:scale(1)}45%,60%{transform:scale(1.12)}}
+.brand .wo{font-weight:700; margin-left:.3em; letter-spacing:-.02em; opacity:.92}
+.nav{display:flex; gap:4px; margin-left:22px}
+.nav a{white-space:nowrap; color:var(--label-2); font-size:14.5px; font-weight:600; padding:8px 12px; border-radius:10px}
+.nav a:hover{color:var(--label); background:var(--card); text-decoration:none}
+.bar .right{margin-left:auto; display:flex; align-items:center; gap:12px}
+.langs{display:flex; gap:2px; background:var(--card); border:1px solid var(--sep); border-radius:12px; padding:3px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700;
+  color:var(--label-3); padding:5px 8px; border-radius:9px; transition:color .2s, background .2s}
+.langs button:hover{color:var(--label)}
+.langs button[aria-pressed="true"]{background:var(--accent-2); color:#fff; box-shadow:0 4px 14px var(--glow)}
+.btn-sm{padding:10px 16px !important; font-size:14.5px !important; border-radius:12px !important}
+@media (max-width:1180px){ .nav{display:none} }
+.btn{white-space:nowrap}
+@media (max-width:620px){ .bar .btn-sm{display:none} }
 @media (max-width:430px){
-  .brand{font-size:20px}
-  /* На самых узких экранах слово «Wallet» уходит, а знак остаётся. Рядом с
-     ним пять кнопок языка, и вместе они разъезжались на два пикселя за край
-     — полоса прокрутки вбок на первом же экране. Имя без «Wallet» читается,
-     полоса — нет. */
-  .brand .wo{display:none}
-  .langs button{padding:5px 6px; font-size:12px}
-  .wrap{padding:0 16px}
+  .wrap{padding:0 16px} .brand{font-size:21px} .brand .wo{display:none}
+  .langs button{padding:5px 6px; font-size:11.5px} .bar{gap:10px}
 }
 
-.hero{padding:76px 0 56px}
-.hero h1{max-width:15ch}
-.hero .lead{margin-top:20px; font-size:20px}
-.cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:32px}
-.btn{display:inline-block; padding:14px 28px; border-radius:13px; font-weight:650; font-size:17px;
-  border:1px solid transparent; cursor:pointer; font-family:inherit}
-.btn-main{background:var(--accent); color:#fff; box-shadow:0 6px 22px rgba(124,58,237,.30)}
-.btn-main:hover{text-decoration:none; filter:brightness(1.06)}
-.btn-plain{background:var(--card); color:var(--label); border-color:var(--sep)}
-.btn-plain:hover{text-decoration:none; border-color:var(--accent)}
-.hero .note{margin-top:16px; font-size:15px; color:var(--label-3); max-width:56ch}
+/* ---------- кнопки ---------- */
+.btn{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:16px 28px; border-radius:16px; font-weight:700; font-size:17px; font-family:inherit; cursor:pointer;
+  border:1px solid transparent; overflow:hidden; transition:transform .25s var(--ease), box-shadow .25s, filter .25s}
+.btn:hover{text-decoration:none; transform:translateY(-2px)}
+.btn-main{color:#fff; background:linear-gradient(135deg, var(--accent-2), var(--accent) 60%, #B06CFF);
+  box-shadow:0 12px 34px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-main::after{content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); transform:skewX(-20deg);
+  transition:left .7s var(--ease)}
+.btn-main:hover::after{left:120%}
+.btn-main:hover{box-shadow:0 18px 44px -8px var(--glow), inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-plain{color:var(--label); background:var(--card); border-color:var(--sep-2);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px)}
+.btn-plain:hover{border-color:var(--accent)}
+.btn .arr{transition:transform .25s var(--ease)} .btn:hover .arr{transform:translateX(4px)}
 
-/* ---------- снимки экрана ---------- */
-.shots{display:flex; gap:18px; overflow-x:auto; padding:4px 22px 10px;
-  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch}
-.shot{flex:0 0 auto; width:214px; scroll-snap-align:center}
-.shot img{width:100%; height:auto; display:block; border-radius:20px;
-  border:1px solid var(--sep); box-shadow:0 12px 34px rgba(50,25,100,.16); background:var(--card)}
-.shot span{display:block; margin-top:10px; font-size:14px; color:var(--label-3); text-align:center}
-@media (min-width:900px){ .shots{justify-content:center; overflow:visible} }
+/* ---------- первый экран ---------- */
+.hero{overflow-x:clip; display:grid; grid-template-columns:1.08fr .92fr; gap:40px; align-items:center; padding-top:56px; padding-bottom:40px; min-height:calc(100vh - 68px)}
+.mark{display:flex; align-items:baseline; line-height:.9; font-weight:850; letter-spacing:-.055em;
+  font-size:clamp(64px, 9vw, 112px); margin:0 0 22px;
+  background:linear-gradient(120deg, var(--label) 20%, var(--accent) 60%, #D48BFF);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent}
+.mark .oo{width:.88em; height:.88em}
+.eyebrow{display:inline-flex; align-items:center; gap:10px; font-size:14.5px; font-weight:700; color:var(--accent);
+  background:var(--card); border:1px solid var(--sep-2); padding:7px 14px 7px 10px; border-radius:999px;
+  margin:0 0 26px; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+.eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--mint); box-shadow:0 0 0 4px color-mix(in srgb, var(--mint) 22%, transparent); flex:0 0 auto}
+.hero h1{font-size:clamp(40px, 5vw, 66px); font-weight:820; letter-spacing:-.04em; line-height:1.03; max-width:15ch}
+.hero .lead{margin-top:24px; font-size:clamp(18px, 1.6vw, 21px); color:var(--label-2); max-width:34em; line-height:1.55}
+.cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:34px}
+.hero .note{margin-top:18px; font-size:14.5px; color:var(--label-3)}
 
-.rows{display:grid; gap:22px}
-@media (min-width:720px){ .rows{grid-template-columns:1fr 1fr; gap:26px 34px} }
-.rows p{margin:0; color:var(--label-2); font-size:15.5px}
+/* телефоны в первом экране */
+.stage{position:relative; width:min(540px, 100%); aspect-ratio:540/620; margin:0 auto; perspective:1400px}
+.stage .tilt{position:absolute; inset:0; transform-style:preserve-3d; transition:transform .5s var(--ease)}
+.phone{position:absolute; width:44%; aspect-ratio:414/896; border-radius:13% / 6%; padding:2.4%;
+  background:linear-gradient(150deg, #3B2F5C, var(--phone) 40%, #0B0716); box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,.08)}
+.phone::before{content:''; position:absolute; top:3.6%; left:50%; width:30%; height:2.6%; transform:translateX(-50%);
+  background:#05030A; border-radius:99px; z-index:2}
+.phone img{display:block; width:100%; height:100%; object-fit:cover; border-radius:11% / 5.2%; background:#fff}
+.stage .p1{left:28%; top:4%; z-index:3; transform:rotate(-3deg) translateZ(60px); animation:float 7s ease-in-out infinite}
+.stage .p2{left:2%; top:16%; z-index:2; width:38%; transform:rotate(-12deg) translateZ(0); filter:saturate(.9); animation:float 8s ease-in-out -2s infinite}
+.stage .p3{right:0; top:14%; z-index:1; width:38%; transform:rotate(10deg); filter:saturate(.9); animation:float 9s ease-in-out -4s infinite}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -12px}}
+.chip{position:absolute; z-index:5; display:flex; align-items:center; gap:10px; padding:11px 15px; border-radius:16px;
+  background:color-mix(in srgb, var(--card-solid) 90%, transparent); border:1px solid var(--sep-2); box-shadow:0 18px 40px -14px rgba(20,10,50,.35);
+  -webkit-backdrop-filter:blur(16px) saturate(160%); backdrop-filter:blur(16px) saturate(160%);
+  font-size:14px; font-weight:650; color:var(--label); white-space:nowrap; animation:float 6s ease-in-out infinite; transform:translateZ(90px)}
+.chip small{display:block; font-size:12px; font-weight:600; color:var(--label-3)}
+.chip .ic{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; flex:0 0 auto; color:#fff}
+.chip.c1{left:-2%; bottom:17%} .chip.c1 .ic{background:linear-gradient(135deg,#15C57C,#0C9F63)}
+.chip.c2{right:2%; top:4%; animation-delay:-3s} .chip.c2 .ic{background:linear-gradient(135deg,var(--accent-2),#B06CFF)}
+.chip.c3{right:3%; bottom:5%; animation-delay:-1.5s} .chip.c3 .ic{background:linear-gradient(135deg,#FF8A3D,#F2B04B)}
+.glowring{position:absolute; left:50%; top:46%; width:78%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(closest-side, var(--glow), transparent 70%); filter:blur(10px); z-index:0}
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr; min-height:0; padding-top:40px; gap:26px}
+  .hero h1{max-width:16ch}
+  .stage{width:min(460px, 100%)}
+}
+@media (max-width:520px){
+  .chip{font-size:12.5px; padding:8px 11px; gap:8px; border-radius:13px}
+  .chip .ic{width:24px; height:24px; border-radius:8px}
+  .chip small{font-size:11px}
+  .chip{transform:translateZ(1px)} .stage .p1{transform:rotate(-3deg)}
+  .chip.c1{left:1%} .chip.c2{right:1%; top:3%} .chip.c3{right:3%}
+  .tabs button{font-size:14px; padding:9px 14px}
+}
 
-.honest{background:var(--card); border:1px solid var(--sep); border-left:4px solid var(--orange);
-  border-radius:var(--r); padding:22px 26px}
-.honest ul{margin:0; padding-left:20px}
-.honest li{margin-bottom:12px; color:var(--label-2); font-size:15.5px}
-.honest li:last-child{margin-bottom:0}
-.honest li b{color:var(--label)}
+/* ---------- бегущая строка ---------- */
+.marquee{position:relative; padding:26px 0 30px; border-top:1px solid var(--sep); border-bottom:1px solid var(--sep);
+  background:color-mix(in srgb, var(--card) 60%, transparent)}
+.marquee .lbl{display:block; text-align:center; font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--label-3); margin-bottom:14px}
+.mq{overflow:hidden; -webkit-mask-image:linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image:linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent)}
+.mq .track{display:flex; width:max-content; animation:slide 38s linear infinite}
+.mq:hover .track{animation-play-state:paused}
+.mq span{font-size:clamp(20px, 2.4vw, 28px); font-weight:780; letter-spacing:-.02em; color:var(--label-2); padding:0 28px; white-space:nowrap; display:flex; align-items:center; gap:28px}
+.mq span::after{content:'✦'; font-size:.6em; color:var(--accent); opacity:.7}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* ---------- заголовки разделов ---------- */
+.kicker{display:inline-block; font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:16px}
+.sec-h{font-size:clamp(34px, 4.6vw, 58px); font-weight:820; letter-spacing:-.04em; max-width:18ch; margin-bottom:22px}
+.sec-lead{font-size:clamp(17px, 1.5vw, 19.5px); color:var(--label-2); max-width:40em}
+.center{text-align:center} .center .sec-h, .center .sec-lead{margin-left:auto; margin-right:auto}
+
+/* ---------- цифры ---------- */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; padding:72px 0 0}
+.stat{padding:26px 24px; border-radius:var(--r); background:var(--card); border:1px solid var(--sep);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px)}
+.stat b{display:block; font-size:clamp(44px, 5vw, 64px); font-weight:850; letter-spacing:-.05em; line-height:1;
+  background:linear-gradient(135deg, var(--label), var(--accent)); -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent; margin-bottom:12px}
+.stat span{color:var(--label-2); font-size:15.5px; line-height:1.45; display:block}
+@media (max-width:860px){ .stats{grid-template-columns:1fr 1fr} }
+@media (max-width:400px){ .stats{gap:10px} .stat{padding:20px 16px} }
+
+/* ---------- ролики: одна сцена, три вкладки ---------- */
+.theater{margin-top:46px}
+.tabs{display:inline-flex; flex-wrap:wrap; justify-content:center; gap:6px; padding:6px; border-radius:18px; background:var(--card);
+  border:1px solid var(--sep); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); margin-bottom:26px}
+.tabs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:15px; font-weight:700; color:var(--label-2);
+  padding:10px 18px; border-radius:13px; transition:background .25s, color .25s}
+.tabs button[aria-selected="true"]{background:var(--accent-2); color:#fff; box-shadow:0 8px 22px -6px var(--glow)}
+.screen{position:relative; max-width:980px; margin:0 auto; padding:10px; border-radius:30px;
+  background:linear-gradient(160deg, color-mix(in srgb, var(--accent) 40%, transparent), transparent 40%, color-mix(in srgb, #D48BFF 35%, transparent));
+  box-shadow:var(--shadow)}
+.screen figure{margin:0; display:none}
+.screen figure.on{display:block; animation:fadein .5s var(--ease)}
+.screen video{display:block; width:100%; height:auto; border-radius:22px; background:#120B22}
+.screen figcaption{padding:16px 10px 6px; text-align:center; color:var(--label-2); font-size:15px}
+.screen .vtitle{display:none}
+@keyframes fadein{from{opacity:0; transform:scale(.985)}}
+
+/* ---------- карточки ---------- */
+.bento{display:grid; grid-template-columns:repeat(6, 1fr); gap:18px; margin-top:54px}
+.card{position:relative; grid-column:span 2; padding:30px 28px; border-radius:var(--r); background:var(--card);
+  border:1px solid var(--sep); overflow:hidden; isolation:isolate;
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); transition:transform .35s var(--ease), border-color .35s}
+.card::before{content:''; position:absolute; inset:0; z-index:-1; opacity:0; transition:opacity .35s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%), color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%)}
+.card:hover{transform:translateY(-4px); border-color:var(--sep-2)}
+.card:hover::before{opacity:1}
+.card.w3{grid-column:span 3} .card.w4{grid-column:span 4} .card.w6{grid-column:span 6}
+.card h3{font-size:22px; font-weight:780; letter-spacing:-.025em; margin-bottom:10px}
+.card p{color:var(--label-2); font-size:16px; line-height:1.55; margin:0}
+.ico{width:48px; height:48px; border-radius:15px; display:grid; place-items:center; margin-bottom:22px; color:#fff;
+  background:linear-gradient(135deg, var(--accent-2), #B06CFF); box-shadow:0 10px 26px -8px var(--glow)}
+.ico svg{width:24px; height:24px}
+.ico.g{background:linear-gradient(135deg,#12B872,#0A8A56); box-shadow:0 10px 26px -8px rgba(18,184,114,.45)}
+.ico.o{background:linear-gradient(135deg,#FF8A3D,#E5A12E); box-shadow:0 10px 26px -8px rgba(255,138,61,.45)}
+.ico.b{background:linear-gradient(135deg,#2F7BFF,#4FC3FF); box-shadow:0 10px 26px -8px rgba(47,123,255,.45)}
+.ico.p{background:linear-gradient(135deg,#E0479E,#B06CFF); box-shadow:0 10px 26px -8px rgba(224,71,158,.45)}
+@media (max-width:980px){ .card, .card.w3, .card.w4{grid-column:span 3} }
+@media (max-width:640px){ .bento{grid-template-columns:1fr; gap:14px} .card, .card.w3, .card.w4, .card.w6{grid-column:auto} .card{padding:26px 22px} }
+
+.nets-lead{margin-top:18px; font-size:clamp(17px,1.4vw,19px); color:var(--label-2); max-width:44em; line-height:1.55}
+.bento.nets{margin-top:34px}
+.nets .card h3{display:inline-block; vertical-align:middle; margin-left:10px}
+.net-dot{display:inline-block; vertical-align:middle; width:14px; height:14px; border-radius:50%; background:var(--c); box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent)}
+.nets-note{margin-top:22px; color:var(--label-2); font-size:15px; line-height:1.55; max-width:52em}
+.pills{display:flex; flex-wrap:wrap; gap:10px; margin-top:28px}
+.pills a{display:inline-flex; align-items:center; padding:11px 16px; border-radius:14px; background:var(--card);
+  border:1px solid var(--sep-2); color:var(--label); font-weight:650; font-size:15px; transition:border-color .25s, transform .25s var(--ease)}
+.pills a:hover{text-decoration:none; border-color:var(--accent); transform:translateY(-2px)}
+
+/* касса — нарисованный QR */
+.qrmock{display:flex; gap:22px; align-items:center; margin-top:24px}
+.qrmock .q{width:118px; height:118px; flex:0 0 auto; padding:10px; border-radius:18px; background:#fff; box-shadow:0 14px 34px -12px rgba(30,10,80,.4)}
+.qrmock .sum{font-size:32px; font-weight:850; letter-spacing:-.04em; color:var(--label); line-height:1}
+.qrmock .ok{display:inline-flex; align-items:center; gap:8px; margin-top:12px; padding:7px 12px; border-radius:11px; font-size:14px; font-weight:750;
+  color:var(--mint); background:color-mix(in srgb, var(--mint) 14%, transparent)}
+.qrmock .ok::before{content:''; width:8px; height:8px; border-radius:50%; background:currentColor; animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--mint) 60%, transparent)}100%{box-shadow:0 0 0 10px transparent}}
+
+/* ---------- авторам: макет стрима ---------- */
+.split{display:grid; grid-template-columns:1fr 1.05fr; gap:48px; align-items:center; margin-top:54px}
+.stack{display:grid; gap:16px}
+.stack .card{grid-column:auto}
+.stream{position:relative; aspect-ratio:16/10; border-radius:26px; overflow:hidden; box-shadow:var(--shadow);
+  background:
+    radial-gradient(60% 80% at 20% 20%, rgba(124,77,255,.55), transparent 60%),
+    radial-gradient(50% 70% at 85% 80%, rgba(224,71,158,.45), transparent 60%),
+    linear-gradient(160deg, #1B1033, #0A0615)}
+.stream::before{content:''; position:absolute; inset:0; opacity:.35;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:32px 32px}
+.live{position:absolute; top:18px; left:18px; display:flex; gap:8px; align-items:center; font-size:12.5px; font-weight:800; color:#fff;
+  background:#E5334B; padding:5px 10px; border-radius:8px; letter-spacing:.06em}
+.live::before{content:''; width:7px; height:7px; border-radius:50%; background:#fff; animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.alert{position:absolute; left:50%; top:30%; transform:translateX(-50%); width:min(78%, 380px); padding:18px 20px; border-radius:20px; text-align:center; color:#fff;
+  background:linear-gradient(135deg, rgba(116,71,255,.92), rgba(176,108,255,.92)); box-shadow:0 20px 60px -10px rgba(116,71,255,.7);
+  animation:pop 6s var(--ease) infinite}
+.alert .who{font-size:clamp(17px, 2vw, 22px); font-weight:850; letter-spacing:-.02em}
+.alert .amt{color:#FFE27A}
+.alert .msg{font-size:15px; opacity:.92; margin-top:4px}
+@keyframes pop{0%,8%{opacity:0; transform:translate(-50%, 16px) scale(.9)}14%,78%{opacity:1; transform:translate(-50%,0) scale(1)}88%,100%{opacity:0; transform:translate(-50%,-8px) scale(.97)}}
+.goal{position:absolute; left:6%; right:6%; bottom:8%; padding:12px 16px; border-radius:16px; color:#fff;
+  background:rgba(10,6,21,.55); border:1px solid rgba(255,255,255,.12); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+.goal .row{display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:8px}
+.goal .bar2{height:10px; border-radius:99px; background:rgba(255,255,255,.14); overflow:hidden}
+.goal .bar2 i{display:block; height:100%; width:61%; border-radius:99px; background:linear-gradient(90deg,#7447FF,#E0479E,#FFB86B); animation:grow 6s var(--ease) infinite}
+@keyframes grow{0%,10%{width:46%}20%,100%{width:61%}}
+.a-how{margin-top:26px; color:var(--label-2); font-size:16px}
+@media (max-width:980px){ .split{grid-template-columns:1fr; gap:30px} }
+
+/* ---------- как это работает ---------- */
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:54px; position:relative}
+.steps::before{content:''; position:absolute; top:58px; left:12%; right:12%; height:2px; z-index:0;
+  background:repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 20px); opacity:.45; animation:dash 1.6s linear infinite}
+@keyframes dash{to{background-position:20px 0}}
+.step{position:relative; z-index:1; padding:30px 28px; border-radius:var(--r); background:var(--card-solid); border:1px solid var(--sep)}
+.step .n{width:56px; height:56px; border-radius:18px; display:grid; place-items:center; font-weight:850; font-size:20px; color:#fff; margin-bottom:22px;
+  background:linear-gradient(135deg, var(--accent-2), #B06CFF); box-shadow:0 12px 30px -10px var(--glow)}
+.step h3{font-size:21px; font-weight:780; margin-bottom:10px}
+.step p{color:var(--label-2); font-size:16px; margin:0}
+@media (max-width:860px){ .steps{grid-template-columns:1fr} .steps::before{display:none} }
+
+/* ---------- снимки ---------- */
+.shots{display:flex; gap:26px; overflow-x:auto; padding:40px 28px 30px; margin-top:20px; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none}
+.shots::-webkit-scrollbar{display:none}
+.shot{flex:0 0 auto; width:226px; margin:0; scroll-snap-align:center; transition:transform .45s var(--ease)}
+.shot:nth-child(odd){transform:translateY(18px)}
+.shot:hover{transform:translateY(-6px)}
+.shot .phone{position:relative; width:100%}
+.shot span{display:block; margin-top:18px; font-size:14.5px; line-height:1.45; color:var(--label-2); text-align:center; padding:0 6px}
+@media (min-width:1300px){ .shots{justify-content:center} }
+@media (max-width:640px){ .shot{width:200px} .shot:nth-child(odd){transform:none} }
 
 /* ---------- скачать ---------- */
-.dl{background:var(--card); border:1px solid var(--sep); border-radius:var(--r); padding:24px 26px}
-.dl .meta{font-size:14.5px; color:var(--label-3); margin-top:12px; word-break:break-all; line-height:1.7}
-.dl code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; color:var(--label-2)}
+.dl{position:relative; border-radius:32px; padding:clamp(28px, 5vw, 60px); overflow:hidden; isolation:isolate;
+  background:var(--card-solid); border:1px solid var(--sep-2); box-shadow:var(--shadow)}
+.dl::before{content:''; position:absolute; inset:-40% -10% auto auto; width:70%; aspect-ratio:1; z-index:-1; border-radius:50%;
+  background:radial-gradient(closest-side, var(--glow), transparent 70%)}
+.dl .sec-h{max-width:none}
+.dl .intro{color:var(--label-2); font-size:17px; max-width:40em}
+.dl .meta{font-size:14.5px; color:var(--label-3); margin-top:14px; overflow-wrap:break-word; line-height:1.7; max-width:62em}
+.dl code{font-family:var(--mono); font-size:13px; color:var(--label-2)}
+#apkHash{word-break:break-all}
+.dl .cta{margin-top:26px}
 
-details{border-bottom:1px solid var(--sep); padding:15px 0}
-summary{cursor:pointer; font-weight:650; font-size:16.5px; list-style:none}
+/* ---------- честно и контракты ---------- */
+.honest{position:relative; border-radius:var(--r); padding:30px 32px; background:var(--card); border:1px solid var(--sep);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); overflow:hidden}
+.honest::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(var(--amber), #FF8A3D)}
+.honest ul{margin:0; padding-left:20px}
+.honest li{margin-bottom:14px; color:var(--label-2); font-size:16px}
+.honest li:last-child{margin-bottom:0}
+.honest li b{color:var(--label)}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start}
+@media (max-width:900px){ .two{grid-template-columns:1fr; gap:60px} }
+.addr{list-style:none; padding:0; margin:22px 0 0; display:grid; gap:10px}
+.addr li{display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 18px; border-radius:16px;
+  background:var(--card); border:1px solid var(--sep); font-size:15px; color:var(--label-2); flex-wrap:wrap}
+.addr li a{font-family:var(--mono); font-size:13.5px; padding:5px 10px; border-radius:9px; background:color-mix(in srgb, var(--accent) 12%, transparent)}
+.addr li a:hover{text-decoration:none; background:color-mix(in srgb, var(--accent) 22%, transparent)}
+.small{color:var(--label-2); font-size:15.5px; margin-top:18px}
+.small code{background:color-mix(in srgb, var(--accent) 12%, transparent); padding:1px 6px; border-radius:6px}
+
+/* ---------- вопросы ---------- */
+.faq{max-width:860px; margin:46px auto 0}
+details{border-radius:18px; background:var(--card); border:1px solid var(--sep); padding:0 24px; margin-bottom:12px; transition:border-color .25s}
+details[open]{border-color:var(--sep-2)}
+summary{cursor:pointer; font-weight:720; font-size:17.5px; list-style:none; padding:20px 36px 20px 0; position:relative}
 summary::-webkit-details-marker{display:none}
-summary::after{content:'+'; float:right; color:var(--accent); font-weight:700; font-size:20px; line-height:1.2}
-details[open] summary::after{content:'–'}
-details p{margin:10px 0 0; color:var(--label-2); font-size:15.5px; max-width:64ch}
+summary::after{content:''; position:absolute; right:0; top:50%; width:22px; height:22px; margin-top:-11px; border-radius:50%;
+  background:var(--accent-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 6v12M6 12h12' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center/14px no-repeat;
+  transition:transform .3s var(--ease)}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin:0 0 22px; color:var(--label-2); font-size:16px; max-width:68ch}
 
-footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; color:var(--label-3)}
-.flinks{display:flex; flex-wrap:wrap; gap:6px 20px; margin-bottom:24px}
-.flinks a{color:var(--label-2); font-size:15px}
-.disclaimer{line-height:1.6}
-.hidden{display:none !important}
+/* ---------- финал ---------- */
+.final{position:relative; text-align:center; border-radius:36px; padding:clamp(48px, 8vw, 96px) 24px; overflow:hidden; isolation:isolate; color:#fff;
+  background:
+    radial-gradient(70% 90% at 15% 10%, #8A5CFF 0%, transparent 60%),
+    radial-gradient(60% 80% at 90% 90%, #E0479E 0%, transparent 60%),
+    linear-gradient(135deg, #3A18C9, #5B2BE0)}
+.final::after{content:''; position:absolute; inset:0; z-index:-1; opacity:.25;
+  background-image:linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
+  background-size:48px 48px; -webkit-mask-image:radial-gradient(circle at 50% 50%, #000, transparent 70%); mask-image:radial-gradient(circle at 50% 50%, #000, transparent 70%)}
+.final h2{font-size:clamp(36px, 5.4vw, 68px); font-weight:850; letter-spacing:-.045em; max-width:14ch; margin:0 auto 18px}
+.final p{font-size:clamp(17px, 1.6vw, 20px); opacity:.88; max-width:32em; margin:0 auto}
+.final .cta{justify-content:center}
+.final .btn-main{background:#fff; color:#3A18C9; box-shadow:0 18px 40px -10px rgba(0,0,0,.4)}
+.final .btn-plain{background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.3)}
 
-/* ---- ролик «как это выглядит» ----
-   Стоит сразу под первым экраном: тридцать секунд показывают то, на что
-   словами уходит абзац, и человек решает за них, а не за текст. Без звука,
-   по кругу — это иллюстрация, а не кино, и она не должна ничего требовать. */
-.demo{margin:46px auto 0; max-width:900px; padding:0 20px}
-.demo figure{margin:0}
-.demo video{display:block; width:100%; height:auto; border-radius:18px;
-            border:1px solid var(--sep); background:#120B22;
-            box-shadow:0 18px 50px rgba(40,20,80,.16)}
-.demo figcaption{margin-top:12px; text-align:center; color:var(--label-2); font-size:14.5px}
-.demo figure + figure{margin-top:44px}
-.demo .vtitle{margin:0 0 12px; font-size:20px; letter-spacing:-.01em; text-align:center}
-@media (max-width:640px){ .demo{margin-top:32px; padding:0 16px} .demo video{border-radius:14px} }
-/* Надстрочник над заголовком. Он объясняет имя, и это не украшение:
-   слово non-custodial знают в крипте и почти нигде больше, а «ключи только
-   у вас» понимает каждый. Пусть имя объясняет себя само, с первой строки. */
-/* Цвет берём из переменной, а не жёстким значением. На светлом фоне
-   бледно-сиреневый почти не читался — а это ровно та строчка, ради которой
-   всё и затевалось: она объясняет имя. Пусть тема сама решает, какой
-   оттенок ей по силам. */
-.eyebrow{ font-size:15px; letter-spacing:.01em; color:var(--eyebrow); font-weight:700;
-  margin:0 0 26px; }
+/* ---------- подвал ---------- */
+footer{border-top:1px solid var(--sep); padding:70px 0 60px; margin-top:120px; font-size:14.5px; color:var(--label-3);
+  background:color-mix(in srgb, var(--bg-2) 70%, transparent)}
+.fgrid{display:grid; grid-template-columns:1.3fr repeat(4, 1fr); gap:30px; margin-bottom:46px}
+.fgrid .brand{font-size:28px; margin-bottom:14px}
+.fgrid .tag{color:var(--label-2); font-size:15px; max-width:22em}
+.fcol h4{margin:0 0 14px; font-size:13px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--label)}
+.fcol a{display:block; color:var(--label-2); font-size:15px; padding:4px 0}
+.fcol a:hover{color:var(--accent); text-decoration:none}
+.fbottom{display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; padding-top:26px; border-top:1px solid var(--sep); margin-top:26px}
+.fbottom a{color:var(--label-2)}
+.disclaimer{line-height:1.65; max-width:78em}
+@media (max-width:980px){ .fgrid{grid-template-columns:1fr 1fr} .fgrid .fb{grid-column:1 / -1} }
+@media (max-width:420px){ .fgrid{grid-template-columns:1fr} }
 
-/* Имя крупно, первым, до всякого текста. Смысл тот же, что и в шапке, только
-   здесь он должен успеть сработать раньше, чем человек начнёт читать: знак
-   стоит вместо буквы «о» и показывает, что монету никто не держит.
+/* ---------- появление при прокрутке ---------- */
+.js .rv{opacity:0; transform:translateY(28px); transition:opacity .9s var(--ease), transform .9s var(--ease)}
+.js .rv.in{opacity:1; transform:none}
+.js .rv.d1{transition-delay:.08s} .js .rv.d2{transition-delay:.16s} .js .rv.d3{transition-delay:.24s}
 
-   Кегль растёт вместе с шириной экрана, но упирается в потолок: на большом
-   мониторе имя высотой в пол-экрана выглядит не уверенно, а крикливо. */
-.mark{ display:flex; align-items:baseline; gap:0; line-height:.9; font-weight:800;
-  letter-spacing:-.05em; color:var(--label); margin:0 0 18px;
-  font-size:clamp(62px, 13vw, 116px); }
-.mark .oo{ width:.88em; height:.88em; margin:0 .01em; align-self:center;
-  position:relative; top:.02em; flex:0 0 auto; display:block }
+/* =================== палитра «белый и графит» ===================
+   Фиолетовый остаётся только там, где надо нажать: главные кнопки и знак.
+   Всё остальное — белый, серый и почти чёрный. */
+h1,h2,.sec-h,.mark,.stat b,.step .n,.brand,.final h2,.qrmock .sum,.alert .who{font-family:var(--display)}
+body{font-weight:500}
+.brand{letter-spacing:-.02em; font-weight:700; font-size:22px}
+.mark{font-weight:700; letter-spacing:-.04em; font-size:clamp(56px, 7.4vw, 96px);
+  background:linear-gradient(120deg, var(--label) 35%, var(--silver) 100%); -webkit-background-clip:text; background-clip:text}
+.hero h1{font-weight:560; letter-spacing:-.035em; line-height:1.1; font-size:clamp(30px, 3.9vw, 52px); max-width:17ch}
+.sec-h{font-weight:560; letter-spacing:-.035em; line-height:1.12; font-size:clamp(26px, 3.3vw, 44px)}
+.final h2{font-weight:560; letter-spacing:-.03em; font-size:clamp(30px, 4.4vw, 56px); max-width:16ch}
+.card h3,.step h3{letter-spacing:-.015em; font-weight:800}
+.eyebrow{color:var(--label-2); background:var(--card-solid); border-color:var(--sep)}
+.kicker{color:var(--label-3); display:inline-flex; align-items:center; gap:10px}
+.kicker::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--accent)}
+.center .kicker{justify-content:center}
+.stat b{font-weight:600; letter-spacing:-.04em; background:linear-gradient(135deg, var(--label) 30%, var(--silver)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+.stat{background:var(--card-solid)}
+.ico, .ico.g, .ico.o, .ico.b, .ico.p{background:var(--ink); color:var(--ink-2); box-shadow:0 10px 24px -12px rgba(0,0,0,.45)}
+.step .n{background:var(--ink); color:var(--ink-2); box-shadow:none; font-weight:700; font-size:17px}
+.steps::before{background:repeating-linear-gradient(90deg, var(--sep-2) 0 10px, transparent 10px 20px); opacity:1}
+.card::before{background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%), color-mix(in srgb, var(--silver) 16%, transparent), transparent 60%)}
+section.band{background:var(--band)}
+section.band .card{background:var(--card-solid)}
+.marquee{background:var(--bg-2)}
+.mq span::after{color:var(--silver)}
+.tabs{background:var(--bg-2)}
+.tabs button[aria-selected="true"]{background:var(--ink); color:var(--ink-2); box-shadow:0 8px 22px -10px rgba(0,0,0,.4)}
+.langs{background:var(--bg-2)}
+.langs button[aria-pressed="true"]{background:var(--ink); color:var(--ink-2); box-shadow:none}
+.screen{background:linear-gradient(160deg, var(--sep-2), transparent 45%, var(--sep-2))}
+.pills a{background:var(--card-solid)}
+.addr li{background:var(--card-solid)}
+.addr li a{background:var(--bg-2); color:var(--label)}
+.addr li a:hover{background:var(--sep)}
+details{background:var(--card-solid)}
+summary::after{background:linear-gradient(var(--ink-2),var(--ink-2)) center/12px 2.4px no-repeat, linear-gradient(var(--ink-2),var(--ink-2)) center/2.4px 12px no-repeat, var(--ink)}
+footer{background:var(--bg-2)}
+.dl{background:var(--card-solid)}
+.dl::before{background:radial-gradient(closest-side, color-mix(in srgb, var(--silver) 22%, transparent), transparent 70%)}
+.final{background:radial-gradient(70% 90% at 15% 0%, rgba(116,71,255,.35) 0%, transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(255,255,255,.10) 0%, transparent 60%), linear-gradient(160deg, #17171C, #0B0B0E)}
+.final .btn-main{color:#0D0D10}
+.glowring{background:radial-gradient(closest-side, color-mix(in srgb, var(--silver) 30%, transparent), transparent 70%)}
+.btn-plain{background:var(--card-solid)}
 
-/* Выбранная кнопка в тёмной теме — СВЕТЛЕЕ дорожки, а не темнее.
-   Раньше она брала цвет карточки, а карточка в тёмной теме темнее фона
-   дорожки: выбранный язык выглядел дыркой, а невыбранные — выпуклыми, то
-   есть ровно наоборот. Так рисует и iOS: выбранный сегмент в тёмной теме
-   поднят светлым, а не утоплен. */
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;} }
-:root[data-theme="dark"] .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;}
+@media (max-width:640px){ section{padding:84px 0} }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation:none !important; transition:none !important; scroll-behavior:auto !important}
+  .js .rv{opacity:1; transform:none}
+}
 </style>
 </head>
 <body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 
-<header>
+<header id="hdr">
   <div class="wrap bar">
-    <a class="brand" href="#top">
-      <span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span><span class="wo">Wallet</span>
+    <a class="brand" href="#top" aria-label="NoN Wallet">
+      <span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path class="l" d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path class="r" d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle class="c" cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span><span class="wo">Wallet</span>
     </a>
-    <nav><div class="langs" id="langs"></div></nav>
+    <nav class="nav">
+      <a href="#people" data-t="p_h">Людям</a>
+      <a href="#sellers" data-t="s_h">Магазинам</a>
+      <a href="#creators" data-t="a_h">Авторам</a>
+      <a href="#download" data-t="d_h">Скачать</a>
+    </nav>
+    <div class="right">
+      <div class="langs" id="langs"></div>
+      <a class="btn btn-main btn-sm" href="https://wallet.tavarov.com/" data-t="cta1">Открыть кошелёк</a>
+    </div>
   </div>
 </header>
 
 <main id="top">
 
+  <!-- ================= первый экран ================= -->
   <div class="wrap hero">
-    <div class="mark" aria-label="NoN"><span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span></div>
-    <p class="eyebrow" data-t="eyebrow">NoN — от non-custodial. Ключи только у вас, деньги тоже.</p>
-    <h1 data-t="h1">Платите криптой, не меняя её на деньги</h1>
-    <p class="lead" data-t="hsub">Продавец показывает код — вы платите тем, что у вас есть. Без биржи и без ожидания. Ключи остаются на вашем телефоне.</p>
-    <div class="cta">
-      <a class="btn btn-main" href="https://wallet.tavarov.com/" data-t="cta1">Открыть кошелёк</a>
-      <a class="btn btn-plain hidden" id="apkTop" href="#download" data-t="cta2">Скачать для Android</a>
+    <div class="rv">
+      <div class="mark" aria-label="NoN"><span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="gm" x1="0" x2="1"><stop offset="0" stop-color="#7447FF"/><stop offset="1" stop-color="#D48BFF"/></linearGradient></defs><path class="l" d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="url(#gm)" stroke-width="16" stroke-linecap="round"/><path class="r" d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="url(#gm)" stroke-width="16" stroke-linecap="round"/><circle class="c" cx="60" cy="60" r="19" fill="url(#gm)"/></svg><span>N</span></div>
+      <p class="eyebrow"><span class="dot"></span><span data-t="eyebrow">NoN — от non-custodial. Ключи только у вас, деньги тоже.</span></p>
+      <h1 data-t="h1">Платите криптой, не меняя её на деньги</h1>
+      <p class="lead" data-t="hsub">Продавец показывает код — вы платите тем, что у вас есть. Без биржи и без ожидания. Ключи остаются на вашем телефоне.</p>
+      <div class="cta">
+        <a class="btn btn-main" href="https://wallet.tavarov.com/"><span data-t="cta1">Открыть кошелёк</span><span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn btn-plain hidden" id="apkTop" href="#download" data-t="cta2">Скачать для Android</a>
+      </div>
+      <p class="note" data-t="hnote">Открывается в браузере, ставится на домашний экран. iPhone и Android.</p>
     </div>
-    <p class="note" data-t="hnote">Открывается в браузере, ставится на домашний экран. iPhone и Android.</p>
+
+    <div class="stage rv d2" id="stage" aria-hidden="true">
+      <div class="glowring"></div>
+      <div class="tilt" id="tilt">
+        <div class="phone p2"><img src="./shots/ru/till.webp" data-shot="till" width="414" height="896" alt=""></div>
+        <div class="phone p3"><img src="./shots/ru/author.webp" data-shot="author" width="414" height="896" alt=""></div>
+        <div class="phone p1"><img src="./shots/ru/wallet.webp" data-shot="wallet" width="414" height="896" alt="" fetchpriority="high"></div>
+        <div class="chip c1"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span><span data-t="ch1">Оплачено</span><small>12.00 USDT</small></span></div>
+        <div class="chip c2"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span data-t="ch2">Ключи на вашем устройстве</span></div>
+        <div class="chip c3"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></span><span><span data-t="p3h">Перевод по имени</span><small>@anna</small></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= с чем работает ================= -->
+  <div class="marquee">
+    <span class="lbl" data-t="mq">Работает с</span>
+    <div class="mq"><div class="track">
+      <span>BNB Chain</span><span>Ethereum</span><span>Base</span><span>Solana</span><span>USDT</span><span>USDC</span><span>MetaMask</span><span>Trust Wallet</span><span>OKX Wallet</span><span>Phantom</span><span>WooCommerce</span><span>Telegram</span><span>OBS</span><span>REST API</span>
+      <span aria-hidden="true">BNB Chain</span><span aria-hidden="true">Ethereum</span><span aria-hidden="true">Base</span><span aria-hidden="true">Solana</span><span aria-hidden="true">USDT</span><span aria-hidden="true">USDC</span><span aria-hidden="true">MetaMask</span><span aria-hidden="true">Trust Wallet</span><span aria-hidden="true">OKX Wallet</span><span aria-hidden="true">Phantom</span><span aria-hidden="true">WooCommerce</span><span aria-hidden="true">Telegram</span><span aria-hidden="true">OBS</span><span aria-hidden="true">REST API</span>
+    </div></div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat rv"><b>0</b><span data-t="st1">посредников между покупателем и продавцом</span></div>
+      <div class="stat rv d1"><b>12</b><span data-t="st2">слов — и кошелёк вернётся на любом устройстве</span></div>
+      <div class="stat rv d2"><b>&lt;1¢</b><span data-t="st3">комиссия сети в BNB Chain, Base и Solana</span></div>
+      <div class="stat rv d3"><b>5</b><span data-t="st4">языков: приложение говорит на вашем</span></div>
+    </div>
   </div>
 
   <!-- ================= ролики =================
-       Три ролика, у каждого подпись сверху: что показано. Сняты на двух
-       языках: русскому показываем русский, остальным — английский. Играют
-       без звука и только когда видны на экране — три видео разом на телефоне
-       съели бы трафик впустую. -->
-  <div class="demo">
-    <figure>
-      <h3 class="vtitle" data-t="v1h">Оплата по QR-коду</h3>
-      <video class="dv" data-v="demo" muted loop playsinline preload="metadata"
-             poster="./video/demo-poster.jpg" width="1280" height="720"
-             aria-label="Как выставить счёт и получить оплату">
-        <!-- Два формата нарочно: webm первым, mp4 запасным. -->
-        <source data-f="webm" src="./video/demo-en.webm" type="video/webm">
-        <source data-f="mp4"  src="./video/demo-en.mp4"  type="video/mp4">
-      </video>
-      <figcaption data-t="demo_c">Продавец выставил счёт, покупатель открыл ссылку, деньги пришли. Тридцать секунд, без монтажа.</figcaption>
-    </figure>
-    <figure>
-      <h3 class="vtitle" data-t="v2h">Донаты и оповещения в OBS</h3>
-      <video class="dv" data-v="obs" data-poster="1" muted loop playsinline preload="none"
-             poster="./video/obs-poster-en.jpg" width="1280" height="720"
-             aria-label="Донат со страницы автора и оповещение на стриме">
-        <source data-f="webm" src="./video/obs-en.webm" type="video/webm">
-        <source data-f="mp4"  src="./video/obs-en.mp4"  type="video/mp4">
-      </video>
-      <figcaption data-t="v2c">Зритель донатит с телефона — на стриме всплывает ник, сумма и сообщение.</figcaption>
-    </figure>
-    <figure>
-      <h3 class="vtitle" data-t="v3h">API для сайта</h3>
-      <video class="dv" data-v="api" data-poster="1" muted loop playsinline preload="none"
-             poster="./video/api-poster-en.jpg" width="1280" height="720"
-             aria-label="Счёт через API, оплата и вебхук">
-        <source data-f="webm" src="./video/api-en.webm" type="video/webm">
-        <source data-f="mp4"  src="./video/api-en.mp4"  type="video/mp4">
-      </video>
-      <figcaption data-t="v3c">Сайт выставил счёт одним запросом, покупатель оплатил — сайт получил вебхук с подписью.</figcaption>
-    </figure>
-  </div>
+       Три ролика в одной сцене, переключаются вкладками. Сняты на двух
+       языках: русскому показываем русский, остальным — английский. Играет
+       только видимый — остальные не качаются вовсе. -->
+  <section id="watch">
+    <div class="wrap center">
+      <span class="kicker rv" data-t="v_e">Смотрите сами</span>
+      <h2 class="sec-h rv" data-t="v_h">Тридцать секунд вместо абзаца текста</h2>
+      <div class="theater rv">
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-tab="0" data-t="v1h">Оплата по QR-коду</button>
+          <button role="tab" aria-selected="false" data-tab="1" data-t="v2h">Донаты и оповещения в OBS</button>
+          <button role="tab" aria-selected="false" data-tab="2" data-t="v3h">API для сайта</button>
+        </div>
+        <div class="screen">
+          <figure class="on">
+            <video class="dv" data-v="demo" muted loop playsinline preload="metadata"
+                   poster="./video/demo-poster.jpg" width="1280" height="720"
+                   aria-label="Как выставить счёт и получить оплату">
+              <source data-f="webm" src="./video/demo-en.webm" type="video/webm">
+              <source data-f="mp4"  src="./video/demo-en.mp4"  type="video/mp4">
+            </video>
+            <figcaption data-t="demo_c">Продавец выставил счёт, покупатель открыл ссылку, деньги пришли. Тридцать секунд, без монтажа.</figcaption>
+          </figure>
+          <figure>
+            <video class="dv" data-v="obs" data-poster="1" muted loop playsinline preload="none" width="1280" height="720"
+                   aria-label="Донат со страницы автора и оповещение на стриме">
+              <source data-f="webm" src="./video/obs-en.webm" type="video/webm">
+              <source data-f="mp4"  src="./video/obs-en.mp4"  type="video/mp4">
+            </video>
+            <figcaption data-t="v2c">Зритель донатит с телефона — на стриме всплывает ник, сумма и сообщение.</figcaption>
+          </figure>
+          <figure>
+            <video class="dv" data-v="api" data-poster="1" muted loop playsinline preload="none" width="1280" height="720"
+                   aria-label="Счёт через API, оплата и вебхук">
+              <source data-f="webm" src="./video/api-en.webm" type="video/webm">
+              <source data-f="mp4"  src="./video/api-en.mp4"  type="video/mp4">
+            </video>
+            <figcaption data-t="v3c">Сайт выставил счёт одним запросом, покупатель оплатил — сайт получил вебхук с подписью.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <!-- ================= снимки ================= -->
-  <div class="shots">
-    <figure class="shot" style="margin:0">
-      <img src="./shots/ru/wallet.webp" data-shot="wallet" width="414" height="896" loading="lazy" alt="">
-      <span data-t="sh1">Кошелёк: BNB, USDT, USDC и бонусы TVR</span>
-    </figure>
-    <figure class="shot" style="margin:0">
-      <img src="./shots/ru/till.webp" data-shot="till" width="414" height="896" loading="lazy" alt="">
-      <span data-t="sh2">Касса: набрали сумму — покупатель навёл камеру</span>
-    </figure>
-    <figure class="shot" style="margin:0">
-      <img src="./shots/ru/bonus.webp" data-shot="bonus" width="414" height="896" loading="lazy" alt="">
-      <span data-t="sh3">Бонусы за покупки, и честно сказано, когда они созреют</span>
-    </figure>
-    <figure class="shot" style="margin:0">
-      <img src="./shots/ru/send.webp" data-shot="send" width="414" height="896" loading="lazy" alt="">
-      <span data-t="sh4">Перевод по имени, а не по длинному адресу</span>
-    </figure>
-    <figure class="shot" style="margin:0">
-      <img src="./shots/ru/author.webp" data-shot="author" width="414" height="896" loading="lazy" alt="">
-      <span data-t="sh5">Режим «Автор»: донаты, итоги и цель сбора</span>
-    </figure>
-  </div>
+  <!-- ================= как это работает ================= -->
+  <section id="how" style="padding-top:40px">
+    <div class="wrap center">
+      <span class="kicker rv" data-t="hw_e">Как это работает</span>
+      <h2 class="sec-h rv" data-t="hw_h">Три шага — и деньги у продавца</h2>
+      <div class="steps" style="text-align:left">
+        <div class="step rv"><div class="n">01</div><h3 data-t="hw1h">Продавец показывает код</h3><p data-t="hw1t">На кассе в телефоне, на наклейке у прилавка или ссылкой в чате.</p></div>
+        <div class="step rv d1"><div class="n">02</div><h3 data-t="hw2h">Покупатель платит</h3><p data-t="hw2t">USDT или USDC в любой из четырёх сетей: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.</p></div>
+        <div class="step rv d2"><div class="n">03</div><h3 data-t="hw3h">Деньги сразу у продавца</h3><p data-t="hw3t">За секунды, прямо на его адрес. «Оплачено» появляется само — никто не держит деньги посередине.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= сети =================
+       С 1 октября 2026: BNB Chain, Ethereum, Base, Solana. -->
+  <section id="networks" style="padding-top:20px">
+    <div class="wrap">
+      <span class="kicker rv" data-t="n_e">Новое</span>
+      <h2 class="sec-h rv" data-t="n_h">Четыре сети вместо одной</h2>
+      <p class="nets-lead rv" data-t="n_t">Касса и наклейка, счета через бот и API, донаты и оповещения в OBS теперь работают в BNB Chain, Ethereum, Base и Solana. Покупатель платит из той сети, где у него уже лежат деньги, — ничего менять и переводить не нужно.</p>
+      <div class="bento nets">
+        <div class="card w3 rv"><span class="net-dot" style="--c:#F0B90B"></span><h3>BNB Chain</h3><p data-t="n1t">USDT и USDC. Комиссия сети — доли цента. Здесь же бонусы TVR и имена вместо адресов.</p></div>
+        <div class="card w3 rv d1"><span class="net-dot" style="--c:#8A92B2"></span><h3>Ethereum</h3><p data-t="n2t">USDT и USDC. Самая дорогая сеть из четырёх: комиссия зависит от загрузки и бывает заметной. На небольших суммах выгоднее остальные три.</p></div>
+        <div class="card w3 rv"><span class="net-dot" style="--c:#2F6BFF"></span><h3>Base</h3><p data-t="n3t">USDC. Комиссия сети — доли цента. USDT в Base нет, поэтому счёт там всегда в USDC.</p></div>
+        <div class="card w3 rv d1"><span class="net-dot" style="--c:#14F195"></span><h3>Solana</h3><p data-t="n4t">USDT и USDC. Комиссия сети — доли цента. Платить можно из Phantom и Solflare: кнопка на странице оплаты откроет счёт прямо в кошельке.</p></div>
+      </div>
+      <p class="nets-note rv" data-t="n_note">Продавцу в любой сети сразу приходит 99%, сервису — 1%. В кошельке сеть выбирается прямо на главном экране, там же можно завести несколько кошельков и обменять монеты внутри сети. Бонусы TVR и имена пока есть только в BNB Chain.</p>
+    </div>
+  </section>
 
   <!-- ================= людям ================= -->
-  <section id="people">
+  <section id="people" class="band">
     <div class="wrap">
-      <h2 data-t="p_h">Людям</h2>
-      <div class="rows">
-        <div>
-          <h3 data-t="p1h">Деньги ваши</h3>
-          <p data-t="p1t">Ключ создаётся на вашем устройстве и никуда не уходит. Забрать или заморозить не можем и мы.</p>
-        </div>
-        <div>
-          <h3 data-t="p2h">Двенадцать слов</h3>
-          <p data-t="p2t">Записали на бумаге — кошелёк вернётся на любом устройстве. Потеряли — не вернёт никто, копии у нас нет.</p>
-        </div>
-        <div>
-          <h3 data-t="p3h">Перевод по имени</h3>
-          <p data-t="p3t">Короткое имя вместо строки из сорока двух знаков. Живёт в блокчейне и принадлежит вашему адресу.</p>
-        </div>
+      <span class="kicker rv" data-t="p_h">Людям</span>
+      <h2 class="sec-h rv" data-t="p_h2">Ваши деньги — только ваши</h2>
+      <div class="bento">
+        <div class="card w3 rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></div>
+          <h3 data-t="p1h">Деньги ваши</h3><p data-t="p1t">Ключ создаётся на вашем устройстве и никуда не уходит. Забрать или заморозить не можем и мы.</p></div>
+        <div class="card w3 rv d1"><div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg></div>
+          <h3 data-t="p2h">Двенадцать слов</h3><p data-t="p2t">Записали на бумаге — кошелёк вернётся на любом устройстве. Потеряли — не вернёт никто, копии у нас нет.</p></div>
+        <div class="card w3 rv"><div class="ico b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></div>
+          <h3 data-t="p3h">Перевод по имени</h3><p data-t="p3t">Короткое имя вместо строки из сорока двух знаков. Живёт в блокчейне и принадлежит вашему адресу.</p></div>
+        <div class="card w3 rv d1"><div class="ico p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+          <h3 data-t="p4h">Пять языков</h3><p data-t="p4t">Русский, английский, испанский, турецкий, португальский. Приложение само берёт язык телефона.</p></div>
       </div>
     </div>
   </section>
@@ -288,66 +645,100 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
   <!-- ================= магазинам ================= -->
   <section id="sellers">
     <div class="wrap">
-      <h2 data-t="s_h">Магазинам</h2>
-      <div class="rows">
-        <div>
-          <h3 data-t="s2h">Деньги не у нас</h3>
-          <p data-t="s2t">Покупка идёт прямо на ваш адрес — мы её не держим и заморозить не можем. Tavarov Pay удерживает 1% с покупки сразу, в той же операции.</p>
+      <span class="kicker rv" data-t="s_h">Магазинам</span>
+      <h2 class="sec-h rv" data-t="s_h2">Касса, счета и API — без посредника</h2>
+      <div class="bento">
+        <div class="card w3 rv"><div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3 data-t="s2h">Деньги не у нас</h3><p data-t="s2t">Покупка идёт прямо на ваш адрес — мы её не держим и заморозить не можем. Tavarov Pay удерживает 1% с покупки сразу, в той же операции.</p></div>
+        <div class="card w3 rv d1"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
+          <h3 data-t="s3h">Касса в телефоне</h3><p data-t="s3t">Набрали сумму — покупатель навёл камеру и видит её у себя. «Оплачено» появляется само.</p>
+          <div class="qrmock" aria-hidden="true">
+            <svg class="q" viewBox="0 0 29 29" shape-rendering="crispEdges"><path fill="#140C2A" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM22 0h7v7h-7zM23 1v5h5V1zM24 2h3v3h-3zM0 22h7v7H0zM1 23v5h5v-5zM2 24h3v3H2zM9 0h2v2H9zM13 1h3v2h-3zM18 0h2v3h-2zM9 4h4v2H9zM15 5h2v3h-2zM10 8h3v2h-3zM0 9h3v2H0zM5 9h3v3H5zM14 9h4v2h-4zM20 9h2v4h-2zM24 9h5v2h-5zM2 13h4v2H2zM9 12h2v5H9zM13 13h5v2h-5zM23 13h3v3h-3zM0 17h2v3H0zM4 17h3v2H4zM12 17h2v2h-2zM16 16h3v4h-3zM21 17h2v2h-2zM26 17h3v2h-3zM9 20h5v2H9zM22 21h3v3h-3zM9 24h2v5H9zM13 23h4v2h-4zM18 22h2v3h-2zM13 27h5v2h-5zM20 26h3v3h-3zM26 25h3v4h-3zM15 9h1v1h-1z"/></svg>
+            <div><div class="sum">12.00 USDT</div><div class="ok" data-t="ch1">Оплачено</div></div>
+          </div>
         </div>
-        <div>
-          <h3 data-t="s3h">Касса в телефоне</h3>
-          <p data-t="s3t">Набрали сумму — покупатель навёл камеру и видит её у себя. «Оплачено» появляется само.</p>
-        </div>
-        <div>
-          <h3 data-t="s4h">Деньги сразу</h3>
-          <p data-t="s4t">Платёж приходит вам на кошелёк за секунды. Карты переводят через несколько дней, и до тех пор деньги не ваши.</p>
-        </div>
+        <div class="card rv"><div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+          <h3 data-t="s4h">Деньги сразу</h3><p data-t="s4t">Платёж приходит вам на кошелёк за секунды. Карты переводят через несколько дней, и до тех пор деньги не ваши.</p></div>
+        <div class="card rv d1"><div class="ico b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></div>
+          <h3 data-t="s5h">API для своего сайта</h3><p data-t="s5t">Счёт одним запросом, вебхук с подписью, когда оплатили. Ключ — в кабинете, вход кошельком, без заявок и договоров. Есть тестовый режим.</p></div>
+        <div class="card rv d2"><div class="ico p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 11a3 3 0 1 0 0-6M18.5 20H21.5a5 5 0 0 0-4-4.9"/></svg></div>
+          <h3 data-t="s6h">Приглашайте других</h3><p data-t="s6t">Привели продавца или автора по своей ссылке — 20% нашей комиссии с его продаж ваши 12 месяцев. Платит контракт, сам и сразу.</p></div>
       </div>
-      <div class="rows" style="margin-top:22px">
-        <div>
-          <h3 data-t="s5h">API для своего сайта</h3>
-          <p data-t="s5t">Счёт одним запросом, вебхук с подписью, когда оплатили. Ключ — в кабинете, вход кошельком, без заявок и договоров. Есть тестовый режим.</p>
-        </div>
-        <div>
-          <h3 data-t="s6h">Приглашайте других</h3>
-          <p data-t="s6t">Привели продавца или автора по своей ссылке — 20% нашей комиссии с его продаж ваши 12 месяцев. Платит контракт, сам и сразу.</p>
-        </div>
+      <div class="pills rv">
+        <a href="https://wallet.tavarov.com/invoice" data-t="s_link">Выставить счёт прямо сейчас →</a>
+        <a href="https://wallet.tavarov.com/dev" data-t="s_api">Документация и кабинет API →</a>
+        <a href="https://t.me/tavarov_pay_bot" data-t="s_tg">Счета в Telegram — @tavarov_pay_bot →</a>
+        <a href="./partners" data-pg="partners" data-t="s_pp">Партнёрская программа →</a>
+        <a href="./sellers" data-t="s_digital">Продаёте цифровые товары? Возвратов через банк не бывает →</a>
       </div>
-      <p style="margin-top:26px"><a href="https://wallet.tavarov.com/invoice" data-t="s_link">Выставить счёт прямо сейчас →</a></p>
-      <p style="margin-top:10px"><a href="https://wallet.tavarov.com/dev" data-t="s_api">Документация и кабинет API →</a></p>
-      <p style="margin-top:10px"><a href="./sellers" data-t="s_digital">Продаёте цифровые товары? Возвратов через банк не бывает →</a></p>
     </div>
   </section>
 
   <!-- ================= авторам ================= -->
-  <section id="creators">
+  <section id="creators" class="band">
     <div class="wrap">
-      <h2 data-t="a_h">Авторам</h2>
-      <div class="rows">
-        <div>
-          <h3 data-t="a1h">Донаты по ссылке</h3>
-          <p data-t="a1t">Ссылка вида wallet.tavarov.com/d/ваше_имя — в описание канала. Зритель платит USDT или USDC с любого кошелька, вам сразу приходит 99%.</p>
+      <span class="kicker rv" data-t="a_h">Авторам</span>
+      <h2 class="sec-h rv" data-t="a_h2">Донаты, которые приходят сразу</h2>
+      <div class="split">
+        <div class="stack">
+          <div class="card rv"><div class="ico p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></div>
+            <h3 data-t="a1h">Донаты по ссылке</h3><p data-t="a1t">Ссылка вида wallet.tavarov.com/d/ваше_имя — в описание канала. Зритель платит USDT или USDC в любой из четырёх сетей, вам сразу приходит 99%.</p></div>
+          <div class="card rv d1"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg></div>
+            <h3 data-t="a2h">Оповещения в OBS</h3><p data-t="a2t">Донат всплывает на стриме со звуком: ник, сумма и сообщение. Сообщение видно только после настоящей оплаты — бесплатно написать гадость нельзя.</p></div>
+          <div class="card rv d2"><div class="ico g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
+            <h3 data-t="a3h">Цель сбора</h3><p data-t="a3t">«На новый микрофон — 300 $»: полоса прогресса на странице доната и на стриме. Собранное считается из блокчейна, накрутить нельзя.</p></div>
         </div>
-        <div>
-          <h3 data-t="a2h">Оповещения в OBS</h3>
-          <p data-t="a2t">Донат всплывает на стриме со звуком: ник, сумма и сообщение. Сообщение видно только после настоящей оплаты — бесплатно написать гадость нельзя.</p>
-        </div>
-        <div>
-          <h3 data-t="a3h">Цель сбора</h3>
-          <p data-t="a3t">«На новый микрофон — 300 $»: полоса прогресса на странице доната и на стриме. Собранное считается из блокчейна, накрутить нельзя.</p>
+        <div class="rv d1">
+          <div class="stream" aria-hidden="true">
+            <span class="live">LIVE</span>
+            <div class="alert"><div class="who">anna_k — <span class="amt">5 USDT</span></div><div class="msg" data-t="ob1">Спасибо за стрим!</div></div>
+            <div class="goal"><div class="row"><span data-t="ob2">Новый микрофон</span><span>184 / 300 $</span></div><div class="bar2"><i></i></div></div>
+          </div>
+          <p class="a-how" data-t="a_how">Включается в приложении: Настройки → Режим работы → «Автор». Там же ссылка, QR, приветствие для зрителей и итоги за день, неделю и месяц.</p>
+          <div class="pills" style="margin-top:14px">
+            <a href="./crypto-donations" data-pg="crypto-donations" data-t="f_don">Донаты в крипте</a>
+            <a href="./donationalerts-alternative" data-pg="donationalerts-alternative" data-t="a_cmp">Сравнить с DonationAlerts и DonatePay →</a>
+          </div>
         </div>
       </div>
-      <p style="margin-top:22px; color:var(--label-2)" data-t="a_how">Включается в приложении: Настройки → Режим работы → «Автор». Там же ссылка, QR, приветствие для зрителей и итоги за день, неделю и месяц.</p>
+    </div>
+  </section>
+
+  <!-- ================= снимки ================= -->
+  <section id="app" style="padding-bottom:60px">
+    <div class="wrap center">
+      <span class="kicker rv" data-t="sh_e">Приложение</span>
+      <h2 class="sec-h rv" data-t="sh_h">Как это выглядит</h2>
+    </div>
+    <div class="shots">
+      <figure class="shot"><div class="phone"><img src="./shots/ru/wallet.webp" data-shot="wallet" width="414" height="896" loading="lazy" alt=""></div>
+        <span data-t="sh1">Кошелёк: BNB, USDT, USDC и бонусы TVR</span></figure>
+      <figure class="shot"><div class="phone"><img src="./shots/ru/till.webp" data-shot="till" width="414" height="896" loading="lazy" alt=""></div>
+        <span data-t="sh2">Касса: набрали сумму — покупатель навёл камеру</span></figure>
+      <figure class="shot"><div class="phone"><img src="./shots/ru/bonus.webp" data-shot="bonus" width="414" height="896" loading="lazy" alt=""></div>
+        <span data-t="sh3">Бонусы за покупки, и честно сказано, когда они созреют</span></figure>
+      <figure class="shot"><div class="phone"><img src="./shots/ru/send.webp" data-shot="send" width="414" height="896" loading="lazy" alt=""></div>
+        <span data-t="sh4">Перевод по имени, а не по длинному адресу</span></figure>
+      <figure class="shot"><div class="phone"><img src="./shots/ru/author.webp" data-shot="author" width="414" height="896" loading="lazy" alt=""></div>
+        <span data-t="sh5">Режим «Автор»: донаты, итоги и цель сбора</span></figure>
     </div>
   </section>
 
   <!-- ================= скачать ================= -->
   <section id="download">
     <div class="wrap">
-      <h2 data-t="d_h">Скачать</h2>
-      <div class="dl">
-        <p data-t="d_intro" style="color:var(--label-2); font-size:15.5px">В браузере ничего не ставится и обновляется само. Файл для Android — если привычнее обычное приложение.</p>
-        <div id="apkBox" class="hidden">
+      <div class="dl rv">
+        <span class="kicker" data-t="d_h">Скачать</span>
+        <h2 class="sec-h" data-t="d_h2">Откройте в браузере или скачайте для Android</h2>
+        <p class="intro" data-t="d_intro">В браузере ничего не ставится и обновляется само. Файл для Android — если привычнее обычное приложение.</p>
+        <!-- Сюда ведут кнопки «NoN Wallet» из бота и со страницы оплаты. У
+             человека с iPhone или компьютером здесь должна быть кнопка, а не
+             только файл для Android. -->
+        <div class="cta">
+          <a class="btn btn-main" id="dlWeb" href="https://wallet.tavarov.com/" data-t="cta1">Открыть кошелёк</a>
+        </div>
+        <p class="meta" id="dlIos" data-t="d_ios">На iPhone: откройте кошелёк в Safari, нажмите «Поделиться» → «На экран „Домой“» — он встанет на экран как обычное приложение.</p>
+        <div id="apkBox" class="hidden" style="margin-top:24px">
           <a class="btn btn-main" id="apkLink" href="./tavarov.apk" download>APK</a>
           <div class="meta">
             <div><span data-t="d_ver">Версия</span>: <code id="apkVer">—</code> · <span data-t="d_size">размер</span>: <code id="apkSize">—</code></div>
@@ -361,91 +752,136 @@ footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; c
     </div>
   </section>
 
-  <!-- ================= честно ================= -->
-  <section id="honest">
-    <div class="wrap">
-      <h2 data-t="ho_h">Честно</h2>
-      <div class="honest">
-        <ul>
-          <li data-t="ho1"><b>Независимого аудита у контрактов нет.</b> Мы проверили их сами, но это не то же самое. Не держите в кассе больше, чем готовы потерять.</li>
-          <li data-t="ho2"><b>TVR не продаётся и не имеет цены.</b> Это баллы. Любой, кто предлагает купить у него TVR, — мошенник.</li>
-          <li data-t="ho3"><b>Правила у стран разные.</b> Кое-где расчёты криптовалютой запрещены. Проверьте правила своей страны.</li>
-        </ul>
+  <!-- ================= честно и контракты ================= -->
+  <section id="honest" style="padding-top:40px">
+    <div class="wrap two">
+      <div class="rv">
+        <h2 class="sec-h" style="font-size:clamp(30px,3.6vw,44px)" data-t="ho_h">Честно</h2>
+        <div class="honest">
+          <ul>
+            <li data-t="ho1"><b>Независимого аудита у контрактов нет.</b> Мы проверили их сами, но это не то же самое. Не держите в кассе больше, чем готовы потерять.</li>
+            <li data-t="ho2"><b>TVR не продаётся и не имеет цены.</b> Это баллы. Любой, кто предлагает купить у него TVR, — мошенник.</li>
+            <li data-t="ho3"><b>Правила у стран разные.</b> Кое-где расчёты криптовалютой запрещены. Проверьте правила своей страны.</li>
+          </ul>
+        </div>
       </div>
-    </div>
-  </section>
-
-
-  <!-- ================= контракты ================= -->
-  <section id="contracts">
-    <div class="wrap">
-      <h2 data-t="c_h">Контракты</h2>
-      <p data-t="c_intro" style="color:var(--label-2); max-width:62ch">Всё, что делает приложение, лежит в открытых контрактах. Их можно прочитать в обозревателе блоков и не верить нам на слово.</p>
-      <div class="honest" style="margin-top:20px">
-        <ul style="list-style:none; padding:0; margin:0">
-          <li style="margin-bottom:10px"><span data-t="c1">Оплата и возвраты</span> — <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35"><code>0x1Fc6…Ca35</code></a></li>
-          <li style="margin-bottom:10px"><span data-t="c2">Токен TVR</span> — <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503"><code>0x8Baa…8503</code></a></li>
-          <li style="margin-bottom:10px"><span data-t="c3">Кошелёк сервиса, сюда приходит 1%</span> — <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432"><code>0x73BB…f432</code></a></li>
-          <li style="margin-bottom:10px"><span data-t="c4">Счёт в сети</span> — <a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9"><code>0x82a9…aFF9</code></a></li>
-          <li style="margin-bottom:10px"><span data-t="c5">Имена</span> — <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e"><code>0xd6E8…338e</code></a></li>
-          <li><span data-t="c6">Имена, прошлая версия</span> — <a href="https://bscscan.com/address/0x45465B98a3Cc486740Be84fD3B1E21e0D3548360"><code>0x4546…8360</code></a></li>
+      <div id="contracts" class="rv d1">
+        <h2 class="sec-h" style="font-size:clamp(30px,3.6vw,44px)" data-t="c_h">Контракты</h2>
+        <p data-t="c_intro" style="color:var(--label-2)">Всё, что делает приложение, лежит в открытых контрактах. Их можно прочитать в обозревателе блоков и не верить нам на слово.</p>
+        <ul class="addr">
+          <li><span data-t="c1">Оплата и возвраты</span><a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35">0x1Fc6…Ca35</a></li>
+          <li><span data-t="c2">Токен TVR</span><a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503">0x8Baa…8503</a></li>
+          <li><span data-t="c3">Кошелёк сервиса, сюда приходит 1%</span><a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432">0x73BB…f432</a></li>
+          <li><span data-t="c7">Оплата в Ethereum</span><a href="https://etherscan.io/address/0x5046399643c387d93e1467bad3fd7edf3fb459da">0x5046…59da</a></li>
+          <li><span data-t="c8">Оплата в Base</span><a href="https://basescan.org/address/0x5046399643c387d93e1467bad3fd7edf3fb459da">0x5046…59da</a></li>
+          <li><span data-t="c9">Кошелёк сервиса в Solana</span><a href="https://solscan.io/account/Ew2cTsGyPv7pmn6CyLzV1X1K8A6nBWvJvmkvMY1sM4KU">Ew2c…M4KU</a></li>
+          <li><span data-t="c4">Счёт в сети</span><a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9">0x82a9…aFF9</a></li>
+          <li><span data-t="c5">Имена</span><a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e">0xd6E8…338e</a></li>
+          <li><span data-t="c6">Имена, прошлая версия</span><a href="https://bscscan.com/address/0x45465B98a3Cc486740Be84fD3B1E21e0D3548360">0x4546…8360</a></li>
         </ul>
+        <p class="small" data-t="c_one"><b>Четыре сети: BNB Chain, Ethereum, Base и Solana.</b> В Ethereum и Base стоит тот же код оплаты, что в BNB Chain. В Solana контракта нет: покупатель подписывает одну операцию, в которой 99% идут продавцу и 1% — сервису. В другие сети приложение не ходит.</p>
+        <p class="small" data-t="c_pow">Что мы можем: менять правила имён и закрывать слова-ловушки вроде <code>support</code>. Чего не можем: тронуть ваши деньги, отменить ваш перевод, заморозить счёт или выдать себя за вас. Этих действий в контрактах просто нет.</p>
       </div>
-      <p data-t="c_one" style="margin-top:20px; color:var(--label-2)"><b>Работает одна сеть — BNB Chain.</b> Ни в какой другой наши контракты не развёрнуты, и приложение туда не ходит.</p>
-      <p data-t="c_pow" style="color:var(--label-2); max-width:62ch">Что мы можем: менять правила имён и закрывать слова-ловушки вроде <code>support</code>. Чего не можем: тронуть ваши деньги, отменить ваш перевод, заморозить счёт или выдать себя за вас. Этих действий в контрактах просто нет.</p>
     </div>
   </section>
 
   <!-- ================= вопросы ================= -->
-  <section id="faq">
+  <section id="faq" class="band">
     <div class="wrap">
-      <h2 data-t="q_h">Вопросы</h2>
-      <details>
-        <summary data-t="q1">Что будет, если я потеряю телефон?</summary>
-        <p data-t="a1">Ничего, если записаны двенадцать слов: вводите их на новом устройстве, и кошелёк на месте. Без них не вернёт никто, включая нас.</p>
-      </details>
-      <details>
-        <summary data-t="q3">Сколько это стоит?</summary>
-        <p data-t="a3">Кошелёк бесплатный. С покупок, оплаченных через приложение, контракт берёт один процент — его платит продавец, а не покупатель. Комиссия сети — доли цента, и она идёт сети, а не нам.</p>
-      </details>
-      <details>
-        <summary data-t="q4">Что такое TVR?</summary>
-        <p data-t="a4">Баллы за покупки. Созревают долями за девяносто дней — так в контракте, ускорить не может никто. Цены у них нет, продать негде.</p>
-      </details>
-      <details>
-        <summary data-t="q7">Кому подходит приложение?</summary>
-        <p data-t="a7">В нём три режима: продавец — касса, счета и API для сайта; покупатель — оплата по коду и переводы; автор — донаты от зрителей. Кошелёк один и тот же, режим переключается в настройках в любой момент.</p>
-      </details>
-      <details>
-        <summary data-t="q6">В какой сети всё это работает?</summary>
-        <p data-t="a6">BNB Chain. Комиссия сети там доли цента, а USDT и USDC — те же самые, что на биржах. Контракты открыты, ссылки на них внизу страницы.</p>
-      </details>
+      <div class="center"><h2 class="sec-h rv" data-t="q_h">Вопросы</h2></div>
+      <div class="faq rv">
+        <details>
+          <summary data-t="q1">Что будет, если я потеряю телефон?</summary>
+          <p data-t="a1">Ничего, если записаны двенадцать слов: вводите их на новом устройстве, и кошелёк на месте. Без них не вернёт никто, включая нас.</p>
+        </details>
+        <details>
+          <summary data-t="q2">Кто хранит мои деньги?</summary>
+          <p data-t="a2">Никто. Они лежат в блокчейне на вашем адресе, а ключ — на вашем устройстве. Мы не банк и не биржа и до ваших денег не дотягиваемся.</p>
+        </details>
+        <details>
+          <summary data-t="q3">Сколько это стоит?</summary>
+          <p data-t="a3">Кошелёк бесплатный. С покупок, оплаченных через приложение, удерживается один процент — его платит продавец, а не покупатель. Комиссия сети идёт сети, а не нам: в BNB Chain, Base и Solana это доли цента, в Ethereum — заметно больше.</p>
+        </details>
+        <details>
+          <summary data-t="q5">А если покупатель хочет вернуть покупку?</summary>
+          <p data-t="a5">Продавец возвращает кнопкой, покупателю приходит ровно то, что он заплатил, а бонусы за эту покупку отменяются. Один процент остаётся в казне.</p>
+        </details>
+        <details>
+          <summary data-t="q4">Что такое TVR?</summary>
+          <p data-t="a4">Баллы за покупки. Созревают долями за девяносто дней — так в контракте, ускорить не может никто. Цены у них нет, продать негде.</p>
+        </details>
+        <details>
+          <summary data-t="q7">Кому подходит приложение?</summary>
+          <p data-t="a7">В нём три режима: продавец — касса, счета и API для сайта; покупатель — оплата по коду и переводы; автор — донаты от зрителей. Кошелёк один и тот же, режим переключается в настройках в любой момент.</p>
+        </details>
+        <details>
+          <summary data-t="q6">В каких сетях всё это работает?</summary>
+          <p data-t="a6">В четырёх: BNB Chain, Ethereum, Base и Solana. Сеть выбирает покупатель. USDT и USDC — те же, что на биржах (в Base только USDC). Контракты открыты, ссылки на них — в разделе «Контракты».</p>
+        </details>
+      </div>
     </div>
   </section>
+
+  <!-- ================= финал ================= -->
+  <div class="wrap">
+    <div class="final rv">
+      <h2 data-t="fin_h">Ключи только у вас. Деньги тоже.</h2>
+      <p data-t="fin_t">Кошелёк открывается за минуту — без регистрации, прямо в браузере.</p>
+      <div class="cta">
+        <a class="btn btn-main" href="https://wallet.tavarov.com/"><span data-t="cta1">Открыть кошелёк</span><span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn btn-plain" href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer>
   <div class="wrap">
-    <div class="flinks">
-      <a href="https://wallet.tavarov.com/" data-t="f_a1">Открыть кошелёк</a>
-      <a href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
-      <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35" data-t="f_a3">Контракт оплаты</a>
-      <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503" data-t="f_a4">Токен TVR</a>
-      <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432" data-t="f_a5">Кошелёк сервиса</a>
-      <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Контракт имён</a>
-      <a href="./sellers" data-t="f_a8">Цифровым магазинам</a>
-      <a href="https://wallet.tavarov.com/dev" data-t="f_a10">API для сайтов</a>
-      <a href="https://github.com/tavarovwallet/tavarov" data-t="f_a9">Исходный код</a>
-      <a href="https://t.me/tavarovpay" target="_blank" rel="noopener" data-t="f_tg">Новости в Telegram</a>
-      <a href="https://x.com/TavarovWallet" target="_blank" rel="noopener" data-t="f_x">Мы в X</a>
-      <a href="./privacy" data-t="f_a7">Политика конфиденциальности</a>
+    <div class="fgrid">
+      <div class="fb">
+        <a class="brand" href="#top" aria-label="NoN Wallet"><span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span><span class="wo">Wallet</span></a>
+        <p class="tag" data-t="eyebrow">NoN — от non-custodial. Ключи только у вас, деньги тоже.</p>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc1">Продукт</h4>
+        <a href="https://wallet.tavarov.com/" data-t="f_a1">Открыть кошелёк</a>
+        <a href="https://wallet.tavarov.com/invoice" data-t="f_a2">Выставить счёт</a>
+        <a href="https://wallet.tavarov.com/dev" data-t="f_a10">API для сайтов</a>
+        <a href="https://t.me/tavarov_pay_bot" data-t="f_bot">Telegram-бот</a>
+        <a href="./woocommerce" data-page="woocommerce" data-t="f_wc">Плагин для WooCommerce</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc2">Узнать больше</h4>
+        <a href="./accept-usdt" data-page="accept-usdt" data-t="f_usdt">Как принимать USDT</a>
+        <a href="./crypto-donations" data-page="crypto-donations" data-t="f_don">Донаты в крипте</a>
+        <a href="./partners" data-page="partners" data-t="f_partners">Партнёрская программа</a>
+        <a href="./sellers" data-t="f_a8">Цифровым магазинам</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc3">Открытость</h4>
+        <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35" data-t="f_a3">Контракт оплаты</a>
+        <a href="https://bscscan.com/address/0x8Baa77344Fc122967902651D0C3193cdF4c48503" data-t="f_a4">Токен TVR</a>
+        <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432" data-t="f_a5">Кошелёк сервиса</a>
+        <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Контракт имён</a>
+        <a href="https://github.com/tavarovwallet/tavarov" data-t="f_a9">Исходный код</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc4">Мы на связи</h4>
+        <a href="https://t.me/tavarovpay" target="_blank" rel="noopener" data-t="f_tg">Новости в Telegram</a>
+        <a href="https://x.com/TavarovWallet" target="_blank" rel="noopener" data-t="f_x">Мы в X</a>
+      </div>
     </div>
     <div class="disclaimer">
       <p data-t="disc">NoN Wallet — некастодиальный кошелёк: ключи мы не храним и доступа к вашим деньгам не имеем. Ничто на этой странице не является инвестиционным советом. Криптовалюты меняются в цене, и потерять на них можно всё. TVR не продаётся, не имеет цены и не обещает дохода. В ряде стран расчёты криптовалютой за товары и услуги ограничены или запрещены — проверьте правила своей страны.</p>
-      <p style="margin:0">© 2026 Tavarov</p>
+    </div>
+    <div class="fbottom">
+      <span>© 2026 Tavarov</span>
+      <a href="./privacy" data-t="f_a7">Политика конфиденциальности</a>
+      <a href="./terms" data-page="terms" data-t="f_terms">Условия использования</a>
     </div>
   </div>
 </footer>
+
 
 <script>
 /* Языки. Словарь лежит прямо здесь: страница должна открываться сразу на
@@ -460,6 +896,7 @@ const T = {
     s6h:"Invite others",
     s6t:"Bring in a seller or a creator with your link and 20% of our fee on their sales is yours for 12 months. The contract pays you itself, instantly.",
     s_api:"API docs and dashboard →",
+    s_tg:"Invoices in Telegram — @tavarov_pay_bot →",
     a_h:"For creators",
     a1h:"Tips by link",
     a1t:"A link like wallet.tavarov.com/d/your_name for your channel description. Viewers pay in USDT or USDC from any wallet, and 99% reaches you instantly.",
@@ -472,6 +909,8 @@ const T = {
     q7:"Who is the app for?",
     a7:"It has three modes: seller — a till, invoices and an API for your site; buyer — pay by code and send money; creator — tips from viewers. The wallet is the same, and you can switch modes in settings at any time.",
     f_a10:"API for websites",
+    f_tg:"Telegram bot",
+    f_wc:"WooCommerce plugin", f_usdt:"How to accept USDT", f_don:"Crypto tips", f_partners:"Partner program", f_terms:"Terms of use",
     v1h:"Paying by QR code",
     v2h:"Tips and OBS alerts",
     v2c:"A viewer tips from their phone, and the nickname, amount and message pop up on stream.",
@@ -523,6 +962,7 @@ const T = {
     d_hash:'SHA-256 fingerprint of the file — check it after downloading:',
     d_warn:'Android will ask permission to install from this source — it asks that about any file from outside the store. Download only from this page: a fake "Tavarov" on someone else’s site is the most common way a wallet gets taken.',
     d_none:'The Android file is not published yet — please use the browser version for now.',
+    d_ios:'On iPhone: open the wallet in Safari, tap Share → Add to Home Screen — it will sit on your screen like a normal app.',
     ho_h:'Honestly',
     ho1:'<b>The contracts have no independent audit.</b> We checked them ourselves, which is not the same thing. Do not keep more in the till than you can afford to lose.',
     ho2:'<b>TVR is not for sale and has no price.</b> They are points. Anyone offering to sell you TVR is a fraud.',
@@ -553,6 +993,7 @@ const T = {
     s6h:"Invite a otros",
     s6t:"Traiga a un vendedor o a un autor con su enlace y el 20 % de nuestra comisión sobre sus ventas es suyo durante 12 meses. Paga el contrato, solo y al instante.",
     s_api:"Documentación y panel de la API →",
+    s_tg:"Facturas en Telegram — @tavarov_pay_bot →",
     a_h:"Para autores",
     a1h:"Donaciones por enlace",
     a1t:"Un enlace como wallet.tavarov.com/d/tu_nombre para la descripción del canal. Tu audiencia paga en USDT o USDC desde cualquier billetera y te llega el 99 % al instante.",
@@ -565,6 +1006,8 @@ const T = {
     q7:"¿Para quién es la app?",
     a7:"Tiene tres modos: vendedor — caja, facturas y API para su sitio; comprador — pagar con código y enviar dinero; autor — donaciones de la audiencia. La billetera es la misma y el modo se cambia en ajustes cuando quiera.",
     f_a10:"API para sitios web",
+    f_tg:"Bot de Telegram",
+    f_wc:"Plugin para WooCommerce", f_usdt:"Cómo aceptar USDT", f_don:"Donaciones en cripto", f_partners:"Programa de socios", f_terms:"Términos de uso",
     v1h:"Pago con código QR",
     v2h:"Donaciones y alertas en OBS",
     v2c:"Alguien dona desde el teléfono y en el directo aparecen el apodo, la cantidad y el mensaje.",
@@ -616,6 +1059,7 @@ const T = {
     d_hash:'Huella SHA-256 del archivo: compruébela después de descargar:',
     d_warn:'Android pedirá permiso para instalar desde este origen: lo pregunta con cualquier archivo que no venga de la tienda. Descargue solo desde esta página: un «Tavarov» falso en otro sitio es la forma más común de perder un monedero.',
     d_none:'El archivo para Android todavía no está publicado; por ahora use la versión del navegador.',
+    d_ios:'En iPhone: abra el monedero en Safari, toque Compartir → Añadir a pantalla de inicio — quedará como una app normal.',
     ho_h:'Con franqueza',
     ho1:'<b>Los contratos no tienen auditoría independiente.</b> Los revisamos nosotros, que no es lo mismo. No guarde en la caja más de lo que pueda perder.',
     ho2:'<b>TVR no se vende ni tiene precio.</b> Son puntos. Quien le ofrezca venderle TVR es un estafador.',
@@ -646,6 +1090,7 @@ const T = {
     s6h:"Başkalarını davet edin",
     s6t:"Bağlantınızla bir satıcı veya üretici getirin; onun satışlarından aldığımız komisyonun %20’si 12 ay boyunca sizin. Ödemeyi sözleşme kendisi, anında yapar.",
     s_api:"API belgeleri ve paneli →",
+    s_tg:"Telegram'da faturalar — @tavarov_pay_bot →",
     a_h:"Üreticilere",
     a1h:"Bağlantıyla bağış",
     a1t:"Kanal açıklaması için wallet.tavarov.com/d/adiniz gibi bir bağlantı. İzleyiciler herhangi bir cüzdandan USDT veya USDC ile öder, %99 anında size gelir.",
@@ -658,6 +1103,8 @@ const T = {
     q7:"Uygulama kimler için?",
     a7:"Üç modu var: satıcı — kasa, faturalar ve siteniz için API; alıcı — kodla ödeme ve para gönderme; üretici — izleyicilerden bağış. Cüzdan aynıdır, mod ayarlardan istediğiniz zaman değişir.",
     f_a10:"Web siteleri için API",
+    f_tg:"Telegram botu",
+    f_wc:"WooCommerce eklentisi", f_usdt:"USDT nasıl kabul edilir", f_don:"Kripto bağışlar", f_partners:"Ortaklık programı", f_terms:"Kullanım koşulları",
     v1h:"QR kodla ödeme",
     v2h:"Bağışlar ve OBS bildirimleri",
     v2c:"İzleyici telefondan bağış yapar, yayında takma ad, tutar ve mesaj belirir.",
@@ -709,6 +1156,7 @@ const T = {
     d_hash:'Dosyanın SHA-256 parmak izi — indirdikten sonra karşılaştırın:',
     d_warn:'Android bu kaynaktan kurulum için izin isteyecek — mağaza dışındaki her dosya için bunu sorar. Yalnızca bu sayfadan indirin: başka bir sitedeki sahte «Tavarov», cüzdanların en sık bu yolla çalınmasının nedenidir.',
     d_none:'Android dosyası henüz yayınlanmadı — şimdilik tarayıcı sürümünü kullanın.',
+    d_ios:'iPhone\'da: cüzdanı Safari\'de açın, Paylaş → Ana Ekrana Ekle\'ye dokunun — normal bir uygulama gibi ekranınızda durur.',
     ho_h:'Açıkça',
     ho1:'<b>Sözleşmelerin bağımsız denetimi yok.</b> Kendimiz denetledik, bu aynı şey değil. Kasada kaybetmeyi göze alabileceğinizden fazlasını tutmayın.',
     ho2:'<b>TVR satılık değildir ve fiyatı yoktur.</b> Bunlar puandır. Size TVR satmayı teklif eden herkes dolandırıcıdır.',
@@ -739,6 +1187,7 @@ const T = {
     s6h:"Convide outros",
     s6t:"Traga um vendedor ou um criador pelo seu link e 20% da nossa taxa sobre as vendas dele são seus por 12 meses. O contrato paga sozinho, na hora.",
     s_api:"Documentação e painel da API →",
+    s_tg:"Faturas no Telegram — @tavarov_pay_bot →",
     a_h:"Para criadores",
     a1h:"Doações por link",
     a1t:"Um link como wallet.tavarov.com/d/seu_nome para a descrição do canal. Os espectadores pagam em USDT ou USDC de qualquer carteira, e 99% chega na hora para você.",
@@ -751,6 +1200,8 @@ const T = {
     q7:"Para quem é o app?",
     a7:"Ele tem três modos: vendedor — caixa, cobranças e API para o seu site; comprador — pagar por código e enviar dinheiro; criador — doações dos espectadores. A carteira é a mesma, e o modo muda nas configurações quando quiser.",
     f_a10:"API para sites",
+    f_tg:"Bot do Telegram",
+    f_wc:"Plugin para WooCommerce", f_usdt:"Como aceitar USDT", f_don:"Doações em cripto", f_partners:"Programa de parceiros", f_terms:"Termos de uso",
     v1h:"Pagamento por QR code",
     v2h:"Doações e alertas no OBS",
     v2c:"O espectador doa pelo celular, e na live aparecem o apelido, o valor e a mensagem.",
@@ -802,6 +1253,7 @@ const T = {
     d_hash:'Impressão SHA-256 do arquivo — confira depois de baixar:',
     d_warn:'O Android vai pedir permissão para instalar desta origem — ele pergunta isso sobre qualquer arquivo de fora da loja. Baixe somente nesta página: um «Tavarov» falso em outro site é a forma mais comum de perder uma carteira.',
     d_none:'O arquivo para Android ainda não foi publicado — por enquanto use a versão do navegador.',
+    d_ios:'No iPhone: abra a carteira no Safari, toque em Compartilhar → Adicionar à Tela de Início — ela fica na tela como um app comum.',
     ho_h:'Com franqueza',
     ho1:'<b>Os contratos não têm auditoria independente.</b> Nós mesmos verificamos, o que não é a mesma coisa. Não guarde no caixa mais do que pode perder.',
     ho2:'<b>TVR não está à venda e não tem preço.</b> São pontos. Quem oferecer vender TVR é golpista.',
@@ -825,6 +1277,167 @@ const T = {
   }
 };
 
+
+/* Новые строки витрины «ночь» (30.09.2026). Лежат отдельно, чтобы было
+   видно, что добавилось; русский, как и прежде, берётся из разметки. */
+const T2 = {
+  en: {
+    ch1:'Paid', ch2:'Keys stay on your device', mq:'Works with',
+    st1:'middlemen between buyer and seller', st2:'words bring your wallet back on any device',
+    st3:'network fee per transaction', st4:'languages — the app speaks yours',
+    v_e:'See for yourself', v_h:'Thirty seconds instead of a paragraph',
+    hw_e:'How it works', hw_h:'Three steps and the seller has the money',
+    hw1h:'The seller shows a code', hw1t:'On the till in their phone, on a counter sticker or as a link in a chat.',
+    hw2h:'The buyer pays', hw2t:'USDT or USDC from any wallet: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'The money is with the seller', hw3t:'In seconds, straight to their address. “Paid” appears by itself — nobody holds the money in between.',
+    p_h2:'Your money is yours alone', s_h2:'A till, invoices and an API — no middleman', a_h2:'Tips that arrive instantly',
+    s_pp:'Partner program →', ob1:'Thanks for the stream!', ob2:'New microphone',
+    a_cmp:'Compare with DonationAlerts and DonatePay →',
+    sh_e:'The app', sh_h:'What it looks like',
+    d_h2:'Open it in a browser or download for Android',
+    fin_h:'Your keys. Your money.', fin_t:'The wallet opens in a minute — no sign-up, right in your browser.',
+    fc1:'Product', fc2:'Learn', fc3:'Open by design', fc4:'Stay in touch', f_bot:'Telegram bot'
+  },
+  es: {
+    ch1:'Pagado', ch2:'Las claves siguen en su dispositivo', mq:'Funciona con',
+    st1:'intermediarios entre comprador y vendedor', st2:'palabras y el monedero vuelve en cualquier dispositivo',
+    st3:'comisión de red por operación', st4:'idiomas: la app habla el suyo',
+    v_e:'Véalo usted mismo', v_h:'Treinta segundos en vez de un párrafo',
+    hw_e:'Cómo funciona', hw_h:'Tres pasos y el dinero ya es del vendedor',
+    hw1h:'El vendedor muestra un código', hw1t:'En la caja del teléfono, en una pegatina del mostrador o como enlace en un chat.',
+    hw2h:'El comprador paga', hw2t:'USDT o USDC desde cualquier monedero: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'El dinero ya es del vendedor', hw3t:'En segundos, directo a su dirección. «Pagado» aparece solo: nadie retiene el dinero en medio.',
+    p_h2:'Su dinero es solo suyo', s_h2:'Caja, facturas y API, sin intermediarios', a_h2:'Donaciones que llegan al instante',
+    s_pp:'Programa de socios →', ob1:'¡Gracias por el directo!', ob2:'Micrófono nuevo',
+    a_cmp:'Comparar con DonationAlerts y DonatePay →',
+    sh_e:'La app', sh_h:'Cómo se ve',
+    d_h2:'Ábralo en el navegador o descárguelo para Android',
+    fin_h:'Sus claves. Su dinero.', fin_t:'El monedero se abre en un minuto: sin registro, en el navegador.',
+    fc1:'Producto', fc2:'Saber más', fc3:'Transparencia', fc4:'Contacto', f_bot:'Bot de Telegram'
+  },
+  tr: {
+    ch1:'Ödendi', ch2:'Anahtarlar cihazınızda', mq:'Birlikte çalışır',
+    st1:'alıcı ile satıcı arasında aracı', st2:'kelimeyle cüzdan her cihazda geri gelir',
+    st3:'işlem başına ağ ücreti', st4:'dil — uygulama sizinkini konuşur',
+    v_e:'Kendiniz görün', v_h:'Bir paragraf yerine otuz saniye',
+    hw_e:'Nasıl çalışır', hw_h:'Üç adımda para satıcıda',
+    hw1h:'Satıcı bir kod gösterir', hw1t:'Telefondaki kasada, tezgâhtaki çıkartmada ya da sohbette bağlantı olarak.',
+    hw2h:'Alıcı öder', hw2t:'Herhangi bir cüzdandan USDT veya USDC: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'Para anında satıcıda', hw3t:'Saniyeler içinde, doğrudan adresine. «Ödendi» kendiliğinden görünür — arada parayı tutan kimse yok.',
+    p_h2:'Paranız yalnızca sizin', s_h2:'Kasa, faturalar ve API — aracısız', a_h2:'Anında gelen bağışlar',
+    s_pp:'Ortaklık programı →', ob1:'Yayın için teşekkürler!', ob2:'Yeni mikrofon',
+    a_cmp:'DonationAlerts ve DonatePay ile karşılaştırın →',
+    sh_e:'Uygulama', sh_h:'Nasıl görünüyor',
+    d_h2:'Tarayıcıda açın ya da Android için indirin',
+    fin_h:'Anahtarlar sizde. Para da.', fin_t:'Cüzdan bir dakikada açılır — kayıt yok, doğrudan tarayıcıda.',
+    fc1:'Ürün', fc2:'Daha fazlası', fc3:'Açıklık', fc4:'İletişim', f_bot:'Telegram botu'
+  },
+  pt: {
+    ch1:'Pago', ch2:'As chaves ficam no seu aparelho', mq:'Funciona com',
+    st1:'intermediários entre comprador e vendedor', st2:'palavras e a carteira volta em qualquer aparelho',
+    st3:'taxa de rede por operação', st4:'idiomas — o app fala o seu',
+    v_e:'Veja você mesmo', v_h:'Trinta segundos em vez de um parágrafo',
+    hw_e:'Como funciona', hw_h:'Três passos e o dinheiro está com o vendedor',
+    hw1h:'O vendedor mostra um código', hw1t:'No caixa do telefone, num adesivo no balcão ou como link num chat.',
+    hw2h:'O comprador paga', hw2t:'USDT ou USDC de qualquer carteira: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'O dinheiro já está com o vendedor', hw3t:'Em segundos, direto no endereço dele. «Pago» aparece sozinho — ninguém segura o dinheiro no meio.',
+    p_h2:'Seu dinheiro é só seu', s_h2:'Caixa, cobranças e API — sem intermediário', a_h2:'Doações que chegam na hora',
+    s_pp:'Programa de parceiros →', ob1:'Valeu pela live!', ob2:'Microfone novo',
+    a_cmp:'Comparar com DonationAlerts e DonatePay →',
+    sh_e:'O app', sh_h:'Como é por dentro',
+    d_h2:'Abra no navegador ou baixe para Android',
+    fin_h:'Suas chaves. Seu dinheiro.', fin_t:'A carteira abre em um minuto — sem cadastro, direto no navegador.',
+    fc1:'Produto', fc2:'Saiba mais', fc3:'Transparência', fc4:'Contato', f_bot:'Bot do Telegram'
+  }
+};
+for (const k in T2) Object.assign(T[k], T2[k]);
+
+/* Четыре сети (1 октября 2026). Лежат отдельно и накрывают прежние
+   строки T/T2 с теми же ключами; русский — из разметки. */
+const T3 = {
+ "en": {
+  "n_e": "New",
+  "n_h": "Four networks instead of one",
+  "n_t": "The till and counter sticker, invoices via the bot and the API, tips and OBS alerts now work on BNB Chain, Ethereum, Base and Solana. Buyers pay from the network where their money already is — no swapping or bridging needed.",
+  "n1t": "USDT and USDC. The network fee is a fraction of a cent. TVR bonuses and names instead of addresses live here too.",
+  "n2t": "USDT and USDC. The most expensive of the four: the fee depends on how busy the network is and can be noticeable. For small amounts the other three are cheaper.",
+  "n3t": "USDC. The network fee is a fraction of a cent. There is no USDT on Base, so invoices there are always in USDC.",
+  "n4t": "USDT and USDC. The network fee is a fraction of a cent. Pay from Phantom or Solflare: a button on the payment page opens the invoice right inside the wallet.",
+  "n_note": "On every network the seller gets 99% at once and the service keeps 1%. In the wallet you pick the network right on the main screen, keep several wallets and swap coins within a network. TVR bonuses and names are on BNB Chain only for now.",
+  "c7": "Payments on Ethereum",
+  "c8": "Payments on Base",
+  "c9": "Service wallet on Solana",
+  "c_one": "<b>Four networks: BNB Chain, Ethereum, Base and Solana.</b> Ethereum and Base run the same payment code as BNB Chain. Solana has no contract: the buyer signs one transaction that sends 99% to the seller and 1% to the service. The app does not touch any other network.",
+  "st3": "network fee on BNB Chain, Base and Solana",
+  "hw2t": "USDT or USDC on any of the four networks: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "A link like wallet.tavarov.com/d/your_name for your channel description. Viewers pay in USDT or USDC on any of the four networks, and 99% reaches you instantly.",
+  "a3": "The wallet is free. On purchases paid through the app one percent is kept, paid by the seller and not by the buyer. The network fee goes to the network, not to us: on BNB Chain, Base and Solana it is a fraction of a cent, on Ethereum it is noticeably more.",
+  "q6": "Which networks does this run on?",
+  "a6": "Four: BNB Chain, Ethereum, Base and Solana. The buyer picks the network. USDT and USDC are the same ones you know from exchanges (only USDC on Base). The contracts are open — links in the Contracts section."
+ },
+ "es": {
+  "n_e": "Novedad",
+  "n_h": "Cuatro redes en lugar de una",
+  "n_t": "La caja y la pegatina, las facturas por el bot y la API, las donaciones y las alertas de OBS ya funcionan en BNB Chain, Ethereum, Base y Solana. El comprador paga desde la red donde ya tiene su dinero, sin cambiar ni mover nada.",
+  "n1t": "USDT y USDC. La comisión de red es una fracción de céntimo. Aquí también están los puntos TVR y los nombres en lugar de direcciones.",
+  "n2t": "USDT y USDC. La más cara de las cuatro: la comisión depende de la carga de la red y puede notarse. Para importes pequeños convienen más las otras tres.",
+  "n3t": "USDC. La comisión de red es una fracción de céntimo. En Base no hay USDT, así que allí la factura siempre es en USDC.",
+  "n4t": "USDT y USDC. La comisión de red es una fracción de céntimo. Se puede pagar desde Phantom y Solflare: un botón en la página de pago abre la factura dentro del monedero.",
+  "n_note": "En cualquier red el vendedor recibe al instante el 99 % y el servicio el 1 %. En el monedero la red se elige en la pantalla principal; allí también puede tener varios monederos e intercambiar monedas dentro de una red. Los puntos TVR y los nombres, por ahora, solo en BNB Chain.",
+  "c7": "Pagos en Ethereum",
+  "c8": "Pagos en Base",
+  "c9": "Monedero del servicio en Solana",
+  "c_one": "<b>Cuatro redes: BNB Chain, Ethereum, Base y Solana.</b> En Ethereum y Base funciona el mismo código de pago que en BNB Chain. En Solana no hay contrato: el comprador firma una sola operación que envía el 99 % al vendedor y el 1 % al servicio. La aplicación no va a ninguna otra red.",
+  "st3": "comisión de red en BNB Chain, Base y Solana",
+  "hw2t": "USDT o USDC en cualquiera de las cuatro redes: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Un enlace como wallet.tavarov.com/d/tu_nombre para la descripción del canal. Tu audiencia paga en USDT o USDC en cualquiera de las cuatro redes y te llega el 99 % al instante.",
+  "a3": "El monedero es gratis. En las compras pagadas desde la aplicación se retiene un uno por ciento, que paga el vendedor y no el comprador. La comisión de red va a la red, no a nosotros: en BNB Chain, Base y Solana es una fracción de céntimo; en Ethereum, bastante más.",
+  "q6": "¿En qué redes funciona todo esto?",
+  "a6": "En cuatro: BNB Chain, Ethereum, Base y Solana. La red la elige el comprador. USDT y USDC son los mismos que conoce de los exchanges (en Base solo USDC). Los contratos están abiertos: los enlaces están en la sección «Contratos»."
+ },
+ "tr": {
+  "n_e": "Yeni",
+  "n_h": "Bir yerine dört ağ",
+  "n_t": "Kasa ve etiket, bot ve API üzerinden faturalar, bağışlar ve OBS bildirimleri artık BNB Chain, Ethereum, Base ve Solana'da çalışıyor. Alıcı, parası zaten hangi ağdaysa oradan öder — bozdurmaya ya da taşımaya gerek yok.",
+  "n1t": "USDT ve USDC. Ağ ücreti bir sentin çok altında. TVR puanları ve adres yerine isimler de burada.",
+  "n2t": "USDT ve USDC. Dördünün en pahalısı: ücret ağın yoğunluğuna bağlı ve belirgin olabilir. Küçük tutarlarda diğer üçü daha uygun.",
+  "n3t": "USDC. Ağ ücreti bir sentin çok altında. Base'de USDT yok, bu yüzden oradaki fatura her zaman USDC.",
+  "n4t": "USDT ve USDC. Ağ ücreti bir sentin çok altında. Phantom ve Solflare ile ödenebilir: ödeme sayfasındaki düğme faturayı doğrudan cüzdanda açar.",
+  "n_note": "Her ağda satıcıya anında %99, hizmete %1 gider. Cüzdanda ağ doğrudan ana ekranda seçilir; orada birden fazla cüzdan tutabilir ve bir ağ içinde coin takası yapabilirsiniz. TVR puanları ve isimler şimdilik yalnızca BNB Chain'de.",
+  "c7": "Ethereum'da ödemeler",
+  "c8": "Base'de ödemeler",
+  "c9": "Solana'da hizmet cüzdanı",
+  "c_one": "<b>Dört ağ: BNB Chain, Ethereum, Base ve Solana.</b> Ethereum ve Base'de BNB Chain ile aynı ödeme kodu çalışır. Solana'da sözleşme yok: alıcı, %99'u satıcıya ve %1'i hizmete gönderen tek bir işlemi imzalar. Uygulama başka hiçbir ağa gitmez.",
+  "st3": "BNB Chain, Base ve Solana'da ağ ücreti",
+  "hw2t": "Dört ağdan herhangi birinde USDT veya USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Kanal açıklaması için wallet.tavarov.com/d/adiniz gibi bir bağlantı. İzleyiciler dört ağdan herhangi birinde USDT veya USDC ile öder, %99 anında size gelir.",
+  "a3": "Cüzdan ücretsiz. Uygulama üzerinden ödenen alışverişlerde yüzde bir kesilir; bunu alıcı değil, satıcı öder. Ağ ücreti bize değil, ağa gider: BNB Chain, Base ve Solana'da bir sentin çok altında, Ethereum'da belirgin şekilde daha fazla.",
+  "q6": "Bütün bunlar hangi ağlarda çalışıyor?",
+  "a6": "Dört ağda: BNB Chain, Ethereum, Base ve Solana. Ağı alıcı seçer. USDT ve USDC borsalardan bildiğiniz aynı paralar (Base'de yalnızca USDC). Sözleşmeler açık — bağlantılar «Sözleşmeler» bölümünde."
+ },
+ "pt": {
+  "n_e": "Novidade",
+  "n_h": "Quatro redes em vez de uma",
+  "n_t": "O caixa e o adesivo, as cobranças pelo bot e pela API, as doações e os alertas no OBS agora funcionam em BNB Chain, Ethereum, Base e Solana. O comprador paga a partir da rede onde o dinheiro dele já está — sem converter nem transferir nada.",
+  "n1t": "USDT e USDC. A taxa de rede é uma fração de centavo. Aqui também ficam os pontos TVR e os nomes no lugar de endereços.",
+  "n2t": "USDT e USDC. A mais cara das quatro: a taxa depende do movimento da rede e pode ser perceptível. Para valores pequenos, as outras três saem mais em conta.",
+  "n3t": "USDC. A taxa de rede é uma fração de centavo. Não existe USDT na Base, por isso a cobrança lá é sempre em USDC.",
+  "n4t": "USDT e USDC. A taxa de rede é uma fração de centavo. Dá para pagar com Phantom e Solflare: um botão na página de pagamento abre a cobrança direto na carteira.",
+  "n_note": "Em qualquer rede o vendedor recebe 99% na hora e o serviço fica com 1%. Na carteira a rede é escolhida na tela principal; lá também dá para ter várias carteiras e trocar moedas dentro de uma rede. Pontos TVR e nomes, por enquanto, só na BNB Chain.",
+  "c7": "Pagamentos na Ethereum",
+  "c8": "Pagamentos na Base",
+  "c9": "Carteira do serviço na Solana",
+  "c_one": "<b>Quatro redes: BNB Chain, Ethereum, Base e Solana.</b> Na Ethereum e na Base roda o mesmo código de pagamento da BNB Chain. Na Solana não há contrato: o comprador assina uma única operação que envia 99% ao vendedor e 1% ao serviço. O aplicativo não vai a nenhuma outra rede.",
+  "st3": "taxa de rede na BNB Chain, Base e Solana",
+  "hw2t": "USDT ou USDC em qualquer uma das quatro redes: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Um link como wallet.tavarov.com/d/seu_nome para a descrição do canal. Os espectadores pagam em USDT ou USDC em qualquer uma das quatro redes, e 99% chega na hora para você.",
+  "a3": "A carteira é gratuita. Nas compras pagas pelo aplicativo é retido um por cento, pago pelo vendedor e não pelo comprador. A taxa de rede vai para a rede, não para nós: na BNB Chain, Base e Solana é fração de centavo; na Ethereum, bem mais.",
+  "q6": "Em quais redes tudo isso funciona?",
+  "a6": "Em quatro: BNB Chain, Ethereum, Base e Solana. Quem escolhe a rede é o comprador. USDT e USDC são os mesmos que você conhece das corretoras (na Base, só USDC). Os contratos estão abertos — os links estão na seção «Contratos»."
+ }
+};
+for (const k in T3) Object.assign(T[k], T3[k]);
+
 const RU = {};                       // русский берём прямо из разметки
 document.querySelectorAll('[data-t]').forEach(el => { RU[el.dataset.t] = el.innerHTML; });
 T.ru = RU;
@@ -847,6 +1460,16 @@ function apply(code){
   });
   document.documentElement.lang = code;
   lang = code;
+  /* Отдельные страницы есть на русском и английском: остальным — английские. */
+  document.querySelectorAll('a[data-page]').forEach(a => {
+    a.setAttribute('href', (code === 'ru' ? './' : './en/') + a.dataset.page);
+  });
+  /* Остальные ссылки на те же страницы — отдельным признаком: проверка
+     подвала считает ровно пять ссылок data-page, и эта пятёрка не должна
+     разрастаться от каждой новой кнопки на витрине. */
+  document.querySelectorAll('a[data-pg]').forEach(a => {
+    a.setAttribute('href', (code === 'ru' ? './' : './en/') + a.dataset.pg);
+  });
   /* Снимки экрана тоже на языке страницы. Английская витрина с русскими
      снимками читается как чужая работа, наспех переведённая. */
   document.querySelectorAll('img[data-shot]').forEach(img => {
@@ -862,11 +1485,13 @@ function apply(code){
      английский: подписи в кадре читать должны, а не угадывать. */
   document.querySelectorAll('video.dv').forEach(v => {
     const one = (code === 'ru' ? 'ru' : 'en');
+    /* Обложку ставим всегда, даже когда ролик уже на нужном языке: у
+       второго и третьего роликов её нет в разметке, чтобы не качать чужую. */
+    if (v.dataset.poster){ const pu = './video/' + v.dataset.v + '-poster-' + one + '.jpg'; if (v.getAttribute('poster') !== pu) v.poster = pu; }
     const w = v.querySelector('source[data-f="webm"]'), m = v.querySelector('source[data-f="mp4"]');
     if (!w || !m || w.getAttribute('src').includes('-' + one + '.')) return;
     w.src = './video/' + v.dataset.v + '-' + one + '.webm';
     m.src = './video/' + v.dataset.v + '-' + one + '.mp4';
-    if (v.dataset.poster) v.poster = './video/' + v.dataset.v + '-poster-' + one + '.jpg';
     const was = !v.paused;
     v.load();
     if (was) v.play().catch(() => {});
@@ -921,6 +1546,13 @@ fetch('./apk.json', { cache: 'no-store' })
     document.getElementById('apkBox').classList.remove('hidden');
     document.getElementById('apkNone').classList.add('hidden');
     document.getElementById('apkTop').classList.remove('hidden');
+    if (!/android/i.test(navigator.userAgent)){
+      /* Не Android — файл ему не поставить: главная кнопка остаётся «Открыть кошелёк». */
+      const a = document.getElementById('apkLink'); a.classList.remove('btn-main'); a.classList.add('btn-plain');
+    } else {
+      const w = document.getElementById('dlWeb'); w.classList.remove('btn-main'); w.classList.add('btn-plain');
+      document.getElementById('dlIos').classList.add('hidden');
+    }
   })
   .catch(() => {});
 </script>
@@ -941,6 +1573,60 @@ fetch('./apk.json', { cache: 'no-store' })
     var links = document.querySelectorAll('a[href="https://wallet.tavarov.com/"]');
     for (var i = 0; i < links.length; i++) links[i].href = 'https://wallet.tavarov.com/?ref=' + encodeURIComponent(r.replace(/^@+/, ''));
   } catch(e){}
+})();
+</script>
+
+<script>
+/* ---------- витрина «ночь»: движение и вкладки ---------- */
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Шапка становится стеклянной, как только страницу сдвинули. */
+  var hdr = document.getElementById('hdr');
+  var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 8); };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* Появление при прокрутке. Без поддержки — показываем всё сразу. */
+  var rv = document.querySelectorAll('.rv');
+  if (!('IntersectionObserver' in window) || reduce){ rv.forEach(function(e){ e.classList.add('in'); }); }
+  else {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },
+      { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
+    rv.forEach(function(e){ io.observe(e); });
+  }
+
+  /* Вкладки роликов: видна одна сцена; остальные спрятаны и не качаются. */
+  var tabs = document.querySelectorAll('.tabs button'), figs = document.querySelectorAll('.screen figure');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    var n = +b.dataset.tab;
+    tabs.forEach(function(x, i){ x.setAttribute('aria-selected', String(i === n)); });
+    figs.forEach(function(f, i){
+      var v = f.querySelector('video');
+      if (i === n){ f.classList.add('on'); if (v && v.preload === 'none') v.preload = 'metadata'; }
+      else { f.classList.remove('on'); if (v) v.pause(); }
+    });
+  }); });
+
+  if (reduce) return;
+  /* Свет за курсором на карточках. */
+  document.querySelectorAll('.card').forEach(function(c){
+    c.addEventListener('pointermove', function(e){
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+  /* Телефоны в первом экране чуть поворачиваются за мышью. */
+  var stage = document.getElementById('stage'), tilt = document.getElementById('tilt');
+  if (stage && tilt && matchMedia('(pointer:fine)').matches){
+    document.querySelector('.hero').addEventListener('pointermove', function(e){
+      var r = stage.getBoundingClientRect();
+      var x = (e.clientX - (r.left + r.width / 2)) / r.width, y = (e.clientY - (r.top + r.height / 2)) / r.height;
+      tilt.style.transform = 'rotateY(' + (x * 10).toFixed(2) + 'deg) rotateX(' + (-y * 8).toFixed(2) + 'deg)';
+    });
+    document.querySelector('.hero').addEventListener('pointerleave', function(){ tilt.style.transform = ''; });
+  }
 })();
 </script>
 </body>

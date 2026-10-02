@@ -171,9 +171,12 @@ for (const [name, key] of [['оплаты','pay'], ['токена','token'], ['�
 }
 
 // ---------- снимки экрана действительно видны ----------
+/* Снимки грузятся лениво — докручиваем до них, как сделал бы человек. */
+await page.evaluate(() => document.querySelector('.shots').scrollIntoView());
+await page.waitForTimeout(800);
 const shots = await page.evaluate(() =>
   [...document.querySelectorAll('.shot img')].map(i => ({ src: i.getAttribute('src'), w: i.naturalWidth })));
-R.ok('снимков экрана четыре', shots.length === 4, 'найдено ' + shots.length);
+R.ok('снимков экрана пять (пятый — режим «Автор»)', shots.length === 5, 'найдено ' + shots.length);
 R.ok('И КАЖДЫЙ СНИМОК ДЕЙСТВИТЕЛЬНО ЗАГРУЗИЛСЯ',
   shots.every(s => s.w > 0), shots.map(s => s.src + ':' + s.w).join(' '));
 

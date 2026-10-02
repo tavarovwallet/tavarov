@@ -19,12 +19,20 @@
    всё): tg:u:<чат> — кошелёк, название и последние счета продавца; сам
    счёт — обычная запись API v1 (v1:inv:<номер>) с полем tg. Итого две
    записи на счёт. Чтение /start, /help, /list — без записей. */
-import { tgCall, tgUpload, hasBot, hookSecret, linkSig, sha256hex, langOf, txt, esc, money, appButtons, TG_HOOK_URL } from '../_tg.js';
+import { tgCall, tgUpload, hasBot, hookSecret, linkSig, sha256hex, langOf, txt, esc, money, appButtons, TG_HOOK_URL, walletButtons, netName, TG_NET_NAMES } from '../_tg.js';
+import { SOL } from '../_sol.js';
 import { qrPng } from '../_qr.js';
 import { createTgInvoice, readTgInvoice, checkTgInvoice, checksumAddress, tgPayUrl, partnerInfo, TG_TTL } from '../v1/[[path]].js';
 import { overLimit } from '../_limit.js';
 
 const okAddr = v => /^0x[0-9a-fA-F]{40}$/.test(v || '');
+/* Адрес кошелька Solana: base58, 32 байта, точка на кривой (у адреса
+   программы ключа нет — деньги туда некому было бы забрать). */
+function okSolWallet(v){
+  if (!SOL.isAddress(v || '')) return false;
+  try{ return SOL.isOnCurve(SOL.b58dec(v, 32)); } catch(e){ return false; }
+}
+const userNet = u => (u && TG_NET_NAMES[u.net]) ? u.net : 'bnb';
 const kUser = chat => 'tg:u:' + chat;
 const K_ME = 'tg:me';
 const LIST_MAX = 50;
@@ -181,6 +189,7 @@ function invoiceKeyboard(L, rec, url){
   const share = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(L.shareText(rec.a, rec.c, rec.i));
   return { inline_keyboard: [
     [{ text: L.btnOpen, url }],
+    walletButtons(rec.net || 'bnb', url),
     [{ text: L.btnShare, url: share }],
     [{ text: L.btnCheck, callback_data: 'c:' + rec.h.slice(2, 42) }, { text: L.btnAgain, callback_data: 'r:' + rec.h.slice(2, 42) }]
   ] };
@@ -189,13 +198,19 @@ function invoiceKeyboard(L, rec, url){
 async function makeInvoice(env, chat, u, p, L, lang){
   if (!(p.value >= 0.1 && p.value <= 100000)) return send(env, chat, L.amountRange);
   if (await chatLimited(env, chat, 'inv', 20, 600)) return send(env, chat, L.tooMany);
-  const made = await createTgInvoice(env, { w: u.w, a: p.amount, c: p.cur, i: p.memo, n: u.n || '', tl: lang, chat });
+  const net = userNet(u);
+  if (net === 'solana' && !okSolWallet(u.sw)){
+    u.step = 'sol'; await kvPut(env, kUser(chat), u);
+    return send(env, chat, L.solAsk);
+  }
+  const made = await createTgInvoice(env, { w: u.w, a: p.amount, c: p.cur, i: p.memo, n: u.n || '', tl: lang, chat, net, sm: u.sw });
   if (!made) return send(env, chat, L.amountBad);
   const { rec, url } = made;
   rememberInvoice(u, rec.h);
   delete u.step;
   await kvPut(env, kUser(chat), u);
-  const text = L.invoice(rec.a, rec.c, rec.i, Math.round(TG_TTL / 3600)) + '\n\n<a href="' + esc(url) + '">' + esc(L.btnOpen) + '</a>';
+  const text = L.invoice(rec.a, rec.c, rec.i, Math.round(TG_TTL / 3600)) + '\n' + L.netLine(rec.net || 'bnb') +
+               '\n\n<a href="' + esc(url) + '">' + esc(L.btnOpen) + '</a>';
   const kb = invoiceKeyboard(L, rec, url);
   /* Счёт — картинкой с QR-кодом: у прилавка продавец просто показывает
      экран. Не вышло с картинкой — тот же счёт текстом. */
@@ -246,6 +261,20 @@ async function stats(env, chat, u, L, lang){
   return send(env, chat, L.statsHead + '\n\n' + lines.join('\n') + L.statsWaiting(waiting) + L.statsNote, { reply_markup: appButtons(L, 'open') });
 }
 
+function netKeyboard(cur){
+  const b = n => ({ text: (n === cur ? '✓ ' : '') + netName(n), callback_data: 'n:' + n });
+  return { inline_keyboard: [[b('bnb'), b('eth')], [b('base'), b('solana')]] };
+}
+async function saveSolAddress(env, chat, u, addr, L){
+  if (!okSolWallet(addr)) return send(env, chat, L.solBad);
+  const on = !!(u.step === 'sol' || u.net === 'solana');
+  u.sw = addr;
+  if (on){ u.net = 'solana'; }
+  if (u.step === 'sol') delete u.step;
+  await kvPut(env, kUser(chat), u);
+  return send(env, chat, L.solSaved(addr, on));
+}
+
 async function onMessage(env, m){
   if (!m || !m.chat || typeof m.text !== 'string') return;
   const chat = String(m.chat.id);
@@ -284,6 +313,15 @@ async function onMessage(env, m){
     if (a) return saveWallet(env, chat, u, a[0], L);
     return send(env, chat, u && u.w ? L.walletNow(u.w) : L.needWallet, u && u.w ? undefined : { reply_markup: appButtons(L, 'get') });
   }
+  if (cmd === 'network' || cmd === 'net'){
+    if (!u || !u.w) return send(env, chat, L.needWallet, { reply_markup: appButtons(L, 'get') });
+    return send(env, chat, L.netAsk(userNet(u)), { reply_markup: netKeyboard(userNet(u)) });
+  }
+  if (cmd === 'solana'){
+    if (!u || !u.w) return send(env, chat, L.needWallet, { reply_markup: appButtons(L, 'get') });
+    if (!arg){ u.step = 'sol'; await kvPut(env, kUser(chat), u); return send(env, chat, L.solAsk); }
+    return saveSolAddress(env, chat, u, arg, L);
+  }
   if (cmd === 'list') return listInvoices(env, chat, u, L, lang);
   if (cmd === 'stats') return stats(env, chat, u, L, lang);
   if (cmd === 'ref' || cmd === 'partner' || cmd === 'partners') return partnerCabinet(env, chat, u, L, lang);
@@ -302,6 +340,9 @@ async function onMessage(env, m){
   const addr = text.length <= 120 && text.match(/0x[0-9a-fA-F]{40}(?![0-9a-fA-F])/);
   if (addr) return saveWallet(env, chat, u, addr[0], L);
   if (/0x[0-9a-fA-F]{20,}/.test(text)) return send(env, chat, L.walletBad);
+  /* Адрес Solana — когда мы его ждём или когда сообщение целиком похоже на него. */
+  if (u && u.w && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(text)) return saveSolAddress(env, chat, u, text, L);
+  if (u && u.w && u.step === 'sol' && !parseAmount(text)) return send(env, chat, L.solBad);
 
   const p = parseAmount(text);
   /* Ждём название магазина: всё, что не похоже на сумму, — это оно.
@@ -326,6 +367,19 @@ async function onCallback(env, q){
   const L = txt(lang);
   const answer = t => tgCall(env, 'answerCallbackQuery', { callback_query_id: q.id, text: t });
   const data = String(q.data || '');
+  const nm = data.match(/^n:(bnb|eth|base|solana)$/);
+  if (nm){
+    const u = await kvGet(env, kUser(chat));
+    if (!u || !u.w){ await answer(''); return send(env, chat, L.needWallet, { reply_markup: appButtons(L, 'get') }); }
+    if (nm[1] === 'solana' && !okSolWallet(u.sw)){
+      u.step = 'sol'; await kvPut(env, kUser(chat), u);
+      await answer('');
+      return send(env, chat, L.solAsk);
+    }
+    u.net = nm[1]; await kvPut(env, kUser(chat), u);
+    await answer(netName(nm[1]));
+    return send(env, chat, L.netSaved(nm[1]));
+  }
   if (data === 'skip'){
     const u = await kvGet(env, kUser(chat));
     if (u && u.step){ delete u.step; await kvPut(env, kUser(chat), u); }
@@ -366,12 +420,13 @@ async function onInline(env, q){
   const p = parseAmount(q.query);
   if (!p || p.ambiguous || !(p.value >= 0.1 && p.value <= 100000)) return answer([], { text: fillBot(L.inlineHelp, me), start_parameter: 'help' });
   const nonce = [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
-  const d = b64url(JSON.stringify({ u: String(q.from.id), a: p.amount, c: p.cur, i: p.memo, t: now(), l: lang, n: nonce }));
+  const net = userNet(u) === 'solana' && !okSolWallet(u.sw) ? 'bnb' : userNet(u);
+  const d = b64url(JSON.stringify({ u: String(q.from.id), a: p.amount, c: p.cur, i: p.memo, t: now(), l: lang, n: nonce, k: net }));
   const go = 'https://wallet.tavarov.com/api/tg/go?d=' + d + '&s=' + await linkSig(env, d);
   return answer([{ type: 'article', id: nonce, title: L.inlineTitle(p.amount, p.cur, p.memo), description: L.inlineDesc,
     thumbnail_url: ICON, input_message_content: { message_text: L.inlineMsg(p.amount, p.cur, p.memo, u.n), parse_mode: 'HTML',
       link_preview_options: { is_disabled: true } },
-    reply_markup: { inline_keyboard: [[{ text: L.btnPay(p.amount, p.cur), url: go }]] } }]);
+    reply_markup: { inline_keyboard: [[{ text: L.btnPay(p.amount, p.cur), url: go }], walletButtons(net, go)] } }]);
 }
 
 function page(title, text, status){
@@ -398,8 +453,9 @@ async function go(request, env){
   if (await overLimit(request, env, 'tggo', 60, 600)) return page('Tavarov Pay', 'Too many requests, try again in a few minutes.', 429);
   const u = await kvGet(env, kUser(String(o.u)));
   if (!u || !u.w) return page('Tavarov Pay', L0.goNoWallet, 404);
+  const net = TG_NET_NAMES[o.k] ? o.k : 'bnb';
   const made = await createTgInvoice(env, { w: u.w, a: String(o.a), c: o.c === 'USDC' ? 'USDC' : 'USDT', i: cleanMemo(o.i, 64),
-    n: u.n || '', tl: o.l, chat: String(o.u), h, ct: o.t, src: 'telegram-inline' });
+    n: u.n || '', tl: o.l, chat: String(o.u), h, ct: o.t, src: 'telegram-inline', net, sm: u.sw });
   if (!made) return page('Tavarov Pay', L0.goBad, 400);
   rememberInvoice(u, h);
   try{ await kvPut(env, kUser(String(o.u)), u); } catch(e){ /* счёт уже есть — уведомление дойдёт и без списка */ }
@@ -415,11 +471,13 @@ async function setup(env){
   const cmds = {
     ru: [{ command: 'start', description: 'Начать' }, { command: 'list', description: 'Последние счета' },
          { command: 'stats', description: 'Сколько оплатили' },
+         { command: 'network', description: 'Сеть счетов: BNB, Ethereum, Base, Solana' },
          { command: 'ref', description: 'Партнёрская программа: 20% нашей комиссии' },
          { command: 'wallet', description: 'Кошелёк для оплат' }, { command: 'name', description: 'Название на странице оплаты' },
          { command: 'help', description: 'Как пользоваться' }],
     en: [{ command: 'start', description: 'Start' }, { command: 'list', description: 'Recent invoices' },
          { command: 'stats', description: 'How much was paid' },
+         { command: 'network', description: 'Invoice network: BNB, Ethereum, Base, Solana' },
          { command: 'ref', description: 'Partner program: 20% of our fee' },
          { command: 'wallet', description: 'Wallet for payments' }, { command: 'name', description: 'Name on the payment page' },
          { command: 'help', description: 'How it works' }]

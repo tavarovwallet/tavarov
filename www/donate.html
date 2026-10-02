@@ -17,32 +17,38 @@
    поверх них — как стекло, а не как вырезанный картон.
 
    Всё, что ниже, — только вид. Ни одна проверка не зависит от цвета. */
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(/fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{
-  --bg:#F4EEFF;
-  --glow-1:rgba(124,58,237,.22); --glow-2:rgba(75,31,232,.16); --glow-3:rgba(236,72,153,.08);
-  --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-edge:rgba(124,58,237,.14);
+  --bg:#F5F5F7;
+  --glow-1:rgba(106,53,242,.07); --glow-2:rgba(20,20,40,.03); --glow-3:rgba(20,20,40,0);
+  --card:rgba(255,255,255,.94); --card-solid:#FFFFFF; --card-edge:rgba(20,20,40,.09);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.9);
-  --shadow:0 1px 2px rgba(40,20,90,.05), 0 12px 32px -12px rgba(60,30,140,.22);
-  --label:#1C1330; --label-2:rgba(48,33,79,.68); --label-3:rgba(48,33,79,.44);
-  --sep:rgba(90,60,150,.14); --accent:#6D28D9; --accent-2:#4B1FE8;
-  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(124,58,237,.09);
-  --ghost-bg:rgba(255,255,255,.62); --ghost-edge:rgba(109,40,217,.20);
-  --seg-on:#FFFFFF; --seg-on-text:#1C1330;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
+  --shadow:0 1px 2px rgba(20,20,40,.04), 0 12px 32px -14px rgba(20,20,40,.18);
+  --label:#0D0D10; --label-2:rgba(22,22,30,.64); --label-3:rgba(22,22,30,.42);
+  --sep:rgba(20,20,40,.10); --accent:#6A35F2; --accent-2:#4B1FE8;
+  --green:#15935A; --orange:#C27400; --red:#E0342A; --fill:rgba(20,20,40,.06);
+  --ghost-bg:rgba(255,255,255,.85); --ghost-edge:rgba(20,20,40,.14);
+  --seg-on:#FFFFFF; --seg-on-text:#0D0D10;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,sans-serif;
   --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){ :root{
   /* Основа светлее прежней (#0D0716 был почти чёрным) и тёплая: на ней
      пятна света видны, а на чёрном они тонули. */
-  --bg:#140B2B;
-  --glow-1:rgba(124,58,237,.42); --glow-2:rgba(75,31,232,.34); --glow-3:rgba(236,72,153,.10);
-  --card:rgba(34,22,66,.66); --card-solid:#221642; --card-edge:rgba(190,160,255,.16);
+  --bg:#0A0A0C;
+  --glow-1:rgba(124,77,255,.16); --glow-2:rgba(255,255,255,.03); --glow-3:rgba(255,255,255,0);
+  --card:rgba(24,24,28,.82); --card-solid:#161619; --card-edge:rgba(255,255,255,.08);
   --card-hi:inset 0 1px 0 rgba(255,255,255,.07);
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.55);
-  --label:#fff; --label-2:rgba(236,228,255,.72); --label-3:rgba(236,228,255,.46);
-  --sep:rgba(190,160,255,.16); --accent:#8B5CF6; --accent-2:#6D28D9;
-  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(169,123,255,.14);
-  --ghost-bg:rgba(255,255,255,.06); --ghost-edge:rgba(190,160,255,.24);
+  --label:#fff; --label-2:rgba(235,235,242,.66); --label-3:rgba(235,235,242,.42);
+  --sep:rgba(255,255,255,.10); --accent:#A98BFF; --accent-2:#7447FF;
+  --green:#4ED08A; --orange:#F0AE4A; --red:#FF6B61; --fill:rgba(255,255,255,.08);
+  --ghost-bg:rgba(255,255,255,.05); --ghost-edge:rgba(255,255,255,.14);
   --seg-on:rgba(255,255,255,.18); --seg-on-text:#fff;
 } }
 *{box-sizing:border-box}
@@ -217,6 +223,7 @@ input:focus, textarea:focus{border-color:var(--accent)}
       <div class="muted" data-t="support">Поддержать автора</div>
       <div class="greet hidden" id="greet"></div>
       <div class="addrline"><span class="tiny" data-t="wallet">Кошелёк автора</span> <b class="addr" id="addr">—</b></div>
+      <div class="tiny" style="margin-top:6px"><span data-t="netL">Сеть</span>: <b id="netName">—</b></div>
     </div>
 
     <div class="card hidden" id="goalCard">
@@ -248,8 +255,8 @@ input:focus, textarea:focus{border-color:var(--accent)}
     <div class="card">
       <div class="lbl" data-t="howH">Как это работает</div>
       <ul class="facts">
-        <li data-t="f1">Деньги идут с вашего кошелька прямо автору через открытый контракт Tavarov Pay — мы их не держим ни секунды.</li>
-        <li data-t="f2">Нужны USDT или USDC в сети BNB Chain и немного BNB на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.</li>
+        <li id="f1">Деньги идут с вашего кошелька прямо автору через открытый контракт Tavarov Pay — мы их не держим ни секунды.</li>
+        <li id="f2">Нужны USDT или USDC в сети BNB Chain и немного BNB на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.</li>
         <li data-t="f3">Сообщение автор увидит только после оплаты. Оно не секретное: не пишите в нём ничего личного.</li>
         <li data-t="f4">Донат — это подарок: вернуть его может только сам автор.</li>
       </ul>
@@ -272,12 +279,19 @@ input:focus, textarea:focus{border-color:var(--accent)}
    покажет его автору только когда по этому номеру в контракте появится
    оплата именно этому автору. Поэтому порядок здесь строгий: сначала текст,
    потом переход к оплате. */
+/* Сети доната. Имена (@имя) живут в BNB Chain и одинаковы для всех сетей
+   EVM: адрес кошелька там тот же. В Solana адрес другой, поэтому страница
+   Solana — только по адресу. */
 const NETS = {
   bnb:        { rpcs: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
-                names: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', curs: ['USDT', 'USDC'] },
+                names: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', curs: ['USDT', 'USDC'], label: 'BNB Chain', coin: 'BNB' },
   bnbTestnet: { rpcs: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com'],
-                names: '0x718E52F81F0Ed871bF8aa834faF82D0b257aE27A', curs: ['USDT'] }
+                names: '0x718E52F81F0Ed871bF8aa834faF82D0b257aE27A', curs: ['USDT'], label: 'BNB Chain testnet', coin: 'tBNB', test: true },
+  eth:        { namesNet: 'bnb', curs: ['USDT', 'USDC'], label: 'Ethereum', coin: 'ETH' },
+  base:       { namesNet: 'bnb', curs: ['USDC'], label: 'Base', coin: 'ETH' },
+  solana:     { sol: true, curs: ['USDC', 'USDT'], label: 'Solana', coin: 'SOL' }
 };
+const SOL_ADDR = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const SEL = { addressOf: '0xccf1454a', nameOf: '0xf5c57382' };
 const NAME_RE = /^[a-z][a-z0-9_]{2,19}$/;
 const CHIPS = ['1', '3', '5', '10', '25'];
@@ -292,7 +306,8 @@ const T = {
         sending:'Готовим оплату…', postFail:'Сообщение не сохранилось: {0}. Можно задонатить без него.', goNoMsg:'Задонатить без сообщения',
         howH:'Как это работает',
         f1:'Деньги идут с вашего кошелька прямо автору через открытый контракт Tavarov Pay — мы их не держим ни секунды.',
-        f2:'Нужны USDT или USDC в сети BNB Chain и немного BNB на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.',
+        f2:'Нужны {0} в сети {1} и немного {2} на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.',
+        f1Sol:'Деньги идут с вашего кошелька прямо автору одной операцией в сети Solana: 99% автору, 1% сервису. Мы их не держим ни секунды.', f2Sol:'Нужны {0} в сети Solana и совсем немного SOL на комиссию сети. Платить можно NoN Wallet, Phantom, Solflare, Trust Wallet — по QR-коду Solana Pay.', netL:'Сеть', or:' или ',
         f3:'Сообщение автор увидит только после оплаты. Оно не секретное: не пишите в нём ничего личного.',
         f4:'Донат — это подарок: вернуть его может только сам автор.', whatIs:'Что такое Tavarov Pay?', item:'Донат', goalL:'Цель сбора', goalOf:'Собрано {0} $ из {1} $' },
   en: { brandSub:'Tips straight to the creator', tnH:'This is the TEST network', tnNote:'Money here is not real. Do not send real USDT here.',
@@ -303,7 +318,8 @@ const T = {
         sending:'Preparing the payment…', postFail:'The message was not saved: {0}. You can still send the tip without it.', goNoMsg:'Send without a message',
         howH:'How it works',
         f1:'The money goes from your wallet straight to the creator through the open Tavarov Pay contract — we never hold it, not even for a second.',
-        f2:'You need USDT or USDC on BNB Chain and a little BNB for the network fee. Pay with NoN Wallet, MetaMask, Trust Wallet and others.',
+        f2:'You need {0} on {1} and a little {2} for the network fee. Pay with NoN Wallet, MetaMask, Trust Wallet and others.',
+        f1Sol:'The money goes from your wallet straight to the creator in one Solana transaction: 99% to the creator, 1% service fee. We never hold it, not even for a second.', f2Sol:'You need {0} on Solana and a tiny bit of SOL for the network fee. Pay with NoN Wallet, Phantom, Solflare, Trust Wallet via the Solana Pay QR code.', netL:'Network', or:' or ',
         f3:'The creator sees your message only after the payment. It is not private: do not write anything personal.',
         f4:'A tip is a gift: only the creator can send it back.', whatIs:'What is Tavarov Pay?', item:'Tip', goalL:'Goal', goalOf:'{0} $ raised of {1} $' },
   es: { brandSub:'Donaciones directas al autor', tnH:'Esta es la red de PRUEBA', tnNote:'Aquí el dinero no es real. No envíes USDT reales.',
@@ -314,7 +330,8 @@ const T = {
         sending:'Preparando el pago…', postFail:'El mensaje no se guardó: {0}. Puedes donar sin él.', goNoMsg:'Donar sin mensaje',
         howH:'Cómo funciona',
         f1:'El dinero va de tu billetera directamente al autor por el contrato abierto Tavarov Pay; no lo retenemos ni un segundo.',
-        f2:'Necesitas USDT o USDC en BNB Chain y un poco de BNB para la comisión de red. Paga con NoN Wallet, MetaMask, Trust Wallet y otras.',
+        f2:'Necesitas {0} en {1} y un poco de {2} para la comisión de red. Paga con NoN Wallet, MetaMask, Trust Wallet y otras.',
+        f1Sol:'El dinero va de tu billetera directamente al autor en una sola operación de Solana: 99 % al autor, 1 % de comisión. No lo retenemos ni un segundo.', f2Sol:'Necesitas {0} en Solana y muy poco SOL para la comisión de red. Paga con NoN Wallet, Phantom, Solflare o Trust Wallet con el código QR de Solana Pay.', netL:'Red', or:' o ',
         f3:'El autor ve tu mensaje solo después del pago. No es privado: no escribas nada personal.',
         f4:'Una donación es un regalo: solo el autor puede devolverla.', whatIs:'¿Qué es Tavarov Pay?', item:'Donación', goalL:'Meta', goalOf:'Recaudado {0} $ de {1} $' },
   tr: { brandSub:'Doğrudan içerik üreticisine bağış', tnH:'Bu TEST ağı', tnNote:'Buradaki para gerçek değil. Gerçek USDT göndermeyin.',
@@ -325,7 +342,8 @@ const T = {
         sending:'Ödeme hazırlanıyor…', postFail:'Mesaj kaydedilmedi: {0}. Mesajsız bağış yapabilirsiniz.', goNoMsg:'Mesajsız bağışla',
         howH:'Nasıl çalışır',
         f1:'Para cüzdanınızdan açık Tavarov Pay sözleşmesi üzerinden doğrudan üreticiye gider — bir saniye bile bizde durmaz.',
-        f2:'BNB Chain ağında USDT veya USDC ve ağ ücreti için biraz BNB gerekir. NoN Wallet, MetaMask, Trust Wallet ve diğerleriyle ödeyin.',
+        f2:'{1} ağında {0} ve ağ ücreti için biraz {2} gerekir. NoN Wallet, MetaMask, Trust Wallet ve diğerleriyle ödeyin.',
+        f1Sol:'Para cüzdanınızdan tek bir Solana işlemiyle doğrudan üreticiye gider: %99 üreticiye, %1 hizmet komisyonu. Bir saniye bile bizde durmaz.', f2Sol:'Solana ağında {0} ve ağ ücreti için çok az SOL gerekir. NoN Wallet, Phantom, Solflare veya Trust Wallet ile Solana Pay QR koduyla ödeyin.', netL:'Ağ', or:' veya ',
         f3:'Üretici mesajınızı yalnızca ödemeden sonra görür. Gizli değildir: kişisel bir şey yazmayın.',
         f4:'Bağış bir hediyedir: yalnızca üretici geri gönderebilir.', whatIs:'Tavarov Pay nedir?', item:'Bağış', goalL:'Hedef', goalOf:'{1} $ hedefin {0} $ kadarı toplandı' },
   pt: { brandSub:'Doações direto para o criador', tnH:'Esta é a rede de TESTE', tnNote:'O dinheiro aqui não é real. Não envie USDT de verdade.',
@@ -336,19 +354,28 @@ const T = {
         sending:'Preparando o pagamento…', postFail:'A mensagem não foi salva: {0}. Você pode doar sem ela.', goNoMsg:'Doar sem mensagem',
         howH:'Como funciona',
         f1:'O dinheiro vai da sua carteira direto para o criador pelo contrato aberto Tavarov Pay — não ficamos com ele nem por um segundo.',
-        f2:'Você precisa de USDT ou USDC na BNB Chain e um pouco de BNB para a taxa da rede. Pague com NoN Wallet, MetaMask, Trust Wallet e outras.',
+        f2:'Você precisa de {0} na {1} e um pouco de {2} para a taxa da rede. Pague com NoN Wallet, MetaMask, Trust Wallet e outras.',
+        f1Sol:'O dinheiro vai da sua carteira direto para o criador em uma única operação na Solana: 99% para o criador, 1% de taxa. Não ficamos com ele nem por um segundo.', f2Sol:'Você precisa de {0} na Solana e um pouquinho de SOL para a taxa da rede. Pague com NoN Wallet, Phantom, Solflare ou Trust Wallet pelo QR code do Solana Pay.', netL:'Rede', or:' ou ',
         f3:'O criador vê sua mensagem só depois do pagamento. Ela não é privada: não escreva nada pessoal.',
         f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $' }
 };
 const LANGS = ['ru', 'en', 'es', 'tr', 'pt'];
 let LANG = 'en';
-function t(k, a, b){
+function t(k, ...args){
   const s = (T[LANG] && T[LANG][k]) || T.ru[k] || k;
-  return s.replace('{0}', () => a === undefined ? '' : String(a)).replace('{1}', () => b === undefined ? '' : String(b));
+  return s.replace(/\{(\d)\}/g, (m, i) => args[i] === undefined ? '' : String(args[i]));
+}
+/* Что нужно зрителю — зависит от сети: монеты, имя сети, монета комиссии. */
+function renderFacts(){
+  const n = NETS[NET], curs = n.curs.join(t('or'));
+  $('f1').textContent = n.sol ? t('f1Sol') : t('f1');
+  $('f2').textContent = n.sol ? t('f2Sol', curs) : t('f2', curs, n.label, n.coin);
+  $('netName').textContent = n.label;
 }
 function applyLang(){
   document.documentElement.lang = LANG;
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  renderFacts();
   $('langs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
   render();
   renderProfile();
@@ -373,7 +400,7 @@ function renderProfile(){
 async function loadProfile(){
   if (!who) return;
   try{
-    const r = await fetch('/api/donate?net=' + NET + '&to=' + who.addr + '&profile=1', { cache: 'no-store' });
+    const r = await fetch('/api/donate?net=' + NET + '&to=' + encodeURIComponent(who.addr) + '&profile=1', { cache: 'no-store' });
     const d = await r.json();
     if (d && d.profile){ PROFILE = d.profile; renderProfile(); }
   } catch(e){ /* без приветствия страница всё равно работает */ }
@@ -397,6 +424,7 @@ LANGS.forEach(l => {
 
 /* ---------- чтение сети ---------- */
 async function rpc(net, to, data){
+  net = NETS[net].namesNet || net;
   for (const url of NETS[net].rpcs){
     try{
       const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 9000);
@@ -430,13 +458,16 @@ function target(){
   if (!v) v = new URLSearchParams(location.search).get('to') || '';
   return v.trim().replace(/^@+/, '');
 }
-const NET = new URLSearchParams(location.search).get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+const NET = (() => { const q = new URLSearchParams(location.search).get('net');
+  return Object.prototype.hasOwnProperty.call(NETS, q) ? q : 'bnb'; })();
 let who = null;           // { name, addr }
 let cur = NETS[NET].curs[0];
 let amount = '';
 
 async function resolve(){
   const v = target();
+  /* Solana: только адрес, как есть (в base58 регистр букв важен). */
+  if (NETS[NET].sol) return SOL_ADDR.test(v) && !/^0x/i.test(v) ? { name: '', addr: v } : null;
   if (/^0x[0-9a-fA-F]{40}$/.test(v)){
     let name = '';
     try{ name = decString(await rpc(NET, NETS[NET].names, SEL.nameOf + '0'.repeat(24) + v.slice(2).toLowerCase())); } catch(e){}
@@ -565,7 +596,7 @@ $('go').onclick = async () => {
 
 /* ---------- старт ---------- */
 LANG = pickLang();
-if (NET === 'bnbTestnet') $('tnCard').classList.remove('hidden');
+if (NETS[NET].test) $('tnCard').classList.remove('hidden');
 applyLang();
 (async () => {
   try{ who = await resolve(); }

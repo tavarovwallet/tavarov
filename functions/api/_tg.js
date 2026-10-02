@@ -104,6 +104,31 @@ export function money(a, lang){
 
 /* ---------- тексты ---------- */
 
+/* Сети счетов бота (с 1 октября 2026): у каждой своё имя и обозреватель. */
+export const TG_NET_NAMES = { bnb: 'BNB Chain', eth: 'Ethereum', base: 'Base', solana: 'Solana' };
+export const netName = n => TG_NET_NAMES[n] || 'BNB Chain';
+export function txUrl(net, tx){
+  const t = encodeURIComponent(String(tx));
+  return net === 'eth' ? 'https://etherscan.io/tx/' + t : net === 'base' ? 'https://basescan.org/tx/' + t
+       : net === 'solana' ? 'https://solscan.io/tx/' + t : 'https://bscscan.com/tx/' + t;
+}
+/* Кнопки «Оплатить в …»: открывают страницу оплаты прямо в браузере
+   кошелька. На iPhone это самый короткий путь: нажал — и ты в кошельке,
+   где страница сразу видит его и платит. Ссылки — по документации самих
+   кошельков, те же, что на странице оплаты. */
+export function walletButtons(net, url){
+  const page = String(url).replace('/pay#p=', '/pay?p=');
+  const withPick = page + (page.includes('?') ? '&' : '?') + 'pick=1';
+  if (net === 'solana'){
+    const ref = encodeURIComponent('https://wallet.tavarov.com');
+    return [{ text: '👻 Phantom', url: 'https://phantom.app/ul/browse/' + encodeURIComponent(page) + '?ref=' + ref },
+            { text: '☀️ Solflare', url: 'https://solflare.com/ul/v1/browse/' + encodeURIComponent(page) + '?ref=' + ref }];
+  }
+  const coin = { eth: 60, base: 8453 }[net] || 20000714;
+  return [{ text: '🛡 Trust Wallet', url: 'https://link.trustwallet.com/open_url?coin_id=' + coin + '&url=' + encodeURIComponent(withPick) },
+          { text: '🦊 MetaMask', url: 'https://metamask.app.link/dapp/' + withPick.replace(/^https?:\/\//, '') }];
+}
+
 export const T = {
   ru: {
     hello: n => '👋 ' + (n ? esc(n) + ', привет!' : 'Привет!') + '\n\n' +
@@ -120,7 +145,14 @@ export const T = {
     walletBad: 'Это не похоже на адрес кошелька. Нужен адрес сети BNB Chain: <code>0x</code> и ещё 40 знаков.',
     walletBlocked: '⛔ Этот адрес помечен как небезопасный — деньги на него принимать нельзя. Пришлите другой кошелёк.',
     walletContract: '⚠️ Это адрес контракта Tavarov Pay или монеты, а не кошелёк. Пришлите адрес своего кошелька.',
-    needWallet: 'Сначала пришлите адрес кошелька в сети BNB Chain (начинается с <code>0x</code>) — туда будут приходить деньги.\n\n📲 Нет кошелька — создайте в NoN Wallet, это бесплатно.',
+    needWallet: 'Сначала пришлите адрес кошелька (начинается с <code>0x</code>) — один и тот же для BNB Chain, Ethereum и Base, туда будут приходить деньги.\n\n📲 Нет кошелька — создайте в NoN Wallet, это бесплатно.',
+    netAsk: cur => '🌐 <b>В какой сети выставлять счета?</b>\nСейчас: <b>' + netName(cur) + '</b>.\n\nПокупатель платит в USDT или USDC той сети, что вы выберете. Для Solana понадобится ваш адрес в Solana.',
+    netSaved: n => '✅ Счета теперь в сети <b>' + netName(n) + '</b>.' + (n === 'base' ? '\nВ Base принимается только USDC.' : ''),
+    netLine: n => 'Сеть: <b>' + netName(n) + '</b>',
+    solAsk: '🟣 Пришлите <b>ваш адрес в Solana</b> — на него будут приходить USDC и USDT. Это не адрес <code>0x</code>: в Phantom, Solflare, Trust Wallet или NoN Wallet он из 32–44 букв и цифр.',
+    solSaved: (a, on) => '✅ Адрес в Solana сохранён:\n<code>' + esc(a) + '</code>' + (on ? '\n\nСчета теперь в сети <b>Solana</b>.' : '\n\nВыбрать Solana для счетов: /network'),
+    solBad: 'Это не адрес кошелька Solana. Пришлите адрес из Phantom, Solflare, Trust Wallet или NoN Wallet (32–44 буквы и цифры, без 0x).',
+    payWith: 'Покупатель с телефона может открыть счёт сразу в своём кошельке:',
     walletNow: (w) => 'Деньги приходят на:\n<code>' + esc(w) + '</code>\n\nЧтобы сменить — просто пришлите новый адрес.',
     amountBad: 'Не понял сумму. Напишите число, например <b>25</b>, <b>12.5</b> или <b>12,5 USDC кофе</b>.',
     amountRange: 'Сумма должна быть от 0.1 до 100 000.',
@@ -134,10 +166,10 @@ export const T = {
     btnGetApp: '📲 Создать кошелёк NoN Wallet',
     btnApp: '📲 Открыть NoN Wallet',
     shareText: (a, c, memo) => 'Оплата ' + money(a, 'ru') + ' ' + c + (memo ? ' — ' + memo : ''),
-    paid: (a, c, memo, got, tx, late) => '✅ <b>Оплачено: ' + money(a, 'ru') + ' ' + c + '</b>' + (memo ? '\n«' + esc(memo) + '»' : '') +
+    paid: (a, c, memo, got, tx, late, net) => '✅ <b>Оплачено: ' + money(a, 'ru') + ' ' + c + '</b>' + (memo ? '\n«' + esc(memo) + '»' : '') +
       '\n\n' + (got ? 'На ваш кошелёк пришло <b>' + money(got, 'ru') + ' ' + c + '</b> (за вычетом комиссии).' : 'Деньги уже на вашем кошельке (за вычетом комиссии 1%).') +
       (late ? '\nОплатили после срока действия ссылки — но деньги пришли.' : '') +
-      (tx ? '\n<a href="https://bscscan.com/tx/' + tx + '">Транзакция в BscScan</a>' : '') +
+      (tx ? '\n<a href="' + txUrl(net, tx) + '">Операция в сети ' + netName(net) + '</a>' : '') +
       '\n\nБаланс, история оплат и возврат покупателю — в NoN Wallet.',
     warnUnder: (a, c, got, memo) => '⚠️ <b>Оплата меньше суммы счёта</b>' + (memo ? ' «' + esc(memo) + '»' : '') + '\nСчёт: ' + money(a, 'ru') + ' ' + c + ', заплатили: ' + money(got, 'ru') + '.\nДеньги на вашем кошельке, решите с покупателем, как быть с разницей.',
     warnCur: (a, c, got, cur, memo) => '⚠️ <b>Оплатили не той монетой</b>' + (memo ? ' «' + esc(memo) + '»' : '') + '\nСчёт: ' + money(a, 'ru') + ' ' + c + ', пришло: ' + money(got, 'ru') + ' ' + esc(cur) + '.\nДеньги на вашем кошельке.',
@@ -160,7 +192,7 @@ export const T = {
       '• Перешлите ссылку покупателю или покажите QR-код со страницы оплаты.\n' +
       '• Оплатят — я напишу. Деньги сразу на вашем кошельке, комиссия 1%.\n\n' +
       '• В любом чате с клиентом: <code>@{bot} 25 кофе</code> — клиенту придёт кнопка «Оплатить».\n\n' +
-      '/list — последние счета\n/stats — сколько оплатили\n/ref — партнёрская программа: 20% нашей комиссии\n/wallet — кошелёк для оплат\n/name — название на странице оплаты\n\n' +
+      '/list — последние счета\n/stats — сколько оплатили\n/network — сеть для счетов: BNB, Ethereum, Base или Solana\n/solana — адрес в Solana\n/ref — партнёрская программа: 20% нашей комиссии\n/wallet — кошелёк для оплат\n/name — название на странице оплаты\n\n' +
       '📲 <b>NoN Wallet</b> — наш кошелёк: баланс, история оплат, возврат покупателю, касса с QR. Бесплатно: wallet.tavarov.com или приложение для Android на tavarov.com',
     groups: 'Я работаю только в личных сообщениях — напишите мне напрямую.',
     other: 'Напишите сумму, например <b>25</b>, — и я пришлю ссылку на оплату. Подсказка: /help',
@@ -208,7 +240,14 @@ export const T = {
     walletBad: 'That doesn\'t look like a wallet address. I need a BNB Chain address: <code>0x</code> followed by 40 characters.',
     walletBlocked: '⛔ This address is flagged as unsafe — payments can\'t go there. Please send another wallet.',
     walletContract: '⚠️ That\'s the Tavarov Pay contract or a token address, not a wallet. Please send your wallet address.',
-    needWallet: 'First, send your wallet address on BNB Chain (starts with <code>0x</code>) — that\'s where payments will go.\n\n📲 No wallet? Create one in NoN Wallet, it\'s free.',
+    needWallet: 'First, send your wallet address (starts with <code>0x</code>) — the same one on BNB Chain, Ethereum and Base; that\'s where payments will go.\n\n📲 No wallet? Create one in NoN Wallet, it\'s free.',
+    netAsk: cur => '🌐 <b>Which network should invoices use?</b>\nNow: <b>' + netName(cur) + '</b>.\n\nYour customer pays in USDT or USDC on the network you pick. Solana needs your Solana address.',
+    netSaved: n => '✅ Invoices are now on <b>' + netName(n) + '</b>.' + (n === 'base' ? '\nBase takes USDC only.' : ''),
+    netLine: n => 'Network: <b>' + netName(n) + '</b>',
+    solAsk: '🟣 Send <b>your Solana address</b> — USDC and USDT will arrive there. It is not a <code>0x</code> address: in Phantom, Solflare, Trust Wallet or NoN Wallet it is 32–44 letters and digits.',
+    solSaved: (a, on) => '✅ Solana address saved:\n<code>' + esc(a) + '</code>' + (on ? '\n\nInvoices are now on <b>Solana</b>.' : '\n\nTo use Solana for invoices: /network'),
+    solBad: 'That is not a Solana wallet address. Send the address from Phantom, Solflare, Trust Wallet or NoN Wallet (32–44 letters and digits, no 0x).',
+    payWith: 'A customer on a phone can open the invoice right in their wallet:',
     walletNow: (w) => 'Payments go to:\n<code>' + esc(w) + '</code>\n\nTo change it, just send a new address.',
     amountBad: 'I didn\'t get the amount. Send a number like <b>25</b>, <b>12.5</b> or <b>12.5 USDC coffee</b>.',
     amountRange: 'The amount must be between 0.1 and 100,000.',
@@ -222,10 +261,10 @@ export const T = {
     btnGetApp: '📲 Get NoN Wallet',
     btnApp: '📲 Open NoN Wallet',
     shareText: (a, c, memo) => 'Payment ' + money(a, 'en') + ' ' + c + (memo ? ' — ' + memo : ''),
-    paid: (a, c, memo, got, tx, late) => '✅ <b>Paid: ' + money(a, 'en') + ' ' + c + '</b>' + (memo ? '\n"' + esc(memo) + '"' : '') +
+    paid: (a, c, memo, got, tx, late, net) => '✅ <b>Paid: ' + money(a, 'en') + ' ' + c + '</b>' + (memo ? '\n"' + esc(memo) + '"' : '') +
       '\n\n' + (got ? '<b>' + money(got, 'en') + ' ' + c + '</b> arrived in your wallet (after the fee).' : 'The money is already in your wallet (after the 1% fee).') +
       (late ? '\nPaid after the link expired — but the money arrived.' : '') +
-      (tx ? '\n<a href="https://bscscan.com/tx/' + tx + '">Transaction on BscScan</a>' : '') +
+      (tx ? '\n<a href="' + txUrl(net, tx) + '">Transaction on ' + netName(net) + '</a>' : '') +
       '\n\nBalance, payment history and refunds — in NoN Wallet.',
     warnUnder: (a, c, got, memo) => '⚠️ <b>Paid less than the invoice</b>' + (memo ? ' "' + esc(memo) + '"' : '') + '\nInvoice: ' + money(a, 'en') + ' ' + c + ', paid: ' + money(got, 'en') + '.\nThe money is in your wallet; settle the difference with the customer.',
     warnCur: (a, c, got, cur, memo) => '⚠️ <b>Paid in a different coin</b>' + (memo ? ' "' + esc(memo) + '"' : '') + '\nInvoice: ' + money(a, 'en') + ' ' + c + ', received: ' + money(got, 'en') + ' ' + esc(cur) + '.\nThe money is in your wallet.',
@@ -248,7 +287,7 @@ export const T = {
       '• Forward the link to your customer or show the QR code from the payment page.\n' +
       '• When it\'s paid, I\'ll message you. The money is already in your wallet, 1% fee.\n\n' +
       '• In any chat with a customer: <code>@{bot} 25 coffee</code> — they get a "Pay" button.\n\n' +
-      '/list — recent invoices\n/stats — how much was paid\n/ref — partner program: 20% of our fee\n/wallet — wallet for payments\n/name — name on the payment page\n\n' +
+      '/list — recent invoices\n/stats — how much was paid\n/network — invoice network: BNB, Ethereum, Base or Solana\n/solana — your Solana address\n/ref — partner program: 20% of our fee\n/wallet — wallet for payments\n/name — name on the payment page\n\n' +
       '📲 <b>NoN Wallet</b> — our wallet: balance, payment history, refunds, a QR checkout. Free: wallet.tavarov.com or the Android app at tavarov.com',
     groups: 'I only work in private chats — message me directly.',
     other: 'Send an amount, like <b>25</b>, and I\'ll send a payment link. Tip: /help',
@@ -291,7 +330,7 @@ export const txt = lang => T[lang] || T.en;
 export async function notifyPaid(env, rec){
   const L = txt(rec.tl || 'ru');
   const p = rec.pay || {};
-  const text = L.paid(rec.a, rec.c, rec.i, p.got || null, p.tx || null, !!p.late);
+  const text = L.paid(rec.a, rec.c, rec.i, p.got || null, p.tx || null, !!p.late, rec.net || 'bnb');
   const r = await tgCall(env, 'sendMessage', { chat_id: rec.tg, text, parse_mode: 'HTML',
     disable_web_page_preview: true, reply_markup: appButtons(L, 'open') });
   /* 403 — человек заблокировал бота: повторять бессмысленно, считаем доставленным. */

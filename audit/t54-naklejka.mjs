@@ -69,15 +69,51 @@ await page.selectOption('#lang', 'ru');
 await page.waitForTimeout(250);
 
 t('наклейка появилась', await видно('#stickerBox') && !(await видно('#err')));
-t('на ней название магазина', (await текст('#sShop')) === 'Кофейня на углу');
+t('НАВЕРХУ ВСЕГДА НАШЕ ИМЯ, А НЕ ИМЯ МАГАЗИНА',
+  /N\s*N\s*Wallet/.test((await текст('#sShop')).replace(/\s+/g, ' ')), await текст('#sShop'));
+t('название магазина стоит ПОД кодом', (await текст('#sPlace')) === 'Кофейня на углу');
+t('и оно вставлено текстом, а не разметкой', await page.evaluate(() =>
+  document.getElementById('sPlace').children.length === 0));
 t('и номер кассы', (await текст('#sTill')) === 'Касса 2');
 t('и подпись на выбранном языке', (await текст('#sCap')) === 'Наведите камеру телефона');
 t('ВТОРАЯ ПОДПИСЬ ПО-АНГЛИЙСКИ — ДЛЯ ТЕХ, КТО С УЛИЦЫ',
   (await текст('#sCap2')) === 'Point your phone camera here');
-t('адрес напечатан мелким, чтобы продавец мог его сверить',
-  (await текст('#sAddr')) === MERCHANT);
+t('адрес показан продавцу для сверки', (await текст('#sAddr')) === MERCHANT);
+t('НО НА БУМАГУ ОН НЕ ИДЁТ — ПОКУПАТЕЛЮ ОН НИ К ЧЕМУ', await page.evaluate(() =>
+  !document.getElementById('sticker').contains(document.getElementById('sAddr'))));
+t('ПОЛЯ ПЕЧАТИ НУЛЕВЫЕ — ИНАЧЕ БРАУЗЕР ПЕЧАТАЕТ СВОЙ АДРЕС И НОМЕР ЛИСТА',
+  await page.evaluate(() => {
+    for (const st of document.styleSheets){
+      let rr; try{ rr = st.cssRules; } catch(e){ continue; }
+      for (const r of rr){
+        if (r.media && /print/.test(r.conditionText || r.media.mediaText)){
+          for (const q of r.cssRules) if (q.constructor.name === 'CSSPageRule'
+            && /margin:\s*0/.test(q.style.cssText || q.cssText)) return true;
+        }
+      }
+    }
+    return false;
+  }));
 t('код нарисован', await page.evaluate(() =>
   document.querySelectorAll('#sCode img, #sCode canvas').length > 0));
+
+/* ---------- касса номер 12 ----------
+   Приложение разрешает кассы до 99-й, а в списке на этой странице было
+   девять. Продавец с двенадцатой кассой получал пустое поле, ноль в коде
+   и мёртвую наклейку — о чём узнал бы через год. */
+t('КАСС В СПИСКЕ СТОЛЬКО ЖЕ, СКОЛЬКО РАЗРЕШАЕТ ПРИЛОЖЕНИЕ', await page.evaluate(() =>
+  document.querySelectorAll('#k option').length === 99));
+await page.selectOption('#k', '12');
+await page.waitForTimeout(250);
+t('двенадцатая касса выбирается', (await page.inputValue('#k')) === '12');
+t('и попадает в код', (await текст('#link')).length > 0 && await page.evaluate(() => {
+  const h = document.getElementById('link').textContent.split('#t=')[1];
+  let b = h.replace(/-/g,'+').replace(/_/g,'/'); while (b.length % 4) b += '=';
+  return JSON.parse(decodeURIComponent(escape(atob(b)))).k === 12;
+}));
+t('и подпись под кодом её называет', (await текст('#sTill')) === 'Касса 12');
+await page.selectOption('#k', '2');
+await page.waitForTimeout(250);
 
 // ======================= что именно в коде =======================
 const ссылка = await текст('#link');

@@ -88,7 +88,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 
 <main class="wrap">
   <h1 data-t="h1">Политика конфиденциальности</h1>
-  <div class="date"><span data-t="upd">Обновлено</span>: 24.09.2026 · Tavarov Pay · NoN Wallet</div>
+  <div class="date"><span data-t="upd">Обновлено</span>: 01.10.2026 · Tavarov Pay · NoN Wallet</div>
 
   <div class="box">
     <p data-t="short"><b>Коротко.</b> Кошелёк не собирает о вас ничего: ни учётных записей, ни счётчиков, ни рекламы. Ключи создаются на вашем устройстве и остаются на нём: мы их не видим и получить не можем. Единственное место с «входом» — кабинет разработчика для магазинов, и вход там — подпись кошелька, без почты и пароля. На этой странице-витрине стоит счётчик посещений — он считает просмотры, не ставит cookie и не следит за вами на других сайтах. В самом кошельке, кассе и на странице оплаты его нет.</p>
@@ -127,11 +127,13 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <h2 data-t="h_net">Куда уходят запросы</h2>
   <p data-t="p_net">Кошелёк не может работать, не спрашивая блокчейн. Эти запросы идут напрямую с вашего устройства, минуя нас, и получателям видны ваш IP-адрес и то, о чём вы спросили:</p>
   <ul>
-    <li data-t="n1"><b>Узлы BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com и подобные) — остатки, комиссии, отправка операций.</li>
+    <li data-t="n1"><b>Узлы сетей BNB Chain, Ethereum, Base и Solana</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com и подобные) — остатки, комиссии, отправка операций. Часть запросов Solana идёт через наш сервер (wallet.tavarov.com/api/solrpc): он передаёт их узлу Solana и не сохраняет.</li>
     <li data-t="n2"><b>CoinGecko</b> — курсы монет, чтобы показать примерную сумму в долларах. Запрашиваются только названия монет, ваш адрес туда не уходит.</li>
     <li data-t="n3"><b>Наш сайт</b> — сама страница приложения, страницы оплаты и донатов, кабинет разработчика. Журналы веб-хостинга (Cloudflare) при этом видят обычные для интернета данные: IP, время, адрес страницы.</li>
-    <li data-t="n4"><b>BscScan</b> — только если вы сами нажмёте ссылку «посмотреть в обозревателе».</li>
+    <li data-t="n4"><b>Обозреватели блоков</b> (BscScan, Etherscan, Basescan, Solscan) — только если вы сами нажмёте ссылку «посмотреть в обозревателе».</li>
     <li data-t="n5"><b>Приложения-кошельки</b> (MetaMask, Trust Wallet, OKX) — только если на странице оплаты вы сами выберете «открыть в приложении». Тогда ссылка на эту оплату — продавец, сумма и товар — проходит через их сервер ссылок (metamask.app.link, link.trustwallet.com, web3.okx.com), чтобы открыть страницу в их браузере.</li>
+    <li data-t="n6"><b>Сервисы обмена</b> (KyberSwap, Jupiter, Relay) — только когда вы сами открываете обмен монет. Им уходят ваш адрес, монеты и сумма: без этого они не рассчитают курс и не соберут операцию. Подписываете операцию вы, на своём устройстве.</li>
+    <li data-t="n7"><b>Phantom и Solflare</b> — только если на странице оплаты в Solana вы сами нажмёте «оплатить в Phantom» или «в Solflare». Тогда ссылка на эту оплату проходит через их сервер ссылок (phantom.app, solflare.com), чтобы открыть страницу в браузере кошелька.</li>
   </ul>
   <p data-t="p_net2">Ни один из этих сервисов не получает от нас ваши ключи, фразу или пароль: их у нас нет.</p>
 
@@ -187,11 +189,13 @@ const T = {
     p_dev:'All of it lives on the device only. It is not sent to our servers and not copied to any cloud. Delete the app and it goes with it, which is why a backup is worth making in advance.',
     h_net:'Where requests go',
     p_net:'A wallet cannot work without asking the blockchain. These requests go straight from your device, bypassing us, and their recipients can see your IP address and what you asked about:',
-    n1:'<b>BNB Chain nodes</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com and similar) — balances, fees, sending operations.',
+    n1:"<b>BNB Chain, Ethereum, Base and Solana nodes</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com and similar) — balances, fees, sending operations. Some Solana requests go through our server (wallet.tavarov.com/api/solrpc), which passes them to a Solana node and does not store them.",
     n2:'<b>CoinGecko</b> — coin rates, to show an approximate amount in dollars. Only coin names are requested; your address never goes there.',
     n3:"<b>Our site</b> — the app page itself, the payment and tip pages, the developer dashboard. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.",
-    n4:'<b>BscScan</b> — only if you press "view in the explorer" yourself.',
+    n4:"<b>Block explorers</b> (BscScan, Etherscan, Basescan, Solscan) — only if you press \"view in the explorer\" yourself.",
     n5:'<b>Wallet apps</b> (MetaMask, Trust Wallet, OKX) — only if you choose “open in an app” on the payment page yourself. Then the link to this payment — seller, amount and item — goes through their link service (metamask.app.link, link.trustwallet.com, web3.okx.com) so the page opens in their browser.',
+    n6:"<b>Swap services</b> (KyberSwap, Jupiter, Relay) — only when you open a coin swap yourself. They receive your address, the coins and the amount: without that they cannot quote a rate or build the transaction. You sign the transaction yourself, on your device.",
+    n7:"<b>Phantom and Solflare</b> — only if you press “pay in Phantom” or “in Solflare” on a Solana payment page. The link to that payment then passes through their link server (phantom.app, solflare.com) to open the page in the wallet’s browser.",
     p_net2:'None of these services receives your keys, phrase or password from us: we do not have them.',
     h_perm:'App permissions',
     r1:'<b>Internet</b> — without it the wallet cannot see the network.',
@@ -228,11 +232,13 @@ const T = {
     p_dev:'Todo eso vive solo en el dispositivo. No se envía a nuestros servidores ni se copia a ninguna nube. Si borra la aplicación, se va con ella: por eso conviene hacer una copia de seguridad con antelación.',
     h_net:'Adónde van las peticiones',
     p_net:'Un monedero no puede funcionar sin preguntar a la blockchain. Esas peticiones salen directamente de su dispositivo, sin pasar por nosotros, y quien las recibe ve su dirección IP y lo que preguntó:',
-    n1:'<b>Nodos de BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com y similares): saldos, comisiones, envío de operaciones.',
+    n1:"<b>Nodos de BNB Chain, Ethereum, Base y Solana</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com y similares): saldos, comisiones, envío de operaciones. Parte de las consultas de Solana pasa por nuestro servidor (wallet.tavarov.com/api/solrpc), que las reenvía a un nodo de Solana y no las guarda.",
     n2:'<b>CoinGecko</b>: cotizaciones, para mostrar un importe aproximado en dólares. Solo se piden nombres de monedas; su dirección no llega allí.',
     n3:"<b>Nuestro sitio</b>: la página de la app, las páginas de pago y de donaciones, el panel de desarrollador. Los registros del hosting (Cloudflare) ven lo que ve cualquier sitio: IP, hora, dirección de la página.",
-    n4:'<b>BscScan</b>: solo si usted mismo pulsa «ver en el explorador».',
+    n4:"<b>Exploradores de bloques</b> (BscScan, Etherscan, Basescan, Solscan): solo si usted mismo pulsa «ver en el explorador».",
     n5:'<b>Aplicaciones de monedero</b> (MetaMask, Trust Wallet, OKX): solo si usted mismo elige «abrir en una aplicación» en la página de pago. Entonces el enlace a ese pago —vendedor, importe y producto— pasa por su servicio de enlaces (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir la página en su navegador.',
+    n6:"<b>Servicios de intercambio</b> (KyberSwap, Jupiter, Relay): solo cuando usted mismo abre un intercambio de monedas. Reciben su dirección, las monedas y el importe: sin eso no pueden calcular el cambio ni preparar la operación. La operación la firma usted, en su dispositivo.",
+    n7:"<b>Phantom y Solflare</b>: solo si en una página de pago en Solana usted mismo pulsa «pagar en Phantom» o «en Solflare». Entonces el enlace a ese pago pasa por su servidor de enlaces (phantom.app, solflare.com) para abrir la página en el navegador del monedero.",
     p_net2:'Ninguno de esos servicios recibe de nosotros sus claves, su frase ni su contraseña: no las tenemos.',
     h_perm:'Permisos de la aplicación',
     r1:'<b>Internet</b>: sin él el monedero no ve la red.',
@@ -269,11 +275,13 @@ const T = {
     p_dev:'Bunların hepsi yalnızca cihazda durur. Sunucularımıza gitmez, buluta kopyalanmaz. Uygulamayı silerseniz onunla birlikte gider; bu yüzden yedeği önceden almakta fayda var.',
     h_net:'İstekler nereye gider',
     p_net:'Bir cüzdan blok zincirine sormadan çalışamaz. Bu istekler doğrudan cihazınızdan gider, bizden geçmez; alan taraf IP adresinizi ve ne sorduğunuzu görür:',
-    n1:'<b>BNB Chain düğümleri</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com ve benzerleri) — bakiyeler, ücretler, işlem gönderimi.',
+    n1:"<b>BNB Chain, Ethereum, Base ve Solana düğümleri</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com ve benzerleri) — bakiyeler, ücretler, işlem gönderimi. Solana sorgularının bir kısmı sunucumuzdan geçer (wallet.tavarov.com/api/solrpc): sunucu bunları bir Solana düğümüne iletir ve saklamaz.",
     n2:'<b>CoinGecko</b> — dolar karşılığını yaklaşık göstermek için kur bilgisi. Yalnızca para birimi adları sorulur; adresiniz oraya gitmez.',
     n3:"<b>Sitemiz</b> — uygulama sayfası, ödeme ve bağış sayfaları, geliştirici paneli. Barındırma günlükleri (Cloudflare) her sitenin gördüğünü görür: IP, zaman, sayfa adresi.",
-    n4:'<b>BscScan</b> — yalnızca «gezginde görüntüle» bağlantısına siz basarsanız.',
+    n4:"<b>Blok gezginleri</b> (BscScan, Etherscan, Basescan, Solscan) — yalnızca «gezginde görüntüle» bağlantısına siz basarsanız.",
     n5:'<b>Cüzdan uygulamaları</b> (MetaMask, Trust Wallet, OKX) — yalnızca ödeme sayfasında «bir uygulamada aç» seçeneğini kendiniz seçerseniz. O zaman bu ödemenin bağlantısı — satıcı, tutar ve ürün — sayfayı onların tarayıcısında açmak için bağlantı sunucularından (metamask.app.link, link.trustwallet.com, web3.okx.com) geçer.',
+    n6:"<b>Takas hizmetleri</b> (KyberSwap, Jupiter, Relay) — yalnızca coin takasını siz açtığınızda. Adresiniz, coinler ve tutar onlara gider: bunlar olmadan kuru hesaplayamaz ve işlemi hazırlayamazlar. İşlemi kendi cihazınızda siz imzalarsınız.",
+    n7:"<b>Phantom ve Solflare</b> — yalnızca Solana ödeme sayfasında «Phantom ile öde» veya «Solflare ile» düğmesine siz basarsanız. O zaman bu ödemenin bağlantısı, sayfayı cüzdanın tarayıcısında açmak için onların bağlantı sunucusundan (phantom.app, solflare.com) geçer.",
     p_net2:'Bu hizmetlerin hiçbiri bizden anahtarlarınızı, ifadenizi ya da parolanızı almaz: bizde yoklar.',
     h_perm:'Uygulama izinleri',
     r1:'<b>İnternet</b> — onsuz cüzdan ağı göremez.',
@@ -310,11 +318,13 @@ const T = {
     p_dev:'Tudo isso vive apenas no aparelho. Não vai para os nossos servidores nem é copiado para nenhuma nuvem. Se apagar o aplicativo, vai junto com ele: por isso vale a pena fazer uma cópia de segurança antes.',
     h_net:'Para onde vão os pedidos',
     p_net:'Uma carteira não funciona sem perguntar ao blockchain. Esses pedidos saem direto do seu aparelho, sem passar por nós, e quem os recebe vê o seu endereço IP e o que foi perguntado:',
-    n1:'<b>Nós da BNB Chain</b> (bsc-dataseed.binance.org, bsc-rpc.publicnode.com e semelhantes) — saldos, taxas, envio de operações.',
+    n1:"<b>Nós da BNB Chain, Ethereum, Base e Solana</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com e semelhantes) — saldos, taxas, envio de operações. Parte das consultas da Solana passa pelo nosso servidor (wallet.tavarov.com/api/solrpc), que as repassa a um nó da Solana e não as guarda.",
     n2:'<b>CoinGecko</b> — cotações, para mostrar um valor aproximado em dólares. Só são pedidos nomes de moedas; o seu endereço não vai para lá.',
     n3:"<b>Nosso site</b> — a página do app, as páginas de pagamento e de doações, o painel de desenvolvedor. Os registros da hospedagem (Cloudflare) veem o que qualquer site vê: IP, horário, endereço da página.",
-    n4:'<b>BscScan</b> — apenas se você mesmo clicar em «ver no explorador».',
+    n4:"<b>Exploradores de blocos</b> (BscScan, Etherscan, Basescan, Solscan) — apenas se você mesmo clicar em «ver no explorador».",
     n5:'<b>Aplicativos de carteira</b> (MetaMask, Trust Wallet, OKX) — apenas se você mesmo escolher «abrir num aplicativo» na página de pagamento. Então o link deste pagamento — vendedor, valor e produto — passa pelo serviço de links deles (metamask.app.link, link.trustwallet.com, web3.okx.com) para abrir a página no navegador deles.',
+    n6:"<b>Serviços de troca</b> (KyberSwap, Jupiter, Relay) — apenas quando você mesmo abre uma troca de moedas. Eles recebem seu endereço, as moedas e o valor: sem isso não conseguem cotar nem montar a operação. Quem assina a operação é você, no seu dispositivo.",
+    n7:"<b>Phantom e Solflare</b> — apenas se, numa página de pagamento na Solana, você mesmo tocar em «pagar no Phantom» ou «no Solflare». Aí o link desse pagamento passa pelo servidor de links deles (phantom.app, solflare.com) para abrir a página no navegador da carteira.",
     p_net2:'Nenhum desses serviços recebe de nós as suas chaves, a sua frase ou a sua senha: nós não as temos.',
     h_perm:'Permissões do aplicativo',
     r1:'<b>Internet</b> — sem ela a carteira não enxerga a rede.',

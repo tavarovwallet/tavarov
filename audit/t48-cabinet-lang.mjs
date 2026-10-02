@@ -211,7 +211,7 @@ let payUrl = null;
   await page.waitForTimeout(500);
   const txt = await page.innerText('body');
   R.ok('ПОКУПАТЕЛЬ ВИДИТ СЧЁТ НА СВОЁМ ЯЗЫКЕ, А НЕ НА ЯЗЫКЕ ПРОДАВЦА',
-    /Cüzdanda aç/.test(txt), txt.trim().slice(0, 60).replace(/\n/g, ' | '));
+    /NoN Wallet ile öde/.test(txt), txt.trim().slice(0, 60).replace(/\n/g, ' | '));
   R.ok('и русского на странице оплаты не осталось', !/[А-Яа-яЁё]/.test(txt),
     (txt.match(/[А-Яа-яЁё][А-Яа-яЁё ]{0,30}/) || [''])[0]);
   R.ok('сумма и получатель на месте',

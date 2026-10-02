@@ -58,7 +58,11 @@ page.on('pageerror', e => errors.push('pageerror: ' + e.message));
 
 // ---------- витрина открывается ----------
 await page.goto('https://tavarov.com/', { waitUntil: 'domcontentloaded' });
-R.ok('витрина открывается на tavarov.com', (await page.title()).includes('Tavarov'), await page.title());
+/* Заголовок витрины теперь начинается с имени кошелька: главная страница
+   продаёт кошелёк, а Tavarov Pay — это шлюз, и его имя стоит на страницах
+   шлюза. Проверяем, что это наша страница, а не заглушка хостинга. */
+R.ok('витрина открывается на tavarov.com',
+  /NoN Wallet|Tavarov/i.test(await page.title()), await page.title());
 R.ok('и это именно витрина, а не приложение',
   await page.evaluate(() => !!document.querySelector('.hero') && typeof window.renderWalletState === 'undefined'));
 

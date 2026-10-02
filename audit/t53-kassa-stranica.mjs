@@ -141,16 +141,20 @@ t('получатель тот же', (await текст('#to')).toLowerCase() ==
 t('появилась карточка ожидания платежа', await видно('#stateCard'));
 t('код нарисован', await page.evaluate(() => document.querySelectorAll('#qr img, #qr canvas').length > 0));
 t('ЕСТЬ КНОПКА ДЛЯ ЧУЖОГО КОШЕЛЬКА', await видно('#openOther'));
-{
-  const href = await page.getAttribute('#openOther', 'href');
-  t('и это настоящий EIP-681 с нужной сетью',
-    href.startsWith('ethereum:0x55d398326f99059fF775485246999027B3197955@56/transfer'), href);
-  t('получатель в нём — продавец', href.toLowerCase().includes(MERCHANT.toLowerCase()));
-  /* 42 USDT на BNB Chain — это 42 с восемнадцатью нулями. Шесть нулей
-     вместо восемнадцати — платёж в миллион раз меньше. */
-  t('И СУММА ПЕРЕСЧИТАНА В ВОСЕМНАДЦАТЬ ЗНАКОВ',
-    href.includes('uint256=42' + '0'.repeat(18)), href.split('uint256=')[1]);
-}
+/* Раньше здесь сверялась ссылка ethereum:… — прямой перевод мимо контракта.
+   Его больше нет: чужой кошелёк платит через контракт, с выбором кошелька.
+   Байты этой оплаты проверяет t58; здесь — только что касса довела до неё. */
+t('И ЭТО ВЫБОР КОШЕЛЬКА, А НЕ ПРЯМОЙ ПЕРЕВОД МИМО КОНТРАКТА',
+  await page.evaluate(() => document.getElementById('openOther').tagName === 'BUTTON'
+    && !document.documentElement.innerHTML.includes('ethereum:0x')));
+await page.click('#openOther');
+await page.waitForTimeout(250);
+/* Шторка приклеена к экрану (position:fixed), а у таких элементов нет
+   offsetParent — обычная проверка «видно» считала бы её спрятанной. */
+t('шторка выбора открылась', await page.evaluate(() =>
+  !document.getElementById('wSheet').classList.contains('hidden')));
+await page.evaluate(() => closeWalletSheet());
+await page.waitForTimeout(150);
 
 // ======================= за платежом следим по ТОЙ ЖЕ сумме =======================
 /* Прямой перевод ищется по продавцу и сумме — номера счёта в переводе нет и

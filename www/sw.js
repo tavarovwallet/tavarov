@@ -23,7 +23,7 @@
  *   меняются годами. Когда меняются, у них меняется и версия в имени
  *   кэша ниже.
  */
-const CACHE = 'tavarov-v3';   // v3: ключи кэша без строки запроса — старые записи со счетами стираются
+const CACHE = 'tavarov-v4';   // v4: шрифты витрины (Manrope, Unbounded) лежат в кэше, чтобы без сети не прыгал текст
 const FILES = [
   './',
   './index.html',
@@ -32,7 +32,11 @@ const FILES = [
   './lib/nacl-fast.min.js',
   './lib/qrcode.min.js',
   './lib/qr-scanner.umd.min.js',
-  './lib/qr-scanner-worker.min.js'
+  './lib/qr-scanner-worker.min.js',
+  './fonts/manrope-cyrillic.woff2',
+  './fonts/manrope-latin.woff2',
+  './fonts/unbounded-cyrillic.woff2',
+  './fonts/unbounded-latin.woff2'
 ];
 
 self.addEventListener('install', (e) => {

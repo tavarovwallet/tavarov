@@ -44,7 +44,7 @@ R.ok('ПРИ ПЕРВОМ ЗАПУСКЕ — ТРИ РЕЖИМА: продаве
   /Я автор/.test(await page.textContent('#roleCard')));
 R.ok('выбран «Автор»', await page.evaluate(() => userRole) === 'author');
 
-await page.evaluate(() => { window.__opened = []; window.open = u => { window.__opened.push(u); return {}; }; tab = 'wallet'; setTab('pay'); });
+await page.evaluate(() => { window.__opened = []; window.open = () => { const w = { opener: 'WALLET', location: {} }; Object.defineProperty(w.location, 'href', { set(v){ window.__opened.push(v); window.__lastWin = w; } }); return w; }; tab = 'wallet'; setTab('pay'); });
 await page.waitForTimeout(900);
 R.ok('У АВТОРА НА «ОПЛАТЕ» — ДОНАТЫ', await vis('#donBox'));
 R.ok('донаты — первыми, выше «Что нужно сделать»', await page.evaluate(() => {

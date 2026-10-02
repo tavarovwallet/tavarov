@@ -1,21 +1,19 @@
 /* Сплошной обход приложения: каждый экран, каждая вкладка, вход-выход,
    восстановление из фразы. Смотрим не только «не упало», но и что на
    экране действительно то, что должно быть. */
-import { boot, reporter, unlock } from './boot.mjs';
+import { boot, reporter, unlock, answerConfirm } from './boot.mjs';
 import { start, state } from './mocknode.mjs';
 
-/* Резервная копия теперь спрашивает код из Authenticator: без этого её можно
-   было унести, обойдя разом и порог перевода, и смену пароля. Значит и
-   проверке надо его вводить — теми же функциями, что и живому человеку. */
+/* Резервная копия спрашивает подтверждение: без этого её можно было унести,
+   обойдя разом и порог перевода, и смену пароля. В песочнице Face ID нет,
+   поэтому подтверждаем паролем — ровно как человек за таким же устройством. */
 async function passTotp(page){
-  const open = await page.evaluate(() =>
-    !document.getElementById('totpAskModal').classList.contains('hidden'));
-  if (!open) return false;
-  await page.evaluate(async () => {
-    const code = await totpAt(base32Decode(totpAskSecret), Math.floor(Date.now() / 1000 / 30));
-    document.getElementById('totpAskCode').value = code;
-    await totpAskSubmit();
+  const open = await page.evaluate(() => {
+    const m = document.getElementById('confirmModal');
+    return !!m && !m.classList.contains('hidden');
   });
+  if (!open) return false;
+  await answerConfirm(page);
   await page.waitForTimeout(400);
   return true;
 }
@@ -107,13 +105,13 @@ R.ok('неверный пароль не пускает', await page.isVisible('
 R.ok('о неверном пароле сказано', await page.isVisible('#unlockError'));
 /* Кода при входе больше нет: он спрашивается при оплате и на опасных
    действиях. Вход открывает пароль — и только он. Проверяем, что второй
-   рубеж не переехал обратно на порог: код на каждом входе люди не терпят,
-   они его отключают или переписывают на бумажку рядом с компьютером. */
+   рубеж не переехал обратно на вход: подтверждать каждый вход люди не
+   терпят — они выключают защиту целиком. */
 await unlock(page);
 await page.waitForTimeout(2000);
 R.ok('верный пароль пускает', await page.evaluate(() => flowStage === 'ready'));
-R.ok('КОДА ПРИ ВХОДЕ НЕ СПРАШИВАЮТ',
-  await page.evaluate(() => document.getElementById('totpAskModal').classList.contains('hidden')));
+R.ok('ПОДТВЕРЖДЕНИЯ ПРИ ВХОДЕ НЕ СПРАШИВАЮТ',
+  await page.evaluate(() => document.getElementById('confirmModal').classList.contains('hidden')));
 R.ok('адрес после входа тот же',
   (await page.evaluate(() => wallet.evm.address)) === me);
 

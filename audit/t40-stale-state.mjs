@@ -22,7 +22,7 @@
    3. Порог, ниже которого код из Authenticator не спрашивается, поднять
       молча нельзя. Иначе второй рубеж снимается в два движения: вписал
       миллион — и код больше не спросят ни разу.                            */
-import { boot, reporter, unlock, answerTotp } from './boot.mjs';
+import { boot, reporter, unlock, answerConfirm } from './boot.mjs';
 import { start, state } from './mocknode.mjs';
 
 const srv = await start(8555);
@@ -150,7 +150,7 @@ await page.evaluate(async (args) => {
   document.getElementById('chgPass2').value = args[1];
   doChangePassword();
 }, [PASS, NEWPASS]);
-await answerTotp(page, 12000);
+await answerConfirm(page, PASS, 12000);
 await page.waitForTimeout(1500);
 
 const afterChange = await page.evaluate(async () => {
@@ -171,7 +171,7 @@ R.ok('и кошелёк открывается лицом после смены 
 
 // ---------- кошелёк стёрли ----------
 await page.evaluate(() => { tab = 'settings'; renderWalletState(); disconnectWallet(); });
-await answerTotp(page, 12000);
+await answerConfirm(page, NEWPASS, 12000);
 await page.waitForTimeout(1200);
 R.ok('КОШЕЛЁК СТЁРЛИ — ЗАПИСЬ ВХОДА ПО ЛИЦУ ТОЖЕ СТЁРТА',
   (await page.evaluate(() => bioWebRecord())) === null,
@@ -190,58 +190,44 @@ two.page.on('dialog', d => d.accept().catch(()=>{}));
 
 const setThreshold = async (v) => two.page.evaluate(async (x) => {
   tab = 'settings'; renderWalletState();
-  const el = document.getElementById('totpThreshold');
+  const el = document.getElementById('confirmThreshold');
   el.value = String(x);
   const p = saveThreshold(el);
   return typeof p === 'object' && p !== null;      // обещание, а не мгновенный ответ
 }, v);
 
-/* Код стал делом добровольным, и это меняет смысл проверки. Пока его не
-   подключили, спрашивать нечего: порог управляет тем, когда спрашивать код,
-   а кода нет вовсе. Сначала убеждаемся, что в этом случае окно не всплывает
-   на пустом месте, — а потом подключаем код и проверяем главное. */
-await setThreshold(500);
-const askedNoTotp = await answerTotp(two.page, 2500);
-R.ok('БЕЗ ПОДКЛЮЧЁННОГО КОДА ОКНО НЕ ВСПЛЫВАЕТ НА ПУСТОМ МЕСТЕ', askedNoTotp === false,
-  'порог ' + await two.page.evaluate(() => totpThreshold()));
-
-await two.page.evaluate(async () => {
-  wallet.totp = await totpSecretFor(wallet);
-  await persistVault(wallet, sessionPassword);
-});
-R.ok('код подключён — дальше он обязан спрашиваться',
-  await two.page.evaluate(() => !!(wallet && wallet.totp)));
-
+/* Подтверждение теперь есть у всех и всегда: «подключать» нечего, и
+   некому остаться без защиты. Поднять порог — ослабление, значит спросят. */
 await setThreshold(1000);
-const asked = await answerTotp(two.page, 6000);
+const asked = await answerConfirm(two.page, PASS, 8000);
 await two.page.waitForTimeout(400);
-R.ok('ПОДНЯТЬ ПОРОГ БЕЗ КОДА НЕЛЬЗЯ — КОД СПРОСИЛИ', asked,
-  'порог теперь ' + await two.page.evaluate(() => totpThreshold()));
-R.ok('и после кода порог действительно поднялся',
-  (await two.page.evaluate(() => totpThreshold())) === 1000,
-  String(await two.page.evaluate(() => totpThreshold())));
+R.ok('ПОДНЯТЬ ПОРОГ БЕЗ ПОДТВЕРЖДЕНИЯ НЕЛЬЗЯ — СПРОСИЛИ', asked,
+  'порог теперь ' + await two.page.evaluate(() => confirmThreshold()));
+R.ok('и после подтверждения порог действительно поднялся',
+  (await two.page.evaluate(() => confirmThreshold())) === 1000,
+  String(await two.page.evaluate(() => confirmThreshold())));
 
-/* Отказ от кода обязан ВЕРНУТЬ прежнее значение, а не оставить новое. */
+/* Отказ обязан ВЕРНУТЬ прежнее значение, а не оставить новое. */
 await setThreshold(999999);
 await two.page.waitForFunction(
-  () => !document.getElementById('totpAskModal').classList.contains('hidden'),
+  () => !document.getElementById('confirmModal').classList.contains('hidden'),
   null, { timeout: 8000 });
-await two.page.evaluate(() => totpAskCancel());
+await two.page.evaluate(() => confirmCancel());
 await two.page.waitForTimeout(400);
-R.ok('ОТКАЗ ОТ КОДА ОСТАВЛЯЕТ ПРЕЖНИЙ ПОРОГ',
-  (await two.page.evaluate(() => totpThreshold())) === 1000,
-  String(await two.page.evaluate(() => totpThreshold())));
+R.ok('ОТКАЗ ОТ ПОДТВЕРЖДЕНИЯ ОСТАВЛЯЕТ ПРЕЖНИЙ ПОРОГ',
+  (await two.page.evaluate(() => confirmThreshold())) === 1000,
+  String(await two.page.evaluate(() => confirmThreshold())));
 R.ok('и в поле видно прежнее значение, а не набранное',
-  (await two.page.evaluate(() => document.getElementById('totpThreshold').value)) === '1000',
-  await two.page.evaluate(() => document.getElementById('totpThreshold').value));
+  (await two.page.evaluate(() => document.getElementById('confirmThreshold').value)) === '1000',
+  await two.page.evaluate(() => document.getElementById('confirmThreshold').value));
 
 /* А снижение порога — усиление защиты, и спрашивать за него нечего. */
 await setThreshold(10);
 await two.page.waitForTimeout(600);
-R.ok('СНИЗИТЬ ПОРОГ МОЖНО БЕЗ КОДА — ЭТО УСИЛЕНИЕ, А НЕ ОСЛАБЛЕНИЕ',
-  (await two.page.evaluate(() => totpThreshold())) === 10
-  && await two.page.evaluate(() => document.getElementById('totpAskModal').classList.contains('hidden')),
-  String(await two.page.evaluate(() => totpThreshold())));
+R.ok('СНИЗИТЬ ПОРОГ МОЖНО БЕЗ ПОДТВЕРЖДЕНИЯ — ЭТО УСИЛЕНИЕ',
+  (await two.page.evaluate(() => confirmThreshold())) === 10
+  && await two.page.evaluate(() => document.getElementById('confirmModal').classList.contains('hidden')),
+  String(await two.page.evaluate(() => confirmThreshold())));
 
 const all = errors.concat(two.errors);
 const clean = all.filter(e => !/ERR_TUNNEL|coingecko|Failed to load resource|net::ERR_FAILED|NotAllowedError/i.test(e));

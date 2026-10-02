@@ -57,8 +57,8 @@ for (const lang of LANGS){
     await page.waitForTimeout(3500);
     await page.screenshot({ path: dir + '/bonus.png' });
 
-    await page.evaluate(() => { tab = 'pay'; setPayMode('transfer'); renderWalletState(); });
-    await page.waitForTimeout(600);
+    await page.evaluate(() => { tab = 'pay'; quickAction('byname'); });
+    await page.waitForTimeout(700);
     await page.fill('#sendTo', 'ivan');
     await page.fill('#sendAmount', '25');
     await page.waitForTimeout(2200);
@@ -70,6 +70,12 @@ for (const lang of LANGS){
   {
     const { browser, page } = await boot({ role: 'seller', lang, rpc: 'http://localhost:8555' });
     await mainnet(page);
+    /* Касса кладёт сумму ещё и на наклейку у прилавка. Сервера здесь нет, и
+       без ответа на снимке висело бы предупреждение «не удалось отправить».
+       Отвечаем так, как отвечает настоящий, правильно настроенный, — это та
+       же подмена, что и поддельный узел для остатков, а не украшательство. */
+    await page.route('**/api/till', r => r.fulfill({ status: 200,
+      contentType: 'application/json', body: '{"ok":true}' }));
     const me = await page.evaluate(() => wallet.evm.address);
     state.names['coffee'] = me;
     state.balances[me.toLowerCase()] = { native: 0.21, USDT: 486.2, TVR: 44.9 };
@@ -85,6 +91,31 @@ for (const lang of LANGS){
     await page.evaluate(() => createTicket());
     await page.waitForTimeout(2500);
     await page.screenshot({ path: dir + '/till.png' });
+    await browser.close();
+  }
+  // ---------- режим «Автор»: донаты, итоги и цель сбора ----------
+  {
+    const { browser, page } = await boot({ role: 'author', lang, rpc: 'http://localhost:8555' });
+    await mainnet(page);
+    const nowH = Math.floor(Date.now() / 3600000);
+    /* Итоги и приветствие отдаёт сервер донатов; здесь его нет, поэтому
+       отвечаем так, как отвечает настоящий, — те же числа, что были на
+       прежнем снимке: 25 $ сегодня, 140,5 $ за неделю, 260,5 $ за месяц. */
+    await page.route('**/api/donate**', r => {
+      const u = new URL(r.request().url());
+      let body = { items: [] };
+      if (u.searchParams.get('stats') === '1') body = { stats: { hours: { [nowH]: 2500, [nowH - 72]: 11550, [nowH - 400]: 12000 }, count: 9 } };
+      else if (u.searchParams.get('profile') === '1') body = { profile: { greeting: { ru:'Спасибо, что вы здесь! Каждый донат — в новый микрофон.', en:'Thanks for being here! Every tip goes to a new mic.', es:'¡Gracias por estar aquí! Cada donación va a un micrófono nuevo.', tr:'Burada olduğunuz için teşekkürler! Her bağış yeni mikrofona gidiyor.', pt:'Valeu por estar aqui! Cada doação vai para um microfone novo.' }[lang], goal: null } };
+      r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+    });
+    const me = await page.evaluate(() => wallet.evm.address);
+    state.names['anna'] = me;
+    state.balances[me.toLowerCase()] = { native: 0.12, USDT: 260.5, TVR: 0 };
+    await page.evaluate(() => { tab = 'wallet'; renderWalletState(); refreshMyName(true); });
+    await page.waitForTimeout(3000);
+    await page.evaluate(() => { tab = 'pay'; renderWalletState(); try{ loadDonStats(true); }catch(e){} });
+    await page.waitForTimeout(3000);
+    await page.screenshot({ path: dir + '/author.png' });
     await browser.close();
   }
   console.log(lang + ' — готово');

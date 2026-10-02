@@ -1,21 +1,19 @@
 /* Все пять языков вживую: испанский, турецкий, португальский — экран за
    экраном. Проверяем не «словарь заполнен», а то, что человек на этом
    языке видит слова, а не ключи и не русские остатки. */
-import { boot, reporter } from './boot.mjs';
+import { boot, reporter, answerConfirm } from './boot.mjs';
 import { start } from './mocknode.mjs';
 
-/* Резервная копия теперь спрашивает код из Authenticator: без этого её можно
-   было унести, обойдя разом и порог перевода, и смену пароля. Значит и
-   проверке надо его вводить — теми же функциями, что и живому человеку. */
+/* Резервная копия спрашивает подтверждение: без этого её можно было унести,
+   обойдя разом и порог перевода, и смену пароля. В песочнице Face ID нет,
+   поэтому подтверждаем паролем — ровно как человек за таким же устройством. */
 async function passTotp(page){
-  const open = await page.evaluate(() =>
-    !document.getElementById('totpAskModal').classList.contains('hidden'));
-  if (!open) return false;
-  await page.evaluate(async () => {
-    const code = await totpAt(base32Decode(totpAskSecret), Math.floor(Date.now() / 1000 / 30));
-    document.getElementById('totpAskCode').value = code;
-    await totpAskSubmit();
+  const open = await page.evaluate(() => {
+    const m = document.getElementById('confirmModal');
+    return !!m && !m.classList.contains('hidden');
   });
+  if (!open) return false;
+  await answerConfirm(page);
   await page.waitForTimeout(400);
   return true;
 }
