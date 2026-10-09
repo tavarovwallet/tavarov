@@ -240,7 +240,8 @@ async function onGet({ request, env }){
   /* Nothing on the scratchpad. Before telling the till it is empty, ask the
      chain — the seller may be on the older, on-chain way of doing this. The
      page only asks for this every so often, because it costs a node call. */
-  if (url.searchParams.get('chain') === '1'){
+  /* Счётчик только на запрос к узлу: обычное чтение кассы — одно чтение KV. */
+  if (url.searchParams.get('chain') === '1' && !(await overLimit(request, env, 'tillchain', 60, 60))){
     try{
       const ch = await chainCharge(cfg, m);
       if (ch && ch.expiresAt > now) return json(Object.assign({}, ch, { now }));

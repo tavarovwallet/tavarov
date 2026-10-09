@@ -443,7 +443,9 @@ const RU = {
   solPhantom:'Оплатить в Phantom',
   solSolflare:'Оплатить в Solflare',
   solPayBusy:'Подтвердите оплату в кошельке…',
+  solPaySent:'Отправлено — ждём подтверждения сети…',
   solPayFail:'Кошелёк не провёл оплату: ',
+  solPayOld:'этот кошелёк не поддерживает оплату со страницы. Отсканируйте код выше в Phantom или Solflare.',
   tillOwnBtn:'Ввести сумму самому',
   tillOwnLabel:'Сколько платим',
   tillOwnNote:'Сумму вы вводите сами — сверьте её с продавцом, прежде чем платить. Ошибётесь в свою сторону — придётся доплачивать, в его — деньги уже не вернутся сами.',
@@ -493,7 +495,9 @@ const T = {
     solPhantom:'Pay in Phantom',
     solSolflare:'Pay in Solflare',
     solPayBusy:'Confirm the payment in your wallet…',
+    solPaySent:'Sent — waiting for the network to confirm…',
     solPayFail:'The wallet did not make the payment: ',
+    solPayOld:'this wallet cannot pay from a page. Scan the code above in Phantom or Solflare.',
     tillOwnBtn:'Enter the amount myself',
     tillOwnLabel:'How much to pay',
     tillOwnNote:'You are typing the amount yourself — check it with the seller before paying. Too little and you will have to pay again; too much and the money will not come back on its own.',
@@ -541,7 +545,9 @@ const T = {
     solPhantom:'Pagar en Phantom',
     solSolflare:'Pagar en Solflare',
     solPayBusy:'Confirme el pago en su billetera…',
+    solPaySent:'Enviado: esperando la confirmación de la red…',
     solPayFail:'La billetera no hizo el pago: ',
+    solPayOld:'esta billetera no admite pagar desde una página. Escanee el código de arriba en Phantom o Solflare.',
     tillOwnBtn:'Escribir el importe yo mismo',
     tillOwnLabel:'Cuánto se paga',
     tillOwnNote:'El importe lo escribe usted: compruébelo con el vendedor antes de pagar. Si pone de menos, tendrá que pagar otra vez; si pone de más, el dinero no vuelve solo.',
@@ -589,7 +595,9 @@ const T = {
     solPhantom:'Phantom’da öde',
     solSolflare:'Solflare’de öde',
     solPayBusy:'Ödemeyi cüzdanınızda onaylayın…',
+    solPaySent:'Gönderildi — ağın onayı bekleniyor…',
     solPayFail:'Cüzdan ödemeyi yapmadı: ',
+    solPayOld:'bu cüzdan sayfadan ödemeyi desteklemiyor. Yukarıdaki kodu Phantom veya Solflare ile tarayın.',
     tillOwnBtn:'Tutarı kendim gireyim',
     tillOwnLabel:'Ne kadar ödenecek',
     tillOwnNote:'Tutarı siz giriyorsunuz — ödemeden önce satıcıyla doğrulayın. Eksik girerseniz tekrar ödemeniz gerekir; fazla girerseniz para kendiliğinden geri gelmez.',
@@ -637,7 +645,9 @@ const T = {
     solPhantom:'Pagar no Phantom',
     solSolflare:'Pagar no Solflare',
     solPayBusy:'Confirme o pagamento na sua carteira…',
+    solPaySent:'Enviado — aguardando a confirmação da rede…',
     solPayFail:'A carteira não fez o pagamento: ',
+    solPayOld:'esta carteira não aceita pagar a partir de uma página. Escaneie o código acima no Phantom ou Solflare.',
     tillOwnBtn:'Digitar o valor eu mesmo',
     tillOwnLabel:'Quanto vai pagar',
     tillOwnNote:'O valor é digitado por você — confirme com o vendedor antes de pagar. Se faltar, vai ter que pagar de novo; se sobrar, o dinheiro não volta sozinho.',
@@ -1132,12 +1142,26 @@ const SOL = (() => {
     const { fee, toMerchant } = split(o.units, o.feeBps === undefined ? 100 : o.feeBps);
     if (toMerchant <= 0n) throw new Error('bad amount');
     const [src, dstM, dstT] = await Promise.all([ata(payer, mint), ata(merchant, mint), ata(treasury, mint)]);
+    /* Партнёр продавца (8.10.2026): пятая часть комиссии — ему, той же
+       операцией, как в контракте других сетей. Счёт монеты у партнёра
+       должен уже быть (это проверяет тот, кто зовёт): заводить его за счёт
+       покупателя мы не будем. */
+    let share = 0n, dstP = null;
+    if (o.partner && fee > 0n){
+      if (!isAddress(o.partner)) throw new Error('bad partner');
+      const pk = b58dec(o.partner, 32);
+      if (!eq(pk, merchant) && !eq(pk, payer) && !eq(pk, treasury)){
+        share = fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+        if (share > 0n) dstP = await ata(pk, mint);
+      }
+    }
     const ixs = [ ...budgetIxs(), createAtaIx(payer, dstM, merchant, mint) ];
     if (fee > 0n && !eq(treasury, merchant)) ixs.push(createAtaIx(payer, dstT, treasury, mint));
     ixs.push(transferCheckedIx(src, mint, dstM, payer, toMerchant, o.decimals, [ref]));
-    if (fee > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee, o.decimals));
+    if (fee - share > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee - share, o.decimals));
+    if (dstP && share > 0n) ixs.push(transferCheckedIx(src, mint, dstP, payer, share, o.decimals));
     const { message } = compile(payer, bh, ixs);
-    return { message, fee, toMerchant, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT) } };
+    return { message, fee, toMerchant, share, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT), partner: dstP ? b58enc(dstP) : null } };
   }
 
   /* Обычный перевод: SOL — системной программой, монета — transferChecked
@@ -1185,7 +1209,9 @@ const SOL = (() => {
     const tokenProg = b58enc(TOKEN);
     const bps = o.feeBps === undefined ? 100 : o.feeBps;
     const want = split(o.units, bps);
-    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toAll = 0n, nAll = 0, payer = null;
+    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toP = 0n, toAll = 0n, nAll = 0, payer = null;
+    /* Партнёр продавца (8.10.2026): его доля — часть комиссии, а не оплата. */
+    const pAta = o.partnerAta || null;
     const ixs = [...(msg.instructions || [])];
     for (const inner of (tx.meta.innerInstructions || [])) ixs.push(...(inner.instructions || []));
     for (const ix of ixs){
@@ -1195,13 +1221,20 @@ const SOL = (() => {
       const acc = (ix.accounts || []).map(i => keys[i]);
       if (acc.length < 4 || acc[1] !== o.mint) continue;
       let amt = 0n; for (let i = 8; i >= 1; i--) amt = (amt << 8n) | BigInt(d[i]);
-      if (acc[2] !== o.treasuryAta){ toAll += amt; nAll++; }
+      if (acc[2] !== o.treasuryAta && acc[2] !== pAta){ toAll += amt; nAll++; }
       if (acc[2] === o.merchantAta){
         toMAll += amt; nM++;
         /* Ровно одна метка и это наша: с несколькими метками в одном
            переводе одна оплата закрыла бы несколько счетов. */
         if (acc.length === 5 && acc[4] === o.reference){ toM += amt; payer = payer || acc[3]; }
       } else if (acc[2] === o.treasuryAta) toT += amt;
+      else if (pAta && acc[2] === pAta) toP += amt;
+    }
+    /* Комиссия = казна + доля партнёра. Казне при этом — не меньше, чем ей
+       положено за вычетом доли: всю комиссию отдать «партнёру» нельзя. */
+    if (pAta){
+      const shareMax = want.fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+      if (toT + toP >= want.fee && toT >= want.fee - shareMax) toT = toT + toP;
     }
     if (toM === 0n) return { ok: false, why: toMAll > 0n ? 'no reference' : 'not to merchant' };
     if (toM < want.toMerchant) return { ok: false, why: 'underpaid', got: toM.toString() };
@@ -1209,7 +1242,7 @@ const SOL = (() => {
     /* Несколько переводов в одной операции (тому же или другим продавцам) —
        1% нужен со всех: один перевод в казну на всех не в счёт. */
     if (bps > 0 && toT * BigInt(10000 - bps) + BigInt(nAll) * 10000n < toAll * BigInt(bps)) return { ok: false, why: 'no fee', got: toM.toString() };
-    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
+    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), partner: toP.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
              toAll: toAll.toString(), transfersAll: nAll };
   }
 
@@ -1376,6 +1409,9 @@ function readInvoice(){
        а платилась одна монета; «1e3» показывалось как есть и не платилось
        вовсе. Такой счёт не показываем: его выписали с ошибкой. */
     if (!/^\d{1,12}(\.\d{1,18})?$/.test(String(o.a)) || !(parseFloat(o.a) > 0)) return null;
+    /* В Ethereum, Base и Solana у долларов шесть знаков — седьмой заплатить
+       нечем, и оплата падала бы с «bad amount» (аудит 7.10.2026). */
+    if (['eth', 'base', 'solana'].includes(o.net) && (String(o.a).split('.')[1] || '').replace(/0+$/, '').length > 6) return null;
     if (o.c !== undefined && !/^[A-Z]{2,8}$/.test(String(o.c))) return null;
     if (!/^0x[0-9a-fA-F]{64}$/.test(o.h || '')) return null;
     /* Всё, что уедет в href или в переход, чистим сразу на входе, а не в
@@ -1511,6 +1547,31 @@ function solProvider(){
   const cands = [w.phantom && w.phantom.solana, w.solflare, w.trustwallet && w.trustwallet.solana, w.solana];
   return cands.find(p => p && typeof p.connect === 'function') || null;
 }
+/* Wallet Standard — общий для кошельков Solana способ (Phantom, Solflare,
+   Backpack, Trust и другие): операция отдаётся готовыми байтами, без
+   библиотеки web3.js. 7 октября 2026: в браузере Solflare старый способ
+   (provider.request с «message» — это формат Phantom) давал «Недействительная
+   транзакция». Поэтому сначала стандарт, старый способ — только для Phantom. */
+const solStd = [];
+/* Оплачено или просрочено — кнопки Solana больше не показываем, даже если
+   кошелёк зарегистрируется позже. */
+let solLocked = false, solSent = false;
+(function(){
+  const api = { register: (...ws) => {
+    ws.forEach(w => { if (w && !solStd.includes(w)) solStd.push(w); });
+    /* Кошелёк мог встроиться позже первой отрисовки — перерисовываем. */
+    setTimeout(() => { try{ if (inv) renderSolWallets(); } catch(_){} }, 0);
+    return () => {};
+  } };
+  try{
+    window.addEventListener('wallet-standard:register-wallet', e => { try{ e.detail(api); } catch(_){} });
+    window.dispatchEvent(new CustomEvent('wallet-standard:app-ready', { detail: api }));
+  } catch(e){}
+})();
+function solStdWallet(){
+  return solStd.find(w => w && w.features && w.features['solana:signAndSendTransaction'] && w.features['standard:connect']
+    && Array.isArray(w.chains) && w.chains.includes('solana:mainnet')) || null;
+}
 function solPayQuery(){
   const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c || 'USDC', r: SOL.refFromInvoice(inv.h) });
   if (inv.n) q.set('n', String(inv.n).slice(0, 48));
@@ -1527,27 +1588,49 @@ function solWalletPageUrl(){
 }
 function renderSolWallets(){
   const box = $('solWallets');
-  const on = !!(inv && isSolNet(inv.net)) && !expiredNow();
+  const on = !!(inv && isSolNet(inv.net)) && !expiredNow() && !solLocked;
   box.classList.toggle('hidden', !on);
   if (!on) return;
-  const prov = solProvider();
+  const std = solStdWallet();
+  const prov = std || solProvider();
   $('solPayHere').classList.toggle('hidden', !prov);
+  /* Каким кошельком пойдёт оплата — видно на кнопке: их может быть несколько. */
+  const nm = std && std.name ? String(std.name).slice(0, 24) : '';
+  if (!solSent) $('solPayHere').textContent = t('solPayHere') + (nm ? ' · ' + nm : '');
   const url = solWalletPageUrl(), ref = encodeURIComponent(location.origin);
   $('solPhantom').href = 'https://phantom.app/ul/browse/' + encodeURIComponent(url) + '?ref=' + ref;
   $('solSolflare').href = 'https://solflare.com/ul/v1/browse/' + encodeURIComponent(url) + '?ref=' + ref;
   $('solPhantom').classList.toggle('hidden', !!prov);
   $('solSolflare').classList.toggle('hidden', !!prov);
 }
+/* Та же операция в формате v0 (без таблиц адресов): сообщение = 0x80 +
+   прежнее сообщение + 0 (число таблиц). Содержимое то же самое: те же
+   ключи, инструкции, суммы и метка счёта, только другой заголовок. */
+function solV0(msg){
+  const m = new Uint8Array(msg.length + 2);
+  m[0] = 0x80; m.set(msg, 1); m[m.length - 1] = 0;
+  const raw = new Uint8Array(1 + 64 + m.length);
+  raw[0] = 1; raw.set(m, 65);
+  return raw;
+}
 let solBusy = false;
 async function solPayInjected(){
-  const p = solProvider();
-  if (!p || solBusy) return;
+  const std = solStdWallet();
+  const p = std ? null : solProvider();
+  if ((!std && !p) || solBusy || solSent || solLocked || expiredNow()) return;
   solBusy = true;
   const err = $('solPayErr'); err.classList.add('hidden');
   const btn = $('solPayHere'); const old = btn.textContent; btn.disabled = true; btn.textContent = t('solPayBusy');
   try{
-    const c = await p.connect();
-    const pk = String((c && c.publicKey) || p.publicKey || '');
+    let pk = '', acc = null;
+    if (std){
+      const res = await std.features['standard:connect'].connect();
+      acc = (res && res.accounts && res.accounts[0]) || (std.accounts || [])[0] || null;
+      pk = String((acc && acc.address) || '');
+    } else {
+      const c = await p.connect();
+      pk = String((c && c.publicKey) || p.publicKey || '');
+    }
     if (!SOL.isAddress(pk)) throw new Error('no account');
     inv.payer = pk;                       // это мы платим: «оплачено» — наше, а не чужое
     const r = await fetch('/api/solpay?' + solPayQuery().toString(), { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -1557,17 +1640,38 @@ async function solPayInjected(){
     const raw = Uint8Array.from(atob(d.transaction), ch => ch.charCodeAt(0));
     if (raw[0] !== 1) throw new Error('unexpected transaction');
     const msg = raw.slice(1 + 64);
-    if (typeof p.request === 'function'){
+    if (std){
+      /* Стандарт: вся операция байтами (подпись пустая — её поставит кошелёк). */
+      const f = std.features['solana:signAndSendTransaction'];
+      try{
+        await f.signAndSendTransaction({ account: acc, transaction: raw, chain: 'solana:mainnet' });
+      } catch(e1){
+        /* Trust Wallet на iPhone (8.10.2026) разбирает байты как VersionedTransaction,
+           а для операции старого формата (legacy) потом зовёт у неё
+           serializeMessage(), которой там нет: «e.serializeMessage is not a
+           function». Ошибка случается ДО подписи, поэтому повтор безопасен:
+           отдаём ту же операцию в формате v0 — его Trust подписывает через
+           message.serialize(). Отмену пользователем и прочие отказы не повторяем. */
+        if (!/serializeMessage/i.test(String(e1 && e1.message || e1))) throw e1;
+        await f.signAndSendTransaction({ account: acc, transaction: solV0(msg), chain: 'solana:mainnet' });
+      }
+    } else if (p.isPhantom && typeof p.request === 'function'){
       await p.request({ method: 'signAndSendTransaction', params: { message: SOL.b58enc(msg) } });
     } else {
-      await p.signAndSendTransaction({ serializeMessage: () => msg, serialize: () => raw });
+      /* Чужой старый провайдер без стандарта: формат его подписи нам
+         неизвестен — не отправляем наугад, а честно предлагаем код. */
+      throw new Error(t('solPayOld'));
     }
-    /* Отправлено — дальше обычное слежение за оплатой по метке счёта. */
+    /* Отправлено — дальше обычное слежение за оплатой по метке счёта.
+       Кнопку больше не включаем: второй нажим — вторая оплата (аудит 7.10.2026). */
+    solSent = true;
   } catch(e){
     err.textContent = t('solPayFail') + String(e && e.message || e).slice(0, 120);
     err.classList.remove('hidden');
   } finally {
-    solBusy = false; btn.disabled = false; btn.textContent = old;
+    solBusy = false;
+    if (solSent){ btn.disabled = true; btn.textContent = t('solPaySent'); }
+    else { btn.disabled = false; btn.textContent = old; }
   }
 }
 $('solPayHere').onclick = () => solPayInjected();
@@ -1645,7 +1749,10 @@ function tick(){
       /* Магазин просроченный счёт не примет — значит и платить по нему не
          даём. Раньше надпись менялась, а кнопки оставались, и шторка из
          приложения-кошелька открывалась сама. */
-      ['openWallet', 'openOther', 'qr', 'qrHint', 'iosHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+      /* И оплату в Solana-кошельке — тоже: кнопка оставалась, и просроченный
+         счёт можно было оплатить (аудит 7.10.2026). */
+      solLocked = true;
+      ['openWallet', 'openOther', 'qr', 'qrHint', 'iosHint', 'solWallets', 'copyLink'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
       if (typeof closeWalletSheet === 'function') closeWalletSheet(true);
       return;
     }
@@ -1734,7 +1841,8 @@ let watchTimer = null;
    бы второе разрешение (и заплатил за него комиссию сети), прежде чем
    контракт отказал бы в повторной оплате. */
 function paidNow(){
-  ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint', 'iosHint'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+  solLocked = true;
+  ['openWallet', 'openOther', 'copyLink', 'qr', 'qrHint', 'iosHint', 'solWallets'].forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
   const promo = $('promoCard');
   if (promo){
     /* Донат — предлагаем стримеру то же самое: зритель, который донатит,

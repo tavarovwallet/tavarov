@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Tavarov Pay
  * Plugin URI:        https://tavarov.com/woocommerce
- * Description:       Accept USDT and USDC on BNB Chain in WooCommerce. Customers pay from any wallet, the money goes straight to your own wallet, no custodian in between.
- * Version:           1.0.0
+ * Description:       Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana in WooCommerce. Customers pay from any wallet, the money goes straight to your own wallet, no custodian in between.
+ * Version:           1.1.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Tavarov
@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TAVAROV_PAY_VERSION', '1.0.0' );
+define( 'TAVAROV_PAY_VERSION', '1.1.0' );
 define( 'TAVAROV_PAY_FILE', __FILE__ );
 define( 'TAVAROV_PAY_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TAVAROV_PAY_URL', plugin_dir_url( __FILE__ ) );

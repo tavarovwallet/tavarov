@@ -143,11 +143,17 @@ async function findDirectTransfer(cfg, merchant, want, since, safeBlock){
   let from = Math.max(0, safeBlock - lookbackT);
   if (since > 0){
     const ago = Math.floor(Date.now() / 1000) - since;
-    if (ago >= 0){
-      const blocks = Math.ceil(ago / blockSec) + 20;   // slack for uneven block times
-      from = Math.max(from, safeBlock - Math.min(blocks, lookbackT));
-    }
+    /* Счёт «из будущего» (часы сбиты или ссылку подделали) — не ищем вовсе:
+       раньше такой счёт смотрел весь час и мог закрыться чужим переводом. */
+    if (ago < -120) return null;
+    /* Отсчёт — от последнего блока, а не от «надёжного»: тот отстаёт на
+       cfg.conf блоков, и окно начиналось раньше самого счёта (аудит 7.10.2026).
+       Запас — 60 секунд на расхождение часов и неровные блоки. */
+    const latest = safeBlock + (cfg.conf || 0);
+    const blocks = Math.ceil((Math.max(0, ago) + 60) / blockSec);
+    from = Math.max(from, latest - Math.min(blocks, lookbackT));
   }
+  if (from > safeBlock) return null;    // счёт моложе подтверждений — рано
 
   let logs;
   try{

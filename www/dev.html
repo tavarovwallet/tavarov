@@ -169,9 +169,9 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
     <span class="en">One request gives your customer a payment link. They pay from their own wallet, the money lands straight in yours, and your server gets a signed “paid” webhook. No onboarding, no contracts, no weekly payouts.</span>
   </p>
   <div class="facts">
-    <div class="fact"><b>1%</b><span class="ru">комиссия, платит магазин. Покупатель — только доли цента за сеть.</span><span class="en">fee, paid by the shop. The buyer only pays a fraction of a cent in network gas.</span></div>
+    <div class="fact"><b>1%</b><span class="ru">комиссия, платит магазин. Покупатель — только комиссию сети: доли цента, в Ethereum — больше.</span><span class="en">fee, paid by the shop. The buyer only pays the network fee: a fraction of a cent, more on Ethereum.</span></div>
     <div class="fact"><b><span class="ru">Сразу</span><span class="en">Instantly</span></b><span class="ru">99% приходят на ваш кошелёк в той же операции. Мы деньги не держим ни секунды.</span><span class="en">99% arrives in your wallet in the same transaction. We never hold your money.</span></div>
-    <div class="fact"><b>BNB Chain</b><span class="ru">USDT и USDC. Платить можно MetaMask, Trust Wallet, NoN Wallet и другими.</span><span class="en">USDT and USDC. Buyers can pay with MetaMask, Trust Wallet, NoN Wallet and more.</span></div>
+    <div class="fact"><b><span class="ru">4 сети</span><span class="en">4 networks</span></b><span class="ru">BNB Chain, Ethereum, Base и Solana; USDT и USDC (в Base — USDC). Платить можно MetaMask, Trust Wallet, Phantom, NoN Wallet и другими.</span><span class="en">BNB Chain, Ethereum, Base and Solana; USDT and USDC (USDC on Base). Buyers can pay with MetaMask, Trust Wallet, Phantom, NoN Wallet and more.</span></div>
   </div>
 </div>
 
@@ -202,7 +202,7 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
     </div>
 
     <h3><span class="ru">Ключи API</span><span class="en">API keys</span></h3>
-    <p class="tiny"><span class="ru">Боевой ключ — настоящие деньги в BNB Chain. Тестовый — тестовая сеть, деньги ненастоящие. Ключ показывается один раз; храните его на сервере, не в коде страницы.</span><span class="en">A live key means real money on BNB Chain. A test key uses the testnet with play money. A key is shown only once; keep it on your server, never in front-end code.</span></p>
+    <p class="tiny"><span class="ru">Боевой ключ — настоящие деньги: по умолчанию в BNB Chain, другую сеть задаёт поле <code>network</code> счёта. Тестовый — тестовая сеть BNB, деньги ненастоящие. Ключ показывается один раз; храните его на сервере, не в коде страницы.</span><span class="en">A live key means real money: on BNB Chain by default, or on the network set in the invoice’s <code>network</code> field. A test key uses the BNB testnet with play money. A key is shown only once; keep it on your server, never in front-end code.</span></p>
     <div id="keysBox"></div>
     <div class="note warn hidden" id="newKeyBox">
       <b><span class="ru">Ваш новый ключ — скопируйте сейчас, второй раз мы его не покажем:</span><span class="en">Your new key. Copy it now, we will not show it again:</span></b>
@@ -802,7 +802,9 @@ function renderInvoices(){
     }
     if (it.payment && it.payment.tx){
       const a = el('a', 'tiny', 'tx');
-      a.href = (it.livemode ? 'https://bscscan.com/tx/' : 'https://testnet.bscscan.com/tx/') + it.payment.tx;
+      /* Ссылка — в обозреватель той сети, где был платёж (раньше всегда вела в BscScan). */
+      const ex = { eth: 'https://etherscan.io/tx/', base: 'https://basescan.org/tx/', solana: 'https://solscan.io/tx/' }[it.network];
+      a.href = (ex && it.livemode ? ex : (it.livemode ? 'https://bscscan.com/tx/' : 'https://testnet.bscscan.com/tx/')) + it.payment.tx;
       a.target = '_blank'; a.rel = 'noopener'; a.style.marginLeft = '8px';
       act.appendChild(a);
     }

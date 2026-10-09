@@ -26,13 +26,14 @@ minutes — better to hear it from us.
 * **There are no real merchants or buyers yet.** The only payments that have
   gone through the mainnet contract are our own test ones. Everything we say
   about speed and convenience is our expectation, not someone else's experience.
-* **TVR is loyalty points, not an investment.** They have no price, they trade
-  on no exchange, and we are not going to arrange one. On 30 September 2026 we
-  burned our own 60% of the supply (60,000,000 TVR sent to
-  `0x000000000000000000000000000000000000dEaD`). The rest, about 40%, sits in the
-  payment contract's cashback pool; the team holds none. There is nothing to spend them on yet: the
-  name shop is written but deployed nowhere. We are not raising money through
-  a token.
+* **There is no project token in the product.** TVR, the loyalty points we
+  issued on BNB Chain, were switched off in October 2026: the payment contract
+  no longer accrues them (rate set to 0) and the wallet no longer shows them.
+  They were never sold, have no price, trade on no exchange, and none of that
+  is planned. On 30 September 2026 we burned our own 60% of the supply
+  (60,000,000 TVR sent to `0x000000000000000000000000000000000000dEaD`); the
+  team holds none. We are not raising money through a token. Revenue is the
+  1% payment fee and the 0.5% swap fee, nothing else.
 * **One wallet owns the contracts.** It can change the fee (never above 2%, that
   limit is in the code), the treasury address and the list of accepted
   currencies. It cannot touch a merchant's revenue. `renounceOwnership` has not
@@ -59,14 +60,18 @@ minutes — better to hear it from us.
   receiver, amounts or fee differ from what you were shown. On Solana it also
   simulates the transaction and refuses it if any of your token accounts other
   than the one you are swapping from would lose a single unit.
-* **Four networks, not all equal.** BNB Chain is home: TVR points and names
-  live only there. On Ethereum and Base the same payment contract is deployed
+* **Four networks, not all equal.** BNB Chain is home: the names contract
+  lives there. Names work on all four networks — on Solana through a link the
+  wallet signs with both of its keys (`functions/api/solname.js`). On Ethereum and Base the same payment contract is deployed
   (same source, same compiler settings), but it is **not yet verified on
   Etherscan/Basescan** — until it is, compare the bytecode yourself. Solana has
   no contract of ours at all: a payment is one transaction the buyer signs,
   99% to the merchant and 1% to the development wallet, found by its Solana Pay
   reference (see `solana/`). The 1% on Solana is set by our server code, not
-  enforced by a contract.
+  enforced by a contract. The same goes for the partner program on Solana: the
+  merchant–partner link is signed by the merchant's Solana key and stored by
+  our server (`functions/api/_solref.js`), and the partner's share is a third
+  transfer inside the same payment transaction.
 
 ## Ethereum and Base
 
@@ -77,7 +82,8 @@ minutes — better to hear it from us.
 | Base (chainId 8453) | TavarovPay — payments | `0x5046399643c387d93e1467bad3fd7edf3fb459da` |
 | Base (chainId 8453) | TavarovCharges — invoices | `0xca4fe6e5df7159910b2165acfa9bb8b19810d65c` |
 
-No TVR and no names on these networks.
+Payments and the partner program work here exactly as on BNB Chain; names
+resolve through the BNB Chain names contract.
 
 ## Solana
 
@@ -96,7 +102,7 @@ on-chain for invoices created before the switch.
 | **TavarovPay v3 — payments (current)** | `0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35` |
 | **MerchantVault v2 — vault template (current)** | `0x4934F57e6a255f18f6c911a50136879c75bEbBFf` |
 | TavarovPay v2 — payments | `0xCa4FE6e5dF7159910b2165Acfa9BB8b19810D65c` |
-| TavarovToken — TVR points | `0x8Baa77344Fc122967902651D0C3193cdF4c48503` |
+| TavarovToken — TVR points (discontinued October 2026, not used by the app) | `0x8Baa77344Fc122967902651D0C3193cdF4c48503` |
 | FeeSplitter — treasury of v2 (v3 sends fees to the development wallet `0x73BBCD23735257660A9f6BE57d057dC4A2ABf432`) | `0x4029B2699340d0356187bd5ed51BA7b61422508A` |
 | MerchantVault — vault template | `0x5046399643c387d93E1467BaD3Fd7eDF3FB459DA` |
 | TavarovCharges — invoices | `0x82a9D1b0795aC44e8045dB60F30526c4230daFF9` |
@@ -106,10 +112,12 @@ on-chain for invoices created before the switch.
 `TavarovNameShop.sol` in this repository is **deployed nowhere** — not on
 mainnet, not on testnet. It is written and waiting.
 
-**Partner program.** TavarovPay v3 lets a merchant name a referrer once,
-before their first sale. For 12 months the referrer gets 20% of the protocol
-fee from that merchant's sales, paid by the contract in the same transaction.
-The merchant's revenue and the buyer's price do not change.
+**Partner program.** TavarovPay v3 (BNB Chain, Ethereum, Base) lets a merchant
+name a referrer once, before their first sale. For 12 months the referrer gets
+20% of the protocol fee from that merchant's sales, paid by the contract in the
+same transaction. On Solana the same rule is kept by our server and paid inside
+the payment transaction. The merchant's revenue and the buyer's price do not
+change, and a buyer who is the merchant's own partner earns no share.
 
 Build settings: Pay v3, Vault v2 and the first six use solc `0.8.20+commit.a1b79de6`, optimizer on,
 200 runs, EVM `paris`. Names v3 uses solc `0.8.34+commit.80d5c536`, optimizer

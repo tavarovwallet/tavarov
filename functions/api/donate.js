@@ -114,9 +114,10 @@ async function rpc(urls, method, params){
   throw new Error(last || 'no node answered');
 }
 
+import { solBinding, partnerAtaFor } from './_solref.js';
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
-import { SOL, SOLNETS, solRpc, solRefSigs } from './_sol.js';
+import { SOL, SOLNETS, solRpc, solRefSigs, solTxBatches } from './_sol.js';
 
 const PAID_TOPIC = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
 const hexN = n => '0x' + Math.max(0, n).toString(16);
@@ -156,8 +157,8 @@ async function solPaid(cfg, h, to){
   const reference = SOL.refFromInvoice(h);
   const owner = SOL.b58dec(to, 32), treasury = SOL.b58dec(cfg.treasury, 32);
   const sigs = await solRefSigs(cfg.net, reference, cfg.env);
-  for (const s of sigs){
-    const tx = await solRpc(cfg.net, 'getTransaction', [s.signature, { encoding: 'json', commitment: 'confirmed', maxSupportedTransactionVersion: 0 }], cfg.env);
+  for await (const [s, tx] of solTxBatches(cfg.net, sigs, cfg.env)){
+    if (!tx) continue;
     for (const k of Object.keys(cfg.tokens)){
       const mint = cfg.tokens[k].a;
       const mb = SOL.b58dec(mint, 32);
@@ -165,7 +166,9 @@ async function solPaid(cfg, h, to){
       const treasuryAta = SOL.b58enc(await SOL.ata(treasury, mb));
       /* Сначала узнаём, сколько пришло автору, потом проверяем, что 1% в
          казну тоже есть: для этого «счёт» — это ровно уплаченная сумма. */
-      const probe = SOL.checkPayment(tx, { reference, mint, merchantAta, treasuryAta, units: 1n, feeBps: 0 });
+      let partnerAta = null;
+      try{ const b = await solBinding(cfg.env, to); if (b) partnerAta = await partnerAtaFor(b, mint); } catch(e){ partnerAta = null; }
+      const probe = SOL.checkPayment(tx, { reference, mint, merchantAta, treasuryAta, partnerAta, units: 1n, feeBps: 0 });
       if (!probe.ok) continue;
       const toM = BigInt(probe.toMerchant), toT = BigInt(probe.fee);
       if (toM === 0n) continue;
@@ -522,7 +525,14 @@ async function onPost({ request, env }){
     return saveProfile(env, net, b);
   }
   if (await overLimit(request, env, 'donpost', 20, 600)) return tooMany();
-  const to = String(b.to || ''), h = String(b.h || '');
+  /* Номер доната выдаёт сервер: страница присылает случайное число, номер —
+     его хэш. Раньше страница присылала сам номер, и чужой человек мог
+     привязать свой текст к чужой покупке у кассы (номер счёта кассы виден
+     всем) — после оплаты текст выходил на стрим (аудит 7.10.2026). */
+  const nonce = String(b.nonce || '').toLowerCase();
+  if (!/^0x[0-9a-f]{64}$/.test(nonce)) return json({ error: 'bad nonce' }, 400);
+  const h = await donationId(nonce);
+  const to = String(b.to || '');
   const nick = b.nick === undefined ? '' : b.nick, msg = b.msg === undefined ? '' : b.msg;
   if (!okTo(net, to)) return json({ error: 'bad address' }, 400);
   if (!okHash(h))  return json({ error: 'bad invoice id' }, 400);
@@ -554,7 +564,14 @@ async function onPost({ request, env }){
       await env.TILL.put(K_SOLQ, JSON.stringify(q.slice(-SOLQ_MAX)), { expirationTtl: PENDING_TTL + 600 });
     } catch(e){ /* не беда: подтвердят страница оплаты и экран OBS */ }
   }
-  return json({ ok: true });
+  return json({ ok: true, h });
+}
+
+/* Номер доната из случайного числа страницы. Подобрать число под чужой
+   номер нельзя — это обратить SHA-256. */
+async function donationId(nonce){
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('tavarov-donate:' + nonce)));
+  return '0x' + Array.from(d).map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
 async function onGet({ request, env }){
@@ -593,6 +610,9 @@ async function onGet({ request, env }){
   const one = url.searchParams.get('h');
   if (one !== null){
     if (!okHash(one)) return json({ error: 'bad invoice id' }, 400);
+    /* Здесь бывают запись в KV и запросы к узлам — без счётчика их можно жечь
+       перебором номеров (аудит 7.10.2026). Экран стрима спрашивает редко. */
+    if (await overLimit(request, env, 'donone', 120, 60)) return tooMany();
     const v = await env.TILL.get(hKey(one));
     if (!v) return json({ item: null });
     if (v !== '1'){
@@ -613,6 +633,7 @@ async function onGet({ request, env }){
      странице доната и экран OBS — часто, поэтому никаких перечислений:
      одно чтение и, если в сети появились новые оплаты, одна запись. */
   if (url.searchParams.get('profile') === '1'){
+    if (await overLimit(request, env, 'donprofget', 120, 60)) return tooMany();
     const p = await readProfile(env, net, to);
     let goal = null;
     if (p && p.goal){
@@ -625,6 +646,7 @@ async function onGet({ request, env }){
   /* Итоги для автора: суммы по часам за 30 дней. Спрашивает только
      приложение автора, поэтому здесь можно и перечислить записи. */
   if (url.searchParams.get('stats') === '1'){
+    if (await overLimit(request, env, 'donlist', 60, 60)) return tooMany();
     const since = Date.now() - 30 * 86400 * 1000;
     const hours = {}, seenS = new Set();
     let count = 0;
@@ -645,6 +667,7 @@ async function onGet({ request, env }){
   /* Ожидания здесь больше не перебираем: их подтверждают таймер API (раз в
      минуту по журналу контракта), страница оплаты сразу после «Оплачено» и
      экран стрима. */
+  if (await overLimit(request, env, 'donlist', 60, 60)) return tooMany();
   const lim = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
   const items = [], seenH = new Set();
   for (const m of await readIndex(env, net, to)){

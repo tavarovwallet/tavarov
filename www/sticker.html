@@ -51,6 +51,9 @@ input, select{width:100%; padding:12px 13px; border-radius:11px; border:1.5px so
   color:var(--label); margin-top:12px}
 .note{background:var(--fill); border-radius:12px; padding:13px 15px; font-size:14.5px; color:var(--label-2); margin-top:12px}
 .brand{display:flex; align-items:center; gap:9px; margin-bottom:18px; color:var(--label-2); font-size:14px}
+.back{display:inline-flex; align-items:center; gap:6px; margin:0 0 14px -6px; padding:8px 12px 8px 6px; border:0; border-radius:12px; background:transparent; color:var(--accent,#4B1FE8); font:inherit; font-size:15px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent}
+.back:active{background:rgba(75,31,232,.08)}
+.back svg{width:22px; height:22px}
 .brand svg{width:26px; height:26px; border-radius:7px}
 .hidden{display:none}
 
@@ -81,6 +84,7 @@ input, select{width:100%; padding:12px 13px; border-radius:11px; border:1.5px so
 .sticker .brandmark .wo{font-weight:750; margin-left:.28em; letter-spacing:-.025em}
 .sticker .cap{font-size:15px; color:#444; margin:0 0 14px}
 .sticker .cap2{font-size:13px; color:#777; margin:-10px 0 14px}
+.sticker .nets{font-size:12.5px; color:#4B1FE8; font-weight:700; margin:-6px 0 14px; letter-spacing:.01em}
 .sticker .code{display:flex; justify-content:center}
 .sticker .code img, .sticker .code canvas{display:block; width:100%; height:auto; image-rendering:pixelated}
 /* Название точки стоит ПОД кодом. Наверху — наше имя, и оно там всегда:
@@ -139,6 +143,11 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
 <body>
 <div class="wrap">
 
+  <button type="button" class="back noprint" id="backBtn" onclick="stickerBack()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="backTxt">Назад</span>
+  </button>
+
   <div class="brand noprint">
     <svg viewBox="0 0 120 120" aria-hidden="true">
       <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
@@ -158,8 +167,17 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
     цену вы называете со своего телефона, и она появляется у покупателя сама.</p>
 
     <div class="field" style="margin-top:18px">
-      <label for="m">Ваш кошелёк — куда придут деньги</label>
+      <label for="m">Адрес вашего NoN Wallet (начинается с 0x)</label>
       <input id="m" type="text" spellcheck="false" autocomplete="off" placeholder="0x…">
+    </div>
+    <!-- 8.10.2026: продавцы пугались, что видят здесь только 0x-адрес, и
+         думали, что наклейка работает лишь в BNB Chain. Объясняем прямо:
+         наклейка одна на все сети, сеть выбирает покупатель. -->
+    <div class="note" id="netsNote" style="margin-top:-4px">
+      <b>Наклейка одна на все сети.</b> Покупатель сам выберет, чем платить:
+      USDT или USDC в BNB Chain, Ethereum, Base или Solana.
+      <div style="margin-top:8px">• BNB Chain, Ethereum, Base — на этот адрес 0x (он у них общий).</div>
+      <div>• Solana — на ваш адрес в Solana<span id="solLine">: касса в приложении подставит его сама, когда вы введёте сумму.</span></div>
     </div>
 
     <div class="warn hidden" id="otherAddr">
@@ -208,13 +226,14 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
 
     <div class="warn">
       <b>Сверьте адрес до печати.</b> Наклейка живёт годами, и деньги по ней идут
-      прямо на этот кошелёк — мы их не держим. Ошибка в адресе — это чужой кошелёк
-      навсегда, и вернуть отправленное будет некому.
+      прямо на ваш кошелёк — мы их не держим. Ошибка в адресе — это чужой кошелёк
+      навсегда, и вернуть отправленное будет некому. Проще всего печатать из
+      приложения: «Настройки → Касса → Напечатать наклейку» — адрес подставится сам.
     </div>
 
     <button class="btn" id="print">Напечатать</button>
     <button class="btn btn-ghost" id="copy">Скопировать ссылку</button>
-    <p class="tiny" id="link" style="word-break:break-all; margin:12px 0 0"></p>
+    <p class="tiny hidden" id="link" style="word-break:break-all; margin:12px 0 0"></p>
   </div>
 
   <div class="card noprint hidden" id="err">
@@ -233,6 +252,7 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
       <div class="testband hidden" id="sTest">ТЕСТ · TEST — не для оплаты</div>
       <p class="cap" id="sCap">Наведите камеру телефона</p>
       <p class="cap2" id="sCap2">Point your phone camera here</p>
+      <p class="nets" id="sNets">USDT · USDC — BNB Chain · Ethereum · Base · Solana</p>
       <div class="code" id="sCode"></div>
       <div class="place" id="sPlace"></div>
       <div class="foot">
@@ -254,9 +274,12 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
 
     <div class="card noprint" style="margin-top:16px">
       <h2 style="margin-bottom:8px">Проверьте перед печатью</h2>
+      <p class="tiny" style="margin:0 0 4px">BNB Chain, Ethereum, Base:</p>
       <p class="check" id="sAddr"></p>
-      <p class="tiny" style="margin:8px 0 0">Деньги по этой наклейке идут прямо на этот
-      кошелёк — мы их не держим; с покупки через контракт Tavarov Pay удерживается 1%.
+      <p class="tiny" style="margin:10px 0 4px">Solana:</p>
+      <p class="check" id="sSolAddr">ваш адрес в Solana — касса в приложении подставит его сама</p>
+      <p class="tiny" style="margin:8px 0 0">Деньги по этой наклейке идут прямо на ваш
+      кошелёк — мы их не держим; с покупки удерживается 1%.
       На саму наклейку адрес не печатается — покупателю он не нужен, он зашит в коде.</p>
     </div>
   </div>
@@ -331,6 +354,13 @@ function restore(){
     $('m').value = qm || vm || '';
   }
   $('n').value = q.get('n') || v.n || '';
+  /* Адрес в Solana приходит из приложения — только чтобы показать его здесь.
+     В код наклейки он не идёт: его каждый раз кладёт касса вместе с суммой. */
+  const qs = (q.get('s') || '').trim();
+  if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(qs)){
+    $('solLine').textContent = ': ' + qs.slice(0, 6) + '…' + qs.slice(-6) + ' — касса в приложении подставит его сама.';
+    $('sSolAddr').textContent = qs;
+  }
   $('k').value = okTill(q.get('k') || v.k || '1');
   /* В какой сети работает продавец, знает приложение — оно и приписывает
      сеть к ссылке «Напечатать наклейку». Своими силами страница этого не
@@ -340,6 +370,7 @@ function restore(){
   net = (qnet === 'bnbTestnet' || qnet === 'bnb') ? qnet : 'bnb';
   $('testnetWarn').classList.toggle('hidden', net !== 'bnbTestnet');
   $('sTest').classList.toggle('hidden', net !== 'bnbTestnet');
+  $('sNets').classList.toggle('hidden', net === 'bnbTestnet');
   $('lang').value = CAP[q.get('lang')] ? q.get('lang')
                   : (CAP[v.lang] ? v.lang
                   : (CAP[(navigator.language || 'ru').slice(0,2)] ? (navigator.language||'ru').slice(0,2) : 'ru'));
@@ -454,6 +485,21 @@ $('copy').onclick = () => {
 
 restore();
 draw();
+</script>
+<script>
+/* Назад: в приложении и в той же вкладке — шаг назад; в отдельной вкладке
+   (открыли по ссылке из кошелька) — закрыть её; иначе — в кошелёк. */
+(function(){
+  var L = (navigator.language || 'ru').slice(0, 2);
+  var T = { ru: 'Назад', en: 'Back', es: 'Atrás', tr: 'Geri', pt: 'Voltar' };
+  var el = document.getElementById('backTxt'); if (el) el.textContent = T[L] || T.en;
+  var b = document.getElementById('backBtn'); if (b) b.setAttribute('aria-label', T[L] || T.en);
+})();
+function stickerBack(){
+  if (history.length > 1){ history.back(); return; }
+  try{ window.close(); }catch(e){}
+  setTimeout(function(){ location.href = './'; }, 200);
+}
 </script>
 </body>
 </html>

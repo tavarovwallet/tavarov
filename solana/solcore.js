@@ -147,12 +147,26 @@ const SOL = (() => {
     const { fee, toMerchant } = split(o.units, o.feeBps === undefined ? 100 : o.feeBps);
     if (toMerchant <= 0n) throw new Error('bad amount');
     const [src, dstM, dstT] = await Promise.all([ata(payer, mint), ata(merchant, mint), ata(treasury, mint)]);
+    /* Партнёр продавца (8.10.2026): пятая часть комиссии — ему, той же
+       операцией, как в контракте других сетей. Счёт монеты у партнёра
+       должен уже быть (это проверяет тот, кто зовёт): заводить его за счёт
+       покупателя мы не будем. */
+    let share = 0n, dstP = null;
+    if (o.partner && fee > 0n){
+      if (!isAddress(o.partner)) throw new Error('bad partner');
+      const pk = b58dec(o.partner, 32);
+      if (!eq(pk, merchant) && !eq(pk, payer) && !eq(pk, treasury)){
+        share = fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+        if (share > 0n) dstP = await ata(pk, mint);
+      }
+    }
     const ixs = [ ...budgetIxs(), createAtaIx(payer, dstM, merchant, mint) ];
     if (fee > 0n && !eq(treasury, merchant)) ixs.push(createAtaIx(payer, dstT, treasury, mint));
     ixs.push(transferCheckedIx(src, mint, dstM, payer, toMerchant, o.decimals, [ref]));
-    if (fee > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee, o.decimals));
+    if (fee - share > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee - share, o.decimals));
+    if (dstP && share > 0n) ixs.push(transferCheckedIx(src, mint, dstP, payer, share, o.decimals));
     const { message } = compile(payer, bh, ixs);
-    return { message, fee, toMerchant, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT) } };
+    return { message, fee, toMerchant, share, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT), partner: dstP ? b58enc(dstP) : null } };
   }
 
   /* Обычный перевод: SOL — системной программой, монета — transferChecked
@@ -200,7 +214,9 @@ const SOL = (() => {
     const tokenProg = b58enc(TOKEN);
     const bps = o.feeBps === undefined ? 100 : o.feeBps;
     const want = split(o.units, bps);
-    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toAll = 0n, nAll = 0, payer = null;
+    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toP = 0n, toAll = 0n, nAll = 0, payer = null;
+    /* Партнёр продавца (8.10.2026): его доля — часть комиссии, а не оплата. */
+    const pAta = o.partnerAta || null;
     const ixs = [...(msg.instructions || [])];
     for (const inner of (tx.meta.innerInstructions || [])) ixs.push(...(inner.instructions || []));
     for (const ix of ixs){
@@ -210,13 +226,20 @@ const SOL = (() => {
       const acc = (ix.accounts || []).map(i => keys[i]);
       if (acc.length < 4 || acc[1] !== o.mint) continue;
       let amt = 0n; for (let i = 8; i >= 1; i--) amt = (amt << 8n) | BigInt(d[i]);
-      if (acc[2] !== o.treasuryAta){ toAll += amt; nAll++; }
+      if (acc[2] !== o.treasuryAta && acc[2] !== pAta){ toAll += amt; nAll++; }
       if (acc[2] === o.merchantAta){
         toMAll += amt; nM++;
         /* Ровно одна метка и это наша: с несколькими метками в одном
            переводе одна оплата закрыла бы несколько счетов. */
         if (acc.length === 5 && acc[4] === o.reference){ toM += amt; payer = payer || acc[3]; }
       } else if (acc[2] === o.treasuryAta) toT += amt;
+      else if (pAta && acc[2] === pAta) toP += amt;
+    }
+    /* Комиссия = казна + доля партнёра. Казне при этом — не меньше, чем ей
+       положено за вычетом доли: всю комиссию отдать «партнёру» нельзя. */
+    if (pAta){
+      const shareMax = want.fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+      if (toT + toP >= want.fee && toT >= want.fee - shareMax) toT = toT + toP;
     }
     if (toM === 0n) return { ok: false, why: toMAll > 0n ? 'no reference' : 'not to merchant' };
     if (toM < want.toMerchant) return { ok: false, why: 'underpaid', got: toM.toString() };
@@ -224,7 +247,7 @@ const SOL = (() => {
     /* Несколько переводов в одной операции (тому же или другим продавцам) —
        1% нужен со всех: один перевод в казну на всех не в счёт. */
     if (bps > 0 && toT * BigInt(10000 - bps) + BigInt(nAll) * 10000n < toAll * BigInt(bps)) return { ok: false, why: 'no fee', got: toM.toString() };
-    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
+    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), partner: toP.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
              toAll: toAll.toString(), transfersAll: nAll };
   }
 

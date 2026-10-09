@@ -12,6 +12,7 @@
    ссылки: подменить его, поправив ссылку, нельзя. */
 import { SOL, SOLNETS, solRpc, isSolWallet } from './_sol.js';
 import { overLimit } from './_limit.js';
+import { partnerForPayment } from './_solref.js';
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, POST, OPTIONS',
                'access-control-allow-headers': 'content-type, accept, accept-encoding' };
@@ -52,8 +53,13 @@ export async function onRequestPost({ request, env }){
   if (account === q.m) return json({ error: 'cannot pay yourself' }, 400);
   try{
     const bh = await solRpc(q.net, 'getLatestBlockhash', [{ commitment: 'confirmed' }], env);
+    /* Партнёр продавца — пятая часть комиссии ему (см. _solref.js). */
+    let p = null;
+    try{ p = await partnerForPayment(env, q.m, q.tk.mint); } catch(e){ p = null; }
+    if (p && p.partner === account) p = null;
     const built = await SOL.buildPayment({ payer: account, merchant: q.m, treasury: q.cfg.treasury, mint: q.tk.mint,
-      decimals: q.tk.d, units: q.units, feeBps: q.cfg.feeBps, reference: q.r, blockhash: bh.value.blockhash });
+      decimals: q.tk.d, units: q.units, feeBps: q.cfg.feeBps, reference: q.r, blockhash: bh.value.blockhash,
+      partner: p ? p.partner : undefined });
     const tx = SOL.serialize(built.message, [new Uint8Array(64)]);
     let b = ''; for (const x of tx) b += String.fromCharCode(x);
     const label = (q.name || 'Tavarov Pay') + ' — ' + q.a + ' ' + q.c + (q.item ? ' · ' + q.item : '');

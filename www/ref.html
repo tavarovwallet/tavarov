@@ -155,6 +155,7 @@ a.link{color:var(--accent)}
       </div>
       <div id="bindBox" class="hidden" style="margin-top:14px">
         <div class="row"><span data-t="yourWallet"></span><b class="addr" id="mine">—</b></div>
+        <div class="row"><span data-t="netL"></span><b id="netName">—</b></div>
         <button class="btn btn-main" id="bindBtn" type="button" style="margin-top:14px" data-t="bind"></button>
         <div class="tiny" data-t="gas"></div>
       </div>
@@ -177,9 +178,19 @@ a.link{color:var(--accent)}
    Пригласивший — только адрес. Имя принимаем на входе и сразу превращаем в
    адрес, а адрес показываем целиком до подписи: имя можно освободить и
    занять другим, и тогда доля ушла бы чужому. */
-const PAY = '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35';
+/* Сети с контрактом оплаты третьей версии (8.10.2026): закрепляем в той,
+   где открыт кошелёк продавца. Имена — только в BNB Chain. */
+const NETS = {
+  bnb:  { chain: '0x38',   name: 'BNB Chain', pay: '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35',
+          rpcs: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'] },
+  eth:  { chain: '0x1',    name: 'Ethereum',  pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+          rpcs: ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'] },
+  base: { chain: '0x2105', name: 'Base',      pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+          rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'] }
+};
+let NET = 'bnb';
 const NAMES = '0xd6E8A78634bE366bDbD041227D1E94F5b374338e';
-const RPCS = ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'];
+const RPCS = NETS.bnb.rpcs;
 const SEL = { setReferrer: '0xa18a7bfc', referralOf: '0xde6c736d', hasSold: '0xed14f20a', addressOf: '0xccf1454a' };
 const ZERO = '0x0000000000000000000000000000000000000000';
 const $ = id => document.getElementById(id);
@@ -191,19 +202,20 @@ const T = {
     who: 'Пригласил', p1: 'Закрепите пригласившего — год ему будет идти пятая часть НАШЕЙ комиссии с ваших продаж.',
     p2: 'Вы ничего не теряете: ваша выручка и цены для покупателей не меняются.',
     p3: 'Закрепить можно один раз и только до первой продажи — так записано в контракте.',
-    p4: 'Это одна операция в сети BNB Chain, её комиссия — доли цента.',
+    p4: 'Это одна операция в той сети, где открыт ваш кошелёк: BNB Chain, Ethereum или Base. В BNB Chain и Base комиссия сети — доли цента. Принимаете оплату в нескольких сетях — закрепите партнёра в каждой. В Solana это делается в приложении NoN Wallet.',
+    netL: 'Сеть',
     app: 'Открыть в NoN Wallet', appNote: 'Нет кошелька — он создастся бесплатно за минуту, и партнёр подставится сам.',
     other: 'Закрепить другим кошельком', openIn: 'Откройте эту страницу в своём кошельке:',
-    yourWallet: 'Ваш кошелёк', bind: 'Закрепить партнёра', gas: 'Кошелёк попросит подтвердить операцию. Нужно немного BNB на комиссию сети.',
+    yourWallet: 'Ваш кошелёк', bind: 'Закрепить партнёра', gas: 'Кошелёк попросит подтвердить операцию. Нужно немного монеты сети (BNB или ETH) на комиссию.',
     connecting: 'Подключаем кошелёк…', checking: 'Проверяем ваш кошелёк…', ready: 'Можно закреплять',
     self: 'Это ваш же адрес — пригласить самого себя нельзя.',
     already: 'У вас уже закреплён партнёр: ', alreadySame: 'Этот партнёр у вас уже закреплён. Всё готово.',
     sold: 'С этого кошелька уже были продажи — закрепить партнёра теперь нельзя. Так записано в контракте.',
-    net: 'Переключите кошелёк на сеть BNB Chain и попробуйте ещё раз.',
+    net: 'Переключите кошелёк на BNB Chain, Ethereum или Base и попробуйте ещё раз.',
     sending: 'Подтвердите операцию в кошельке…', waiting: 'Операция отправлена, ждём сеть…',
     done: 'Готово! Партнёр закреплён до ', notYet: 'Сеть ещё не подтвердила. Проверьте позже — повторять не нужно.',
     rejected: 'Операцию отменили в кошельке. Ничего не отправлено.', failed: 'Не получилось: ',
-    noNode: 'Нет связи с сетью BNB Chain. Проверьте интернет.',
+    noNode: 'Нет связи с сетью. Проверьте интернет.',
     about: 'Как работает партнёрская программа', contract: 'Контракт оплаты' },
   en: { badH: 'The invitation link is wrong', badT: 'It has no inviter address. Ask for the link again.',
     badName: 'There is no such name. Ask for a link with a wallet address.',
@@ -211,19 +223,20 @@ const T = {
     who: 'Invited by', p1: 'Confirm your inviter — for a year they get a fifth of OUR fee on your sales.',
     p2: 'You lose nothing: your revenue and your customers’ prices stay the same.',
     p3: 'It can be done once and only before your first sale — that is how the contract works.',
-    p4: 'It is one transaction on BNB Chain; the network fee is a fraction of a cent.',
+    p4: 'It is one transaction on the network your wallet is on: BNB Chain, Ethereum or Base. On BNB Chain and Base the network fee is a fraction of a cent. If you take payments on several networks, confirm your partner on each. On Solana, do it in the NoN Wallet app.',
+    netL: 'Network',
     app: 'Open in NoN Wallet', appNote: 'No wallet? It is created for free in a minute, and the partner is filled in for you.',
     other: 'Confirm with another wallet', openIn: 'Open this page in your wallet:',
-    yourWallet: 'Your wallet', bind: 'Confirm partner', gas: 'Your wallet will ask you to confirm. You need a little BNB for the network fee.',
+    yourWallet: 'Your wallet', bind: 'Confirm partner', gas: 'Your wallet will ask you to confirm. You need a little of the network coin (BNB or ETH) for the fee.',
     connecting: 'Connecting the wallet…', checking: 'Checking your wallet…', ready: 'Ready to confirm',
     self: 'This is your own address — you cannot invite yourself.',
     already: 'You already have a partner: ', alreadySame: 'This partner is already confirmed. All done.',
     sold: 'This wallet already had sales — a partner can no longer be set. That is how the contract works.',
-    net: 'Switch your wallet to BNB Chain and try again.',
+    net: 'Switch your wallet to BNB Chain, Ethereum or Base and try again.',
     sending: 'Confirm the transaction in your wallet…', waiting: 'Sent, waiting for the network…',
     done: 'Done! Partner confirmed until ', notYet: 'The network has not confirmed yet. Check later — no need to repeat.',
     rejected: 'The transaction was cancelled in the wallet. Nothing was sent.', failed: 'It did not work: ',
-    noNode: 'No connection to BNB Chain. Check your internet.',
+    noNode: 'No connection to the network. Check your internet.',
     about: 'How the partner program works', contract: 'Payment contract' }
 };
 let LANG = (() => {
@@ -243,9 +256,9 @@ function applyLang(){
 document.querySelectorAll('#langs button').forEach(b => b.onclick = () => { LANG = b.dataset.l; applyLang(); });
 
 const pad = a => a.toLowerCase().replace(/^0x/, '').padStart(64, '0');
-async function rpc(method, params){
+async function rpc(method, params, net){
   let last = null;
-  for (const url of RPCS){
+  for (const url of NETS[net || NET].rpcs){
     try{
       const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
@@ -256,7 +269,7 @@ async function rpc(method, params){
   }
   throw new Error(last || 'no node');
 }
-const call = (to, data) => rpc('eth_call', [{ to, data }, 'latest']);
+const call = (to, data, net) => rpc('eth_call', [{ to, data }, 'latest'], net);
 function encString(s){
   const b = new TextEncoder().encode(s);
   const hexb = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -266,7 +279,7 @@ async function resolveBy(v){
   if (/^0x[0-9a-fA-F]{40}$/.test(v)) return v;
   const name = v.replace(/^@+/, '').toLowerCase();
   if (!/^[a-z][a-z0-9_]{2,19}$/.test(name)) return null;
-  const r = await call(NAMES, SEL.addressOf + encString(name));
+  const r = await call(NAMES, SEL.addressOf + encString(name), 'bnb');
   const a = '0x' + String(r).slice(-40);
   return a.toLowerCase() === ZERO ? null : a;
 }
@@ -299,6 +312,7 @@ function walletLinks(){
 }
 
 async function readRef(addr){
+  const PAY = NETS[NET].pay;
   const [ro, sold] = await Promise.all([call(PAY, SEL.referralOf + pad(addr)), call(PAY, SEL.hasSold + pad(addr))]);
   const d = String(ro).replace(/^0x/, '');
   const ref = '0x' + d.slice(24, 64);
@@ -315,8 +329,11 @@ async function connect(){
     const accs = await provider.request({ method: 'eth_requestAccounts' });
     account = accs && accs[0];
     if (!account) throw new Error('no account');
-    const chain = await provider.request({ method: 'eth_chainId' });
-    if (String(chain).toLowerCase() !== '0x38'){
+    const chain = String(await provider.request({ method: 'eth_chainId' })).toLowerCase();
+    const here = Object.keys(NETS).find(k => NETS[k].chain === chain);
+    if (here){ NET = here; }
+    else {
+      NET = 'bnb';
       try{ await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x38' }] }); }
       catch(e){
         if (e && e.code === 4902){
@@ -325,6 +342,7 @@ async function connect(){
         } else { say('bad', t('net')); return; }
       }
     }
+    $('netName').textContent = NETS[NET].name;
     await check();
   } catch(e){ say('bad', e && e.code === 4001 ? t('rejected') : t('failed') + (e && e.message || e)); }
 }
@@ -349,7 +367,7 @@ async function bind(){
   btn.disabled = true;
   try{
     say('', t('sending'));
-    const hash = await provider.request({ method: 'eth_sendTransaction', params: [{ from: account, to: PAY, data: SEL.setReferrer + pad(BY), value: '0x0' }] });
+    const hash = await provider.request({ method: 'eth_sendTransaction', params: [{ from: account, to: NETS[NET].pay, data: SEL.setReferrer + pad(BY), value: '0x0' }] });
     say('', t('waiting'));
     for (let i = 0; i < 40; i++){
       await new Promise(r => setTimeout(r, 3000));

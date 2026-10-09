@@ -28,6 +28,15 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	const META_TEST     = '_tavarov_pay_test';
 	const META_ATTEMPT  = '_tavarov_pay_attempt';
 	const META_STATUS   = '_tavarov_pay_status';
+	const META_NETWORK  = '_tavarov_pay_network';
+
+	/** Networks the API accepts, and what it calls them in invoices. */
+	const NETWORKS = array(
+		'bnb'      => 'bnb',
+		'ethereum' => 'eth',
+		'base'     => 'base',
+		'solana'   => 'solana',
+	);
 
 	/** Re-checks after the invoice is created, in seconds. */
 	const CHECKS = array( 180, 900, 3600 );
@@ -39,7 +48,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$this->id                 = 'tavarov_pay';
 		$this->has_fields         = false;
 		$this->method_title       = __( 'Tavarov Pay (USDT / USDC)', 'tavarov-pay' );
-		$this->method_description = __( 'Accept USDT and USDC on BNB Chain. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment.', 'tavarov-pay' );
+		$this->method_description = __( 'Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment.', 'tavarov-pay' );
 		$this->icon               = apply_filters( 'tavarov_pay_icon', TAVAROV_PAY_URL . 'assets/icon.svg' );
 		$this->supports           = array( 'products' );
 
@@ -90,7 +99,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 				'title'       => __( 'Description', 'tavarov-pay' ),
 				'type'        => 'textarea',
 				'description' => __( 'Shown under the title at checkout.', 'tavarov-pay' ),
-				'default'     => __( 'Pay from any crypto wallet: MetaMask, Trust Wallet, NoN Wallet and others. USDT or USDC on BNB Chain.', 'tavarov-pay' ),
+				'default'     => __( 'Pay in USDT or USDC from any crypto wallet: MetaMask, Trust Wallet, Phantom, NoN Wallet and others.', 'tavarov-pay' ),
 				'desc_tip'    => true,
 			),
 			'api_key'        => array(
@@ -103,6 +112,24 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 				'title'       => __( 'Webhook secret', 'tavarov-pay' ),
 				'type'        => 'password',
 				'description' => __( 'Optional but recommended. In the cabinet, set the webhook URL shown above and paste the whsec_… secret here: payments are then confirmed within seconds.', 'tavarov-pay' ),
+				'default'     => '',
+			),
+			'network'        => array(
+				'title'       => __( 'Network', 'tavarov-pay' ),
+				'type'        => 'select',
+				'description' => __( 'Where the customer pays. BNB Chain, Base and Solana cost a fraction of a cent per payment; Ethereum network fees are noticeably higher. Base has USDC only. Test keys (tp_test_) always use the BNB test network.', 'tavarov-pay' ),
+				'options'     => array(
+					'bnb'      => 'BNB Chain',
+					'ethereum' => 'Ethereum',
+					'base'     => 'Base',
+					'solana'   => 'Solana',
+				),
+				'default'     => 'bnb',
+			),
+			'solana_address' => array(
+				'title'       => __( 'Your Solana address', 'tavarov-pay' ),
+				'type'        => 'text',
+				'description' => __( 'Only for the Solana network: the wallet address (base58) that receives the money. Your API key is tied to your EVM wallet, so the Solana address is set here.', 'tavarov-pay' ),
 				'default'     => '',
 			),
 			'currency'       => array(
@@ -164,6 +191,50 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * @param string $key   Field key.
+	 * @param string $value Posted value.
+	 * @return string
+	 */
+	public function validate_solana_address_field( $key, $value ) {
+		$value = trim( (string) $value );
+		if ( '' !== $value && ! self::solana_address_looks_valid( $value ) ) {
+			WC_Admin_Settings::add_error( __( 'This does not look like a Solana address (32–44 base58 characters).', 'tavarov-pay' ) );
+			return (string) $this->get_option( 'solana_address' );
+		}
+		return $value;
+	}
+
+	/**
+	 * Shape check only; the API also refuses addresses that are not wallets.
+	 *
+	 * @param string $v Address.
+	 * @return bool
+	 */
+	public static function solana_address_looks_valid( $v ) {
+		return (bool) preg_match( '/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', (string) $v );
+	}
+
+	/**
+	 * Network and currency actually used for a new invoice.
+	 *
+	 * @return array [ network key, currency ]
+	 */
+	private function payment_route() {
+		$network  = (string) $this->get_option( 'network', 'bnb' );
+		if ( ! isset( self::NETWORKS[ $network ] ) ) {
+			$network = 'bnb';
+		}
+		$currency = 'USDC' === $this->get_option( 'currency' ) ? 'USDC' : 'USDT';
+		if ( $this->api()->is_test() ) {
+			return array( 'bnb', 'USDT' ); // The test network only has test USDT.
+		}
+		if ( 'base' === $network ) {
+			$currency = 'USDC'; // There is no USDT on Base.
+		}
+		return array( $network, $currency );
+	}
+
+	/**
 	 * Settings screen: a short status block above the fields.
 	 */
 	public function admin_options() {
@@ -184,6 +255,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 					get_woocommerce_currency()
 				)
 			) . '</p></div>';
+		}
+		if ( 'solana' === $this->get_option( 'network' ) && ! self::solana_address_looks_valid( (string) $this->get_option( 'solana_address' ) ) ) {
+			echo '<div class="notice notice-error inline"><p>' . esc_html__( 'Network is Solana, but your Solana address is not set. Checkout will not work until you add it.', 'tavarov-pay' ) . '</p></div>';
 		}
 		$key = (string) $this->get_option( 'api_key' );
 		if ( 0 === strpos( $key, 'tp_test_' ) ) {
@@ -244,15 +318,17 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			return array( 'result' => 'failure' );
 		}
 
-		$currency = 'USDC' === $this->get_option( 'currency' ) ? 'USDC' : 'USDT';
-		$api      = $this->api();
-		if ( $api->is_test() ) {
-			$currency = 'USDT'; // The test network only has test USDT.
+		$api                   = $this->api();
+		list( $network, $currency ) = $this->payment_route();
+		if ( 'solana' === $network && ! self::solana_address_looks_valid( (string) $this->get_option( 'solana_address' ) ) ) {
+			$this->log( 'Order ' . $order->get_id() . ': network is Solana but no Solana address is set.' );
+			wc_add_notice( __( 'Could not start the crypto payment right now. Please try again in a minute or choose another payment method.', 'tavarov-pay' ), 'error' );
+			return array( 'result' => 'failure' );
 		}
 		$amount = self::format_amount( $order->get_total() );
 
 		// Same order, same sum, invoice still open: send the customer back to it.
-		$reuse = $this->reusable_invoice( $order, $amount, $currency );
+		$reuse = $this->reusable_invoice( $order, $amount, $currency, $network );
 		if ( $reuse ) {
 			return array(
 				'result'   => 'success',
@@ -263,7 +339,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$attempt = (int) $order->get_meta( self::META_ATTEMPT );
 		$invoice = null;
 		for ( $i = 0; $i < 2; $i++ ) {
-			$invoice = $api->create_invoice( $this->invoice_request( $order, $amount, $currency, $attempt ) );
+			$invoice = $api->create_invoice( $this->invoice_request( $order, $amount, $currency, $attempt, $network ) );
 			// An open invoice for this order with a different sum (the order was edited): take a fresh number.
 			if ( is_wp_error( $invoice ) && 'tavarov_pay_order_exists' === $invoice->get_error_code() ) {
 				$attempt++;
@@ -272,7 +348,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			break;
 		}
 
-		if ( is_wp_error( $invoice ) || ! $this->invoice_is_sane( $invoice, $amount, $currency ) ) {
+		if ( is_wp_error( $invoice ) || ! $this->invoice_is_sane( $invoice, $amount, $currency, $network ) ) {
 			$this->log( 'Invoice not created for order ' . $order->get_id() . ': ' . ( is_wp_error( $invoice ) ? $invoice->get_error_message() : 'unexpected answer' ) );
 			wc_add_notice( __( 'Could not start the crypto payment right now. Please try again in a minute or choose another payment method.', 'tavarov-pay' ), 'error' );
 			return array( 'result' => 'failure' );
@@ -282,6 +358,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$order->update_meta_data( self::META_URL, $invoice['payment_url'] );
 		$order->update_meta_data( self::META_AMOUNT, $amount );
 		$order->update_meta_data( self::META_CURRENCY, $currency );
+		$order->update_meta_data( self::META_NETWORK, $network );
 		$order->update_meta_data( self::META_TEST, $api->is_test() ? 'yes' : 'no' );
 		$order->update_meta_data( self::META_ATTEMPT, $attempt );
 		$order->delete_meta_data( self::META_STATUS );
@@ -313,9 +390,10 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @param string   $amount   Amount.
 	 * @param string   $currency USDT|USDC.
 	 * @param int      $attempt  Attempt number.
+	 * @param string   $network  Network key (bnb, ethereum, base, solana).
 	 * @return array
 	 */
-	private function invoice_request( $order, $amount, $currency, $attempt ) {
+	private function invoice_request( $order, $amount, $currency, $attempt, $network = 'bnb' ) {
 		$body = array(
 			'amount'      => $amount,
 			'currency'    => $currency,
@@ -341,6 +419,13 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		if ( '' === $body['shop_name'] ) {
 			unset( $body['shop_name'] );
 		}
+		// BNB Chain is the API's default: old installs keep sending exactly what they sent before.
+		if ( 'bnb' !== $network ) {
+			$body['network'] = $network;
+			if ( 'solana' === $network ) {
+				$body['solana_address'] = trim( (string) $this->get_option( 'solana_address' ) );
+			}
+		}
 		return $body;
 	}
 
@@ -350,9 +435,10 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @param mixed  $inv      Answer.
 	 * @param string $amount   Amount asked.
 	 * @param string $currency Currency asked.
+	 * @param string $network  Network asked.
 	 * @return bool
 	 */
-	private function invoice_is_sane( $inv, $amount, $currency ) {
+	private function invoice_is_sane( $inv, $amount, $currency, $network = 'bnb' ) {
 		if ( ! is_array( $inv ) || ! isset( $inv['id'], $inv['payment_url'], $inv['amount'], $inv['currency'] ) ) {
 			return false;
 		}
@@ -363,7 +449,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		return Tavarov_Pay_API::id_looks_valid( $inv['id'] )
 			&& $host && in_array( strtolower( $host ), array_map( 'strtolower', $hosts ), true )
 			&& self::same_amount( $inv['amount'], $amount )
-			&& $inv['currency'] === $currency;
+			&& $inv['currency'] === $currency
+			// The API names the network in the invoice; it must be the one we asked for.
+			&& ( 'bnb' === $network || ( isset( $inv['network'] ) && self::NETWORKS[ $network ] === $inv['network'] ) );
 	}
 
 	/**
@@ -372,13 +460,16 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @param WC_Order $order    Order.
 	 * @param string   $amount   Current amount.
 	 * @param string   $currency Current currency.
+	 * @param string   $network  Current network.
 	 * @return string|null Payment URL.
 	 */
-	private function reusable_invoice( $order, $amount, $currency ) {
-		$id = (string) $order->get_meta( self::META_INVOICE );
+	private function reusable_invoice( $order, $amount, $currency, $network = 'bnb' ) {
+		$id   = (string) $order->get_meta( self::META_INVOICE );
+		$was  = (string) $order->get_meta( self::META_NETWORK );
 		if ( ! Tavarov_Pay_API::id_looks_valid( $id )
 			|| ! self::same_amount( $order->get_meta( self::META_AMOUNT ), $amount )
-			|| $order->get_meta( self::META_CURRENCY ) !== $currency ) {
+			|| $order->get_meta( self::META_CURRENCY ) !== $currency
+			|| ( '' === $was ? 'bnb' : $was ) !== $network ) {
 			return null;
 		}
 		$inv = $this->api()->get_invoice( $id );

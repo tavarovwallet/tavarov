@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tavarov Pay 1.0.0\n"
+"Project-Id-Version: Tavarov Pay 1.1.0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -143,3 +143,26 @@ msgstr "Tavarov Pay: не удалось связаться с API, попроб
 msgid "Tavarov Pay: no payment for this order yet."
 msgstr "Tavarov Pay: оплаты по этому заказу пока нет."
 
+msgid "Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment."
+msgstr "Приём USDT и USDC в BNB Chain, Ethereum, Base или Solana. Покупатель платит с любого кошелька, деньги сразу приходят на ваш — Tavarov Pay их не держит. Комиссия: 1% с платежа."
+
+msgid "Pay in USDT or USDC from any crypto wallet: MetaMask, Trust Wallet, Phantom, NoN Wallet and others."
+msgstr "Оплата в USDT или USDC с любого криптокошелька: MetaMask, Trust Wallet, Phantom, NoN Wallet и других."
+
+msgid "Network"
+msgstr "Сеть"
+
+msgid "Where the customer pays. BNB Chain, Base and Solana cost a fraction of a cent per payment; Ethereum network fees are noticeably higher. Base has USDC only. Test keys (tp_test_) always use the BNB test network."
+msgstr "В какой сети платит покупатель. В BNB Chain, Base и Solana комиссия сети — доли цента, в Ethereum — заметно выше. В Base есть только USDC. Тестовые ключи (tp_test_) всегда работают в тестовой сети BNB."
+
+msgid "Your Solana address"
+msgstr "Ваш адрес Solana"
+
+msgid "Only for the Solana network: the wallet address (base58) that receives the money. Your API key is tied to your EVM wallet, so the Solana address is set here."
+msgstr "Только для сети Solana: адрес кошелька (base58), на который приходят деньги. Ключ API привязан к вашему кошельку EVM, поэтому адрес Solana указывается здесь."
+
+msgid "This does not look like a Solana address (32–44 base58 characters)."
+msgstr "Это не похоже на адрес Solana (32–44 символа base58)."
+
+msgid "Network is Solana, but your Solana address is not set. Checkout will not work until you add it."
+msgstr "Выбрана сеть Solana, но адрес Solana не указан. Пока его нет, оплата не заработает."

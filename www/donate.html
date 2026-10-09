@@ -570,17 +570,19 @@ $('go').onclick = async () => {
   busy = true;
   const btn = $('go'); btn.disabled = true; btn.textContent = t('sending');
   $('goErr').classList.add('hidden');
-  const h = randomHash();
+  /* Номер доната выдаёт сервер по нашему случайному числу (аудит 7.10.2026). */
+  const nonce = randomHash();
+  let h = null;
   const nick = clean($('nick').value, 32).trim(), msg = clean($('msg').value, 200).trim();
   /* Без текста и ника сообщение не нужно — но запись всё равно полезна:
      по ней донат появится у автора в списке. */
   try{
     const r = await fetch('/api/donate', { method:'POST', headers:{ 'content-type':'application/json' },
-      body: JSON.stringify({ net: NET, to: who.addr, h, nick, msg }) });
-    if (!r.ok){
-      let e = ''; try{ e = (await r.json()).error || ''; } catch(x){}
-      throw new Error(e || ('HTTP ' + r.status));
-    }
+      body: JSON.stringify({ net: NET, to: who.addr, nonce, nick, msg }) });
+    let d = null; try{ d = await r.json(); } catch(x){}
+    if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
+    if (!d || !/^0x[0-9a-f]{64}$/.test(String(d.h || ''))) throw new Error('bad answer');
+    h = d.h;
     toPay(h);
   } catch(e){
     busy = false; render();
@@ -588,7 +590,8 @@ $('go').onclick = async () => {
     box.textContent = t('postFail', String(e && e.message || e).slice(0, 80));
     const b2 = document.createElement('button');
     b2.className = 'btn btn-ghost'; b2.style.marginTop = '10px'; b2.textContent = t('goNoMsg');
-    b2.onclick = () => toPay(h);
+    /* Без текста — свой случайный номер: сообщения к нему нет, и привязать нечего. */
+    b2.onclick = () => toPay(h || randomHash());
     box.appendChild(b2);
     box.classList.remove('hidden');
   }

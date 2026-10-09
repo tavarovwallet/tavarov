@@ -33,6 +33,7 @@ import { promoteByHash, migrateDonIndex, promoteSolDonations } from '../donate.j
 import { overLimit } from '../_limit.js';
 import { notifyPaid, notifyProblem } from '../_tg.js';
 import { scanReferrals, readPartner, partnerView } from '../_ref.js';
+import { partnerSolMerchants } from '../_solref.js';
 import { SOL, SOLNETS, solCheckInvoice, isSolWallet } from '../_sol.js';
 
 const NETS = {
@@ -828,25 +829,45 @@ async function runCron(env, origin){
   try{ const mig = await migrateDonIndex(env); if (mig) out.migrated = mig; } catch(e){ /* в следующую минуту */ }
   /* Донаты в Solana: журнала контракта нет, ждущие лежат в своей очереди. */
   try{ const sd = await promoteSolDonations(env); if (sd && (sd.promoted || sd.waiting)) out.solDonations = sd; } catch(e){ /* в следующую минуту */ }
-  /* Партнёрская программа: дочитываем журнал контракта оплаты. */
+  /* Партнёрская программа: дочитываем журнал контракта оплаты. BNB Chain —
+     каждую минуту; Ethereum и Base — по очереди, через минуту (8.10.2026):
+     так обход не упирается в предел запросов таймера. */
   try{
     const cfg = netConfig('bnb', env);
     const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
-    out.referrals = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay, Math.max(0, latest - CONFIRMATIONS), refTokens());
+    out.referrals = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay, Math.max(0, latest - CONFIRMATIONS), refTokens('bnb'), 'bnb');
   } catch(e){ out.referrals = 'error'; }
+  try{
+    const net = (Math.floor(Date.now() / 60000) % 2) ? 'base' : 'eth';
+    const cfg = netConfig(net, env);
+    if (cfg.pay){
+      const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
+      out['referrals_' + net] = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay,
+        Math.max(0, latest - (NETS[net].conf || CONFIRMATIONS)), refTokens(net), net);
+    }
+  } catch(e){ out.referrals_other = 'error'; }
   return json(out);
 }
 
 /* ===================== партнёрская программа ===================== */
 
-function refTokens(){
+function refTokens(net){
   const out = {};
-  const t = NETS.bnb.tokens;
+  const t = NETS[net || 'bnb'].tokens;
   for (const sym of Object.keys(t)) out[t[sym].a.toLowerCase()] = { sym, d: t[sym].d };
   return out;
 }
 export async function partnerInfo(env, w){
-  return partnerView(await readPartner(env, w), refTokens(), Number(await env.TILL.get('ref:cur')) || null);
+  const __nets = {};
+  for (const net of ['bnb', 'eth', 'base']) __nets[net] = { rec: await readPartner(env, w, net), tokens: refTokens(net) };
+  const v = partnerView({ __nets }, null, Number(await env.TILL.get('ref:cur')) || null);
+  /* Solana: продавцы, закрепившие партнёра связкой (см. _solref.js). Доля
+     там приходит обычными поступлениями на его адрес в Solana. */
+  try{
+    const sm = await partnerSolMerchants(env, w);
+    if (sm.length){ v.merchants = v.merchants.concat(sm); v.networks.solana = { earned: {}, merchants: sm.length }; }
+  } catch(e){}
+  return v;
 }
 
 /* ===================== для Telegram-бота ===================== */
@@ -1091,7 +1112,15 @@ export async function handle(request, env, waitUntil){
         return json({ merchant: who.w, livemode: who.mode === 'live', network: who.net,
                       currencies: Object.keys(NETS[who.net].tokens),
                       networks: liveNetworks(who.mode) });
-      if (parts[0] === 'invoices' && !parts[1] && method === 'POST') return await createInvoice(request, env, who, origin);
+      if (parts[0] === 'invoices' && !parts[1] && method === 'POST'){
+        /* Каждый счёт — три записи в KV, а их в сутки около тысячи на всех.
+           Без счётчика один ключ (или украденный ключ) мог сжечь их за минуты,
+           и встали бы касса, донаты и вебхуки у всех (аудит 7.10.2026). */
+        if (await overLimit(request, env, 'v1inv', 120, 600) ||
+            await overLimit(request, env, 'v1invacc', 300, 3600, who.mode + ':' + who.w))
+          return fail(429, 'rate_limited', 'Too many invoices. Try again later.');
+        return await createInvoice(request, env, who, origin);
+      }
       if (parts[0] === 'invoices' && parts[1] && !parts[2] && method === 'GET')
         return await getInvoice(env, who, String(parts[1]).toLowerCase(), origin, wait);
     }

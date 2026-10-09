@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Tavarov Pay 1.0.0\n"
+"Project-Id-Version: Tavarov Pay 1.1.0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -141,3 +141,26 @@ msgstr ""
 msgid "Tavarov Pay: no payment for this order yet."
 msgstr ""
 
+msgid "Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment."
+msgstr ""
+
+msgid "Pay in USDT or USDC from any crypto wallet: MetaMask, Trust Wallet, Phantom, NoN Wallet and others."
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Where the customer pays. BNB Chain, Base and Solana cost a fraction of a cent per payment; Ethereum network fees are noticeably higher. Base has USDC only. Test keys (tp_test_) always use the BNB test network."
+msgstr ""
+
+msgid "Your Solana address"
+msgstr ""
+
+msgid "Only for the Solana network: the wallet address (base58) that receives the money. Your API key is tied to your EVM wallet, so the Solana address is set here."
+msgstr ""
+
+msgid "This does not look like a Solana address (32–44 base58 characters)."
+msgstr ""
+
+msgid "Network is Solana, but your Solana address is not set. Checkout will not work until you add it."
+msgstr ""

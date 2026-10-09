@@ -118,11 +118,12 @@ input.mono{font-family:var(--mono); font-size:13.5px}
 .paid{color:var(--green); font-weight:640}
 p.small{color:var(--label-2); font-size:13.5px; line-height:1.5}
 
-/* Сеть одна, и выбирать её нечего. Строкой, а не полем: поле выглядело как
-   сломанный ввод, в который продавец тыкал и ничего не получал. */
-.netline{display:flex; align-items:baseline; justify-content:space-between; gap:12px;
-         padding:11px 2px 0; border-top:1px solid var(--sep); margin-bottom:13px}
-.netline span:last-child{font-size:15px; font-weight:600; color:var(--label)}
+/* Сеть: четыре настоящие, тестовой нет. Под переключателем — одна строка о
+   том, чем эта сеть отличается для покупателя. */
+#netSeg button{font-size:13.5px; padding:8px 2px}
+#netHint{color:var(--label-2); font-size:13px; line-height:1.45; margin:8px 2px 0}
+#netHint:empty{display:none}
+.seg button:disabled{opacity:.35; cursor:not-allowed}
 
 /* ---- журнал счетов ---- */
 .lrow{display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-top:1px solid var(--sep)}
@@ -234,7 +235,7 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
           </div>
         </div>
       </div>
-      <!-- Выбора сети здесь нет намеренно.
+      <!-- Тестовой сети среди сетей нет намеренно.
 
            Тестовая сеть выглядит как настоящая, а деньги в ней ненастоящие и
            раздаются бесплатно. На странице, которую открывает посторонний
@@ -242,8 +243,9 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
            есть мошенническое: выставить счёт в тестовой сети, показать
            жертве экран «Оплачено» и убедить её, что деньги ходят.
 
-           Поэтому счета выставляются только в основной сети. Проверять
-           тестовую есть где: местный запуск шлюза и само приложение. -->
+           Поэтому выбрать можно только настоящие сети: BNB Chain, Ethereum,
+           Base и Solana (с 2 октября 2026). Проверять тестовую есть где:
+           местный запуск шлюза и само приложение. -->
       <div>
         <div class="field">
           <span class="lbl" data-t="lTtl">Счёт живёт</span>
@@ -254,12 +256,18 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
             <button type="button" data-v="86400" data-t="ttl24">сутки</button>
           </div>
         </div>
-        <!-- Сеть — это справка, а не поле для ввода. Раньше она и рисовалась
-             полем, и выглядела как сломанный ввод: продавец пытался в неё
-             нажать. Теперь просто строка. -->
-        <div class="field netline">
-          <span class="lbl" style="margin:0" data-t="lNet">Сеть</span>
-          <span id="netFixed">BNB Chain</span>
+        <!-- Сеть. У Solana свой адрес кошелька (не 0x), поэтому при смене
+             сети подставляется кошелёк, запомненный для этой сети. -->
+        <div class="field">
+          <span class="lbl" data-t="lNet">Сеть</span>
+          <input type="hidden" id="net" value="bnb">
+          <div class="seg" id="netSeg">
+            <button type="button" data-v="bnb">BNB Chain</button>
+            <button type="button" data-v="eth">Ethereum</button>
+            <button type="button" data-v="base">Base</button>
+            <button type="button" data-v="solana">Solana</button>
+          </div>
+          <div id="netHint"></div>
         </div>
       </div>
       <div class="field" style="margin-bottom:0">
@@ -337,8 +345,7 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
 
       <div id="qrBox"></div>
 
-      <p class="small" id="qrHint" data-t="qrHintLink">Покупатель наводит камеру, открывается
-      страница оплаты. Платёж идёт через наш контракт: с комиссией, баллами и возвратом по кнопке.</p>
+      <p class="small" id="qrHint" data-t="qrHintLink">Покупатель наводит камеру, открывается страница оплаты. Платёж идёт через наш контракт: с комиссией и возвратом по кнопке.</p>
 
       <div class="linkbox" id="doneLink">—</div>
       <button class="btn" id="copyBtn" data-t="copy">Скопировать ссылку</button>
@@ -364,32 +371,330 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
 
 <script src="./qrcode.min.js"></script>
 <script>
+/* ===================== Solana: оплата одной операцией =====================
+   Общий код для кошелька (www/index.html), страницы оплаты (www/pay.html)
+   и сервера (functions/api/solpay.js). Держится в одном файле и вставляется
+   в три места как есть — проверка t85 следит, чтобы копии не разошлись.
+
+   Зачем свой, а не библиотека Solana. Нужны четыре вещи: адрес счёта монеты
+   (PDA), сборка операции, разбор адреса base58 и проверка «точка ли это на
+   кривой». Библиотека для этого — полмегабайта на страницу, которую
+   открывают у прилавка по мобильному интернету.
+
+   КАК УСТРОЕНА ОПЛАТА. Контракта (программы) у нас в Solana нет и не нужно:
+   одна операция Solana может содержать несколько переводов, и проходят они
+   только все вместе. Поэтому в операции:
+     1) завести счёт монеты продавцу, если его ещё нет (createIdempotent —
+        если есть, ничего не делает и ничего не стоит);
+     2) то же для кошелька развития;
+     3) продавцу — сумма минус 1%, с меткой счёта (reference): по этой
+        метке сервер находит именно эту оплату, как в стандарте Solana Pay;
+     4) кошельку развития — 1%.
+   Переводы — transferChecked: в нём указаны монета и число знаков, и сеть
+   сама отклонит операцию, если кто-то подменит монету.                    */
+const SOL = (() => {
+  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  function b58enc(bytes){
+    let num = 0n;
+    for (const b of bytes) num = num * 256n + BigInt(b);
+    let out = '';
+    while (num > 0n){ out = B58[Number(num % 58n)] + out; num /= 58n; }
+    for (let i = 0; i < bytes.length && bytes[i] === 0; i++) out = '1' + out;
+    return out;
+  }
+  function b58dec(str, len){
+    if (typeof str !== 'string' || !str) throw new Error('bad base58');
+    let num = 0n;
+    for (const ch of str){ const i = B58.indexOf(ch); if (i < 0) throw new Error('bad base58'); num = num * 58n + BigInt(i); }
+    const bytes = [];
+    while (num > 0n){ bytes.unshift(Number(num & 255n)); num >>= 8n; }
+    for (const ch of str){ if (ch === '1') bytes.unshift(0); else break; }
+    if (len !== undefined){
+      if (bytes.length > len) throw new Error('bad length');
+      while (bytes.length < len) bytes.unshift(0);
+    }
+    return new Uint8Array(bytes);
+  }
+  /* Адрес Solana — 32 байта. Пустая строка, лишние буквы, 31 байт — нет. */
+  function isAddress(s){
+    if (typeof s !== 'string' || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)) return false;
+    try{ return b58dec(s).length === 32; } catch(e){ return false; }
+  }
+  const cat = (...a) => { const n = a.reduce((s, x) => s + x.length, 0); const o = new Uint8Array(n); let p = 0; for (const x of a){ o.set(x, p); p += x.length; } return o; };
+  const u8 = n => new Uint8Array([n]);
+  function u64(v){ const b = new Uint8Array(8); let x = BigInt(v); for (let i = 0; i < 8; i++){ b[i] = Number(x & 255n); x >>= 8n; } return b; }
+  function cu16(n){ const o = []; for (;;){ let e = n & 0x7f; n >>= 7; if (n){ o.push(e | 0x80); } else { o.push(e); break; } } return new Uint8Array(o); }
+  async function sha256(bytes){ return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)); }
+  const eq = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+
+  /* ---------- Точка ли на кривой ed25519 ----------
+     Адрес счёта монеты (PDA) обязан НЕ лежать на кривой: у такой точки нет
+     закрытого ключа, и деньгами на ней распоряжается только программа. Чтобы
+     найти правильный адрес, перебираем «bump» от 255 вниз, пока хеш не
+     окажется вне кривой. Проверка — распаковка точки: y из байт, x² из
+     уравнения кривой; если x² не квадрат по модулю p — точки нет. */
+  const P = 2n ** 255n - 19n;
+  const D = (-121665n * modInv(121666n)) % P;
+  function mod(a){ const r = a % P; return r >= 0n ? r : r + P; }
+  function pow(b, e){ let r = 1n; b = mod(b); while (e > 0n){ if (e & 1n) r = r * b % P; b = b * b % P; e >>= 1n; } return r; }
+  function modInv(a){ return pow(a, P - 2n); }
+  function isOnCurve(bytes){
+    let y = 0n;
+    for (let i = 31; i >= 0; i--) y = (y << 8n) | BigInt(i === 31 ? bytes[i] & 0x7f : bytes[i]);
+    if (y >= P) return false;
+    const y2 = y * y % P;
+    const u = mod(y2 - 1n), v = mod(D * y2 + 1n);
+    const x2 = u * modInv(v) % P;
+    if (x2 === 0n) return true;
+    return pow(x2, (P - 1n) / 2n) === 1n;      // критерий Эйлера: квадрат ли
+  }
+  async function findPda(seeds, programId){
+    for (let bump = 255; bump >= 0; bump--){
+      const h = await sha256(cat(...seeds, u8(bump), programId, new TextEncoder().encode('ProgramDerivedAddress')));
+      if (!isOnCurve(h)) return h;
+    }
+    throw new Error('no PDA');
+  }
+
+  const SYSTEM = new Uint8Array(32);
+  const COMPUTE = b58dec('ComputeBudget111111111111111111111111111111', 32);
+  const TOKEN = b58dec('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 32);
+  const ATA_PROGRAM = b58dec('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL', 32);
+  /* Счёт монеты для владельца — тот самый, который заводят все кошельки. */
+  function ata(owner, mint){ return findPda([owner, TOKEN, mint], ATA_PROGRAM); }
+
+  /* ---------- Сборка операции (legacy) ----------
+     Порядок адресов задан сетью: сначала подписывающие с записью (плательщик
+     комиссии — самым первым), потом подписывающие без записи, потом
+     остальные с записью, потом остальные только для чтения. */
+  function compile(payer, blockhash, ixs){
+    const keys = [];
+    const find = k => keys.findIndex(x => eq(x.k, k));
+    const add = (k, s, w) => { const i = find(k); if (i < 0) keys.push({ k, s, w }); else { keys[i].s = keys[i].s || s; keys[i].w = keys[i].w || w; } };
+    add(payer, true, true);
+    for (const ix of ixs){ for (const a of ix.keys) add(a.k, a.s, a.w); add(ix.program, false, false); }
+    const rank = x => eq(x.k, payer) ? -1 : (x.s && x.w) ? 0 : x.s ? 1 : x.w ? 2 : 3;
+    const sorted = keys.map((x, i) => ({ x, i })).sort((a, b) => rank(a.x) - rank(b.x) || a.i - b.i).map(o => o.x);
+    const idx = k => sorted.findIndex(x => eq(x.k, k));
+    const nSig = sorted.filter(x => x.s).length;
+    const nRoSig = sorted.filter(x => x.s && !x.w).length;
+    const nRo = sorted.filter(x => !x.s && !x.w).length;
+    const parts = [u8(nSig), u8(nRoSig), u8(nRo), cu16(sorted.length), ...sorted.map(x => x.k), blockhash, cu16(ixs.length)];
+    for (const ix of ixs){
+      parts.push(u8(idx(ix.program)), cu16(ix.keys.length), new Uint8Array(ix.keys.map(a => idx(a.k))), cu16(ix.data.length), ix.data);
+    }
+    return { message: cat(...parts), signers: nSig };
+  }
+
+  const createAtaIx = (payer, ataAddr, owner, mint) => ({ program: ATA_PROGRAM, data: u8(1), keys: [
+    { k: payer, s: true, w: true }, { k: ataAddr, s: false, w: true }, { k: owner, s: false, w: false },
+    { k: mint, s: false, w: false }, { k: SYSTEM, s: false, w: false }, { k: TOKEN, s: false, w: false } ] });
+  const transferCheckedIx = (src, mint, dst, owner, amount, decimals, extra) => ({ program: TOKEN,
+    data: cat(u8(12), u64(amount), u8(decimals)),
+    keys: [ { k: src, s: false, w: true }, { k: mint, s: false, w: false }, { k: dst, s: false, w: true },
+            { k: owner, s: true, w: false }, ...(extra || []).map(k => ({ k, s: false, w: false })) ] });
+
+  /* Небольшая «надбавка за скорость»: без неё в часы нагрузки операция
+     может не попасть в блок вовсе. 50 000 микролампортов за единицу при
+     пределе 80 000 единиц — это 4 000 лампортов, сотые доли цента. */
+  const u32 = n => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; };
+  const budgetIxs = () => [
+    { program: COMPUTE, data: cat(u8(2), u32(80000)), keys: [] },
+    { program: COMPUTE, data: cat(u8(3), u64(50000)), keys: [] } ];
+
+  /* Сколько уходит продавцу и сколько — комиссия. Комиссия округляется вниз:
+     лишняя доля цента остаётся продавцу, а не нам. */
+  function split(units, feeBps){
+    const fee = BigInt(units) * BigInt(feeBps) / 10000n;
+    return { fee, toMerchant: BigInt(units) - fee };
+  }
+
+  /* Операция оплаты. Все адреса — строками base58, сумма — в мельчайших
+     долях монеты (BigInt или строка). Возвращает неподписанное сообщение. */
+  async function buildPayment(o){
+    for (const k of ['payer', 'merchant', 'treasury', 'mint', 'reference', 'blockhash'])
+      if (!isAddress(o[k])) throw new Error('bad ' + k);
+    if (o.merchant === o.payer) throw new Error('cannot pay yourself');
+    const payer = b58dec(o.payer, 32), merchant = b58dec(o.merchant, 32), treasury = b58dec(o.treasury, 32);
+    const mint = b58dec(o.mint, 32), ref = b58dec(o.reference, 32), bh = b58dec(o.blockhash, 32);
+    const { fee, toMerchant } = split(o.units, o.feeBps === undefined ? 100 : o.feeBps);
+    if (toMerchant <= 0n) throw new Error('bad amount');
+    const [src, dstM, dstT] = await Promise.all([ata(payer, mint), ata(merchant, mint), ata(treasury, mint)]);
+    /* Партнёр продавца (8.10.2026): пятая часть комиссии — ему, той же
+       операцией, как в контракте других сетей. Счёт монеты у партнёра
+       должен уже быть (это проверяет тот, кто зовёт): заводить его за счёт
+       покупателя мы не будем. */
+    let share = 0n, dstP = null;
+    if (o.partner && fee > 0n){
+      if (!isAddress(o.partner)) throw new Error('bad partner');
+      const pk = b58dec(o.partner, 32);
+      if (!eq(pk, merchant) && !eq(pk, payer) && !eq(pk, treasury)){
+        share = fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+        if (share > 0n) dstP = await ata(pk, mint);
+      }
+    }
+    const ixs = [ ...budgetIxs(), createAtaIx(payer, dstM, merchant, mint) ];
+    if (fee > 0n && !eq(treasury, merchant)) ixs.push(createAtaIx(payer, dstT, treasury, mint));
+    ixs.push(transferCheckedIx(src, mint, dstM, payer, toMerchant, o.decimals, [ref]));
+    if (fee - share > 0n) ixs.push(transferCheckedIx(src, mint, dstT, payer, fee - share, o.decimals));
+    if (dstP && share > 0n) ixs.push(transferCheckedIx(src, mint, dstP, payer, share, o.decimals));
+    const { message } = compile(payer, bh, ixs);
+    return { message, fee, toMerchant, share, ata: { src: b58enc(src), merchant: b58enc(dstM), treasury: b58enc(dstT), partner: dstP ? b58enc(dstP) : null } };
+  }
+
+  /* Обычный перевод: SOL — системной программой, монета — transferChecked
+     в счёт монеты получателя (заводим его, если нет: иначе перевод на
+     новый кошелёк просто отклоняется). */
+  async function buildTransfer(o){
+    for (const k of ['payer', 'to', 'blockhash']) if (!isAddress(o[k])) throw new Error('bad ' + k);
+    const payer = b58dec(o.payer, 32), to = b58dec(o.to, 32), bh = b58dec(o.blockhash, 32);
+    const units = BigInt(o.units);
+    if (units <= 0n) throw new Error('bad amount');
+    const extra = o.reference && isAddress(o.reference) ? [b58dec(o.reference, 32)] : [];
+    let ixs;
+    if (!o.mint){
+      ixs = [ { program: SYSTEM, data: cat(u32(2), u64(units)),
+                keys: [ { k: payer, s: true, w: true }, { k: to, s: false, w: true }, ...extra.map(k => ({ k, s: false, w: false })) ] } ];
+    } else {
+      const mint = b58dec(o.mint, 32);
+      const [src, dst] = await Promise.all([ata(payer, mint), ata(to, mint)]);
+      ixs = [ createAtaIx(payer, dst, to, mint), transferCheckedIx(src, mint, dst, payer, units, o.decimals, extra) ];
+    }
+    return { message: compile(payer, bh, [...budgetIxs(), ...ixs]).message };
+  }
+
+  /* Операция целиком: число подписей, подписи, сообщение. Пустая подпись —
+     нули: так операцию отдают кошельку на подпись (Solana Pay). */
+  function serialize(message, signatures){
+    return cat(cu16(signatures.length), ...signatures, message);
+  }
+
+  /* ---------- Найдена ли оплата ----------
+     По метке счёта сеть отдаёт номера операций; каждую разбираем и верим
+     только тому, что совпало ВСЁ: успешна, монета та, продавцу пришло не
+     меньше положенного, кошельку развития — не меньше 1%, и метка стоит
+     В САМОМ ПЕРЕВОДЕ продавцу (как в стандарте Solana Pay), а не где-то в
+     операции. Иначе одна операция с десятком чужих меток «оплатила» бы
+     десяток счетов (аудит 2 октября 2026). Поэтому разбор — по «сырому»
+     ответу узла (encoding: 'json'): в jsonParsed лишние адреса перевода,
+     в том числе метка, теряются. Адреса из таблиц (v0) — в loadedAddresses. */
+  function checkPayment(tx, o){
+    if (!tx || !tx.meta || tx.meta.err) return { ok: false, why: 'failed' };
+    const msg = tx.transaction && tx.transaction.message;
+    if (!msg) return { ok: false, why: 'no message' };
+    const la = tx.meta.loadedAddresses || {};
+    const keys = [...(msg.accountKeys || []), ...(la.writable || []), ...(la.readonly || [])].map(k => typeof k === 'string' ? k : k && k.pubkey);
+    const tokenProg = b58enc(TOKEN);
+    const bps = o.feeBps === undefined ? 100 : o.feeBps;
+    const want = split(o.units, bps);
+    let toM = 0n, toMAll = 0n, nM = 0, toT = 0n, toP = 0n, toAll = 0n, nAll = 0, payer = null;
+    /* Партнёр продавца (8.10.2026): его доля — часть комиссии, а не оплата. */
+    const pAta = o.partnerAta || null;
+    const ixs = [...(msg.instructions || [])];
+    for (const inner of (tx.meta.innerInstructions || [])) ixs.push(...(inner.instructions || []));
+    for (const ix of ixs){
+      if (!ix || typeof ix.programIdIndex !== 'number' || keys[ix.programIdIndex] !== tokenProg) continue;
+      let d; try{ d = b58dec(String(ix.data || '')); } catch(e){ continue; }
+      if (d.length !== 10 || d[0] !== 12) continue;                 // transferChecked
+      const acc = (ix.accounts || []).map(i => keys[i]);
+      if (acc.length < 4 || acc[1] !== o.mint) continue;
+      let amt = 0n; for (let i = 8; i >= 1; i--) amt = (amt << 8n) | BigInt(d[i]);
+      if (acc[2] !== o.treasuryAta && acc[2] !== pAta){ toAll += amt; nAll++; }
+      if (acc[2] === o.merchantAta){
+        toMAll += amt; nM++;
+        /* Ровно одна метка и это наша: с несколькими метками в одном
+           переводе одна оплата закрыла бы несколько счетов. */
+        if (acc.length === 5 && acc[4] === o.reference){ toM += amt; payer = payer || acc[3]; }
+      } else if (acc[2] === o.treasuryAta) toT += amt;
+      else if (pAta && acc[2] === pAta) toP += amt;
+    }
+    /* Комиссия = казна + доля партнёра. Казне при этом — не меньше, чем ей
+       положено за вычетом доли: всю комиссию отдать «партнёру» нельзя. */
+    if (pAta){
+      const shareMax = want.fee * BigInt(o.partnerBps === undefined ? 2000 : o.partnerBps) / 10000n;
+      if (toT + toP >= want.fee && toT >= want.fee - shareMax) toT = toT + toP;
+    }
+    if (toM === 0n) return { ok: false, why: toMAll > 0n ? 'no reference' : 'not to merchant' };
+    if (toM < want.toMerchant) return { ok: false, why: 'underpaid', got: toM.toString() };
+    if (toT < want.fee) return { ok: false, why: 'no fee', got: toM.toString() };
+    /* Несколько переводов в одной операции (тому же или другим продавцам) —
+       1% нужен со всех: один перевод в казну на всех не в счёт. */
+    if (bps > 0 && toT * BigInt(10000 - bps) + BigInt(nAll) * 10000n < toAll * BigInt(bps)) return { ok: false, why: 'no fee', got: toM.toString() };
+    return { ok: true, payer, toMerchant: toM.toString(), fee: toT.toString(), partner: toP.toString(), toMerchantAll: toMAll.toString(), transfers: nM,
+             toAll: toAll.toString(), transfersAll: nAll };
+  }
+
+  /* Номер счёта (0x + 64 знака) и метка Solana Pay — одно и то же число:
+     метка — это те же 32 байта в base58. Сервер, страница и кошелёк
+     получают её из номера счёта одинаково и не могут разойтись. */
+  function refFromInvoice(h){
+    if (!/^0x[0-9a-fA-F]{64}$/.test(h || '')) throw new Error('bad invoice');
+    const b = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) b[i] = parseInt(h.slice(2 + i * 2, 4 + i * 2), 16);
+    return b58enc(b);
+  }
+  /* Сумма «12.5» → мельчайшие доли, строкой, без дробных чисел. */
+  function toUnits(amount, decimals){
+    const s = String(amount).trim();
+    if (!/^\d{1,12}(\.\d+)?$/.test(s)) return null;
+    const [w, f = ''] = s.split('.');
+    if (f.length > decimals && /[1-9]/.test(f.slice(decimals))) return null;
+    return BigInt(w + f.padEnd(decimals, '0').slice(0, decimals));
+  }
+
+  return { b58enc, b58dec, isAddress, isOnCurve, findPda, ata, compile, buildPayment, buildTransfer, serialize, split, checkPayment,
+           refFromInvoice, toUnits,
+           TOKEN, ATA_PROGRAM, SYSTEM };
+})();
+</script>
+<script>
 const $ = id => document.getElementById(id);
-const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet' };
-/* Единственная сеть, в которой эта страница выставляет счета. См. пояснение
-   в разметке выше: тестовая сеть здесь — инструмент обмана, а не проверки. */
-const NET = 'bnb';
+const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet', eth:'Ethereum', base:'Base', solana:'Solana' };
+/* Сети, в которых эта страница выставляет счета. Только настоящие: см.
+   пояснение в разметке выше — тестовая сеть здесь инструмент обмана. */
+const NETS = ['bnb', 'eth', 'base', 'solana'];
+const NET = () => (NETS.includes($('net').value) ? $('net').value : 'bnb');
+const isSol = n => n === 'solana';
+/* Кошелёк Solana — это точка на кривой. Адрес счёта монеты (его часто
+   копируют из обозревателя по ошибке) на кривой не лежит, и оплата на него
+   не соберётся: лучше сказать сразу, чем покупателю у прилавка. */
+function okWallet(n, v){
+  v = String(v || '').trim();
+  if (!isSol(n)) return /^0x[0-9a-fA-F]{40}$/.test(v);
+  try{ return SOL.isAddress(v) && SOL.isOnCurve(SOL.b58dec(v, 32)); } catch(e){ return false; }
+}
 
 /* Узлы для одного-единственного вопроса: принимает ли касса эту валюту.
    Спрашиваем прямо из браузера — ничего секретного в вопросе нет. */
 const RPCS = {
-  bnb: ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org']
+  bnb:  ['https://bsc-rpc.publicnode.com', 'https://bsc-dataseed.binance.org'],
+  eth:  ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'],
+  base: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org']
 };
 const PAY = {
-  bnb: '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35'
+  bnb:  '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35',
+  eth:  '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+  base: '0x5046399643c387d93e1467bad3fd7edf3fb459da'
 };
+/* В Base только USDC: USDT там перенесённый мостом, не от самой Tether. */
 const TOKENS = {
-  bnb: { USDT:'0x55d398326f99059fF775485246999027B3197955',
-         USDC:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d' }
+  bnb:  { USDT:'0x55d398326f99059fF775485246999027B3197955',
+          USDC:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d' },
+  eth:  { USDT:'0xdAC17F958D2ee523a2206206994597C13D831ec7',
+          USDC:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' },
+  base: { USDC:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' }
 };
 /* Знаков после запятой у монеты. Нужны, чтобы собрать код для кошелька:
    там сумма пишется не как «0.2», а целым числом мельчайших долей. На BNB
    Chain и USDT, и USDC восемнадцатизначные — не шестизначные, как привыкли
    те, кто до этого работал с Ethereum. Ошибиться здесь — значит показать
    покупателю сумму в миллиард раз больше или меньше. */
-const DECIMALS = { bnb: { USDT: 18, USDC: 18 } };
+const DECIMALS = { bnb: { USDT: 18, USDC: 18 }, eth: { USDT: 6, USDC: 6 }, base: { USDC: 6 } };
+/* Сколько знаков после точки можно вписать в сумму: в Ethereum, Base и
+   Solana у долларов шесть, и седьмой знак заплатить было бы нечем. */
+const AMOUNT_DEC = n => (n === 'bnb' ? 18 : 6);
 /* Номер сети для кода, который читает кошелёк. */
-const CHAIN_IDS = { bnb: 56, bnbTestnet: 97 };
+const CHAIN_IDS = { bnb: 56, bnbTestnet: 97, eth: 1, base: 8453 };
 
 /* ================= ЯЗЫКИ =================
 
@@ -432,15 +737,15 @@ const RU = {
   again:'Выставить другой счёт',
   kTo:'Кому', kNet:'Сеть', kItem:'За что', kOrder:'Номер заказа', kTill:'Действует до',
   doneNote:'Пока эта страница открыта, она сама следит за оплатой и сообщит, когда деньги придут. Закроете — ничего не сломается: оплату всегда видно в блокчейне и в вашем кошельке.',
-  curBad:'Касса не принимает %s в этой сети. Счёт выставить можно, но покупатель заплатит обычным переводом: деньги придут вам на кошелёк, а страница счёта так и будет ждать — «оплачено» она не покажет и бонусы не начислятся. Возьмите другую валюту.',
+  curBad:'Касса не принимает %s в этой сети. Счёт выставить можно, но покупатель заплатит обычным переводом: деньги придут вам на кошелёк, а страница счёта так и будет ждать — «оплачено» она не покажет. Возьмите другую валюту.',
   errWallet:'Впишите адрес кошелька — 42 знака, начинается на 0x. Это тот кошелёк, на который придут деньги.',
   errAmount:'Впишите сумму больше нуля.',
   willPay:'Покупатель заплатит',
   noName:'Без названия', invPrefix:'счёт-', payDefault:'Оплата',
   qrFail:'Код не поместился — пошлите ссылку.',
   qrLink:'Ссылка', qrWallet:'Прямо в кошелёк',
-  qrHintLink:'Покупатель наводит камеру, открывается страница оплаты. Платёж идёт через наш контракт: с комиссией, баллами и возвратом по кнопке.',
-  qrHintWallet:'Этот код читает сам кошелёк — Trust, MetaMask, Binance. Покупатель сканирует и сразу подтверждает перевод, страница ему не нужна. Комиссии и баллов с такого платежа нет.',
+  qrHintLink:'Покупатель наводит камеру, открывается страница оплаты. Платёж идёт через наш контракт: с комиссией и возвратом по кнопке.',
+  qrHintWallet:'Этот код читает сам кошелёк — Trust, MetaMask, Binance. Покупатель сканирует и сразу подтверждает перевод, страница ему не нужна. Комиссии с такого платежа нет.',
   errCopy:'Не вышло скопировать — выделите ссылку выше руками.',
   shareTitle:'Счёт на оплату', sharePay:'К оплате ',
   logEmpty:'Пока пусто. Выставленные счета появятся здесь и будут помнить, оплатили их или нет.',
@@ -457,6 +762,12 @@ const RU = {
   donePaidSub:'Покупатель заплатил. Можно отдавать товар.',
   netQuiet:'Сеть не отвечает — проверим ещё раз…',
   waitLeft:'Ждём оплату… счёт действует ещё %s мин',
+  netHintEth:'Ethereum: USDT и USDC. За перевод в сети платит покупатель, а в Ethereum это бывает доллар и больше — для мелких покупок удобнее BNB Chain или Base.',
+  netHintBase:'Base: только USDC (USDT в Base выпущен не самой Tether, его мы не принимаем). Перевод в сети стоит центы.',
+  netHintSol:'Solana: USDC и USDT, платят из Phantom, Solflare или NoN Wallet. Нужен адрес кошелька Solana — не 0x. 1% удерживается в той же операции.',
+  errWalletSol:'Впишите адрес кошелька Solana — 32–44 знака, без 0x (например, из Phantom). Именно кошелька, а не счёта монеты.',
+  phWalletSol:'адрес Solana…',
+  qrHintSol:'Этот код читают Phantom, Solflare и NoN Wallet: покупатель сканирует и сразу подтверждает оплату, страница ему не нужна. Вам — сумма минус 1%, 1% удерживается в той же операции.',
   expired:'Срок счёта вышел. Выставьте новый.'
 };
 
@@ -494,15 +805,15 @@ const T = {
     again:'Create another invoice',
     kTo:'To', kNet:'Network', kItem:'For what', kOrder:'Order number', kTill:'Valid until',
     doneNote:'While this page is open it watches for the payment itself and tells you when the money arrives. Close it and nothing breaks: the payment is always visible in the blockchain and in your wallet.',
-    curBad:'The till does not accept %s on this network. You can still create the invoice, but the buyer will pay by a plain transfer: the money will reach your wallet while the invoice page keeps waiting — it will never show “paid” and no points will be credited. Pick another currency.',
+    curBad:'The till does not accept %s on this network. You can still create the invoice, but the buyer will pay by a plain transfer: the money will reach your wallet while the invoice page keeps waiting — it will never show “paid”. Pick another currency.',
     errWallet:'Enter the wallet address — 42 characters, starts with 0x. This is the wallet the money will arrive in.',
     errAmount:'Enter an amount greater than zero.',
     willPay:'The buyer pays',
     noName:'No name', invPrefix:'invoice-', payDefault:'Payment',
     qrFail:'The code did not fit — send the link instead.',
     qrLink:'Link', qrWallet:'Straight to wallet',
-    qrHintLink:'The buyer points a camera and the payment page opens. The payment goes through our contract: with the fee, the points and refunds at the press of a button.',
-    qrHintWallet:'This code is read by the wallet itself — Trust, MetaMask, Binance. The buyer scans it and confirms the transfer right away, with no page in between. Such a payment carries no fee and earns no points.',
+    qrHintLink:'The buyer points a camera and the payment page opens. The payment goes through our contract: with the fee and refunds at the press of a button.',
+    qrHintWallet:'This code is read by the wallet itself — Trust, MetaMask, Binance. The buyer scans it and confirms the transfer right away, with no page in between. Such a payment carries no fee.',
     errCopy:'Copying failed — select the link above by hand.',
     shareTitle:'Invoice to pay', sharePay:'To pay ',
     logEmpty:'Empty so far. Invoices you create will appear here and remember whether they were paid.',
@@ -519,6 +830,12 @@ const T = {
     donePaidSub:'The buyer has paid. You can hand over the goods.',
     netQuiet:'The network is not answering — we will check again…',
     waitLeft:'Waiting for payment… the invoice is valid for %s more min',
+    netHintEth:'Ethereum: USDT and USDC. The buyer pays the network fee, and on Ethereum it can be a dollar or more — for small purchases BNB Chain or Base is handier.',
+    netHintBase:'Base: USDC only (the USDT on Base is not issued by Tether itself, so we do not accept it). A transfer costs cents.',
+    netHintSol:'Solana: USDC and USDT, paid from Phantom, Solflare or NoN Wallet. You need a Solana wallet address — not 0x. The 1% is kept in the same operation.',
+    errWalletSol:'Enter a Solana wallet address — 32 to 44 characters, no 0x (for example, from Phantom). The wallet itself, not a token account.',
+    phWalletSol:'Solana address…',
+    qrHintSol:'This code is read by Phantom, Solflare and NoN Wallet: the buyer scans it and confirms the payment right away, with no page in between. You get the amount minus 1%; the 1% is kept in the same operation.',
     expired:'The invoice has expired. Create a new one.'
   },
   es: {
@@ -553,15 +870,15 @@ const T = {
     again:'Crear otra factura',
     kTo:'Destinatario', kNet:'Red', kItem:'Concepto', kOrder:'Número de pedido', kTill:'Válida hasta',
     doneNote:'Mientras esta página esté abierta, vigila el pago por sí sola y le avisará cuando llegue el dinero. Si la cierra, no se rompe nada: el pago siempre se ve en la cadena de bloques y en su monedero.',
-    curBad:'La caja no acepta %s en esta red. Puede crear la factura, pero el comprador pagará con una transferencia común: el dinero llegará a su monedero y la página de la factura seguirá esperando; nunca mostrará «pagado» y no se acreditarán puntos. Elija otra moneda.',
+    curBad:'La caja no acepta %s en esta red. Puede crear la factura, pero el comprador pagará con una transferencia común: el dinero llegará a su monedero y la página de la factura seguirá esperando; nunca mostrará «pagado». Elija otra moneda.',
     errWallet:'Escriba la dirección del monedero: 42 caracteres, empieza por 0x. Es el monedero al que llegará el dinero.',
     errAmount:'Escriba un importe mayor que cero.',
     willPay:'El comprador paga',
     noName:'Sin nombre', invPrefix:'factura-', payDefault:'Pago',
     qrFail:'El código no cupo: envíe el enlace.',
     qrLink:'Enlace', qrWallet:'Directo a la cartera',
-    qrHintLink:'El comprador apunta la cámara y se abre la página de pago. El pago va por nuestro contrato: con comisión, puntos y devolución con un botón.',
-    qrHintWallet:'Este código lo lee la propia cartera: Trust, MetaMask, Binance. El comprador lo escanea y confirma la transferencia al instante, sin página de por medio. Ese pago no lleva comisión ni da puntos.',
+    qrHintLink:'El comprador apunta la cámara y se abre la página de pago. El pago va por nuestro contrato: con comisión y devolución con un botón.',
+    qrHintWallet:'Este código lo lee la propia cartera: Trust, MetaMask, Binance. El comprador lo escanea y confirma la transferencia al instante, sin página de por medio. Ese pago no lleva comisión.',
     errCopy:'No se pudo copiar: seleccione el enlace de arriba a mano.',
     shareTitle:'Factura para pagar', sharePay:'A pagar ',
     logEmpty:'Aún vacío. Las facturas que cree aparecerán aquí y recordarán si fueron pagadas.',
@@ -578,6 +895,12 @@ const T = {
     donePaidSub:'El comprador ha pagado. Puede entregar el producto.',
     netQuiet:'La red no responde: lo comprobaremos de nuevo…',
     waitLeft:'Esperando el pago… la factura vale %s min más',
+    netHintEth:'Ethereum: USDT y USDC. La comisión de la red la paga el comprador, y en Ethereum puede ser de un dólar o más: para compras pequeñas es más cómodo BNB Chain o Base.',
+    netHintBase:'Base: solo USDC (el USDT de Base no lo emite la propia Tether, así que no lo aceptamos). Una transferencia cuesta céntimos.',
+    netHintSol:'Solana: USDC y USDT, se paga desde Phantom, Solflare o NoN Wallet. Hace falta una dirección de monedero de Solana, no 0x. El 1% se descuenta en la misma operación.',
+    errWalletSol:'Escriba la dirección de un monedero de Solana: de 32 a 44 caracteres, sin 0x (por ejemplo, de Phantom). La del monedero, no la de una cuenta de token.',
+    phWalletSol:'dirección de Solana…',
+    qrHintSol:'Este código lo leen Phantom, Solflare y NoN Wallet: el comprador lo escanea y confirma el pago al instante, sin página de por medio. Usted recibe el importe menos el 1%; el 1% se descuenta en la misma operación.',
     expired:'La factura ha vencido. Cree una nueva.'
   },
   tr: {
@@ -612,15 +935,15 @@ const T = {
     again:'Başka bir fatura oluştur',
     kTo:'Kime', kNet:'Ağ', kItem:'Ne için', kOrder:'Sipariş numarası', kTill:'Geçerlilik bitişi',
     doneNote:'Bu sayfa açıkken ödemeyi kendisi izler ve para geldiğinde size söyler. Kapatırsanız bir şey bozulmaz: ödeme her zaman blok zincirinde ve cüzdanınızda görünür.',
-    curBad:'Kasa bu ağda %s kabul etmiyor. Faturayı yine de oluşturabilirsiniz, ama alıcı sıradan bir transferle ödeyecek: para cüzdanınıza ulaşır, fatura sayfası ise beklemeye devam eder — «ödendi» yazmaz ve puan işlenmez. Başka bir para birimi seçin.',
+    curBad:'Kasa bu ağda %s kabul etmiyor. Faturayı yine de oluşturabilirsiniz, ama alıcı sıradan bir transferle ödeyecek: para cüzdanınıza ulaşır, fatura sayfası ise beklemeye devam eder — «ödendi» yazmaz. Başka bir para birimi seçin.',
     errWallet:'Cüzdan adresini yazın — 42 karakter, 0x ile başlar. Para bu cüzdana gelecek.',
     errAmount:'Sıfırdan büyük bir tutar yazın.',
     willPay:'Alıcı öder',
     noName:'Adsız', invPrefix:'fatura-', payDefault:'Ödeme',
     qrFail:'Kod sığmadı — bağlantıyı gönderin.',
     qrLink:'Bağlantı', qrWallet:'Doğrudan cüzdana',
-    qrHintLink:'Alıcı kamerayı tutar, ödeme sayfası açılır. Ödeme bizim sözleşmemizden geçer: komisyon, puanlar ve tek tuşla iade ile.',
-    qrHintWallet:'Bu kodu cüzdanın kendisi okur — Trust, MetaMask, Binance. Alıcı tarar ve transferi hemen onaylar, araya sayfa girmez. Böyle bir ödemede komisyon da puan da yoktur.',
+    qrHintLink:'Alıcı kamerayı tutar, ödeme sayfası açılır. Ödeme bizim sözleşmemizden geçer: komisyon ve tek tuşla iade ile.',
+    qrHintWallet:'Bu kodu cüzdanın kendisi okur — Trust, MetaMask, Binance. Alıcı tarar ve transferi hemen onaylar, araya sayfa girmez. Böyle bir ödemede komisyon yoktur.',
     errCopy:'Kopyalanamadı — yukarıdaki bağlantıyı elle seçin.',
     shareTitle:'Ödenecek fatura', sharePay:'Ödenecek ',
     logEmpty:'Şimdilik boş. Oluşturduğunuz faturalar burada görünecek ve ödenip ödenmediklerini hatırlayacak.',
@@ -637,6 +960,12 @@ const T = {
     donePaidSub:'Alıcı ödedi. Ürünü verebilirsiniz.',
     netQuiet:'Ağ yanıt vermiyor — tekrar bakacağız…',
     waitLeft:'Ödeme bekleniyor… fatura %s dk daha geçerli',
+    netHintEth:'Ethereum: USDT ve USDC. Ağ ücretini alıcı öder ve Ethereum\'da bu bir dolar ya da daha fazla olabilir — küçük alışverişler için BNB Chain ya da Base daha uygundur.',
+    netHintBase:'Base: yalnızca USDC (Base\'teki USDT\'yi Tether\'in kendisi çıkarmıyor, bu yüzden kabul etmiyoruz). Bir transfer birkaç sent tutar.',
+    netHintSol:'Solana: USDC ve USDT, Phantom, Solflare ya da NoN Wallet ile ödenir. 0x değil, bir Solana cüzdan adresi gerekir. %1 aynı işlemde kesilir.',
+    errWalletSol:'Bir Solana cüzdan adresi yazın — 32–44 karakter, 0x olmadan (örneğin Phantom\'dan). Token hesabı değil, cüzdanın kendisi.',
+    phWalletSol:'Solana adresi…',
+    qrHintSol:'Bu kodu Phantom, Solflare ve NoN Wallet okur: alıcı tarar ve ödemeyi hemen onaylar, araya sayfa girmez. Size tutarın %1 eksiği gelir; %1 aynı işlemde kesilir.',
     expired:'Faturanın süresi doldu. Yenisini oluşturun.'
   },
   pt: {
@@ -671,15 +1000,15 @@ const T = {
     again:'Criar outra fatura',
     kTo:'Destinatário', kNet:'Rede', kItem:'Referente a', kOrder:'Número do pedido', kTill:'Válida até',
     doneNote:'Enquanto esta página estiver aberta, ela mesma acompanha o pagamento e avisa quando o dinheiro chegar. Se fechar, nada quebra: o pagamento sempre aparece no blockchain e na sua carteira.',
-    curBad:'O caixa não aceita %s nesta rede. Você pode criar a fatura, mas o comprador vai pagar por transferência comum: o dinheiro chega à sua carteira e a página da fatura continua esperando — nunca mostrará «pago» e os pontos não serão creditados. Escolha outra moeda.',
+    curBad:'O caixa não aceita %s nesta rede. Você pode criar a fatura, mas o comprador vai pagar por transferência comum: o dinheiro chega à sua carteira e a página da fatura continua esperando — nunca mostrará «pago». Escolha outra moeda.',
     errWallet:'Informe o endereço da carteira — 42 caracteres, começa com 0x. É a carteira onde o dinheiro vai chegar.',
     errAmount:'Informe um valor maior que zero.',
     willPay:'O comprador paga',
     noName:'Sem nome', invPrefix:'fatura-', payDefault:'Pagamento',
     qrFail:'O código não coube — envie o link.',
     qrLink:'Link', qrWallet:'Direto na carteira',
-    qrHintLink:'O comprador aponta a câmera e a página de pagamento abre. O pagamento passa pelo nosso contrato: com taxa, pontos e estorno por um botão.',
-    qrHintWallet:'Este código é lido pela própria carteira — Trust, MetaMask, Binance. O comprador escaneia e confirma a transferência na hora, sem página no meio. Esse pagamento não tem taxa nem gera pontos.',
+    qrHintLink:'O comprador aponta a câmera e a página de pagamento abre. O pagamento passa pelo nosso contrato: com taxa e estorno por um botão.',
+    qrHintWallet:'Este código é lido pela própria carteira — Trust, MetaMask, Binance. O comprador escaneia e confirma a transferência na hora, sem página no meio. Esse pagamento não tem taxa.',
     errCopy:'Não deu para copiar — selecione o link acima manualmente.',
     shareTitle:'Fatura para pagar', sharePay:'A pagar ',
     logEmpty:'Vazio por enquanto. As faturas que você criar aparecem aqui e lembram se foram pagas.',
@@ -696,6 +1025,12 @@ const T = {
     donePaidSub:'O comprador pagou. Pode entregar o produto.',
     netQuiet:'A rede não responde — vamos verificar de novo…',
     waitLeft:'Aguardando o pagamento… a fatura vale mais %s min',
+    netHintEth:'Ethereum: USDT e USDC. A taxa da rede é paga pelo comprador, e no Ethereum ela pode passar de um dólar — para compras pequenas, BNB Chain ou Base é mais prático.',
+    netHintBase:'Base: só USDC (o USDT na Base não é emitido pela própria Tether, por isso não o aceitamos). Uma transferência custa centavos.',
+    netHintSol:'Solana: USDC e USDT, pagos pela Phantom, Solflare ou NoN Wallet. É preciso um endereço de carteira Solana — não 0x. O 1% é descontado na mesma operação.',
+    errWalletSol:'Informe um endereço de carteira Solana — 32 a 44 caracteres, sem 0x (por exemplo, da Phantom). O da carteira, não o de uma conta de token.',
+    phWalletSol:'endereço Solana…',
+    qrHintSol:'Este código é lido pela Phantom, Solflare e NoN Wallet: o comprador escaneia e confirma o pagamento na hora, sem página no meio. Você recebe o valor menos 1%; o 1% é descontado na mesma operação.',
     expired:'A fatura venceu. Crie uma nova.'
   }
 };
@@ -733,6 +1068,7 @@ function applyLang(code){
   /* Живые надписи словарём не покрываются: они уже нарисованы. Перерисовываем
      то, что сейчас на экране, иначе после переключения половина страницы
      осталась бы на прошлом языке. */
+  paintNet();
   renderWho();
   renderLog();
   checkCurrency();
@@ -781,22 +1117,37 @@ function newInvoiceId(){
 
 // ---------- память между заходами ----------
 const KEY = 'tavarov.invoice.v1';
+/* Кошельков у продавца два вида: 0x… (BNB Chain, Ethereum, Base — один и
+   тот же адрес) и Solana. Помним оба, чтобы при переключении сети не
+   набирать адрес заново и, главное, не подставить 0x-адрес в Solana. */
+const walletBy = { evm: '', sol: '' };
+let walletKind = 'evm';
+const kindOf = n => (isSol(n) ? 'sol' : 'evm');
 function restore(){
   let v = {};
   try{ v = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){}
-  $('wallet').value = v.wallet || '';
+  walletBy.evm = typeof v.wallet === 'string' ? v.wallet : '';
+  walletBy.sol = typeof v.walletSol === 'string' ? v.walletSol : '';
+  $('net').value    = NETS.includes(v.net) ? v.net : 'bnb';
+  walletKind = kindOf(NET());
+  $('wallet').value = walletBy[walletKind];
   $('shop').value   = v.shop || '';
-  $('cur').value    = v.cur || 'USDT';
+  $('cur').value    = NET() === 'base' ? 'USDC' : (v.cur || 'USDT');
   $('ttl').value    = v.ttl || '900';
 }
 function remember(){
   /* Запоминаем только то, что у продавца не меняется от счёта к счёту.
      Сумму и товар — намеренно нет: подставить прошлую сумму новому
      покупателю страшнее, чем набрать её заново. */
+  /* В ячейку текущей сети кладём только подходящий ей адрес (или пусто).
+     Иначе адрес Solana, вставленный, пока выбрана BNB Chain, затирал
+     запомненный 0x-кошелёк (проверка 2.10.2026). */
+  const w = $('wallet').value.trim();
+  if (!w || okWallet(walletKind === 'sol' ? 'solana' : 'bnb', w)) walletBy[walletKind] = w;
   try{
     localStorage.setItem(KEY, JSON.stringify({
-      wallet: $('wallet').value.trim(), shop: $('shop').value.trim(),
-      cur: $('cur').value, ttl: $('ttl').value
+      wallet: walletBy.evm, walletSol: walletBy.sol, net: NET(),
+      shop: $('shop').value.trim(), cur: $('cur').value, ttl: $('ttl').value
     }));
   } catch(e){}
 }
@@ -809,7 +1160,9 @@ function refreshStickerLink(){
   const a = document.getElementById('stickerLink');
   if (!a) return;
   const q = new URLSearchParams();
-  const w = $('wallet').value.trim();
+  /* Наклейка — касса в сетях с адресом 0x; при выбранной Solana берём
+     запомненный 0x-кошелёк. */
+  const w = walletKind === 'evm' ? $('wallet').value.trim() : walletBy.evm;
   if (/^0x[0-9a-fA-F]{40}$/.test(w)) q.set('m', w);
   if ($('shop').value.trim()) q.set('n', $('shop').value.trim());
   q.set('lang', LANG);
@@ -847,7 +1200,8 @@ function segPaint(segId, inputId){
    catch, и выбор «Прямо в кошелёк» не запоминался. */
 const QR_KIND_KEY = 'tavarov.qr.kind';
 
-function segPaintAll(){ segPaint('curSeg','cur'); segPaint('ttlSeg','ttl'); }
+function segPaintAll(){ segPaint('netSeg','net'); segPaint('curSeg','cur'); segPaint('ttlSeg','ttl'); }
+segBind('netSeg','net');
 segBind('curSeg','cur');
 segBind('ttlSeg','ttl');
 segBind('qrSeg','qrKind');
@@ -874,6 +1228,43 @@ function renderSum(){
   box.classList.remove('dim');
 }
 
+/* Смена сети. Подпись, подсказка и доступные монеты — paintNet (её же
+   зовёт смена языка); кошелёк меняется только здесь. */
+function paintNet(){
+  const n = NET();
+  $('wallet').placeholder = isSol(n) ? t('phWalletSol') : '0x…';
+  $('netHint').textContent = { eth: t('netHintEth'), base: t('netHintBase'), solana: t('netHintSol') }[n] || '';
+  /* Монета, которой в этой сети у нас нет, не выбирается вовсе. */
+  $('curSeg').querySelectorAll('button[data-v]').forEach(b => {
+    b.disabled = n !== 'solana' && !(TOKENS[n] || {})[b.dataset.v];
+  });
+}
+function applyNet(){
+  const n = NET();
+  const kind = kindOf(n);
+  if (kind !== walletKind){
+    const v = $('wallet').value.trim();
+    if (v && okWallet(n, v)){
+      /* Продавец сначала вставил адрес новой сети, потом выбрал сеть:
+         адрес остаётся в поле и идёт в ячейку этой сети. */
+      walletBy[kind] = v;
+    } else {
+      if (!v || okWallet(walletKind === 'sol' ? 'solana' : 'bnb', v)) walletBy[walletKind] = v;
+      $('wallet').value = walletBy[kind] || '';
+    }
+    walletKind = kind;
+    editingWho = false;
+  }
+  if (n === 'base' && $('cur').value !== 'USDC'){ $('cur').value = 'USDC'; }
+  paintNet();
+  segPaintAll();
+  curOk = null;
+  checkCurrency();
+  renderSum();
+  renderWho();
+  refreshStickerLink();
+}
+
 restore();
 refreshStickerLink();
 segPaintAll();
@@ -881,12 +1272,13 @@ renderSum();
 $('amount').addEventListener('input', renderSum);
 $('cur').addEventListener('change', renderSum);
 ['wallet','shop','cur','ttl'].forEach(id => $(id).addEventListener('change', () => { remember(); renderWho(); }));
+$('net').addEventListener('change', () => { applyNet(); remember(); });
 
 /* Показываем шапку только когда кошелёк похож на настоящий: с половиной
    адреса сворачивать нечего, а продавец решит, что всё уже заполнено. */
 function renderWho(){
   const addr = $('wallet').value.trim();
-  const ok = /^0x[0-9a-fA-F]{40}$/.test(addr) && !editingWho;
+  const ok = okWallet(NET(), addr) && !editingWho;
   $('whoBar').classList.toggle('hidden', !ok);
   $('fWallet').classList.toggle('hidden', ok);
   $('fShop').classList.toggle('hidden', ok);
@@ -903,7 +1295,7 @@ $('whoEdit').onclick = () => { editingWho = true; renderWho(); $('wallet').focus
 ['wallet','shop'].forEach(id => $(id).addEventListener('blur', (e) => {
   const to = e.relatedTarget;
   if (to && (to.id === 'wallet' || to.id === 'shop')) return;
-  if (/^0x[0-9a-fA-F]{40}$/.test($('wallet').value.trim())) { editingWho = false; renderWho(); }
+  if (okWallet(NET(), $('wallet').value)) { editingWho = false; renderWho(); }
 }));
 
 // ---------- принимает ли касса эту валюту ----------
@@ -926,8 +1318,13 @@ async function rpcCall(net, to, data){
   return null;
 }
 let curOk = null;                       // true / false / null — не смогли спросить
+/* Номер последнего вопроса. Ответ на устаревший вопрос (продавец успел
+   сменить сеть или монету) ничего не меняет — ни «принимает», ни
+   «узел молчит». */
+let curSeq = 0;
 async function checkCurrency(){
-  const net = NET, cur = $('cur').value;
+  const seq = ++curSeq;
+  const net = NET(), cur = $('cur').value;
   const box = $('curNote');
   const token = (TOKENS[net] || {})[cur];
   if (!token || !PAY[net]){ curOk = null; box.classList.add('hidden'); return; }
@@ -935,11 +1332,12 @@ async function checkCurrency(){
   /* Ответ сети от языка не зависит, а сеть отвечает не мгновенно. Если это
      просто переключение языка, а спросили мы уже раньше — перерисовываем
      готовый ответ, а не дёргаем узел заново. */
-  if (curOk === null || box.dataset.cur !== cur){
+  if (curOk === null || box.dataset.cur !== net + ':' + cur){
     const res = await rpcCall(net, PAY[net], '0x55f5e7de' + '0'.repeat(24) + token.slice(2).toLowerCase());
+    if (seq !== curSeq) return;
     if (res === null){ curOk = null; box.classList.add('hidden'); return; }   // сеть молчит — не пугаем зря
     curOk = /[1-9a-f]/.test(res.slice(2));
-    box.dataset.cur = cur;
+    box.dataset.cur = net + ':' + cur;
   }
   if (curOk){ box.classList.add('hidden'); return; }
   box.textContent = t('curBad', cur);
@@ -980,6 +1378,25 @@ function toUnits(amount, decimals){
    показать код, ведущий не туда. */
 function walletUrl(){
   if (!inv) return null;
+  /* Solana: код Solana Pay. Его читают Phantom, Solflare и наш кошелёк,
+     а операцию собирает наш сервер (/api/solpay) — та же, что на странице
+     оплаты: продавцу сумма минус 1%, 1% кошельку развития, с меткой счёта.
+     Так что этот код в Solana не «мимо контракта», а ровно та же оплата. */
+  if (isSol(inv.net)){
+    if (!okWallet('solana', inv.m)) return null;
+    let r;
+    try{ r = SOL.refFromInvoice(inv.h); } catch(e){ return null; }
+    const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c || 'USDC', r });
+    if (inv.n) q.set('n', String(inv.n).slice(0, 48));
+    if (inv.i) q.set('i', String(inv.i).slice(0, 64));
+    const base = /^https:\/\//.test(location.origin) && !/localhost|127\.0\.0\.1/.test(location.origin)
+               ? location.origin : 'https://wallet.tavarov.com';
+    const sp = () => 'solana:' + encodeURIComponent(base + '/api/solpay?' + q.toString());
+    let u = sp();
+    if (u.length > 360){ q.delete('i'); u = sp(); }
+    if (u.length > 360){ q.delete('n'); u = sp(); }
+    return u;
+  }
   const chain = CHAIN_IDS[inv.net];
   const token = (TOKENS[inv.net] || {})[inv.c];
   const dec   = (DECIMALS[inv.net] || {})[inv.c];
@@ -1009,7 +1426,7 @@ function drawQr(){
   segPaint('qrSeg', 'qrKind');
 
   const кошелёк = $('qrKind').value === 'wallet' && wallet;
-  $('qrHint').textContent = t(кошелёк ? 'qrHintWallet' : 'qrHintLink');
+  $('qrHint').textContent = t(кошелёк ? (isSol(inv.net) ? 'qrHintSol' : 'qrHintWallet') : 'qrHintLink');
 
   /* Средний уровень избыточности: на высоком в код влезает около 190 знаков,
      а ссылка со счётом бывает длиннее — и код тогда просто не рисовался. */
@@ -1031,21 +1448,25 @@ $('makeBtn').onclick = () => {
   const wallet = $('wallet').value.trim();
   const amount = $('amount').value.trim().replace(',', '.');
 
-  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) return fail(t('errWallet'));
+  const net = NET();
+  if (!okWallet(net, wallet)) return fail(t(isSol(net) ? 'errWalletSol' : 'errWallet'));
   /* Только цифры и одна точка. «1,000.50» раньше превращалось в «1.000.50»,
      «12abc» и «1e3» проходили — и покупатель получал ссылку, которую
      оплатить нельзя, а страница оплаты молча ждала вечно. */
   if (!/^\d{1,12}(\.\d{1,18})?$/.test(amount) || !(parseFloat(amount) > 0)) return fail(t('errAmount'));
+  if ((amount.split('.')[1] || '').replace(/0+$/, '').length > AMOUNT_DEC(net)) return fail(t('errAmount'));
+  /* В Base у нас только USDC — даже если в памяти осталась другая монета. */
+  const cur = net === 'base' ? 'USDC' : $('cur').value;
 
   const ttl = Number($('ttl').value) || 900;
   inv = {
     m: wallet,
     a: amount,
-    c: $('cur').value,
+    c: cur,
     o: $('order').value.trim() || (t('invPrefix') + Date.now()),
     n: $('shop').value.trim() || t('payDefault'),
     i: $('item').value.trim(),
-    net: NET,
+    net: net,
     t: Math.floor(Date.now() / 1000) + ttl,
     /* Когда счёт выставлен. Нужно проверке на сервере: прямой перевод,
        сделанный ДО того, как счёт появился, к этому счёту отношения не
@@ -1062,6 +1483,10 @@ $('makeBtn').onclick = () => {
    смене языка, а рисовать заново код и заново запускать слежение — незачем. */
 function refreshDone(){
   if (!inv) return;
+  /* Подсказку под кодом смена языка перезаписывает словарным текстом
+     «по ссылке» — возвращаем ту, что соответствует показанному коду. */
+  const wl = $('qrKind').value === 'wallet' && walletUrl();
+  $('qrHint').textContent = t(wl ? (isSol(inv.net) ? 'qrHintSol' : 'qrHintWallet') : 'qrHintLink');
   $('doneAmount').textContent = inv.a + ' ' + inv.c;
   $('doneTo').textContent    = inv.m;
   $('doneNet').textContent   = NET_NAMES[inv.net] || inv.net;
@@ -1177,7 +1602,8 @@ function renderLog(){
                 : v.paid ? ['pill-paid', t('pPaid')]
                 : (v.t && v.t <= now) ? ['pill-old', t('pOld')]
                 : ['pill-wait', t('pWait')];
-    const tail = [whenText(v.at), v.o, v.net === 'bnbTestnet' ? t('pTest') : '']
+    const tail = [whenText(v.at), v.o, v.net === 'bnbTestnet' ? t('pTest')
+                  : (v.net && v.net !== 'bnb' ? (NET_NAMES[v.net] || '') : '')]
                  .filter(Boolean).join(' · ');
     return '<div class="lrow">'
       + '<div class="lbody" data-open="' + esc(v.h) + '">'
