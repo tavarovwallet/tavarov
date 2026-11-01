@@ -60,6 +60,14 @@ button.plain{background:var(--fill);color:var(--accent)}
 pre{font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;word-break:break-all;background:var(--fill);border-radius:12px;padding:12px;margin:10px 0 0}
 label{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin-top:10px}
 .hidden{display:none}
+/* ===== ЧИСТОВОЙ СЛОЙ (23.10.2026): как в кошельке ===== */
+:root{ --bg:#F4F4F6; --card:#FFFFFF; --label:#0B0B10; --label-2:rgba(14,14,22,.56); --label-3:rgba(14,14,22,.32);
+  --sep:rgba(14,14,22,.07); --accent:#5B3DF5; --fill:rgba(14,14,22,.05); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#08080A; --card:#131316; --label:#F5F5F7;
+  --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.30); --sep:rgba(255,255,255,.07); --accent:#A495FF; --fill:rgba(255,255,255,.06); } }
+:root[data-theme="dark"]{ --bg:#08080A; --card:#131316; --label:#F5F5F7; --label-2:rgba(245,245,247,.56);
+  --label-3:rgba(245,245,247,.30); --sep:rgba(255,255,255,.07); --accent:#A495FF; --fill:rgba(255,255,255,.06); }
+body{ font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
 </style>
 </head>
 <body>

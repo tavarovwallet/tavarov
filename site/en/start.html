@@ -1,0 +1,2017 @@
+<!doctype html>
+<html lang="en" class="js"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Pay — USDT &amp; USDC Payments to Your Wallet</title>
+<meta name="description" content="Accept USDT and USDC through payment links, a web cashier or API. Funds go to your own wallet. Current service fee 1%; network fees are separate.">
+<link rel="canonical" href="https://tavarov.com/en/start">
+<meta property="og:title" content="Tavarov Pay — USDT &amp; USDC Payments to Your Wallet">
+<meta property="og:description" content="Accept USDT and USDC through payment links, a web cashier or API. Funds go to your own wallet. Current service fee 1%; network fees are separate.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tavarov.com/en/start">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<script>document.documentElement.classList.add('js');
+if (/^#(download|people|app)$/.test(location.hash)) location.replace('./wallet' + location.search + location.hash);</script>
+<style>
+/* =====================================================================
+   Витрина Tavarov — 12.10.2026. Два продукта, одна система:
+   Tavarov Pay (главная) и NoN Wallet (/wallet). Минимализм: белый и
+   светло-серый, один фиолетовый акцент, крупная типографика, без теней.
+   Всё своё: шрифты лежат в ./fonts, со стороны ничего не грузится.
+   ===================================================================== */
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+04E2-04E3,U+04EE-04EF,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+  --bg:#FFFFFF; --band:#F5F5F7; --tile:#F5F5F7; --text:#1D1D1F; --muted:#6E6E73; --faint:#86868B; --line:#D2D2D7;
+  --accent:#5B2BE0; --accent-h:#6E3DF5; --link:#5B2BE0; --ink:#1D1D1F; --ink-2:#FFFFFF;
+  --g1:#7C5CFF; --g2:#E25FB4;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Manrope','Segoe UI',system-ui,Roboto,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#000000; --band:#0F0F11; --tile:#161618; --text:#F5F5F7; --muted:#A1A1A6; --faint:#86868B; --line:#2C2C2E;
+  --accent:#6E3DF5; --accent-h:#7C4DFF; --link:#A98BFF; --ink:#F5F5F7; --ink-2:#000000;
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%}
+body{margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:17px; line-height:1.5; letter-spacing:-.01em; -webkit-font-smoothing:antialiased}
+img,video{max-width:100%; display:block}
+a{color:var(--link); text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{margin:0; font-weight:700; letter-spacing:-.03em}
+p{margin:0}
+.hidden{display:none !important}
+.wrap{max-width:1120px; margin:0 auto; padding:0 22px}
+.narrow{max-width:780px}
+.center{text-align:center}
+.g{background:linear-gradient(100deg,var(--g1),var(--g2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+
+/* шапка: знак, переключатель продуктов, разделы, языки, кнопка */
+header{position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px); border-bottom:1px solid transparent; transition:border-color .2s}
+header.scrolled{border-bottom-color:var(--line)}
+.bar{display:flex; align-items:center; gap:16px; height:56px}
+.brand{display:flex; align-items:center; gap:8px; color:var(--text); font-weight:700}
+.brand:hover{text-decoration:none}
+.brand svg{width:26px; height:26px; display:block}
+.sw{display:flex; background:var(--band); border-radius:999px; padding:3px; gap:2px}
+.sw a{font-size:13.5px; font-weight:600; color:var(--muted); padding:6px 13px; border-radius:999px; white-space:nowrap}
+.sw a:hover{color:var(--text); text-decoration:none}
+.sw a[aria-current="page"]{background:var(--bg); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.nav{display:flex; gap:4px; margin-left:auto}
+.nav a{font-size:13.5px; color:var(--muted); padding:6px 10px; white-space:nowrap}
+.nav a:hover{color:var(--text); text-decoration:none}
+.right{display:flex; align-items:center; gap:12px; margin-left:auto}
+.nav + .right{margin-left:12px}
+/* язык: одна кнопка с глобусом, по нажатию — список с названиями на своём языке */
+.langs{position:relative}
+.lang-btn{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:transparent; color:var(--text); font:inherit; font-size:13px; font-weight:600; padding:6px 10px 6px 9px; border-radius:999px; cursor:pointer; line-height:1}
+.lang-btn:hover{border-color:var(--faint)}
+.lang-btn svg{width:15px; height:15px; flex:none}
+.lang-btn .chev{width:10px; height:10px; opacity:.6; transition:transform .2s}
+.lang-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.lang-menu{position:absolute; right:0; top:calc(100% + 8px); min-width:176px; padding:6px; border-radius:14px; background:var(--bg); border:1px solid var(--line); box-shadow:0 12px 40px rgba(0,0,0,.14); z-index:60}
+.lang-menu[hidden]{display:none}
+.lang-menu button{display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; border:0; background:transparent; color:var(--text); font:inherit; font-size:14.5px; font-weight:500; padding:9px 12px; border-radius:9px; cursor:pointer; text-align:left}
+.lang-menu button:hover{background:var(--band)}
+.lang-menu button[aria-pressed="true"]{font-weight:700}
+.lang-menu button[aria-pressed="true"]::after{content:'✓'; color:var(--accent)}
+@media (max-width:1060px){ .nav{display:none} .right{margin-left:auto} }
+@media (max-width:720px){ .bar .btn-sm{display:none} }
+@media (max-width:520px){
+  .wrap{padding:0 16px} .bar{gap:10px; height:52px}
+  .brand svg{width:22px; height:22px}
+  .sw a{font-size:12.5px; padding:5px 9px}
+  .right{margin-left:auto}
+}
+
+/* кнопки */
+.btn{display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:12px 24px; font-size:17px; font-weight:500; border:0; cursor:pointer; white-space:nowrap}
+.btn:hover{text-decoration:none}
+.btn-main{background:var(--accent); color:#fff}
+.btn-main:hover{background:var(--accent-h)}
+.btn-plain{background:transparent; color:var(--link); padding-left:10px; padding-right:10px}
+.btn-plain:hover{text-decoration:underline}
+.btn-sm{padding:7px 15px; font-size:13px}
+.cta{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center}
+
+/* первый экран */
+.hero{text-align:center; padding:88px 22px 0}
+.eyebrow{font-size:17px; font-weight:600; color:var(--muted); margin-bottom:16px}
+.hero h1{font-size:clamp(40px, 6.6vw, 80px); line-height:1.04; letter-spacing:-.04em; max-width:15ch; margin:0 auto}
+.hero .lead{font-size:clamp(18px, 1.8vw, 22px); color:var(--muted); max-width:34em; margin:22px auto 30px; line-height:1.45}
+.note{font-size:14px; color:var(--faint); margin-top:16px}
+.film{margin:56px auto 0; max-width:1040px; border-radius:28px; overflow:hidden; background:#000; aspect-ratio:16/9}
+.film video{width:100%; height:100%; object-fit:cover}
+.stage{width:min(620px, 100%); margin:56px auto 0}
+.tilt{position:relative; height:clamp(320px, 52vw, 560px); transition:transform .4s var(--ease)}
+.stage .phone{position:absolute; width:clamp(150px, 24vw, 250px); border-radius:clamp(26px,4vw,42px); overflow:hidden; border:8px solid #1C1C1E; background:#1C1C1E}
+.stage .phone img{width:100%; height:auto}
+.stage .p1{left:50%; transform:translateX(-50%); top:0; z-index:3}
+.stage .p2{left:4%; top:12%; transform:rotate(-6deg); opacity:.95}
+.stage .p3{right:4%; top:12%; transform:rotate(6deg); opacity:.95}
+
+/* три случая под роликом */
+.uses-h{font-size:17px; font-weight:600; color:var(--muted); margin:88px 0 22px}
+.uses{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; max-width:1040px; margin:0 auto; text-align:left}
+.use{display:flex; flex-direction:column; gap:8px; background:var(--tile); border-radius:24px; padding:28px 26px 24px; color:var(--text); transition:transform .25s var(--ease)}
+.use:hover{text-decoration:none; transform:translateY(-3px)}
+.use .ic{width:42px; height:42px; border-radius:13px; background:linear-gradient(135deg,var(--g1),var(--g2)); display:flex; align-items:center; justify-content:center; margin-bottom:10px}
+.use .ic svg{width:22px; height:22px}
+.use h3{font-size:22px; letter-spacing:-.025em}
+.use p{color:var(--muted); font-size:16px; line-height:1.45; flex:1}
+.use .more{color:var(--link); font-size:15.5px; font-weight:600; margin-top:8px}
+.uses-dev{font-size:15.5px; color:var(--muted); margin-top:22px}
+@media (max-width:820px){ .uses{grid-template-columns:1fr; gap:10px} .uses-h{margin-top:64px} .use{padding:20px 20px 18px; gap:6px} .use .ic{width:36px; height:36px; border-radius:11px; margin-bottom:4px} .use h3{font-size:20px} }
+
+/* разделы */
+section{padding:112px 0}
+.band{background:var(--band)}
+.kicker{display:block; font-size:17px; font-weight:600; color:var(--link); margin-bottom:10px}
+.sec-h{font-size:clamp(34px, 4.8vw, 56px); line-height:1.07; max-width:18ch; margin-bottom:16px}
+.center .sec-h{margin-left:auto; margin-right:auto}
+.sec-lead{font-size:clamp(18px, 1.6vw, 21px); color:var(--muted); line-height:1.45; max-width:36em}
+.center .sec-lead{margin:0 auto}
+.big{font-size:clamp(19px, 1.8vw, 23px); line-height:1.5; color:var(--text); margin:6px 0 14px}
+.narrow p{color:var(--muted); margin-bottom:12px}
+.narrow p.big{color:var(--text)}
+.h-honest{font-size:24px; margin:44px 0 12px}
+ul.plain{list-style:none; padding:0; margin:0 0 20px}
+ul.plain li{padding:14px 0; border-top:1px solid var(--line); color:var(--muted)}
+ul.plain li:last-child{border-bottom:1px solid var(--line)}
+ul.plain b{color:var(--text)}
+@media (max-width:640px){ section{padding:80px 0} .hero{padding-top:56px} .film{border-radius:18px; margin-top:40px} }
+
+/* демо */
+.demo{display:flex; gap:28px; justify-content:center; flex-wrap:wrap; margin-top:48px; text-align:left}
+.dph{width:260px}
+.dph .who{text-align:center; font-size:13px; font-weight:600; color:var(--faint); margin-bottom:10px}
+.scr{position:relative; height:460px; border-radius:42px; background:#fff; color:#1D1D1F; border:10px solid #1C1C1E; padding:24px 16px 18px; overflow:hidden; display:flex; flex-direction:column}
+.scr .top{font-size:13px; font-weight:700; color:#6E6E73; text-align:center; margin-bottom:6px}
+.scr .amt{font-size:42px; font-weight:700; text-align:center; letter-spacing:-.03em; margin:8px 0 12px}
+.scr .amt.sm{font-size:26px; margin:2px 0 10px}
+.scr .amt small{font-size:14px; color:#86868B; font-weight:600}
+.st{display:flex; flex-direction:column; flex:1}
+.st[hidden], .idle[hidden], .ok[hidden]{display:none}
+.keys{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px}
+.keys button{height:42px; border:0; border-radius:12px; background:#F2F2F7; font:600 18px var(--font); color:#1D1D1F; cursor:pointer}
+.keys button:active{background:#E5E5EA}
+.go{width:100%; height:46px; border:0; border-radius:14px; background:#5B2BE0; color:#fff; font:600 15px var(--font); cursor:pointer; margin-top:auto}
+.go:disabled{opacity:.3; cursor:default}
+#qr{display:block; margin:6px auto 0; border-radius:10px}
+.wait{text-align:center; font-size:13px; color:#6E6E73; margin-top:12px}
+.tag{text-align:center; font-size:10.5px; font-weight:700; letter-spacing:.05em; color:#C7C7CC; margin-top:auto}
+.idle{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:#6E6E73; font-size:14px; text-align:center}
+.cam{width:150px; height:150px; border-radius:20px; border:3px dashed #D1D1D6}
+.rows{border:1px solid #E5E5EA; border-radius:14px; padding:2px 12px; margin-bottom:12px}
+.rows div{display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:9px 0; border-bottom:1px solid #F2F2F7}
+.rows div:last-child{border:0}
+.rows span{color:#6E6E73}
+.ok{position:absolute; inset:0; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:0 14px; text-align:center; animation:pop .35s var(--ease)}
+.ok .chk{width:78px; height:78px; border-radius:50%; background:#30D158; color:#fff; font-size:44px; line-height:78px; font-weight:700; margin-bottom:10px}
+.ok b{font-size:26px}
+.ok span{font-size:15px; font-weight:600}
+.ok .sub{font-size:13px; color:#6E6E73; font-weight:500}
+@keyframes pop{from{opacity:0; transform:scale(.97)} to{opacity:1; transform:none}}
+.again{margin-top:22px; min-height:24px}
+.linkbtn{border:0; background:none; color:var(--link); font:inherit; cursor:pointer}
+@media (max-width:600px){ .dph{width:calc(50% - 8px); min-width:150px} .demo{gap:14px} .scr{height:410px; border-width:7px; border-radius:32px; padding:18px 10px 12px} .keys button{height:36px} .scr .amt{font-size:32px} #qr{width:130px; height:130px} }
+
+/* плитки */
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:56px}
+.tile{position:relative; background:var(--tile); border-radius:28px; padding:44px 40px; overflow:hidden; display:flex; flex-direction:column}
+.tile-wide{grid-column:1 / -1; display:grid; grid-template-columns:1.1fr .9fr; gap:28px; padding:52px 52px 0; min-height:440px}
+.tile-wide .tile-txt{align-self:center; padding-bottom:52px}
+.tile.dark{background:#000; color:#F5F5F7}
+.tile.dark p{color:#A1A1A6}
+.tile.dark .tile-e, .tile.dark .more{color:#A98BFF}
+.tile-e{display:block; font-size:15px; font-weight:600; color:var(--link); margin-bottom:8px}
+.tile h3{font-size:clamp(26px, 2.8vw, 36px); line-height:1.1; margin-bottom:12px; max-width:16ch}
+.tile p{font-size:17px; color:var(--muted); line-height:1.5; margin-bottom:16px; max-width:30em}
+.tile .more{display:block; font-size:16px; margin-top:4px}
+.tile-img{align-self:end; display:flex; justify-content:center; align-items:flex-start; height:400px; overflow:hidden}
+.tile-img img{width:280px; height:auto; flex:none; border-radius:38px 38px 0 0; border:9px solid #1C1C1E; border-bottom:0}
+.nets-row{display:flex; gap:12px; margin-top:auto; padding-top:18px}
+.nets-row i{width:20px; height:20px; border-radius:50%; background:var(--c)}
+@media (max-width:900px){ .tiles{grid-template-columns:1fr} .tile-wide{grid-template-columns:1fr; padding:40px 26px 0} .tile-wide .tile-txt{padding-bottom:8px} .tile{padding:38px 26px} .tile-img{height:320px} .tile-img img{width:230px} }
+
+/* перекрёстная ссылка на второй продукт */
+.teaser{display:grid; grid-template-columns:1.3fr .7fr; gap:30px; align-items:end; background:var(--tile); border-radius:28px; padding:52px 52px 0; color:var(--text); overflow:hidden}
+.band .teaser{background:var(--bg)}
+.teaser:hover{text-decoration:none}
+.teaser:hover .more{text-decoration:underline}
+.teaser > div:first-child{align-self:center; padding-bottom:52px}
+.teaser h2{font-size:clamp(28px, 3.4vw, 42px); line-height:1.08; margin-bottom:12px; max-width:18ch}
+.teaser p{font-size:18px; color:var(--muted); margin-bottom:16px; max-width:32em}
+.teaser .more{color:var(--link); font-size:17px}
+.teaser-img{display:flex; justify-content:center; align-items:flex-start; height:300px; overflow:hidden}
+.teaser-img img{width:220px; height:auto; flex:none; border-radius:34px 34px 0 0; border:8px solid #1C1C1E; border-bottom:0}
+@media (max-width:760px){ .teaser{grid-template-columns:1fr; padding:38px 26px 0} .teaser > div:first-child{padding-bottom:6px} .teaser-img{height:240px} .teaser-img img{width:190px} }
+
+/* кошелёк */
+.feats{display:grid; grid-template-columns:repeat(4,1fr); gap:32px; margin:56px auto 0; text-align:left}
+.feat h3{font-size:20px; margin-bottom:8px}
+.feat p{font-size:16px; color:var(--muted); line-height:1.5}
+@media (max-width:900px){ .feats{grid-template-columns:1fr 1fr} }
+@media (max-width:520px){ .feats{grid-template-columns:1fr} }
+.shots{display:flex; gap:26px; justify-content:center; overflow-x:auto; padding:56px 22px 4px; scrollbar-width:none}
+.shots::-webkit-scrollbar{display:none}
+.shot{margin:0; flex:0 0 auto; width:220px; text-align:center}
+.shot .phone{border-radius:34px; overflow:hidden; border:8px solid #1C1C1E; background:#1C1C1E}
+.shot .phone img{width:100%; height:auto}
+.shot span{display:block; font-size:14px; color:var(--muted); margin-top:14px; line-height:1.4}
+#download .cta{margin-top:26px}
+.meta{font-size:14px; color:var(--faint); margin:16px auto 0; max-width:36em; line-height:1.5}
+.meta code, code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:12.5px; word-break:break-all}
+#apkBox{margin-top:24px}
+
+/* контракты и вопросы */
+details{border-top:1px solid var(--line); padding:0}
+details:last-child{border-bottom:1px solid var(--line)}
+summary{cursor:pointer; list-style:none; font-size:19px; font-weight:600; padding:20px 36px 20px 0; position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+'; position:absolute; right:4px; top:50%; transform:translateY(-50%); font-size:24px; font-weight:400; color:var(--faint); transition:transform .2s}
+details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+details p{color:var(--muted); padding:0 0 20px; margin:0}
+#contracts{margin-top:28px}
+.addr{list-style:none; padding:0; margin:0 0 16px}
+.addr li{display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); font-size:15px; color:var(--muted)}
+.addr a{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:13.5px; white-space:nowrap}
+.small{font-size:14px}
+.faq{margin-top:24px}
+
+/* финал */
+.final{text-align:center; padding:112px 0}
+.final h2{font-size:clamp(36px, 5vw, 60px); line-height:1.05; margin-bottom:14px}
+.final p{font-size:19px; color:var(--muted); margin-bottom:28px}
+
+/* подвал */
+footer{background:var(--band); padding:44px 0 36px; font-size:12.5px; color:var(--faint)}
+.fgrid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1fr; gap:26px}
+.fb .brand{font-size:15px}
+.fb .tag{margin-top:10px; color:var(--muted); font-size:13px}
+.fcol h4{font-size:12px; font-weight:600; color:var(--text); margin:0 0 10px}
+.fcol a{display:block; color:var(--muted); font-size:12.5px; padding:3px 0}
+.disclaimer{border-top:1px solid var(--line); margin-top:30px; padding-top:18px; line-height:1.5}
+.fbottom{display:flex; gap:18px; flex-wrap:wrap; margin-top:14px}
+.fbottom a{color:var(--muted)}
+@media (max-width:900px){ .fgrid{grid-template-columns:1fr 1fr} .fgrid .fb{grid-column:1 / -1} }
+
+/* появление при прокрутке — спокойное */
+.js .rv{opacity:0; transform:translateY(14px); transition:opacity .7s var(--ease), transform .7s var(--ease)}
+.js .rv.in{opacity:1; transform:none}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation:none !important; transition:none !important; scroll-behavior:auto !important}
+  .js .rv{opacity:1; transform:none}
+}
+
+/* ===== ЧИСТОВОЙ СЛОЙ ВИТРИНЫ (23.10.2026) ===== */
+:root{
+  --bg:#FFFFFF; --band:#FFFFFF; --tile:#F4F4F6; --text:#0B0B10; --muted:#6B6B74; --faint:#8E8E96;
+  --line:rgba(14,14,22,.08); --fill:rgba(14,14,22,.06);
+  --accent:#5B3DF5; --accent-h:#5B3DF5; --link:#5B3DF5;
+  --btn-bg:#0B0B10; --btn-fg:#FFFFFF;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,sans-serif;
+  --page-bg:#FFFFFF;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#08080A; --band:#08080A; --tile:#131316; --text:#F5F5F7; --muted:#8F8F97; --faint:#6E6E76;
+  --line:rgba(255,255,255,.07); --fill:rgba(255,255,255,.075);
+  --accent:#A495FF; --accent-h:#A495FF; --link:#A495FF;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D;
+  --page-bg:radial-gradient(120% 60% at 50% -10%, rgba(124,92,255,.10) 0%, transparent 60%), #08080A;
+}}
+body{ background:var(--page-bg); background-repeat:no-repeat; background-color:var(--bg);
+  font-weight:500; letter-spacing:-.011em; font-feature-settings:"ss01" on, "cv11" on; }
+h1,h2,h3{ font-weight:800; letter-spacing:-.045em; }
+.hero h1{ letter-spacing:-.05em; }
+/* Вторая половина заголовка — серым, а не радугой */
+.g{ background:none; -webkit-background-clip:border-box; background-clip:border-box; color:var(--muted); }
+
+/* Шапка */
+header{ background:color-mix(in srgb, var(--bg) 82%, transparent); }
+.sw{ background:var(--tile); }
+.sw a[aria-current="page"]{ background:var(--bg); box-shadow:0 1px 2px rgba(14,14,22,.08), 0 3px 10px -4px rgba(14,14,22,.12); }
+@media (prefers-color-scheme: dark){ .sw a[aria-current="page"]{ background:rgba(255,255,255,.10); box-shadow:none; } }
+.lang-btn{ border-color:var(--line); background:var(--tile); border-color:transparent; }
+.lang-menu{ border-color:var(--line); border-radius:16px; }
+.lang-menu button:hover{ background:var(--tile); }
+
+/* Кнопки — как в кошельке: главная монохромная, скруглённый прямоугольник */
+.btn{ border-radius:14px; font-weight:650; letter-spacing:-.018em; transition:opacity .15s ease, transform .12s var(--ease); }
+.btn-main, .btn-main:hover{ background:var(--btn-bg); color:var(--btn-fg); }
+.btn-main:hover{ opacity:.86; }
+.btn-main:active{ transform:scale(.985); }
+.btn-sm{ border-radius:11px; padding:8px 15px; font-weight:650; }
+.btn-plain{ font-weight:600; }
+
+/* Подписи над заголовками — тихие, не фиолетовые */
+.eyebrow, .uses-h{ font-size:15px; font-weight:600; color:var(--muted); letter-spacing:-.01em; }
+.kicker, .tile-e{ font-size:14px; font-weight:600; color:var(--muted); letter-spacing:-.005em; }
+.tile.dark .tile-e{ color:#8F8F97; }
+
+/* Три случая: значки без градиента */
+.use{ border-radius:22px; }
+.use .ic{ background:var(--fill); }
+.use .ic svg{ stroke:var(--text); }
+.use .more, .tile .more, .teaser .more{ font-weight:600; }
+
+/* Ни чередующихся полос, ни чёрной плитки посреди светлой страницы */
+.band{ background:transparent; }
+.band .teaser, .teaser{ background:var(--tile); }
+.tile{ border-radius:26px; }
+.tile.dark{ background:var(--tile); color:var(--text); }
+.tile.dark p{ color:var(--muted); }
+.tile.dark .more{ color:var(--link); }
+section{ border-top:1px solid var(--line); }
+.hero + .wrap + section, main > section:first-of-type{ border-top:0; }
+
+/* Демо: кнопка кассы — как главная в кошельке */
+.go{ background:#0B0B10; border-radius:14px; font-weight:650; }
+.go:disabled{ opacity:.18; }
+
+/* Подвал */
+footer{ background:transparent; border-top:1px solid var(--line); }
+.fb .tag{ text-align:left; letter-spacing:-.005em; font-weight:500; color:var(--muted); margin-top:10px; }
+.fcol h4{ font-weight:700; }
+.fcol a:hover{ color:var(--text); text-decoration:none; }
+
+summary{ font-weight:650; letter-spacing:-.02em; }
+details, details:last-child, ul.plain li, ul.plain li:last-child, .addr li{ border-color:var(--line); }
+
+</style>
+<link rel="stylesheet" href="/studio.css?v=20261029">
+<style id="english-marketing">#langs{display:none!important}.apk-hash{overflow-wrap:anywhere}</style>
+<meta name="robots" content="index, follow"><meta property="og:site_name" content="Tavarov Pay"><meta property="og:locale" content="en_US"><meta property="og:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@TavarovWallet"><meta name="twitter:title" content="Tavarov Pay — USDT &amp; USDC Payments to Your Wallet"><meta name="twitter:description" content="Accept USDT and USDC through payment links, a web cashier or API. Funds go to your own wallet. Current service fee 1%; network fees are separate."><meta name="twitter:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta name="twitter:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."></head>
+<body>
+<a class="skip-link" href="#top">Skip to content</a>
+<header id="hdr">
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label="Tavarov Pay"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg></a>
+    <div class="sw" aria-label="Tavarov">
+      <a href="/" aria-current="page">Tavarov Pay</a>
+      <a href="/wallet">NoN Wallet</a>
+    </div>
+    <nav class="nav">
+      <a href="#demo" data-t="nav_demo">Demo</a>
+      <a href="#sellers" data-t="s_h">For shops</a>
+      <a href="#creators" data-t="a_h">For creators</a>
+      <a href="#desktop" data-desktop="nav">Desktop app</a>
+    </nav>
+    <div class="right">
+      <div class="langs" id="langs"><button type="button" class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.6 2.8 3.9 5.8 3.9 9s-1.3 6.2-3.9 9c-2.6-2.8-3.9-5.8-3.9-9S9.4 5.8 12 3z"></path></svg><span id="langCur">EN</span><svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg></button><div class="lang-menu" id="langMenu" role="menu" hidden=""><button type="button" data-code="en" role="menuitemradio" lang="en" aria-pressed="true">English</button><button type="button" data-code="es" role="menuitemradio" lang="es" aria-pressed="false">Español</button><button type="button" data-code="pt" role="menuitemradio" lang="pt" aria-pressed="false">Português</button><button type="button" data-code="tr" role="menuitemradio" lang="tr" aria-pressed="false">Türkçe</button><button type="button" data-code="ru" role="menuitemradio" lang="ru" aria-pressed="false">Русский</button><button type="button" data-code="tg" role="menuitemradio" lang="tg" aria-pressed="false">Тоҷикӣ</button></div></div>
+      <a class="btn btn-main btn-sm" href="https://wallet.tavarov.com/dev" data-t="p_cta1">Connect payments</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- первый экран: одна мысль и ролик -->
+  <div class="wrap hero">
+    <p class="eyebrow rv in" data-t="p_eye">Tavarov Pay — crypto payments for sellers</p>
+    <h1 class="rv in" data-t="p_h1">Get paid in USDT and USDC. <span class="g">Straight to your own wallet.</span></h1>
+    <p class="lead rv in" data-t="p_sub">Accept payments by checkout, invoice link or API. Customers pay with a compatible wallet; funds are transferred to your wallet when the network confirms the transaction.</p>
+    <div class="cta rv in">
+      <a class="btn btn-main" href="https://wallet.tavarov.com/dev"><span data-t="p_cta1">Connect payments</span></a>
+      <a class="btn btn-plain" href="#desktop"><span data-desktop="hero">Download desktop app</span> ↓</a>
+    </div>
+    <p class="note rv in" data-t="p_note">USDT and USDC · Four networks · 1% current service fee</p>
+    <div class="film rv">
+      <video class="dv" data-v="pay" data-poster="1" muted="" loop="" playsinline="" autoplay="" preload="metadata" width="1280" height="720" poster="./video/pay-poster-en.jpg" aria-label="Tavarov Pay">
+        <source data-f="webm" src="./video/pay-en.webm" type="video/webm">
+        <source data-f="mp4" src="./video/pay-en.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <!-- три понятных случая: человек сразу видит, что это для него -->
+  <div class="wrap center">
+    <p class="uses-h rv" data-t="u_h">How do you sell?</p>
+    <div class="uses">
+      <a class="use rv" href="https://till.tavarov.com/"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"></path></svg></span><h3 data-t="u1h">In a shop or café</h3><p data-t="u1t">Type the amount — the buyer scans a QR code.</p><span class="more" data-t="u1a">Open the checkout →</span></a>
+      <a class="use rv" href="https://wallet.tavarov.com/invoice?lang=en"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span><h3 data-t="u2h">Online and in chats</h3><p data-t="u2t">Send a payment link — the page shows “Paid” by itself.</p><span class="more" data-t="u2a">Create an invoice →</span></a>
+      <a class="use rv" href="/en/crypto-donations" data-pg="crypto-donations"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></span><h3 data-t="u3h">Streams and content</h3><p data-t="u3t">Tips with an alert in OBS, straight to your wallet.</p><span class="more" data-t="u3a">Set up tips →</span></a>
+    </div>
+    <p class="uses-dev rv"><span data-t="u_dev">WooCommerce store or your own site?</span> <a href="/en/woocommerce" data-pg="woocommerce" data-t="u_dev2">Plugin and API →</a></p>
+  </div>
+
+  <!-- демо: попробовать без кошелька -->
+
+  <section id="desktop" class="desktop-section" aria-labelledby="desktop-title">
+    <div class="wrap">
+      <div class="desktop-heading">
+        <div><span class="kicker" data-desktop="eyebrow">Tavarov Pay · Cashier</span>
+          <h2 id="desktop-title" data-desktop="heading">A proper place<br>for your checkout.</h2></div>
+        <p data-desktop="intro">Your counter, your computer, your wallet. Accept USDT and USDC with a dedicated Windows app.</p>
+      </div>
+      <div class="till-preview" role="img" aria-label="Illustration of Tavarov Pay Till checkout" data-desktop-aria="previewLabel">
+        <div class="till-chrome"><span class="window-dots"><i></i><i></i><i></i></span><span>Tavarov Pay Till</span><span class="preview-label" data-desktop="preview">Interface preview</span></div>
+        <div class="till-body">
+          <aside class="till-sidebar"><span class="till-mark">T<span>Pay</span></span><span class="till-menu current" data-desktop="checkout">Checkout</span><span class="till-menu" data-desktop="history">History</span><span class="till-menu" data-desktop="settings">Settings</span><span class="till-connected"><i></i><span data-desktop="connected">Your wallet connected</span></span></aside>
+          <div class="till-register"><span class="till-small" data-desktop="newSale">NEW SALE</span><div class="till-amount">24<span>.00</span> <small>USDT</small></div><div class="till-networks"><span>BNB Chain</span><span>USDT</span></div><div class="till-keypad" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>.</span><span>0</span><span>⌫</span></div><div class="till-create" data-desktop="create">Create payment</div></div>
+          <div class="till-receipt"><div class="receipt-icon" aria-hidden="true">↗</div><h3 data-desktop="direct">From the counter.<br>Straight to your wallet.</h3><p data-desktop="flow">Enter the amount. Show the QR.<br>See the payment arrive.</p><div class="receipt-lines"><span data-desktop="customerDisplay">Customer display</span><b data-desktop="secondScreen">Second screen</b><span data-desktop="paymentHistory">Payment history</span><b>CSV</b><span data-desktop="notifications">Notifications</span><b data-desktop="on">On</b></div><small data-desktop="illustration">Illustration · no real transaction</small></div>
+        </div>
+      </div>
+      <div class="desktop-downloads">
+        <article class="download-card"><div class="platform-line"><h3>Web</h3></div><p>macOS · Windows · Linux</p><div class="download-actions"><a class="btn btn-main" href="https://till.tavarov.com/" data-desktop="webOpen">Open checkout ↗</a></div><small data-desktop="webHelp">Open in your browser. No installation needed.</small></article>
+        <article class="download-card"><div class="platform-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 8-1v7H3zm10-1 8-1v8h-8zM3 13h8v7l-8-1zm10 0h8v8l-8-1z"></path></svg><h3>Windows</h3><span>1.0.5 · Preview</span></div><p data-desktop="winMeta">Windows 10 / 11 · 64-bit · Unsigned preview</p><div class="download-actions"><a class="btn btn-main" data-release="windows-setup" href="/downloads/till/Tavarov-Pay-Till-Setup-1.0.5.exe"><span data-desktop="installer">Download installer</span> <span aria-hidden="true">↓</span></a><a class="btn btn-outline" data-release="windows-portable" href="/downloads/till/Tavarov-Pay-Till-1.0.5-portable.exe">Portable <span aria-hidden="true">↓</span></a></div><small data-desktop="portableHelp">Portable opens without installation.</small></article>
+      </div>
+      <div class="desktop-footnote"><p data-desktop="setup">Connect your Tavarov Pay API key in Settings. The app keeps your checkout and history on this computer.</p><a href="https://wallet.tavarov.com/dev" data-desktop="getKey">Get an API key ↗</a></div>
+      <details class="download-details"><summary data-desktop="installation">Installation &amp; file verification</summary><div class="install-grid"><p data-desktop="installHelp">The Windows preview is not signed by a verified publisher. A checksum verifies the downloaded file, not the publisher’s identity. Use the browser checkout if you prefer not to install an unsigned preview.</p><div><p data-desktop="verify">Check the file’s SHA-256 checksum before installing.</p><a href="/downloads/till/SHA256SUMS.txt" data-desktop="checksums">Download SHA-256 checksums ↗</a></div></div></details>
+    </div>
+  </section>
+
+  <section id="demo" class="band">
+    <div class="wrap center">
+      <span class="kicker rv" data-t="dm_e">Try it</span>
+      <h2 class="sec-h rv" data-t="dm_h">Twenty seconds, and it all makes sense</h2>
+      <p class="sec-lead rv" data-t="dm_t">This is a demo: no wallet needed, no real money moves. Type an amount on the seller's phone, then pay on the buyer's.</p>
+      <div class="demo rv">
+        <div class="dph">
+          <div class="who" data-t="dm_seller">Seller</div>
+          <div class="scr">
+            <div class="top" data-t="dm_shop">Café · Checkout</div>
+            <div id="sKey" class="st">
+              <div class="amt"><span id="amt">0</span> <small>USDT</small></div>
+              <div class="keys">
+                <button>1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>6</button><button>7</button><button>8</button><button>9</button><button>.</button><button>0</button><button data-k="del" aria-label="⌫">⌫</button>
+              </div>
+              <button class="go" id="dShow" disabled="" data-t="dm_show">Show code</button>
+            </div>
+            <div id="sQr" class="st" hidden="">
+              <div class="amt sm"><span id="amt2"></span> <small>USDT</small></div>
+              <canvas id="qr" width="168" height="168"></canvas>
+              <div class="wait" id="sWait" data-t="dm_wait">Waiting for payment…</div>
+              <div class="tag" data-t="dm_tag">DEMO · not a real payment code</div>
+            </div>
+            <div id="sOk" class="ok" hidden=""><div class="chk">✓</div><b data-t="dm_paid">Paid</b><span id="okAmt"></span><span class="sub" data-t="dm_in">99% is already in your wallet</span></div>
+          </div>
+        </div>
+        <div class="dph">
+          <div class="who" data-t="dm_buyer">Buyer</div>
+          <div class="scr">
+            <div id="bIdle" class="idle"><div class="cam"></div><span data-t="dm_idle">Waiting for the seller's code…</span></div>
+            <div id="bPay" class="st" hidden="">
+              <div class="top" data-t="dm_payto">Pay Café</div>
+              <div class="amt sm"><span id="bAmt"></span> <small>USDT</small></div>
+              <div class="rows">
+                <div><span data-t="dm_net">Network</span><b>Solana</b></div>
+                <div><span data-t="dm_sel">To seller</span><b id="bSel"></b></div>
+                <div><span data-t="dm_fee">1% fee — paid by the seller</span><b id="bFee"></b></div>
+              </div>
+              <button class="go" id="dPay" data-t="dm_pay">Pay (demo)</button>
+            </div>
+            <div id="bOk" class="ok" hidden=""><div class="chk">✓</div><b data-t="dm_paid">Paid</b><span class="sub" data-t="dm_done">One transaction. Done.</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="again"><button id="dAgain" class="linkbtn" hidden="" data-t="dm_again">↺ Try again</button></p>
+    </div>
+  </section>
+
+  <!-- плитки: что можно -->
+  <section id="sellers">
+    <div class="wrap">
+      <div class="center">
+        <span class="kicker rv" data-t="s_h">For shops</span>
+        <h2 class="sec-h rv" data-t="t_h">Everything you need to get paid</h2>
+        <p class="sec-lead rv" data-t="t_sub">A till, invoices, tips and an API. The money lands in your wallet at once — we never hold it.</p>
+      </div>
+      <div class="tiles">
+        <article class="tile tile-wide dark rv">
+          <div class="tile-txt">
+            <span class="tile-e" data-t="tA_e">Till</span>
+            <h3 data-t="tA_h">A till in your phone. A sticker on the counter.</h3>
+            <p data-t="tA_t">Type the amount — the buyer points the camera and pays. One sticker for every network and every customer.</p>
+            <a class="more" href="https://wallet.tavarov.com/invoice?lang=en" data-t="s_link">Create an invoice right now →</a>
+          </div>
+          <div class="tile-img"><img src="./shots/en/m-till.webp?v=1023" data-shot="m-till" width="414" height="896" loading="lazy" alt="Tavarov Pay payment request with amount and QR code"></div>
+        </article>
+        <article class="tile rv">
+          <span class="tile-e" data-t="tB_e">Online</span>
+          <h3 data-t="tB_h">Invoice by link</h3>
+          <p data-t="tB_t">Agreed in a chat? Send a link. The buyer pays from any wallet, and the page shows “Paid” by itself.</p>
+          <a class="more" href="/en/sellers" data-t="s_digital">Payment tools for digital goods →</a>
+        </article>
+        <article class="tile rv">
+          <span class="tile-e" data-t="tC_e">Developers</span>
+          <h3 data-t="tC_h">API, WooCommerce and a Telegram bot</h3>
+          <p data-t="tC_t">An invoice in one request and a signed webhook. A WordPress plugin and a bot that issues invoices right in the chat.</p>
+          <a class="more" href="https://wallet.tavarov.com/dev" data-t="s_api">API docs and dashboard →</a>
+          <a class="more" href="https://t.me/tavarov_pay_bot" data-t="s_tg">Invoices in Telegram — @tavarov_pay_bot →</a>
+        </article>
+        <article class="tile tile-wide rv" id="creators">
+          <div class="tile-txt">
+            <span class="tile-e" data-t="a_h">For creators</span>
+            <h3 data-t="a_h2">Tips that arrive instantly</h3>
+            <p data-t="tD_t">A link in your channel description and a sound alert in OBS. The message appears only after a real payment.</p>
+            <a class="more" href="/en/crypto-donations" data-pg="crypto-donations" data-t="f_don">Crypto tips</a>
+            <a class="more" href="/en/donationalerts-alternative" data-pg="donationalerts-alternative" data-t="a_cmp">Compare with DonationAlerts and DonatePay →</a>
+          </div>
+          <div class="tile-img"><img src="./shots/en/author.webp?v=1023" data-shot="author" width="414" height="896" loading="lazy" alt="Creator donation page with totals and a donation goal"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- одна операция и честность -->
+  <section id="honest" class="band">
+    <div class="wrap narrow">
+      <span class="kicker rv" data-t="ot_e">One transaction</span>
+      <h2 class="sec-h rv" data-t="ot_h">Nobody in the middle</h2>
+      <p class="big rv" data-t="ot_t">The current payment split is 99% to the seller and 1% to Tavarov Pay, in the same transaction. We do not hold a merchant balance or operate a payout schedule. Network fees are separate.</p><p class="small rv" id="fee-disclosure">Current service fee: <b>1%</b>. On BNB Chain, Ethereum and Base, the contract owner can change it up to <b>2%</b>. Network fees are separate. <a href="/en/terms#fees">Read the fee terms →</a></p>
+      <p class="rv" data-t="ot_proof">See for yourself: <a href="https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8" target="_blank" rel="noopener noreferrer">a real Solana payment</a> and <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code" target="_blank" rel="noopener noreferrer">the verified contract on BNB Chain</a>.</p>
+      <h3 class="rv h-honest" data-t="ho_h">Honestly</h3>
+      <ul class="plain rv">
+        <li data-t="ho1"><b>No independent smart-contract audit.</b> Internal checks do not replace an external security review. Understand the risks and start with a small payment.</li>
+        <li data-t="ho_dev"><b>Independently developed.</b> Review the published source code or contact the project at <a href="mailto:hi@tavarov.com">hi@tavarov.com</a>.</li>
+        <li data-t="ho3"><b>Rules differ by country.</b> In some places paying with crypto is forbidden. Check the rules where you are.</li>
+      </ul>
+      <details class="rv" id="contracts">
+        <summary data-t="c_h">Contracts</summary>
+        <p data-t="c_intro">Payment smart-contract source is published for inspection. The wallet, cashier and API also use off-chain software. Published source is not an independent security audit.</p>
+        <ul class="addr">
+          <li><span data-t="c1">Payments and refunds</span><a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35">0x1Fc6…Ca35</a></li>
+          <li><span data-t="c3">Service wallet, the 1% fee lands here</span><a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432">0x73BB…f432</a></li>
+          <li><span data-t="c7">Payments on Ethereum</span><a href="https://etherscan.io/address/0x5046399643c387d93e1467bad3fd7edf3fb459da">0x5046…59da</a></li>
+          <li><span data-t="c8">Payments on Base</span><a href="https://basescan.org/address/0x5046399643c387d93e1467bad3fd7edf3fb459da">0x5046…59da</a></li>
+          <li><span data-t="c9">Service wallet on Solana</span><a href="https://solscan.io/account/Ew2cTsGyPv7pmn6CyLzV1X1K8A6nBWvJvmkvMY1sM4KU">Ew2c…M4KU</a></li>
+          <li><span data-t="c4">On-chain invoice</span><a href="https://bscscan.com/address/0x82a9D1b0795aC44e8045dB60F30526c4230daFF9">0x82a9…aFF9</a></li>
+        </ul>
+        <p class="small" data-t="c_one">Payments are supported on BNB Chain, Ethereum, Base and Solana. EVM payments use smart contracts. Solana payments use a transaction signed by the payer that includes the seller transfer and service fee.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- кошелёк для приёма -->
+  <section id="wallet-teaser">
+    <div class="wrap">
+      <a class="teaser rv" href="/wallet">
+        <div>
+          <span class="kicker">NoN Wallet</span>
+          <h2 data-t="wt_h">NoN Wallet is a separate product.</h2>
+          <p data-t="wt_t">A non-custodial wallet for managing your own crypto. It is optional: you can use Tavarov Pay with other compatible wallets.</p>
+          <span class="more" data-t="wt_a">Explore NoN Wallet →</span>
+        </div>
+        <div class="teaser-img"><img src="./shots/en/m-wallet.webp?v=1023" data-shot="m-wallet" width="414" height="896" loading="lazy" alt="NoN Wallet account balances on a mobile screen"></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- вопросы -->
+  <section id="faq" class="band">
+    <div class="wrap narrow">
+      <h2 class="sec-h rv" data-t="q_h">Questions</h2>
+      <div class="faq rv">
+        <details><summary data-t="q3">What does it cost?</summary><p data-t="a3">Tavarov Pay currently charges 1% per payment, deducted from the seller’s proceeds. Blockchain network fees are separate and vary with the network and demand. On BNB Chain, Ethereum and Base, the contract owner can change the service fee up to the on-chain maximum of 2%. See the Terms for details.</p></details>
+        <details><summary data-t="qp1">How do I connect my store?</summary><p data-t="ap1">Connect through the API dashboard using a wallet signature, or create a payment link. You remain responsible for your sales, refunds, taxes and compliance with the rules that apply to your business.</p></details>
+        <details><summary data-t="qp2">What can the buyer pay with?</summary><p data-t="ap2">A wallet compatible with the chosen network and token, such as MetaMask, Trust Wallet, OKX, Phantom, Solflare or NoN Wallet. Supported networks are BNB Chain, Ethereum, Base (USDC only) and Solana.</p></details>
+        <details><summary data-t="q5">What if the buyer wants a refund?</summary><p data-t="a5">Blockchain payments cannot be cancelled by Tavarov Pay. The seller handles refunds from their own wallet. Available refund tools depend on the payment network and integration. The service fee is not refunded.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="final rv">
+      <h2 data-t="pf_h">Ready to connect your store?</h2>
+      <p data-t="pf_t">Open the developer dashboard or create your first payment request.</p>
+      <div class="cta">
+        <a class="btn btn-main" href="https://wallet.tavarov.com/dev"><span data-t="p_cta1">Connect payments</span></a>
+        <a class="btn btn-plain" href="https://wallet.tavarov.com/invoice?lang=en" data-t="f_a2">Create an invoice</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div class="fb">
+        <a class="brand" href="/" aria-label="Tavarov"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg><span>Tavarov Pay</span></a>
+        <p class="tag">Tavarov Pay · NoN Wallet</p>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc1">Product</h4>
+        <a href="/">Tavarov Pay</a>
+        <a href="/wallet">NoN Wallet</a>
+        <a href="#desktop" data-desktop="nav">Desktop app</a>
+        <a href="https://wallet.tavarov.com/invoice?lang=en" data-t="f_a2">Create an invoice</a>
+        <a href="https://wallet.tavarov.com/dev" data-t="f_a10">API for websites</a>
+        <a href="https://t.me/tavarov_pay_bot" data-t="f_bot">Telegram bot</a>
+        <a href="/en/woocommerce" data-page="woocommerce" data-t="f_wc">WooCommerce plugin</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc2">Learn</h4>
+        <a href="/en/accept-usdt" data-page="accept-usdt" data-t="f_usdt">How to accept USDT</a>
+        <a href="/en/crypto-donations" data-page="crypto-donations" data-t="f_don">Crypto tips</a>
+        <a href="/en/partners" data-page="partners" data-t="f_partners">Partner program</a>
+        <a href="/en/sellers" data-t="f_a8">For digital sellers</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc3">Open by design</h4>
+        <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35" data-t="f_a3">Payment contract</a>
+        <a href="https://bscscan.com/address/0x73BBCD23735257660A9f6BE57d057dC4A2ABf432" data-t="f_a5">Service wallet</a>
+        <a href="https://bscscan.com/address/0xd6E8A78634bE366bDbD041227D1E94F5b374338e" data-t="f_a6">Names contract</a>
+        <a href="https://github.com/tavarovwallet/tavarov" data-t="f_a9">Source code</a>
+      </div>
+      <div class="fcol">
+        <h4 data-t="fc4">Stay in touch</h4>
+        <a href="https://t.me/tavarovpay" target="_blank" rel="noopener noreferrer" data-t="f_tg">News on Telegram</a>
+        <a href="https://x.com/TavarovWallet" target="_blank" rel="noopener noreferrer" data-t="f_x">We are on X</a>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <p data-t="disc">Tavarov Pay provides payment software and does not hold merchant funds. NoN Wallet is a separate non-custodial wallet. Blockchain transactions carry risks, and crypto payment rules vary by country.</p>
+    </div>
+    <div class="fbottom">
+      <span>© 2026 Tavarov</span>
+      <a href="/en/privacy" data-t="f_a7">Privacy policy</a>
+      <a href="/en/terms" data-page="terms" data-t="f_terms">Terms of use</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Языки. Словарь лежит прямо здесь: страница должна открываться сразу на
+   нужном языке, а не мигать чужим, пока что-то грузится. Русский берём из
+   разметки — так он не может разойтись с тем, что видно в исходнике. */
+const T = {
+  en: {
+    c3:"Service wallet, the 1% fee lands here",
+    f_a5:"Service wallet",
+    s5h:"An API for your own website",
+    s5t:"An invoice in one request, a signed webhook when it is paid. Your key lives in a dashboard you sign into with your wallet: no applications, no contracts. Test mode included.",
+    s6h:"Invite others",
+    s6t:"Bring in a seller or a creator with your link and 20% of our fee on their sales is yours for 12 months. The contract pays you itself, instantly.",
+    s_api:"API docs and dashboard →",
+    s_tg:"Invoices in Telegram — @tavarov_pay_bot →",
+    a_h:"For creators",
+    a1h:"Tips by link",
+    a1t:"A link like wallet.tavarov.com/d/your_name for your channel description. Viewers pay in USDT or USDC from any wallet, and 99% reaches you instantly.",
+    a2h:"OBS alerts",
+    a2t:"A tip pops up on your stream with a sound: nickname, amount and message. Messages appear only after a real payment, so nobody can post abuse for free.",
+    a3h:"Fundraising goal",
+    a3t:"“New microphone — $300”: a progress bar on your tip page and on stream. The total is read from the blockchain, so it cannot be faked.",
+    a_how:"Turn it on in the app: Settings → Mode → Creator. You will also find your link, a QR code, a greeting for viewers and totals for the day, week and month.",
+    sh5:"Creator mode: tips, totals and a goal",
+    q7:"Who is the app for?",
+    a7:"It has three modes: seller — a till, invoices and an API for your site; buyer — pay by code and send money; creator — tips from viewers. The wallet is the same, and you can switch modes in settings at any time.",
+    f_a10:"API for websites",
+    f_tg:"Telegram bot",
+    f_wc:"WooCommerce plugin", f_usdt:"How to accept USDT", f_don:"Crypto tips", f_partners:"Partner program", f_terms:"Terms of use",
+    v1h:"Paying by QR code",
+    v2h:"Tips and OBS alerts",
+    v2c:"A viewer tips from their phone, and the nickname, amount and message pop up on stream.",
+    v3h:"API for your website",
+    v3c:"The site creates an invoice with one request, the customer pays, and the site gets a signed webhook.",
+    demo_c:'The seller made an invoice, the buyer opened the link, the money arrived. Thirty seconds, no edits.',
+    c_h:'Contracts',
+    c_intro:'Everything the app does lives in open contracts. You can read them in a block explorer instead of taking our word for it.',
+    c1:'Payments and refunds',
+    c2:'TVR token',
+    
+    c4:'On-chain invoice',
+    c5:'Names',
+    c6:'Names, previous version',
+    c_one:'<b>One network only — BNB Chain.</b> Our contracts are not deployed anywhere else, and the app does not go there.',
+    c_pow:'What we can do: change the rules for names and close trap words like <code>support</code>. What we cannot: touch your money, cancel your transfer, freeze an account or act as you. Those actions simply do not exist in the contracts.',
+    eyebrow:'NoN — as in non-custodial. Your keys, and your money.',
+    h1:'Pay in crypto without cashing it out',
+    hsub:'The seller shows a code — you pay with what you already have. No exchange, no waiting. The keys stay on your phone.',
+    cta1:'Open the wallet', cta2:'Download for Android',
+    hnote:'Opens in a browser, pins to your home screen. iPhone and Android.',
+    sh1:'Wallet: BNB, USDT and USDC on one screen',
+    sh2:'Till: type the amount, the buyer points a camera',
+    sh3:'Bonuses for purchases, and a straight answer on when they mature',
+    sh4:'Send by name instead of a long address',
+    p_h:'For people',
+    p1h:'The money is yours',
+    p1t:'The key is created on your device and never leaves it. We cannot take or freeze your money either.',
+    p2h:'Twelve words',
+    p2t:'Write the words down and the wallet comes back on any device. Lose them and nobody can bring it back — we keep no copy.',
+    p3h:'Send by name',
+    p3t:'A short name instead of forty-two characters. It lives on the blockchain and belongs to your address.',
+    p4h:'Six languages',
+    p4t:'English, Russian, Tajik, Spanish, Turkish, Portuguese. The app takes the language from your phone by itself.',
+    s_h:'For shops',
+    s1h:'One percent',
+    s1t:'Cards take two to three, and the money arrives days later. Here it is one percent, paid by the seller.',
+    s2h:'We never hold the money',
+    s2t:'The purchase goes straight to your address — we do not hold it and cannot freeze it. Tavarov Pay keeps 1% of the purchase on the spot, in the same operation.',
+    s3h:'A till in your phone',
+    s3t:'Type the amount, the buyer points the camera and sees it on their phone. "Paid" appears by itself.',
+    s4h:'Money right away',
+    s4t:'The payment reaches your wallet in seconds. Cards settle in days, and until then the money is not yours.',
+    s_link:'Create an invoice right now →',
+    s_digital:'Selling digital goods? Chargebacks cannot happen →',
+    d_h:'Download',
+    d_intro:'In a browser nothing is installed and updates arrive on their own. The Android file is for those who prefer a normal app.',
+    d_ver:'Version', d_size:'size',
+    d_hash:'SHA-256 fingerprint of the file — check it after downloading:',
+    d_warn:'Android will ask permission to install from this source — it asks that about any file from outside the store. Download only from this page: a fake "Tavarov" on someone else’s site is the most common way a wallet gets taken.',
+    d_none:'The Android file is not published yet — please use the browser version for now.',
+    d_ios:'On iPhone: open the wallet in Safari, tap Share → Add to Home Screen — it will sit on your screen like a normal app.',
+    ho_h:'Honestly',
+    ho1:'<b>The contracts have no independent audit.</b> We checked them ourselves, which is not the same thing. Do not keep more in the till than you can afford to lose.',
+    ho2:'<b>TVR is not for sale and has no price.</b> They are points. Anyone offering to sell you TVR is a fraud.',
+    ho3:'<b>Rules differ by country.</b> In some places paying with crypto is forbidden. Check the rules where you are.',
+    q_h:'Questions',
+    q1:'What happens if I lose my phone?',
+    a1:'Nothing, if the twelve words are written down: type them on a new device and the wallet is there. Without them nobody can bring it back, us included.',
+    q2:'Who holds my money?',
+    a2:'Nobody. It sits on the blockchain at your address, and the key is on your device. We are not a bank and not an exchange, and we cannot reach your money.',
+    q3:'What does it cost?',
+    a3:'The wallet is free. On purchases paid through the app the contract takes one percent, paid by the seller and not by the buyer. The network fee is a fraction of a cent and goes to the network, not to us. Swaps and cross-network transfers inside the wallet cost 0.5%, which goes to the project; the amount is shown before you confirm.',
+    q4:'What is TVR?',
+    a4:'Points that used to be credited for purchases. Since October 2026 no new ones are credited; those already credited can be claimed in the wallet as they mature. They have no price and nowhere to sell.',
+    q5:'What if the buyer wants a refund?',
+    a5:'The seller refunds with a button, the buyer gets back exactly what they paid. The one percent stays in the treasury.',
+    q6:'Which network does this run on?',
+    a6:'BNB Chain. The network fee there is a fraction of a cent, and USDT and USDC are the same ones you know from exchanges. The contracts are open — links at the bottom of this page.',
+    f_a1:'Open the wallet', f_a2:'Create an invoice', f_a3:'Payment contract',
+    f_a4:'TVR token',  f_a6:'Names contract', f_a7:'Privacy policy', f_a8:'For digital sellers', f_a9:'Source code', f_tg:'News on Telegram', f_x:'We are on X',
+    disc:'NoN Wallet is a non-custodial wallet: we do not store your keys and have no access to your money. Nothing on this page is investment advice. Crypto changes in price and you can lose all of it. In a number of countries paying for goods and services with crypto is restricted or banned — check the rules where you live.'
+  },
+
+  es: {
+    c3:"Billetera del servicio, aquí llega el 1 %",
+    f_a5:"Billetera del servicio",
+    s5h:"API para su propio sitio",
+    s5t:"Una factura en una sola solicitud y un webhook firmado cuando se paga. La clave está en un panel al que entra con su billetera: sin solicitudes ni contratos. Incluye modo de prueba.",
+    s6h:"Invite a otros",
+    s6t:"Traiga a un vendedor o a un autor con su enlace y el 20 % de nuestra comisión sobre sus ventas es suyo durante 12 meses. Paga el contrato, solo y al instante.",
+    s_api:"Documentación y panel de la API →",
+    s_tg:"Facturas en Telegram — @tavarov_pay_bot →",
+    a_h:"Para autores",
+    a1h:"Donaciones por enlace",
+    a1t:"Un enlace como wallet.tavarov.com/d/tu_nombre para la descripción del canal. Tu audiencia paga en USDT o USDC desde cualquier billetera y te llega el 99 % al instante.",
+    a2h:"Alertas en OBS",
+    a2t:"La donación aparece en tu directo con sonido: apodo, cantidad y mensaje. El mensaje solo se ve tras un pago real, así que nadie puede insultar gratis.",
+    a3h:"Meta de recaudación",
+    a3t:"«Micrófono nuevo — 300 $»: una barra de progreso en tu página de donaciones y en el directo. Lo recaudado se lee de la blockchain, no se puede inflar.",
+    a_how:"Se activa en la app: Ajustes → Modo → Autor. Ahí están también tu enlace, el QR, un saludo para tu audiencia y los totales del día, la semana y el mes.",
+    sh5:"Modo Autor: donaciones, totales y meta",
+    q7:"¿Para quién es la app?",
+    a7:"Tiene tres modos: vendedor — caja, facturas y API para su sitio; comprador — pagar con código y enviar dinero; autor — donaciones de la audiencia. La billetera es la misma y el modo se cambia en ajustes cuando quiera.",
+    f_a10:"API para sitios web",
+    f_tg:"Bot de Telegram",
+    f_wc:"Plugin para WooCommerce", f_usdt:"Cómo aceptar USDT", f_don:"Donaciones en cripto", f_partners:"Programa de socios", f_terms:"Términos de uso",
+    v1h:"Pago con código QR",
+    v2h:"Donaciones y alertas en OBS",
+    v2c:"Alguien dona desde el teléfono y en el directo aparecen el apodo, la cantidad y el mensaje.",
+    v3h:"API para su sitio",
+    v3c:"El sitio crea una factura con una solicitud, el cliente paga y el sitio recibe un webhook firmado.",
+    demo_c:'El vendedor creó una factura, el comprador abrió el enlace, el dinero llegó. Treinta segundos, sin cortes.',
+    c_h:'Contratos',
+    c_intro:'Todo lo que hace la aplicación está en contratos abiertos. Puede leerlos en un explorador de bloques en vez de creernos.',
+    c1:'Pagos y devoluciones',
+    c2:'Token TVR',
+    
+    c4:'Factura en la cadena',
+    c5:'Nombres',
+    c6:'Nombres, versión anterior',
+    c_one:'<b>Una sola red: BNB Chain.</b> Nuestros contratos no están desplegados en ninguna otra, y la aplicación no va allí.',
+    c_pow:'Lo que podemos: cambiar las reglas de los nombres y cerrar palabras trampa como <code>support</code>. Lo que no podemos: tocar su dinero, cancelar su transferencia, congelar una cuenta o hacernos pasar por usted. Esas acciones no existen en los contratos.',
+    eyebrow:'NoN — de non-custodial. Sus claves, y su dinero.',
+    h1:'Pague en cripto sin convertirla a dinero',
+    hsub:'El vendedor muestra un código y usted paga con lo que ya tiene. Sin exchange y sin esperas. Las claves siguen en su teléfono.',
+    cta1:'Abrir el monedero', cta2:'Descargar para Android',
+    hnote:'Se abre en el navegador y se fija en la pantalla de inicio. iPhone y Android.',
+    sh1:'Monedero: BNB, USDT y USDC en una sola pantalla',
+    sh2:'Caja: escriba el importe y el comprador apunta la cámara',
+    sh3:'Puntos por las compras, y una respuesta clara sobre cuándo maduran',
+    sh4:'Enviar por nombre en vez de una dirección larga',
+    p_h:'Para las personas',
+    p1h:'El dinero es suyo',
+    p1t:'La clave se crea en su dispositivo y no sale de allí. Nosotros tampoco podemos quitarle ni congelar su dinero.',
+    p2h:'Doce palabras',
+    p2t:'Anote las palabras y el monedero vuelve en cualquier dispositivo. Si las pierde, nadie lo recupera: no guardamos copia.',
+    p3h:'Enviar por nombre',
+    p3t:'Un nombre corto en lugar de cuarenta y dos caracteres. Vive en la cadena y pertenece a su dirección.',
+    p4h:'Seis idiomas',
+    p4t:'Español, inglés, ruso, tayiko, turco, portugués. La aplicación toma el idioma del teléfono por sí sola.',
+    s_h:'Para las tiendas',
+    s1h:'Uno por ciento',
+    s1t:'Las tarjetas cobran dos o tres, y el dinero llega días después. Aquí es uno por ciento, y lo paga el vendedor.',
+    s2h:'El dinero no pasa por nosotros',
+    s2t:'La compra va directa a su dirección: no la retenemos y no podemos congelarla. Tavarov Pay se queda con el 1% de la compra al momento, en la misma operación.',
+    s3h:'Una caja en el teléfono',
+    s3t:'Marque el importe, el comprador apunta la cámara y lo ve en su teléfono. «Pagado» aparece solo.',
+    s4h:'El dinero al instante',
+    s4t:'El pago llega a su monedero en segundos. Las tarjetas liquidan en días, y hasta entonces el dinero no es suyo.',
+    s_link:'Crear una factura ahora mismo →',
+    s_digital:'¿Vende productos digitales? No existen los contracargos →',
+    d_h:'Descargar',
+    d_intro:'En el navegador no se instala nada y se actualiza solo. El archivo de Android es para quien prefiere una app normal.',
+    d_ver:'Versión', d_size:'tamaño',
+    d_hash:'Huella SHA-256 del archivo: compruébela después de descargar:',
+    d_warn:'Android pedirá permiso para instalar desde este origen: lo pregunta con cualquier archivo que no venga de la tienda. Descargue solo desde esta página: un «Tavarov» falso en otro sitio es la forma más común de perder un monedero.',
+    d_none:'El archivo para Android todavía no está publicado; por ahora use la versión del navegador.',
+    d_ios:'En iPhone: abra el monedero en Safari, toque Compartir → Añadir a pantalla de inicio — quedará como una app normal.',
+    ho_h:'Con franqueza',
+    ho1:'<b>Los contratos no tienen auditoría independiente.</b> Los revisamos nosotros, que no es lo mismo. No guarde en la caja más de lo que pueda perder.',
+    ho2:'<b>TVR no se vende ni tiene precio.</b> Son puntos. Quien le ofrezca venderle TVR es un estafador.',
+    ho3:'<b>Las reglas cambian según el país.</b> En algunos pagar con cripto está prohibido. Consulte las de su país.',
+    q_h:'Preguntas',
+    q1:'¿Qué pasa si pierdo el teléfono?',
+    a1:'Nada, si anotó las doce palabras: las escribe en otro dispositivo y el monedero está ahí. Sin ellas no lo recupera nadie, tampoco nosotros.',
+    q2:'¿Quién guarda mi dinero?',
+    a2:'Nadie. Está en la blockchain, en su dirección, y la clave está en su dispositivo. No somos un banco ni un exchange y no alcanzamos su dinero.',
+    q3:'¿Cuánto cuesta?',
+    a3:'El monedero es gratis. En las compras pagadas desde la aplicación el contrato cobra un uno por ciento, que paga el vendedor y no el comprador. La comisión de red es una fracción de céntimo y va a la red, no a nosotros. Los intercambios y las transferencias entre redes dentro del monedero cuestan un 0,5 %, que va al proyecto; el importe se muestra antes de confirmar.',
+    q4:'¿Qué es TVR?',
+    a4:'Puntos que antes se acreditaban por las compras. Desde octubre de 2026 no se acreditan nuevos; los ya acreditados se pueden reclamar en el monedero a medida que maduran. No tienen precio ni dónde venderse.',
+    q5:'¿Y si el comprador quiere devolver la compra?',
+    a5:'El vendedor devuelve con un botón, al comprador le llega exactamente lo que pagó. El uno por ciento se queda en la tesorería.',
+    q6:'¿En qué red funciona todo esto?',
+    a6:'BNB Chain. Allí la comisión de red es una fracción de céntimo, y USDT y USDC son los mismos que conoce de los exchanges. Los contratos están abiertos: los enlaces están al pie de la página.',
+    f_a1:'Abrir el monedero', f_a2:'Crear una factura', f_a3:'Contrato de pago',
+    f_a4:'Token TVR',  f_a6:'Contrato de nombres', f_a7:'Política de privacidad', f_a8:'Para vendedores digitales', f_a9:'Código fuente', f_tg:'Novedades en Telegram', f_x:'Estamos en X',
+    disc:'NoN Wallet es un monedero no custodial: no guardamos sus claves ni tenemos acceso a su dinero. Nada en esta página es asesoramiento de inversión. Las criptomonedas cambian de precio y se puede perder todo. En varios países pagar bienes y servicios con criptomonedas está restringido o prohibido: consulte las reglas de su país.'
+  },
+
+  tr: {
+    c3:"Hizmet cüzdanı, %1 buraya gelir",
+    f_a5:"Hizmet cüzdanı",
+    s5h:"Kendi siteniz için API",
+    s5t:"Tek istekle fatura, ödendiğinde imzalı webhook. Anahtar, cüzdanınızla girdiğiniz panelde: başvuru yok, sözleşme yok. Test modu da var.",
+    s6h:"Başkalarını davet edin",
+    s6t:"Bağlantınızla bir satıcı veya üretici getirin; onun satışlarından aldığımız komisyonun %20’si 12 ay boyunca sizin. Ödemeyi sözleşme kendisi, anında yapar.",
+    s_api:"API belgeleri ve paneli →",
+    s_tg:"Telegram'da faturalar — @tavarov_pay_bot →",
+    a_h:"Üreticilere",
+    a1h:"Bağlantıyla bağış",
+    a1t:"Kanal açıklaması için wallet.tavarov.com/d/adiniz gibi bir bağlantı. İzleyiciler herhangi bir cüzdandan USDT veya USDC ile öder, %99 anında size gelir.",
+    a2h:"OBS bildirimleri",
+    a2t:"Bağış yayında sesli bir kartla belirir: takma ad, tutar ve mesaj. Mesaj yalnızca gerçek ödemeden sonra görünür, kimse bedava hakaret yazamaz.",
+    a3h:"Bağış hedefi",
+    a3t:"«Yeni mikrofon — 300 $»: bağış sayfanızda ve yayında ilerleme çubuğu. Toplanan tutar blokzincirinden okunur, şişirilemez.",
+    a_how:"Uygulamada açılır: Ayarlar → Mod → Üretici. Bağlantınız, QR kodu, izleyicilere karşılama mesajı ve günlük, haftalık, aylık toplamlar da orada.",
+    sh5:"Üretici modu: bağışlar, toplamlar ve hedef",
+    q7:"Uygulama kimler için?",
+    a7:"Üç modu var: satıcı — kasa, faturalar ve siteniz için API; alıcı — kodla ödeme ve para gönderme; üretici — izleyicilerden bağış. Cüzdan aynıdır, mod ayarlardan istediğiniz zaman değişir.",
+    f_a10:"Web siteleri için API",
+    f_tg:"Telegram botu",
+    f_wc:"WooCommerce eklentisi", f_usdt:"USDT nasıl kabul edilir", f_don:"Kripto bağışlar", f_partners:"Ortaklık programı", f_terms:"Kullanım koşulları",
+    v1h:"QR kodla ödeme",
+    v2h:"Bağışlar ve OBS bildirimleri",
+    v2c:"İzleyici telefondan bağış yapar, yayında takma ad, tutar ve mesaj belirir.",
+    v3h:"Siteniz için API",
+    v3c:"Site tek istekle fatura oluşturur, müşteri öder, site imzalı webhook alır.",
+    demo_c:'Satıcı fatura oluşturdu, alıcı bağlantıyı açtı, para geldi. Otuz saniye, kurgusuz.',
+    c_h:'Sözleşmeler',
+    c_intro:'Uygulamanın yaptığı her şey açık sözleşmelerde duruyor. Bize inanmak yerine blok gezgininde okuyabilirsiniz.',
+    c1:'Ödemeler ve iadeler',
+    c2:'TVR token',
+    
+    c4:'Zincirdeki fatura',
+    c5:'İsimler',
+    c6:'İsimler, önceki sürüm',
+    c_one:'<b>Tek ağ — BNB Chain.</b> Sözleşmelerimiz başka hiçbir ağda kurulu değil, uygulama da oraya gitmiyor.',
+    c_pow:'Yapabildiklerimiz: isim kurallarını değiştirmek ve <code>support</code> gibi tuzak kelimeleri kapatmak. Yapamadıklarımız: paranıza dokunmak, transferinizi iptal etmek, hesabı dondurmak ya da sizin yerinize geçmek. Bu işlemler sözleşmelerde hiç yok.',
+    eyebrow:'NoN — non-custodial’dan. Anahtarlar da para da sizin.',
+    h1:'Kriptonuzu bozdurmadan ödeyin',
+    hsub:'Satıcı bir kod gösterir, siz elinizdekiyle ödersiniz. Borsa yok, bekleme yok. Anahtarlar telefonunuzda kalır.',
+    cta1:'Cüzdanı aç', cta2:'Android için indir',
+    hnote:'Tarayıcıda açılır, ana ekrana eklenir. iPhone ve Android.',
+    sh1:'Cüzdan: BNB, USDT ve USDC tek ekranda',
+    sh2:'Kasa: tutarı yazın, alıcı kamerayı tutsun',
+    sh3:'Alışverişe puan — ve ne zaman kullanılabilir olacağı açıkça yazılı',
+    sh4:'Uzun adres yerine isimle gönderim',
+    p_h:'İnsanlar için',
+    p1h:'Para sizin',
+    p1t:'Anahtar cihazınızda oluşur ve oradan çıkmaz. Paranızı biz de alamayız, donduramayız.',
+    p2h:'On iki kelime',
+    p2t:'Kelimeleri yazın, cüzdan her cihazda geri gelir. Kaybederseniz kimse geri getiremez, bizde kopyası yok.',
+    p3h:'İsimle gönderim',
+    p3t:'Kırk iki karakter yerine kısa bir ad. Zincirde yaşar ve adresinize aittir.',
+    p4h:'Altı dil',
+    p4t:'Türkçe, İngilizce, Rusça, Tacikçe, İspanyolca, Portekizce. Uygulama dili telefondan kendisi alır.',
+    s_h:'Dükkânlar için',
+    s1h:'Yüzde bir',
+    s1t:'Kartlar yüzde iki üç alır ve para günler sonra gelir. Burada yüzde bir, ve onu satıcı öder.',
+    s2h:'Para bizde durmaz',
+    s2t:'Alışveriş doğrudan adresinize gider — biz tutmayız ve donduramayız. Tavarov Pay alışverişin %1\'ini aynı işlemde anında alır.',
+    s3h:'Telefonda kasa',
+    s3t:'Tutarı girin, alıcı kamerayı tutar ve tutarı kendi telefonunda görür. «Ödendi» kendiliğinden görünür.',
+    s4h:'Para hemen',
+    s4t:'Ödeme cüzdanınıza saniyeler içinde ulaşır. Kartlar günlerce bekletir ve o zamana kadar para sizin değildir.',
+    s_link:'Hemen fatura oluşturun →',
+    s_digital:'Dijital ürün mü satıyorsunuz? Ters ibraz olmaz →',
+    d_h:'İndir',
+    d_intro:'Tarayıcıda hiçbir şey kurulmaz, güncellemeler kendiliğinden gelir. Android dosyası, normal uygulama isteyenler için.',
+    d_ver:'Sürüm', d_size:'boyut',
+    d_hash:'Dosyanın SHA-256 parmak izi — indirdikten sonra karşılaştırın:',
+    d_warn:'Android bu kaynaktan kurulum için izin isteyecek — mağaza dışındaki her dosya için bunu sorar. Yalnızca bu sayfadan indirin: başka bir sitedeki sahte «Tavarov», cüzdanların en sık bu yolla çalınmasının nedenidir.',
+    d_none:'Android dosyası henüz yayınlanmadı — şimdilik tarayıcı sürümünü kullanın.',
+    d_ios:'iPhone\'da: cüzdanı Safari\'de açın, Paylaş → Ana Ekrana Ekle\'ye dokunun — normal bir uygulama gibi ekranınızda durur.',
+    ho_h:'Açıkça',
+    ho1:'<b>Sözleşmelerin bağımsız denetimi yok.</b> Kendimiz denetledik, bu aynı şey değil. Kasada kaybetmeyi göze alabileceğinizden fazlasını tutmayın.',
+    ho2:'<b>TVR satılık değildir ve fiyatı yoktur.</b> Bunlar puandır. Size TVR satmayı teklif eden herkes dolandırıcıdır.',
+    ho3:'<b>Kurallar ülkeye göre değişir.</b> Bazı yerlerde kripto ile ödeme yasaktır. Kendi ülkenizin kurallarına bakın.',
+    q_h:'Sorular',
+    q1:'Telefonumu kaybedersem ne olur?',
+    a1:'On iki kelime yazılıysa hiçbir şey: yeni cihazda girersiniz, cüzdan yerindedir. Onlarsız kimse geri getiremez, biz de.',
+    q2:'Paramı kim tutuyor?',
+    a2:'Kimse. Para blok zincirinde, sizin adresinizde durur; anahtar ise cihazınızda. Biz banka ya da borsa değiliz ve paranıza erişemeyiz.',
+    q3:'Maliyeti nedir?',
+    a3:'Cüzdan ücretsiz. Uygulama üzerinden ödenen alışverişlerde sözleşme yüzde bir alır; bunu alıcı değil, satıcı öder. Ağ ücreti bir kuruşun çok altında ve bize değil, ağa gider. Cüzdan içindeki takaslar ve ağlar arası transferler %0,5 tutar; bu pay projeye gider ve onaylamadan önce gösterilir.',
+    q4:'TVR nedir?',
+    a4:'Daha önce alışverişler için verilen puanlar. Ekim 2026’dan beri yenisi verilmiyor; verilmiş olanlar olgunlaştıkça cüzdandan alınabilir. Fiyatı yok, satacak yer de.',
+    q5:'Alıcı iade isterse ne olur?',
+    a5:'Satıcı bir düğmeyle iade eder, alıcıya tam olarak ödediği tutar geri gider. Yüzde bir hazinede kalır.',
+    q6:'Bütün bunlar hangi ağda çalışıyor?',
+    a6:'BNB Chain. Oradaki ağ ücreti bir sentin küçük bir kısmı, USDT ve USDC ise borsalardan bildiğiniz aynı paralar. Sözleşmeler açık — bağlantılar sayfanın altında.',
+    f_a1:'Cüzdanı aç', f_a2:'Fatura oluştur', f_a3:'Ödeme sözleşmesi',
+    f_a4:'TVR token',  f_a6:'İsim sözleşmesi', f_a7:'Gizlilik politikası', f_a8:'Dijital satıcılar için', f_a9:'Kaynak kod', f_tg:'Telegram\'da haberler', f_x:'X\'teyiz',
+    disc:'NoN Wallet saklamasız (non-custodial) bir cüzdandır: anahtarlarınızı saklamayız ve paranıza erişimimiz yoktur. Bu sayfadaki hiçbir şey yatırım tavsiyesi değildir. Kripto paraların fiyatı değişir ve tamamını kaybedebilirsiniz. Bazı ülkelerde mal ve hizmet için kripto ile ödeme kısıtlı ya da yasaktır — yaşadığınız yerin kurallarına bakın.'
+  },
+
+  pt: {
+    c3:"Carteira do serviço, aqui chega o 1%",
+    f_a5:"Carteira do serviço",
+    s5h:"API para o seu próprio site",
+    s5t:"Uma cobrança em uma requisição e um webhook assinado quando for paga. A chave fica num painel em que você entra com a carteira: sem cadastro nem contrato. Tem modo de teste.",
+    s6h:"Convide outros",
+    s6t:"Traga um vendedor ou um criador pelo seu link e 20% da nossa taxa sobre as vendas dele são seus por 12 meses. O contrato paga sozinho, na hora.",
+    s_api:"Documentação e painel da API →",
+    s_tg:"Faturas no Telegram — @tavarov_pay_bot →",
+    a_h:"Para criadores",
+    a1h:"Doações por link",
+    a1t:"Um link como wallet.tavarov.com/d/seu_nome para a descrição do canal. Os espectadores pagam em USDT ou USDC de qualquer carteira, e 99% chega na hora para você.",
+    a2h:"Alertas no OBS",
+    a2t:"A doação aparece na live com som: apelido, valor e mensagem. A mensagem só aparece depois de um pagamento real, então ninguém xinga de graça.",
+    a3h:"Meta de arrecadação",
+    a3t:"«Microfone novo — 300 $»: uma barra de progresso na sua página de doações e na live. O total vem da blockchain, não dá para inflar.",
+    a_how:"Ativa no app: Ajustes → Modo → Criador. Lá também ficam o seu link, o QR, uma mensagem para os espectadores e os totais do dia, da semana e do mês.",
+    sh5:"Modo Criador: doações, totais e meta",
+    q7:"Para quem é o app?",
+    a7:"Ele tem três modos: vendedor — caixa, cobranças e API para o seu site; comprador — pagar por código e enviar dinheiro; criador — doações dos espectadores. A carteira é a mesma, e o modo muda nas configurações quando quiser.",
+    f_a10:"API para sites",
+    f_tg:"Bot do Telegram",
+    f_wc:"Plugin para WooCommerce", f_usdt:"Como aceitar USDT", f_don:"Doações em cripto", f_partners:"Programa de parceiros", f_terms:"Termos de uso",
+    v1h:"Pagamento por QR code",
+    v2h:"Doações e alertas no OBS",
+    v2c:"O espectador doa pelo celular, e na live aparecem o apelido, o valor e a mensagem.",
+    v3h:"API para o seu site",
+    v3c:"O site cria uma cobrança com uma requisição, o cliente paga e o site recebe um webhook assinado.",
+    demo_c:'O vendedor criou a fatura, o comprador abriu o link, o dinheiro chegou. Trinta segundos, sem cortes.',
+    c_h:'Contratos',
+    c_intro:'Tudo o que o aplicativo faz está em contratos abertos. Você pode lê-los num explorador de blocos em vez de acreditar em nós.',
+    c1:'Pagamentos e estornos',
+    c2:'Token TVR',
+    
+    c4:'Fatura na rede',
+    c5:'Nomes',
+    c6:'Nomes, versão anterior',
+    c_one:'<b>Uma única rede — BNB Chain.</b> Nossos contratos não estão em nenhuma outra, e o aplicativo não vai até lá.',
+    c_pow:'O que podemos: mudar as regras dos nomes e fechar palavras-armadilha como <code>support</code>. O que não podemos: tocar no seu dinheiro, cancelar sua transferência, congelar uma conta ou nos passar por você. Essas ações simplesmente não existem nos contratos.',
+    eyebrow:'NoN — de non-custodial. Suas chaves, e seu dinheiro.',
+    h1:'Pague em cripto sem convertê-la em dinheiro',
+    hsub:'O vendedor mostra um código e você paga com o que já tem. Sem corretora e sem espera. As chaves ficam no seu telefone.',
+    cta1:'Abrir a carteira', cta2:'Baixar para Android',
+    hnote:'Abre no navegador e fixa na tela inicial. iPhone e Android.',
+    sh1:'Carteira: BNB, USDT e USDC numa só tela',
+    sh2:'Caixa: digite o valor e o comprador aponta a câmera',
+    sh3:'Pontos pelas compras, e uma resposta clara de quando amadurecem',
+    sh4:'Enviar por nome em vez de um endereço longo',
+    p_h:'Para as pessoas',
+    p1h:'O dinheiro é seu',
+    p1t:'A chave nasce no seu aparelho e não sai dele. Nem nós podemos tirar ou congelar seu dinheiro.',
+    p2h:'Doze palavras',
+    p2t:'Anote as palavras e a carteira volta em qualquer aparelho. Se perder, ninguém recupera: não guardamos cópia.',
+    p3h:'Enviar por nome',
+    p3t:'Um nome curto no lugar de quarenta e dois caracteres. Vive na blockchain e pertence ao seu endereço.',
+    p4h:'Seis idiomas',
+    p4t:'Português, inglês, russo, tadjique, espanhol, turco. O aplicativo pega o idioma do telefone sozinho.',
+    s_h:'Para as lojas',
+    s1h:'Um por cento',
+    s1t:'Os cartões cobram dois ou três, e o dinheiro chega dias depois. Aqui é um por cento, e quem paga é o vendedor.',
+    s2h:'O dinheiro não fica conosco',
+    s2t:'A compra vai direto para o seu endereço — não a seguramos e não podemos congelá-la. A Tavarov Pay fica com 1% da compra na hora, na mesma operação.',
+    s3h:'Um caixa no telefone',
+    s3t:'Digite o valor, o comprador aponta a câmera e o vê no próprio telefone. «Pago» aparece sozinho.',
+    s4h:'Dinheiro na hora',
+    s4t:'O pagamento chega à sua carteira em segundos. Os cartões liquidam em dias, e até lá o dinheiro não é seu.',
+    s_link:'Criar uma cobrança agora →',
+    s_digital:'Vende produtos digitais? Estornos não acontecem →',
+    d_h:'Baixar',
+    d_intro:'No navegador nada é instalado e a atualização chega sozinha. O arquivo Android é para quem prefere um aplicativo comum.',
+    d_ver:'Versão', d_size:'tamanho',
+    d_hash:'Impressão SHA-256 do arquivo — confira depois de baixar:',
+    d_warn:'O Android vai pedir permissão para instalar desta origem — ele pergunta isso sobre qualquer arquivo de fora da loja. Baixe somente nesta página: um «Tavarov» falso em outro site é a forma mais comum de perder uma carteira.',
+    d_none:'O arquivo para Android ainda não foi publicado — por enquanto use a versão do navegador.',
+    d_ios:'No iPhone: abra a carteira no Safari, toque em Compartilhar → Adicionar à Tela de Início — ela fica na tela como um app comum.',
+    ho_h:'Com franqueza',
+    ho1:'<b>Os contratos não têm auditoria independente.</b> Nós mesmos verificamos, o que não é a mesma coisa. Não guarde no caixa mais do que pode perder.',
+    ho2:'<b>TVR não está à venda e não tem preço.</b> São pontos. Quem oferecer vender TVR é golpista.',
+    ho3:'<b>As regras mudam de país para país.</b> Em alguns, pagar com cripto é proibido. Confira as do seu.',
+    q_h:'Perguntas',
+    q1:'O que acontece se eu perder o telefone?',
+    a1:'Nada, se as doze palavras estiverem anotadas: você as digita em outro aparelho e a carteira está lá. Sem elas ninguém recupera, nem nós.',
+    q2:'Quem guarda o meu dinheiro?',
+    a2:'Ninguém. Ele fica no blockchain, no seu endereço, e a chave fica no seu aparelho. Não somos banco nem corretora e não alcançamos o seu dinheiro.',
+    q3:'Quanto custa?',
+    a3:'A carteira é gratuita. Nas compras pagas pelo aplicativo o contrato cobra um por cento, pago pelo vendedor e não pelo comprador. A taxa de rede é fração de centavo e vai para a rede, não para nós. Trocas e transferências entre redes dentro da carteira custam 0,5%, que vão para o projeto; o valor aparece antes de confirmar.',
+    q4:'O que é TVR?',
+    a4:'Pontos que antes eram creditados por compras. Desde outubro de 2026 não se creditam novos; os já creditados podem ser resgatados na carteira conforme amadurecem. Não têm preço nem onde vender.',
+    q5:'E se o comprador quiser devolver a compra?',
+    a5:'O vendedor devolve com um botão, o comprador recebe exatamente o que pagou. O um por cento fica no tesouro.',
+    q6:'Em que rede tudo isso funciona?',
+    a6:'BNB Chain. A taxa de rede lá é uma fração de centavo, e USDT e USDC são os mesmos que você conhece das corretoras. Os contratos estão abertos — os links estão no rodapé.',
+    f_a1:'Abrir a carteira', f_a2:'Criar uma cobrança', f_a3:'Contrato de pagamento',
+    f_a4:'Token TVR',  f_a6:'Contrato de nomes', f_a7:'Política de privacidade', f_a8:'Para vendedores digitais', f_a9:'Código-fonte', f_tg:'Novidades no Telegram', f_x:'Estamos no X',
+    disc:'NoN Wallet é uma carteira não custodial: não guardamos suas chaves e não temos acesso ao seu dinheiro. Nada nesta página é recomendação de investimento. As criptomoedas mudam de preço e é possível perder tudo. Em vários países pagar bens e serviços com cripto é restrito ou proibido — verifique as regras do seu país.'
+  }
+};
+
+
+/* Новые строки витрины «ночь» (30.09.2026). Лежат отдельно, чтобы было
+   видно, что добавилось; русский, как и прежде, берётся из разметки. */
+const T2 = {
+  en: {
+    ch1:'Paid', ch2:'Keys stay on your device', mq:'Works with',
+    st1:'middlemen between buyer and seller', st2:'words bring your wallet back on any device',
+    st3:'network fee per transaction', st4:'languages — the app speaks yours',
+    v_e:'See for yourself', v_h:'Thirty seconds instead of a paragraph',
+    hw_e:'How it works', hw_h:'Three steps and the seller has the money',
+    hw1h:'The seller shows a code', hw1t:'On the till in their phone, on a counter sticker or as a link in a chat.',
+    hw2h:'The buyer pays', hw2t:'USDT or USDC from any wallet: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'The money is with the seller', hw3t:'In seconds, straight to their address. “Paid” appears by itself — nobody holds the money in between.',
+    p_h2:'Your money is yours alone', s_h2:'A till, invoices and an API — no middleman', a_h2:'Tips that arrive instantly',
+    s_pp:'Partner program →', ob1:'Thanks for the stream!', ob2:'New microphone',
+    a_cmp:'Compare with DonationAlerts and DonatePay →',
+    sh_e:'The app', sh_h:'What it looks like',
+    d_h2:'Open it in a browser or download for Android',
+    fin_h:'Your keys. Your money.', fin_t:'The wallet opens in a minute — no sign-up, right in your browser.',
+    fc1:'Product', fc2:'Learn', fc3:'Open by design', fc4:'Stay in touch', f_bot:'Telegram bot'
+  },
+  es: {
+    ch1:'Pagado', ch2:'Las claves siguen en su dispositivo', mq:'Funciona con',
+    st1:'intermediarios entre comprador y vendedor', st2:'palabras y el monedero vuelve en cualquier dispositivo',
+    st3:'comisión de red por operación', st4:'idiomas: la app habla el suyo',
+    v_e:'Véalo usted mismo', v_h:'Treinta segundos en vez de un párrafo',
+    hw_e:'Cómo funciona', hw_h:'Tres pasos y el dinero ya es del vendedor',
+    hw1h:'El vendedor muestra un código', hw1t:'En la caja del teléfono, en una pegatina del mostrador o como enlace en un chat.',
+    hw2h:'El comprador paga', hw2t:'USDT o USDC desde cualquier monedero: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'El dinero ya es del vendedor', hw3t:'En segundos, directo a su dirección. «Pagado» aparece solo: nadie retiene el dinero en medio.',
+    p_h2:'Su dinero es solo suyo', s_h2:'Caja, facturas y API, sin intermediarios', a_h2:'Donaciones que llegan al instante',
+    s_pp:'Programa de socios →', ob1:'¡Gracias por el directo!', ob2:'Micrófono nuevo',
+    a_cmp:'Comparar con DonationAlerts y DonatePay →',
+    sh_e:'La app', sh_h:'Cómo se ve',
+    d_h2:'Ábralo en el navegador o descárguelo para Android',
+    fin_h:'Sus claves. Su dinero.', fin_t:'El monedero se abre en un minuto: sin registro, en el navegador.',
+    fc1:'Producto', fc2:'Saber más', fc3:'Transparencia', fc4:'Contacto', f_bot:'Bot de Telegram'
+  },
+  tr: {
+    ch1:'Ödendi', ch2:'Anahtarlar cihazınızda', mq:'Birlikte çalışır',
+    st1:'alıcı ile satıcı arasında aracı', st2:'kelimeyle cüzdan her cihazda geri gelir',
+    st3:'işlem başına ağ ücreti', st4:'dil — uygulama sizinkini konuşur',
+    v_e:'Kendiniz görün', v_h:'Bir paragraf yerine otuz saniye',
+    hw_e:'Nasıl çalışır', hw_h:'Üç adımda para satıcıda',
+    hw1h:'Satıcı bir kod gösterir', hw1t:'Telefondaki kasada, tezgâhtaki çıkartmada ya da sohbette bağlantı olarak.',
+    hw2h:'Alıcı öder', hw2t:'Herhangi bir cüzdandan USDT veya USDC: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'Para anında satıcıda', hw3t:'Saniyeler içinde, doğrudan adresine. «Ödendi» kendiliğinden görünür — arada parayı tutan kimse yok.',
+    p_h2:'Paranız yalnızca sizin', s_h2:'Kasa, faturalar ve API — aracısız', a_h2:'Anında gelen bağışlar',
+    s_pp:'Ortaklık programı →', ob1:'Yayın için teşekkürler!', ob2:'Yeni mikrofon',
+    a_cmp:'DonationAlerts ve DonatePay ile karşılaştırın →',
+    sh_e:'Uygulama', sh_h:'Nasıl görünüyor',
+    d_h2:'Tarayıcıda açın ya da Android için indirin',
+    fin_h:'Anahtarlar sizde. Para da.', fin_t:'Cüzdan bir dakikada açılır — kayıt yok, doğrudan tarayıcıda.',
+    fc1:'Ürün', fc2:'Daha fazlası', fc3:'Açıklık', fc4:'İletişim', f_bot:'Telegram botu'
+  },
+  pt: {
+    ch1:'Pago', ch2:'As chaves ficam no seu aparelho', mq:'Funciona com',
+    st1:'intermediários entre comprador e vendedor', st2:'palavras e a carteira volta em qualquer aparelho',
+    st3:'taxa de rede por operação', st4:'idiomas — o app fala o seu',
+    v_e:'Veja você mesmo', v_h:'Trinta segundos em vez de um parágrafo',
+    hw_e:'Como funciona', hw_h:'Três passos e o dinheiro está com o vendedor',
+    hw1h:'O vendedor mostra um código', hw1t:'No caixa do telefone, num adesivo no balcão ou como link num chat.',
+    hw2h:'O comprador paga', hw2t:'USDT ou USDC de qualquer carteira: NoN Wallet, MetaMask, Trust Wallet, OKX.',
+    hw3h:'O dinheiro já está com o vendedor', hw3t:'Em segundos, direto no endereço dele. «Pago» aparece sozinho — ninguém segura o dinheiro no meio.',
+    p_h2:'Seu dinheiro é só seu', s_h2:'Caixa, cobranças e API — sem intermediário', a_h2:'Doações que chegam na hora',
+    s_pp:'Programa de parceiros →', ob1:'Valeu pela live!', ob2:'Microfone novo',
+    a_cmp:'Comparar com DonationAlerts e DonatePay →',
+    sh_e:'O app', sh_h:'Como é por dentro',
+    d_h2:'Abra no navegador ou baixe para Android',
+    fin_h:'Suas chaves. Seu dinheiro.', fin_t:'A carteira abre em um minuto — sem cadastro, direto no navegador.',
+    fc1:'Produto', fc2:'Saiba mais', fc3:'Transparência', fc4:'Contato', f_bot:'Bot do Telegram'
+  }
+};
+for (const k in T2) Object.assign(T[k], T2[k]);
+
+/* Четыре сети (1 октября 2026). Лежат отдельно и накрывают прежние
+   строки T/T2 с теми же ключами; русский — из разметки. */
+const T3 = {
+ "en": {
+  "n_e": "New",
+  "n_h": "Four networks instead of one",
+  "n_t": "The till and counter sticker, invoices via the bot and the API, tips and OBS alerts now work on BNB Chain, Ethereum, Base and Solana. Buyers pay from the network where their money already is — no swapping or bridging needed.",
+  "n1t": "USDT and USDC. The network fee is a fraction of a cent. Names instead of addresses live here too.",
+  "n2t": "USDT and USDC. The most expensive of the four: the fee depends on how busy the network is and can be noticeable. For small amounts the other three are cheaper.",
+  "n3t": "USDC. The network fee is a fraction of a cent. There is no USDT on Base, so invoices there are always in USDC.",
+  "n4t": "USDT and USDC. The network fee is a fraction of a cent. Pay from Phantom or Solflare: a button on the payment page opens the invoice right inside the wallet.",
+  "n_note": "On every network the seller gets 99% at once and the service keeps 1%. In the wallet you pick the network right on the main screen, keep several wallets and swap coins within a network. Names work on all four networks.",
+  "c7": "Payments on Ethereum",
+  "c8": "Payments on Base",
+  "c9": "Service wallet on Solana",
+  "c_one": "<b>Four networks: BNB Chain, Ethereum, Base and Solana.</b> Ethereum and Base run the same payment code as BNB Chain. Solana has no contract: the buyer signs one transaction that sends 99% to the seller and 1% to the service. The app does not touch any other network.",
+  "st3": "network fee on BNB Chain, Base and Solana",
+  "hw2t": "USDT or USDC on any of the four networks: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "A link like wallet.tavarov.com/d/your_name for your channel description. Viewers pay in USDT or USDC on any of the four networks, and 99% reaches you instantly.",
+  "a3": "The wallet is free. On purchases paid through the app one percent is kept, paid by the seller and not by the buyer. The network fee goes to the network, not to us: on BNB Chain, Base and Solana it is a fraction of a cent, on Ethereum it is noticeably more. Swaps and cross-network transfers inside the wallet cost 0.5%, which goes to the project; the amount is shown before you confirm.",
+  "q6": "Which networks does this run on?",
+  "a6": "Four: BNB Chain, Ethereum, Base and Solana. The buyer picks the network. USDT and USDC are the same ones you know from exchanges (only USDC on Base). The contracts are open — links in the Contracts section.",
+  "s6t": "Bring in a seller or a creator with your link and 20% of our fee on their sales is yours for 12 months. The contract pays you itself, instantly. For now, on payments on BNB Chain."
+ },
+ "es": {
+  "n_e": "Novedad",
+  "n_h": "Cuatro redes en lugar de una",
+  "n_t": "La caja y la pegatina, las facturas por el bot y la API, las donaciones y las alertas de OBS ya funcionan en BNB Chain, Ethereum, Base y Solana. El comprador paga desde la red donde ya tiene su dinero, sin cambiar ni mover nada.",
+  "n1t": "USDT y USDC. La comisión de red es una fracción de céntimo. Aquí también están los nombres en lugar de direcciones.",
+  "n2t": "USDT y USDC. La más cara de las cuatro: la comisión depende de la carga de la red y puede notarse. Para importes pequeños convienen más las otras tres.",
+  "n3t": "USDC. La comisión de red es una fracción de céntimo. En Base no hay USDT, así que allí la factura siempre es en USDC.",
+  "n4t": "USDT y USDC. La comisión de red es una fracción de céntimo. Se puede pagar desde Phantom y Solflare: un botón en la página de pago abre la factura dentro del monedero.",
+  "n_note": "En cualquier red el vendedor recibe al instante el 99 % y el servicio el 1 %. En el monedero la red se elige en la pantalla principal; allí también puede tener varios monederos e intercambiar monedas dentro de una red. Los nombres funcionan en las cuatro redes.",
+  "c7": "Pagos en Ethereum",
+  "c8": "Pagos en Base",
+  "c9": "Monedero del servicio en Solana",
+  "c_one": "<b>Cuatro redes: BNB Chain, Ethereum, Base y Solana.</b> En Ethereum y Base funciona el mismo código de pago que en BNB Chain. En Solana no hay contrato: el comprador firma una sola operación que envía el 99 % al vendedor y el 1 % al servicio. La aplicación no va a ninguna otra red.",
+  "st3": "comisión de red en BNB Chain, Base y Solana",
+  "hw2t": "USDT o USDC en cualquiera de las cuatro redes: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Un enlace como wallet.tavarov.com/d/tu_nombre para la descripción del canal. Tu audiencia paga en USDT o USDC en cualquiera de las cuatro redes y te llega el 99 % al instante.",
+  "a3": "El monedero es gratis. En las compras pagadas desde la aplicación se retiene un uno por ciento, que paga el vendedor y no el comprador. La comisión de red va a la red, no a nosotros: en BNB Chain, Base y Solana es una fracción de céntimo; en Ethereum, bastante más. Los intercambios y las transferencias entre redes dentro del monedero cuestan un 0,5 %, que va al proyecto; el importe se muestra antes de confirmar.",
+  "q6": "¿En qué redes funciona todo esto?",
+  "a6": "En cuatro: BNB Chain, Ethereum, Base y Solana. La red la elige el comprador. USDT y USDC son los mismos que conoce de los exchanges (en Base solo USDC). Los contratos están abiertos: los enlaces están en la sección «Contratos».",
+  "s6t": "Traiga a un vendedor o a un autor con su enlace y el 20 % de nuestra comisión sobre sus ventas es suyo durante 12 meses. Paga el contrato, solo y al instante. Por ahora, en pagos en BNB Chain."
+ },
+ "tr": {
+  "n_e": "Yeni",
+  "n_h": "Bir yerine dört ağ",
+  "n_t": "Kasa ve etiket, bot ve API üzerinden faturalar, bağışlar ve OBS bildirimleri artık BNB Chain, Ethereum, Base ve Solana'da çalışıyor. Alıcı, parası zaten hangi ağdaysa oradan öder — bozdurmaya ya da taşımaya gerek yok.",
+  "n1t": "USDT ve USDC. Ağ ücreti bir sentin çok altında. Adres yerine isimler de burada.",
+  "n2t": "USDT ve USDC. Dördünün en pahalısı: ücret ağın yoğunluğuna bağlı ve belirgin olabilir. Küçük tutarlarda diğer üçü daha uygun.",
+  "n3t": "USDC. Ağ ücreti bir sentin çok altında. Base'de USDT yok, bu yüzden oradaki fatura her zaman USDC.",
+  "n4t": "USDT ve USDC. Ağ ücreti bir sentin çok altında. Phantom ve Solflare ile ödenebilir: ödeme sayfasındaki düğme faturayı doğrudan cüzdanda açar.",
+  "n_note": "Her ağda satıcıya anında %99, hizmete %1 gider. Cüzdanda ağ doğrudan ana ekranda seçilir; orada birden fazla cüzdan tutabilir ve bir ağ içinde coin takası yapabilirsiniz. İsimler dört ağın hepsinde çalışır.",
+  "c7": "Ethereum'da ödemeler",
+  "c8": "Base'de ödemeler",
+  "c9": "Solana'da hizmet cüzdanı",
+  "c_one": "<b>Dört ağ: BNB Chain, Ethereum, Base ve Solana.</b> Ethereum ve Base'de BNB Chain ile aynı ödeme kodu çalışır. Solana'da sözleşme yok: alıcı, %99'u satıcıya ve %1'i hizmete gönderen tek bir işlemi imzalar. Uygulama başka hiçbir ağa gitmez.",
+  "st3": "BNB Chain, Base ve Solana'da ağ ücreti",
+  "hw2t": "Dört ağdan herhangi birinde USDT veya USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Kanal açıklaması için wallet.tavarov.com/d/adiniz gibi bir bağlantı. İzleyiciler dört ağdan herhangi birinde USDT veya USDC ile öder, %99 anında size gelir.",
+  "a3": "Cüzdan ücretsiz. Uygulama üzerinden ödenen alışverişlerde yüzde bir kesilir; bunu alıcı değil, satıcı öder. Ağ ücreti bize değil, ağa gider: BNB Chain, Base ve Solana'da bir sentin çok altında, Ethereum'da belirgin şekilde daha fazla. Cüzdan içindeki takaslar ve ağlar arası transferler %0,5 tutar; bu pay projeye gider ve onaylamadan önce gösterilir.",
+  "q6": "Bütün bunlar hangi ağlarda çalışıyor?",
+  "a6": "Dört ağda: BNB Chain, Ethereum, Base ve Solana. Ağı alıcı seçer. USDT ve USDC borsalardan bildiğiniz aynı paralar (Base'de yalnızca USDC). Sözleşmeler açık — bağlantılar «Sözleşmeler» bölümünde.",
+  "s6t": "Bağlantınızla bir satıcı veya üretici getirin; onun satışlarından aldığımız komisyonun %20’si 12 ay boyunca sizin. Ödemeyi sözleşme kendisi, anında yapar. Şimdilik BNB Chain’deki ödemelerde."
+ },
+ "pt": {
+  "n_e": "Novidade",
+  "n_h": "Quatro redes em vez de uma",
+  "n_t": "O caixa e o adesivo, as cobranças pelo bot e pela API, as doações e os alertas no OBS agora funcionam em BNB Chain, Ethereum, Base e Solana. O comprador paga a partir da rede onde o dinheiro dele já está — sem converter nem transferir nada.",
+  "n1t": "USDT e USDC. A taxa de rede é uma fração de centavo. Aqui também ficam os nomes no lugar de endereços.",
+  "n2t": "USDT e USDC. A mais cara das quatro: a taxa depende do movimento da rede e pode ser perceptível. Para valores pequenos, as outras três saem mais em conta.",
+  "n3t": "USDC. A taxa de rede é uma fração de centavo. Não existe USDT na Base, por isso a cobrança lá é sempre em USDC.",
+  "n4t": "USDT e USDC. A taxa de rede é uma fração de centavo. Dá para pagar com Phantom e Solflare: um botão na página de pagamento abre a cobrança direto na carteira.",
+  "n_note": "Em qualquer rede o vendedor recebe 99% na hora e o serviço fica com 1%. Na carteira a rede é escolhida na tela principal; lá também dá para ter várias carteiras e trocar moedas dentro de uma rede. Os nomes funcionam nas quatro redes.",
+  "c7": "Pagamentos na Ethereum",
+  "c8": "Pagamentos na Base",
+  "c9": "Carteira do serviço na Solana",
+  "c_one": "<b>Quatro redes: BNB Chain, Ethereum, Base e Solana.</b> Na Ethereum e na Base roda o mesmo código de pagamento da BNB Chain. Na Solana não há contrato: o comprador assina uma única operação que envia 99% ao vendedor e 1% ao serviço. O aplicativo não vai a nenhuma outra rede.",
+  "st3": "taxa de rede na BNB Chain, Base e Solana",
+  "hw2t": "USDT ou USDC em qualquer uma das quatro redes: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+  "a1t": "Um link como wallet.tavarov.com/d/seu_nome para a descrição do canal. Os espectadores pagam em USDT ou USDC em qualquer uma das quatro redes, e 99% chega na hora para você.",
+  "a3": "A carteira é gratuita. Nas compras pagas pelo aplicativo é retido um por cento, pago pelo vendedor e não pelo comprador. A taxa de rede vai para a rede, não para nós: na BNB Chain, Base e Solana é fração de centavo; na Ethereum, bem mais. Trocas e transferências entre redes dentro da carteira custam 0,5%, que vão para o projeto; o valor aparece antes de confirmar.",
+  "q6": "Em quais redes tudo isso funciona?",
+  "a6": "Em quatro: BNB Chain, Ethereum, Base e Solana. Quem escolhe a rede é o comprador. USDT e USDC são os mesmos que você conhece das corretoras (na Base, só USDC). Os contratos estão abertos — os links estão na seção «Contratos».",
+  "s6t": "Traga um vendedor ou um criador pelo seu link e 20% da nossa taxa sobre as vendas dele são seus por 12 meses. O contrato paga sozinho, na hora. Por enquanto, em pagamentos na BNB Chain."
+ }
+};
+for (const k in T3) Object.assign(T[k], T3[k]);
+
+/* Плитки и раздел кошелька в стиле Apple (9.10.2026). */
+const T4 = {
+ "en": {
+  "nav_w": "Wallet",
+  "t_h": "Everything you need to get paid",
+  "t_sub": "A till, invoices, tips and an API. The money lands in your wallet at once — we never hold it.",
+  "tA_e": "Till",
+  "tA_h": "A till in your phone. A sticker on the counter.",
+  "tA_t": "Type the amount — the buyer points the camera and pays. One sticker for every network and every customer.",
+  "tB_e": "Online",
+  "tB_h": "Invoice by link",
+  "tB_t": "Agreed in a chat? Send a link. The buyer pays from any wallet, and the page shows “Paid” by itself.",
+  "tC_e": "Developers",
+  "tC_h": "API, WooCommerce and a Telegram bot",
+  "tC_t": "An invoice in one request and a signed webhook. A WordPress plugin and a bot that issues invoices right in the chat.",
+  "tD_t": "A link in your channel description and a sound alert in OBS. The message appears only after a real payment.",
+  "tE_e": "Partners",
+  "tE_h": "20% of our fee is yours",
+  "tF_e": "Networks",
+  "tF_t": "USDT and USDC on BNB Chain, Ethereum, Base and Solana. Buyers pay from the network where their money already is."
+ },
+ "es": {
+  "nav_w": "Monedero",
+  "t_h": "Todo para cobrar",
+  "t_sub": "Caja, facturas, propinas y API. El dinero llega a su monedero al instante: nunca lo retenemos.",
+  "tA_e": "Caja",
+  "tA_h": "Una caja en su teléfono. Una pegatina en el mostrador.",
+  "tA_t": "Escriba el importe: el comprador apunta la cámara y paga. Una pegatina para todas las redes y todos los clientes.",
+  "tB_e": "En línea",
+  "tB_h": "Factura por enlace",
+  "tB_t": "¿Lo acordaron por chat? Envíe un enlace. El comprador paga desde cualquier monedero y la página muestra «Pagado» sola.",
+  "tC_e": "Desarrolladores",
+  "tC_h": "API, WooCommerce y un bot de Telegram",
+  "tC_t": "Una factura con una sola petición y un webhook firmado. Un plugin para WordPress y un bot que crea facturas en el chat.",
+  "tD_t": "Un enlace en la descripción del canal y una alerta con sonido en OBS. El mensaje aparece solo tras un pago real.",
+  "tE_e": "Socios",
+  "tE_h": "El 20 % de nuestra comisión es suyo",
+  "tF_e": "Redes",
+  "tF_t": "USDT y USDC en BNB Chain, Ethereum, Base y Solana. El comprador paga desde la red donde ya tiene su dinero."
+ },
+ "tr": {
+  "nav_w": "Cüzdan",
+  "t_h": "Ödeme almak için her şey",
+  "t_sub": "Kasa, faturalar, bağışlar ve API. Para anında cüzdanınıza gelir — biz asla tutmayız.",
+  "tA_e": "Kasa",
+  "tA_h": "Telefonunuzda bir kasa. Tezgâhta bir etiket.",
+  "tA_t": "Tutarı yazın — alıcı kamerayı tutar ve öder. Tüm ağlar ve her müşteri için tek etiket.",
+  "tB_e": "Çevrimiçi",
+  "tB_h": "Bağlantıyla fatura",
+  "tB_t": "Sohbette mi anlaştınız? Bir bağlantı gönderin. Alıcı herhangi bir cüzdandan öder, sayfa kendiliğinden “Ödendi” gösterir.",
+  "tC_e": "Geliştiriciler",
+  "tC_h": "API, WooCommerce ve Telegram botu",
+  "tC_t": "Tek istekle fatura ve imzalı webhook. WordPress eklentisi ve sohbette fatura kesen bir bot.",
+  "tD_t": "Kanal açıklamasında bir bağlantı ve OBS'te sesli bildirim. Mesaj yalnızca gerçek bir ödemeden sonra görünür.",
+  "tE_e": "Ortaklar",
+  "tE_h": "Komisyonumuzun %20'si sizin",
+  "tF_e": "Ağlar",
+  "tF_t": "BNB Chain, Ethereum, Base ve Solana'da USDT ve USDC. Alıcı, parasının zaten bulunduğu ağdan öder."
+ },
+ "pt": {
+  "nav_w": "Carteira",
+  "t_h": "Tudo para receber",
+  "t_sub": "Caixa, cobranças, gorjetas e API. O dinheiro chega na sua carteira na hora — nunca ficamos com ele.",
+  "tA_e": "Caixa",
+  "tA_h": "Um caixa no celular. Um adesivo no balcão.",
+  "tA_t": "Digite o valor — o comprador aponta a câmera e paga. Um adesivo para todas as redes e todos os clientes.",
+  "tB_e": "Online",
+  "tB_h": "Cobrança por link",
+  "tB_t": "Combinaram no chat? Envie um link. O comprador paga de qualquer carteira e a página mostra “Pago” sozinha.",
+  "tC_e": "Desenvolvedores",
+  "tC_h": "API, WooCommerce e bot do Telegram",
+  "tC_t": "Uma cobrança com uma só requisição e um webhook assinado. Um plugin para WordPress e um bot que cria cobranças no chat.",
+  "tD_t": "Um link na descrição do canal e um alerta com som no OBS. A mensagem só aparece depois de um pagamento real.",
+  "tE_e": "Parceiros",
+  "tE_h": "20% da nossa taxa são seus",
+  "tF_e": "Redes",
+  "tF_t": "USDT e USDC na BNB Chain, Ethereum, Base e Solana. O comprador paga da rede onde o dinheiro já está."
+ }
+};
+for (const k in T4) Object.assign(T[k], T4[k]);
+
+/* Таджикский (9.10.2026). Приложение теперь тоже на таджикском; снимки,
+   ролики и отдельные страницы для него пока русские. */
+T.tg = {
+ "s_h": "Ба мағозаҳо",
+ "a_h": "Ба муаллифон",
+ "nav_w": "Ҳамён",
+ "d_h": "Боргирӣ",
+ "cta1": "Ҳамёнро кушоед",
+ "cta2": "Боргирӣ барои Android",
+ "eyebrow": "NoN — аз non-custodial. Калидҳо танҳо дар шумо, пул ҳам.",
+ "h1": "Бо крипто пардохт кунед, бе табдил ба пул",
+ "hsub": "Фурӯшанда кодро нишон медиҳад — шумо бо он чизе, ки доред, пардохт мекунед. Бе биржа ва бе интизорӣ. Калидҳо дар телефони шумо мемонанд.",
+ "hnote": "Дар браузер кушода мешавад ва ба экрани асосӣ гузошта мешавад. iPhone ва Android.",
+ "v_e": "Худатон бинед",
+ "v_h": "Сӣ сония ба ҷои як абзаи матн",
+ "v1h": "Пардохт бо QR-код",
+ "v2h": "Донатҳо ва огоҳиҳо дар OBS",
+ "v3h": "API барои сайт",
+ "demo_c": "Фурӯшанда ҳисобнома баровард, харидор пайвандро кушод, пул омад. Сӣ сония, бе монтаж.",
+ "v2c": "Тамошобин аз телефон донат мекунад — дар стрим лақаб, маблағ ва паём пайдо мешавад.",
+ "v3c": "Сайт бо як дархост ҳисобнома баровард, харидор пардохт кард — сайт вебхуки имзошуда гирифт.",
+ "hw_e": "Чӣ тавр кор мекунад",
+ "hw_h": "Се қадам — ва пул дар дасти фурӯшанда",
+ "hw1h": "Фурӯшанда кодро нишон медиҳад",
+ "hw1t": "Дар кассаи телефон, дар часпак назди пештахта ё бо пайванд дар чат.",
+ "hw2h": "Харидор пардохт мекунад",
+ "hw2t": "USDT ё USDC дар яке аз чор шабака: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom.",
+ "hw3h": "Пул фавран дар дасти фурӯшанда",
+ "hw3t": "Дар чанд сония, рост ба суроғаи ӯ. «Пардохт шуд» худ ба худ пайдо мешавад — ҳеҷ кас пулро дар миёна нигоҳ намедорад.",
+ "t_h": "Ҳама чиз барои қабули пардохт",
+ "t_sub": "Касса, ҳисобномаҳо, донатҳо ва API. Пул фавран ба ҳамёни шумо меояд — мо онро нигоҳ намедорем.",
+ "tA_e": "Касса",
+ "tA_h": "Касса дар телефон. Часпак дар пештахта.",
+ "tA_t": "Маблағро ворид кардед — харидор камераро равона мекунад ва пардохт мекунад. Як часпак барои ҳама шабакаҳо ва ҳар харидор.",
+ "tB_e": "Онлайн",
+ "tB_h": "Ҳисобнома бо пайванд",
+ "tB_t": "Дар мукотиба созиш кардед — пайванд фиристед. Харидор аз ҳар ҳамён пардохт мекунад, саҳифа худаш «Пардохт шуд»-ро нишон медиҳад.",
+ "tC_e": "Ба барномасозон",
+ "tC_h": "API, WooCommerce ва Telegram-бот",
+ "tC_t": "Ҳисобнома бо як дархост ва вебхуки имзошуда. Плагин барои WordPress ва боте, ки ҳисобномаҳоро рост дар чат мебарорад.",
+ "a_h2": "Донатҳое, ки фавран мерасанд",
+ "tD_t": "Пайванд дар тавсифи канал ва огоҳии садодор дар OBS. Паём танҳо пас аз пардохти воқеӣ пайдо мешавад.",
+ "f_don": "Донатҳо бо крипто",
+ "a_cmp": "Муқоиса бо DonationAlerts ва DonatePay →",
+ "tE_e": "Ба шарикон",
+ "tE_h": "20% аз комиссияи мо — ба шумо",
+ "s6t": "Фурӯшанда ё муаллифро бо пайванди худ овардед — 20% аз комиссияи мо аз фурӯши ӯ дар давоми 12 моҳ аз они шумост. Шартнома худаш ва фавран пардохт мекунад.",
+ "s_pp": "Барномаи шарикӣ →",
+ "tF_e": "Шабакаҳо",
+ "n_h": "Чор шабака ба ҷои як",
+ "tF_t": "USDT ва USDC дар BNB Chain, Ethereum, Base ва Solana. Харидор аз ҳамон шабакае пардохт мекунад, ки пулаш аллакай дар он аст.",
+ "s_link": "Ҳоло ҳисобнома бароред →",
+ "s_digital": "Молҳои рақамӣ мефурӯшед? Баргардонидан тавассути бонк вуҷуд надорад →",
+ "s_api": "Ҳуҷҷатҳо ва кабинети API →",
+ "s_tg": "Ҳисобномаҳо дар Telegram — @tavarov_pay_bot →",
+ "p_h2": "Пули шумо — танҳо аз они шумо",
+ "p1h": "Пул аз они шумо",
+ "p1t": "Калид дар дастгоҳи шумо сохта мешавад ва ба ҳеҷ ҷо намеравад. Мо ҳам онро гирифта ё ях карда наметавонем.",
+ "p2h": "Дувоздаҳ калима",
+ "p2t": "Дар коғаз навиштед — ҳамён дар ҳар дастгоҳ бармегардад. Гум кардед — ҳеҷ кас барнамегардонад, нусхааш дар мо нест.",
+ "p3h": "Интиқол бо ном",
+ "p3t": "Номи кӯтоҳ ба ҷои сатри чилу ду аломатӣ. Дар блокчейн зиндагӣ мекунад ва ба суроғаи шумо тааллуқ дорад.",
+ "p4h": "Шаш забон",
+ "p4t": "Тоҷикӣ, русӣ, англисӣ, испанӣ, туркӣ, португалӣ. Барнома забони телефонро худаш интихоб мекунад.",
+ "sh1": "Ҳамён: BNB, USDT ва USDC дар як экран",
+ "sh2": "Касса: маблағро ворид кардед — харидор камераро равона кард",
+ "sh4": "Интиқол бо ном, на бо суроғаи дароз",
+ "sh5": "Реҷаи «Муаллиф»: донатҳо, натиҷаҳо ва ҳадафи ҷамъоварӣ",
+ "d_h2": "Дар браузер кушоед ё барои Android боргирӣ кунед",
+ "d_intro": "Дар браузер ҳеҷ чиз насб намешавад ва худаш нав мешавад. Файл барои Android — агар барномаи одатӣ барои шумо қулайтар бошад.",
+ "d_ios": "Дар iPhone: ҳамёнро дар Safari кушоед, «Мубодила» → «Ба экрани асосӣ»-ро пахш кунед — он ҳамчун барномаи одатӣ ба экран мегузарад.",
+ "d_ver": "Версия",
+ "d_size": "андоза",
+ "d_hash": "Изи файл SHA-256 — пас аз боргирӣ онро муқоиса кунед:",
+ "d_warn": "Android барои насб аз ин манбаъ иҷозат мепурсад — ӯ дар бораи ҳар файле, ки аз мағоза нест, ҳамин тавр мепурсад. Танҳо аз ҳамин саҳифа боргирӣ кунед: «Tavarov»-и қалбакӣ аз сайти бегона роҳи маъмултарини дуздидани ҳамён аст.",
+ "d_none": "Файл барои Android ҳоло гузошта нашудааст — то он вақт версияи браузериро истифода баред.",
+ "ho_h": "Ростқавлона",
+ "ho1": "<b>Шартномаҳо аудити мустақил надоранд.</b> Мо онҳоро худамон санҷидем, аммо ин як чиз нест. Дар касса аз он ки гум карданаш барои шумо мумкин аст, зиёдтар нигоҳ надоред.",
+ "ho3": "<b>Қоидаҳои кишварҳо гуногунанд.</b> Дар баъзе ҷойҳо ҳисоббаробаркунӣ бо криптовалюта манъ аст. Қоидаҳои кишвари худро санҷед.",
+ "c_h": "Шартномаҳо",
+ "c_intro": "Ҳар он чи барнома мекунад, дар шартномаҳои кушода аст. Онҳоро дар обозревательи блокҳо хондан мумкин аст ва ба гапи мо бовар накардан.",
+ "c1": "Пардохт ва баргардонидан",
+ "c3": "Ҳамёни хизматрасонӣ, 1% ба ин ҷо меояд",
+ "c7": "Пардохт дар Ethereum",
+ "c8": "Пардохт дар Base",
+ "c9": "Ҳамёни хизматрасонӣ дар Solana",
+ "c4": "Ҳисобнома дар шабака",
+ "c5": "Номҳо",
+ "c6": "Номҳо, версияи пешина",
+ "c_one": "<b>Чор шабака: BNB Chain, Ethereum, Base ва Solana.</b> Дар Ethereum ва Base ҳамон коди пардохт аст, ки дар BNB Chain. Дар Solana шартнома нест: харидор як амалиётро имзо мекунад, ки дар он 99% ба фурӯшанда ва 1% ба хизматрасонӣ меравад. Барнома ба шабакаҳои дигар намеравад.",
+ "c_pow": "Он чи мо карда метавонем: қоидаҳои номҳоро иваз кардан ва калимаҳои домро монанди <code>support</code> бастан. Он чи карда наметавонем: ба пули шумо даст расондан, интиқоли шуморо бекор кардан, ҳисобро ях кардан ё худро ба ҷои шумо муаррифӣ кардан. Ин амалҳо дар шартномаҳо аслан нестанд.",
+ "q_h": "Саволҳо",
+ "q1": "Агар телефонамро гум кунам, чӣ мешавад?",
+ "a1": "Ҳеҷ чиз, агар дувоздаҳ калима навишта шуда бошад: онҳоро дар дастгоҳи нав ворид мекунед ва ҳамён дар ҷояш. Бе онҳо ҳеҷ кас, аз ҷумла мо, барнамегардонад.",
+ "q2": "Пули маро кӣ нигоҳ медорад?",
+ "a2": "Ҳеҷ кас. Он дар блокчейн дар суроғаи шумост, калид бошад дар дастгоҳи шумо. Мо бонк ва биржа нестем ва ба пули шумо даст намерасонем.",
+ "q3": "Ин чанд пул меистад?",
+ "a3": "Ҳамён ройгон аст. Аз харидҳое, ки тавассути барнома пардохт шудаанд, як фоиз нигоҳ дошта мешавад — онро фурӯшанда месупорад, на харидор. Комиссияи шабака ба шабака меравад, на ба мо: дар BNB Chain, Base ва Solana ин ҳиссаҳои сент аст, дар Ethereum — хеле зиёдтар. Мубодилаи тангаҳо ва интиқол байни шабакаҳо дар дохили ҳамён 0,5% арзиш дорад — он барои рушди лоиҳа меравад ва маблағ то тасдиқ намоён аст.",
+ "q5": "Агар харидор хоҳад харидро баргардонад-чӣ?",
+ "a5": "Фурӯшанда бо тугма бармегардонад, ба харидор айнан ҳамон маблағе меояд, ки ӯ пардохт кардааст. Як фоиз дар хазина мемонад.",
+ "q7": "Барнома ба кӣ мувофиқ аст?",
+ "a7": "Дар он се реҷа ҳаст: фурӯшанда — касса, ҳисобномаҳо ва API барои сайт; харидор — пардохт бо код ва интиқолҳо; муаллиф — донатҳо аз тамошобинон. Ҳамён ҳамон як аст, реҷа дар танзимот дар ҳар лаҳза иваз мешавад.",
+ "q6": "Ҳамаи ин дар кадом шабакаҳо кор мекунад?",
+ "a6": "Дар чортоаш: BNB Chain, Ethereum, Base ва Solana. Шабакаро харидор интихоб мекунад. USDT ва USDC — ҳамонҳое, ки дар биржаҳо ҳастанд (дар Base танҳо USDC). Шартномаҳо кушодаанд, пайвандҳо ба онҳо — дар бахши «Шартномаҳо».",
+ "fin_h": "Калидҳо танҳо дар шумо. Пул ҳам.",
+ "fin_t": "Ҳамён дар як дақиқа кушода мешавад — бе бақайдгирӣ, рост дар браузер.",
+ "f_a2": "Ҳисобнома баровардан",
+ "fc1": "Маҳсулот",
+ "f_a1": "Ҳамёнро кушоед",
+ "f_a10": "API барои сайтҳо",
+ "f_bot": "Telegram-бот",
+ "f_wc": "Плагин барои WooCommerce",
+ "fc2": "Бештар донед",
+ "f_usdt": "Чӣ тавр USDT қабул кардан",
+ "f_partners": "Барномаи шарикӣ",
+ "f_a8": "Ба мағозаҳои рақамӣ",
+ "fc3": "Кушодагӣ",
+ "f_a3": "Шартномаи пардохт",
+ "f_a5": "Ҳамёни хизматрасонӣ",
+ "f_a6": "Шартномаи номҳо",
+ "f_a9": "Коди манбаъ",
+ "fc4": "Мо дар тамос",
+ "f_tg": "Хабарҳо дар Telegram",
+ "f_x": "Мо дар X",
+ "disc": "NoN Wallet — ҳамёни ғайрикастодиалӣ: мо калидҳоро нигоҳ намедорем ва ба пули шумо дастрасӣ надорем. Ҳеҷ чиз дар ин саҳифа маслиҳати сармоягузорӣ нест. Нархи криптовалютаҳо тағйир меёбад ва дар онҳо ҳама чизро гум кардан мумкин аст. Дар як қатор кишварҳо ҳисоббаробаркунӣ бо криптовалюта барои мол ва хизматрасонӣ маҳдуд ё манъ аст — қоидаҳои кишвари худро санҷед.",
+ "f_a7": "Сиёсати махфият",
+ "f_terms": "Шартҳои истифода"
+};
+
+/* Главная Tavarov Pay и страница NoN Wallet (12.10.2026): новые строки. */
+const T5 = {
+ "en": {
+  "p_eye": "Tavarov Pay — crypto payments for sellers",
+  "p_h1": "Get paid in USDT and USDC. <span class=\"g\">Straight to your own wallet.</span>",
+  "p_sub": "A checkout as simple as a card terminal — but nobody holds your money. You type the amount, the buyer scans with any wallet, and both screens say “Paid”.",
+  "p_cta1": "Open the checkout",
+  "p_cta2": "Try the demo",
+  "p_note": "Solana · BNB Chain · Ethereum · Base · any wallet · no sign-up",
+  "nav_demo": "Demo",
+  "dm_e": "Try it",
+  "dm_h": "Twenty seconds, and it all makes sense",
+  "dm_t": "This is a demo: no wallet needed, no real money moves. Type an amount on the seller's phone, then pay on the buyer's.",
+  "dm_seller": "Seller",
+  "dm_buyer": "Buyer",
+  "dm_shop": "Café · Checkout",
+  "dm_show": "Show code",
+  "dm_wait": "Waiting for payment…",
+  "dm_found": "Payment found…",
+  "dm_tag": "DEMO · not a real payment code",
+  "dm_paid": "Paid",
+  "dm_in": "99% is already in your wallet",
+  "dm_idle": "Waiting for the seller's code…",
+  "dm_payto": "Pay Café",
+  "dm_net": "Network",
+  "dm_sel": "To seller",
+  "dm_fee": "1% fee — paid by the seller",
+  "dm_pay": "Pay (demo)",
+  "dm_paying": "Confirming…",
+  "dm_done": "One transaction. Done.",
+  "dm_again": "↺ Try again",
+  "ot_e": "One transaction",
+  "ot_h": "Nobody in the middle",
+  "ot_t": "The payment is split on-chain, in the same transaction: 99% goes to the seller's wallet, 1% is our fee. We have no balance, no payouts and nothing to freeze. The buyer pays only the usual network fee.",
+  "ot_proof": "See for yourself: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">a real Solana payment</a> and <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">the verified contract on BNB Chain</a>.",
+  "ho_dev": "<b>Built by one developer.</b> The code is open — anyone can read and check it.",
+  "wt_h": "Need a wallet to get paid?",
+  "wt_t": "NoN Wallet is a free non-custodial wallet with a checkout built in. Keys on your phone, six languages, browser and Android.",
+  "wt_a": "More about NoN Wallet →",
+  "qp1": "Do I need to sign up or verify documents?",
+  "ap1": "No. The money goes to your own wallet; we never hold it. Following the laws of your country, including taxes, is your responsibility.",
+  "qp2": "What can the buyer pay with?",
+  "ap2": "Any wallet with USDT or USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom and others. They pick the network where their money already is: BNB Chain, Ethereum, Base (USDC only) or Solana.",
+  "pf_h": "The money is yours at once.",
+  "pf_t": "The checkout opens in a minute — no sign-up, right in your browser.",
+  "pt_h": "Getting paid?",
+  "pt_t": "Tavarov Pay is a checkout, invoice links, tips for streamers and an API for websites. 99% of every payment goes straight to your wallet.",
+  "pt_a": "More about Tavarov Pay →"
+ },
+ "es": {
+  "p_eye": "Tavarov Pay — pagos en cripto para vendedores",
+  "p_h1": "Cobra en USDT y USDC. <span class=\"g\">Directo a tu billetera.</span>",
+  "p_sub": "Una caja tan simple como un datáfono, pero nadie retiene tu dinero. Escribes el monto, el comprador escanea con cualquier billetera y ambas pantallas dicen «Pagado».",
+  "p_cta1": "Abrir la caja",
+  "p_cta2": "Probar la demo",
+  "p_note": "Solana · BNB Chain · Ethereum · Base · cualquier billetera · sin registro",
+  "nav_demo": "Demo",
+  "dm_e": "Pruébalo",
+  "dm_h": "Veinte segundos y todo queda claro",
+  "dm_t": "Es una demo: no necesitas billetera y no se mueve dinero real. Escribe un monto en el teléfono del vendedor y paga en el del comprador.",
+  "dm_seller": "Vendedor",
+  "dm_buyer": "Comprador",
+  "dm_shop": "Café · Caja",
+  "dm_show": "Mostrar código",
+  "dm_wait": "Esperando el pago…",
+  "dm_found": "Pago encontrado…",
+  "dm_tag": "DEMO · no es un código real",
+  "dm_paid": "Pagado",
+  "dm_in": "El 99% ya está en tu billetera",
+  "dm_idle": "Esperando el código del vendedor…",
+  "dm_payto": "Pagar a Café",
+  "dm_net": "Red",
+  "dm_sel": "Al vendedor",
+  "dm_fee": "Comisión 1% — la paga el vendedor",
+  "dm_pay": "Pagar (demo)",
+  "dm_paying": "Confirmando…",
+  "dm_done": "Una transacción. Listo.",
+  "dm_again": "↺ Otra vez",
+  "ot_e": "Una transacción",
+  "ot_h": "Nadie en medio",
+  "ot_t": "El pago se divide en la cadena, en la misma transacción: el 99% va a la billetera del vendedor y el 1% es nuestra comisión. No tenemos saldo, ni pagos pendientes, ni nada que congelar. El comprador solo paga la comisión normal de la red.",
+  "ot_proof": "Compruébalo: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">un pago real en Solana</a> y <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">el contrato verificado en BNB Chain</a>.",
+  "ho_dev": "<b>Lo hace un solo desarrollador.</b> El código es abierto: cualquiera puede leerlo y revisarlo.",
+  "wt_h": "¿Necesitas una billetera para cobrar?",
+  "wt_t": "NoN Wallet es una billetera gratuita y no custodial con caja integrada. Las claves en tu teléfono, seis idiomas, navegador y Android.",
+  "wt_a": "Más sobre NoN Wallet →",
+  "qp1": "¿Necesito registrarme o presentar documentos?",
+  "ap1": "No. El dinero llega a tu propia billetera; nunca lo retenemos. Cumplir las leyes de tu país, incluidos los impuestos, es tu responsabilidad.",
+  "qp2": "¿Con qué puede pagar el comprador?",
+  "ap2": "Con cualquier billetera con USDT o USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom y otras. Elige la red donde ya tiene su dinero: BNB Chain, Ethereum, Base (solo USDC) o Solana.",
+  "pf_h": "El dinero es tuyo al instante.",
+  "pf_t": "La caja se abre en un minuto, sin registro, en el navegador.",
+  "pt_h": "¿Cobras pagos?",
+  "pt_t": "Tavarov Pay es una caja, facturas por enlace, propinas para streamers y una API para sitios web. El 99% de cada pago va directo a tu billetera.",
+  "pt_a": "Más sobre Tavarov Pay →"
+ },
+ "tr": {
+  "p_eye": "Tavarov Pay — satıcılar için kripto ödemeler",
+  "p_h1": "USDT ve USDC ile ödeme alın. <span class=\"g\">Doğrudan kendi cüzdanınıza.</span>",
+  "p_sub": "Bir POS cihazı kadar basit bir kasa — ama paranızı kimse tutmaz. Tutarı yazarsınız, alıcı herhangi bir cüzdanla kodu okutur ve iki ekranda da “Ödendi” yazar.",
+  "p_cta1": "Kasayı aç",
+  "p_cta2": "Demoyu dene",
+  "p_note": "Solana · BNB Chain · Ethereum · Base · her cüzdan · kayıt yok",
+  "nav_demo": "Demo",
+  "dm_e": "Deneyin",
+  "dm_h": "Yirmi saniyede her şey anlaşılır",
+  "dm_t": "Bu bir demo: cüzdan gerekmez, gerçek para hareket etmez. Satıcının telefonunda bir tutar yazın, sonra alıcının telefonunda ödeyin.",
+  "dm_seller": "Satıcı",
+  "dm_buyer": "Alıcı",
+  "dm_shop": "Kafe · Kasa",
+  "dm_show": "Kodu göster",
+  "dm_wait": "Ödeme bekleniyor…",
+  "dm_found": "Ödeme bulundu…",
+  "dm_tag": "DEMO · gerçek bir kod değil",
+  "dm_paid": "Ödendi",
+  "dm_in": "%99’u zaten cüzdanınızda",
+  "dm_idle": "Satıcının kodu bekleniyor…",
+  "dm_payto": "Kafe’ye öde",
+  "dm_net": "Ağ",
+  "dm_sel": "Satıcıya",
+  "dm_fee": "%1 komisyon — satıcı öder",
+  "dm_pay": "Öde (demo)",
+  "dm_paying": "Onaylanıyor…",
+  "dm_done": "Tek işlem. Tamam.",
+  "dm_again": "↺ Tekrar",
+  "ot_e": "Tek işlem",
+  "ot_h": "Arada kimse yok",
+  "ot_t": "Ödeme zincir üzerinde, aynı işlemde bölünür: %99’u satıcının cüzdanına gider, %1’i bizim komisyonumuzdur. Bizde bakiye yok, ödeme beklemek yok, dondurulacak bir şey yok. Alıcı yalnızca normal ağ ücretini öder.",
+  "ot_proof": "Kendiniz bakın: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">Solana’da gerçek bir ödeme</a> ve <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">BNB Chain’de doğrulanmış sözleşme</a>.",
+  "ho_dev": "<b>Tek bir geliştirici yapıyor.</b> Kod açık — herkes okuyup kontrol edebilir.",
+  "wt_h": "Ödeme almak için cüzdan mı lazım?",
+  "wt_t": "NoN Wallet, içinde kasa bulunan ücretsiz ve gözetimsiz bir cüzdandır. Anahtarlar telefonunuzda, altı dil, tarayıcı ve Android.",
+  "wt_a": "NoN Wallet hakkında daha fazlası →",
+  "qp1": "Kayıt veya belge gerekiyor mu?",
+  "ap1": "Hayır. Para kendi cüzdanınıza gelir; biz asla tutmayız. Vergiler dahil ülkenizin yasalarına uymak sizin sorumluluğunuzdadır.",
+  "qp2": "Alıcı neyle ödeyebilir?",
+  "ap2": "USDT veya USDC bulunan herhangi bir cüzdanla: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom ve diğerleri. Parasının zaten bulunduğu ağı seçer: BNB Chain, Ethereum, Base (yalnızca USDC) veya Solana.",
+  "pf_h": "Para anında sizde.",
+  "pf_t": "Kasa bir dakikada açılır — kayıt yok, doğrudan tarayıcıda.",
+  "pt_h": "Ödeme mi alıyorsunuz?",
+  "pt_t": "Tavarov Pay; kasa, bağlantıyla fatura, yayıncılar için bağış ve web siteleri için API’dir. Her ödemenin %99’u doğrudan cüzdanınıza gider.",
+  "pt_a": "Tavarov Pay hakkında daha fazlası →"
+ },
+ "pt": {
+  "p_eye": "Tavarov Pay — pagamentos em cripto para vendedores",
+  "p_h1": "Receba em USDT e USDC. <span class=\"g\">Direto na sua carteira.</span>",
+  "p_sub": "Um caixa tão simples quanto uma maquininha — mas ninguém segura o seu dinheiro. Você digita o valor, o comprador escaneia com qualquer carteira e as duas telas mostram “Pago”.",
+  "p_cta1": "Abrir o caixa",
+  "p_cta2": "Testar a demo",
+  "p_note": "Solana · BNB Chain · Ethereum · Base · qualquer carteira · sem cadastro",
+  "nav_demo": "Demo",
+  "dm_e": "Experimente",
+  "dm_h": "Vinte segundos e tudo fica claro",
+  "dm_t": "É uma demo: não precisa de carteira e nenhum dinheiro real se move. Digite um valor no celular do vendedor e pague no do comprador.",
+  "dm_seller": "Vendedor",
+  "dm_buyer": "Comprador",
+  "dm_shop": "Café · Caixa",
+  "dm_show": "Mostrar código",
+  "dm_wait": "Aguardando pagamento…",
+  "dm_found": "Pagamento encontrado…",
+  "dm_tag": "DEMO · não é um código real",
+  "dm_paid": "Pago",
+  "dm_in": "99% já está na sua carteira",
+  "dm_idle": "Aguardando o código do vendedor…",
+  "dm_payto": "Pagar Café",
+  "dm_net": "Rede",
+  "dm_sel": "Ao vendedor",
+  "dm_fee": "Taxa de 1% — paga pelo vendedor",
+  "dm_pay": "Pagar (demo)",
+  "dm_paying": "Confirmando…",
+  "dm_done": "Uma transação. Pronto.",
+  "dm_again": "↺ De novo",
+  "ot_e": "Uma transação",
+  "ot_h": "Ninguém no meio",
+  "ot_t": "O pagamento é dividido na blockchain, na mesma transação: 99% vão para a carteira do vendedor e 1% é a nossa taxa. Não temos saldo, nem repasses, nem nada para congelar. O comprador paga só a taxa normal da rede.",
+  "ot_proof": "Confira: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">um pagamento real na Solana</a> e <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">o contrato verificado na BNB Chain</a>.",
+  "ho_dev": "<b>Feito por um único desenvolvedor.</b> O código é aberto — qualquer pessoa pode ler e verificar.",
+  "wt_h": "Precisa de uma carteira para receber?",
+  "wt_t": "A NoN Wallet é uma carteira gratuita e não custodial com caixa embutido. Chaves no seu celular, seis idiomas, navegador e Android.",
+  "wt_a": "Mais sobre a NoN Wallet →",
+  "qp1": "Preciso me cadastrar ou enviar documentos?",
+  "ap1": "Não. O dinheiro vai para a sua própria carteira; nunca ficamos com ele. Cumprir as leis do seu país, incluindo impostos, é sua responsabilidade.",
+  "qp2": "Com o que o comprador pode pagar?",
+  "ap2": "Com qualquer carteira com USDT ou USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom e outras. Ele escolhe a rede onde já tem o dinheiro: BNB Chain, Ethereum, Base (só USDC) ou Solana.",
+  "pf_h": "O dinheiro é seu na hora.",
+  "pf_t": "O caixa abre em um minuto — sem cadastro, direto no navegador.",
+  "pt_h": "Recebe pagamentos?",
+  "pt_t": "O Tavarov Pay é um caixa, cobranças por link, gorjetas para streamers e uma API para sites. 99% de cada pagamento vão direto para a sua carteira.",
+  "pt_a": "Mais sobre o Tavarov Pay →"
+ },
+ "tg": {
+  "p_eye": "Tavarov Pay — қабули пардохт бо криптовалюта",
+  "p_h1": "USDT ва USDC қабул кунед. <span class=\"g\">Бевосита ба ҳамёни худ.</span>",
+  "p_sub": "Касса мисли терминал содда аст — танҳо пули шуморо ҳеҷ кас нигоҳ намедорад. Шумо маблағро ворид мекунед, харидор кодро бо ҳар гуна ҳамён скан мекунад ва дар ҳарду экран «Пардохт шуд» пайдо мешавад.",
+  "p_cta1": "Кассаро кушоед",
+  "p_cta2": "Деморо санҷед",
+  "p_note": "Solana · BNB Chain · Ethereum · Base · ҳар гуна ҳамён · бе бақайдгирӣ",
+  "nav_demo": "Демо",
+  "dm_e": "Санҷед",
+  "dm_h": "Бист сония — ва ҳама чиз фаҳмо мешавад",
+  "dm_t": "Ин демо аст: ҳамён лозим нест, пули воқеӣ ҳаракат намекунад. Дар телефони фурӯшанда маблағро ворид кунед, баъд дар телефони харидор пардохт кунед.",
+  "dm_seller": "Фурӯшанда",
+  "dm_buyer": "Харидор",
+  "dm_shop": "Қаҳвахона · Касса",
+  "dm_show": "Кодро нишон диҳед",
+  "dm_wait": "Интизори пардохт…",
+  "dm_found": "Пардохт ёфт шуд…",
+  "dm_tag": "ДЕМО · коди воқеӣ нест",
+  "dm_paid": "Пардохт шуд",
+  "dm_in": "99% аллакай дар ҳамёни шумост",
+  "dm_idle": "Интизори коди фурӯшанда…",
+  "dm_payto": "Пардохт ба Қаҳвахона",
+  "dm_net": "Шабака",
+  "dm_sel": "Ба фурӯшанда",
+  "dm_fee": "Комиссияи 1% — фурӯшанда медиҳад",
+  "dm_pay": "Пардохт (демо)",
+  "dm_paying": "Тасдиқ…",
+  "dm_done": "Як амалиёт. Тайёр.",
+  "dm_again": "↺ Боз як бор",
+  "ot_e": "Як амалиёт",
+  "ot_h": "Дар байн ҳеҷ кас нест",
+  "ot_t": "Пардохт бевосита дар блокчейн, дар ҳамон амалиёт тақсим мешавад: 99% ба ҳамёни фурӯшанда, 1% — комиссияи мо. Мо на тавозун дорем, на пардохтҳо ва на чизе барои ях кардан. Харидор танҳо комиссияи муқаррарии шабакаро медиҳад.",
+  "ot_proof": "Худатон санҷед: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">пардохти воқеӣ дар Solana</a> ва <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">шартномаи тасдиқшуда дар BNB Chain</a>.",
+  "ho_dev": "<b>Лоиҳаро як барномасоз месозад.</b> Код кушода аст — ҳар кас метавонад онро хонад ва санҷад.",
+  "wt_h": "Барои қабули пардохт ҳамён лозим аст?",
+  "wt_t": "NoN Wallet — ҳамёни ройгон ва ғайрикастодиалӣ бо касса дар дохил. Калидҳо дар телефони шумо, шаш забон, браузер ва Android.",
+  "wt_a": "Бештар дар бораи NoN Wallet →",
+  "qp1": "Бақайдгирӣ ё ҳуҷҷатҳо лозиманд?",
+  "ap1": "Не. Пул ба ҳамёни худи шумо меояд; мо онро нигоҳ намедорем. Риояи қонунҳои кишвари худ, аз ҷумла андозҳо, масъулияти шумост.",
+  "qp2": "Харидор бо чӣ пардохт карда метавонад?",
+  "ap2": "Бо ҳар гуна ҳамёне, ки USDT ё USDC дорад: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom ва дигарон. Ӯ шабакаеро интихоб мекунад, ки пулаш аллакай дар он аст: BNB Chain, Ethereum, Base (танҳо USDC) ё Solana.",
+  "pf_h": "Пул фавран дар шумост.",
+  "pf_t": "Касса дар як дақиқа кушода мешавад — бе бақайдгирӣ, бевосита дар браузер.",
+  "pt_h": "Пардохт қабул мекунед?",
+  "pt_t": "Tavarov Pay — касса, ҳисобнома бо пайванд, донатҳо барои стримерҳо ва API барои сайтҳо. 99% ҳар пардохт бевосита ба ҳамёни шумо меояд.",
+  "pt_a": "Бештар дар бораи Tavarov Pay →"
+ }
+};
+for (const k in T5){ T[k] = T[k] || {}; Object.assign(T[k], T5[k]); }
+
+const RU = {
+"nav_demo": "Демо",
+"s_h": "Магазинам",
+"a_h": "Авторам",
+"q_h": "Вопросы",
+"p_cta1": "Открыть кассу",
+"p_eye": "Tavarov Pay — приём оплаты в криптовалюте",
+"p_h1": "Принимайте USDT и USDC. <span class=\"g\">Сразу на свой кошелёк.</span>",
+"p_sub": "Касса простая, как терминал, — только деньги никто не держит. Вы вводите сумму, покупатель сканирует код любым кошельком, и на обоих экранах «Оплачено».",
+"p_cta2": "Попробовать демо",
+"p_note": "Solana · BNB Chain · Ethereum · Base · любой кошелёк · без регистрации",
+"dm_e": "Попробуйте",
+"dm_h": "Двадцать секунд — и всё понятно",
+"dm_t": "Это демо: кошелёк не нужен, настоящие деньги не двигаются. Наберите сумму на телефоне продавца, затем оплатите на телефоне покупателя.",
+"dm_seller": "Продавец",
+"dm_shop": "Кофейня · Касса",
+"dm_show": "Показать код",
+"dm_wait": "Ждём оплату…",
+"dm_tag": "ДЕМО · не настоящий код",
+"dm_paid": "Оплачено",
+"dm_in": "99% уже в вашем кошельке",
+"dm_buyer": "Покупатель",
+"dm_idle": "Ждём код продавца…",
+"dm_payto": "Оплата: Кофейня",
+"dm_net": "Сеть",
+"dm_sel": "Продавцу",
+"dm_fee": "Комиссия 1% — платит продавец",
+"dm_pay": "Оплатить (демо)",
+"dm_done": "Одна операция. Готово.",
+"dm_again": "↺ Ещё раз",
+"t_h": "Всё, чтобы принимать оплату",
+"t_sub": "Касса, счета, донаты и API. Деньги приходят сразу на ваш кошелёк — мы их не держим.",
+"tA_e": "Касса",
+"tA_h": "Касса в телефоне. Наклейка на прилавке.",
+"tA_t": "Набрали сумму — покупатель навёл камеру и платит. Одна наклейка на все сети и на каждого покупателя.",
+"s_link": "Выставить счёт прямо сейчас →",
+"tB_e": "Онлайн",
+"tB_h": "Счёт ссылкой",
+"tB_t": "Договорились в переписке — отправили ссылку. Покупатель платит с любого кошелька, страница сама покажет «Оплачено».",
+"s_digital": "Продаёте цифровые товары? Возвратов через банк не бывает →",
+"tC_e": "Разработчикам",
+"tC_h": "API, WooCommerce и Telegram-бот",
+"tC_t": "Счёт одним запросом и вебхук с подписью. Плагин для WordPress и бот, который выставляет счета прямо в чате.",
+"s_api": "Документация и кабинет API →",
+"s_tg": "Счета в Telegram — @tavarov_pay_bot →",
+"a_h2": "Донаты, которые приходят сразу",
+"tD_t": "Ссылка в описании канала и оповещение в OBS со звуком. Сообщение появляется только после настоящей оплаты.",
+"f_don": "Донаты в крипте",
+"a_cmp": "Сравнить с DonationAlerts и DonatePay →",
+"tE_e": "Партнёрам",
+"tE_h": "20% нашей комиссии — вам",
+"s6t": "Привели продавца или автора по своей ссылке — 20% нашей комиссии с его продаж ваши 12 месяцев. Платит контракт, сам и сразу.",
+"s_pp": "Партнёрская программа →",
+"tF_e": "Сети",
+"n_h": "Четыре сети вместо одной",
+"tF_t": "USDT и USDC в BNB Chain, Ethereum, Base и Solana. Покупатель платит из той сети, где у него уже лежат деньги.",
+"ot_e": "Одна операция",
+"ot_h": "Никого посередине",
+"ot_t": "Платёж делится прямо в блокчейне, в той же операции: 99% — на кошелёк продавца, 1% — наша комиссия. У нас нет баланса, нет выплат и нечего замораживать. Покупатель платит только обычную комиссию сети.",
+"ot_proof": "Проверьте сами: <a href=\"https://solscan.io/tx/Hz3pCUY4DjdrHddAxHmZmrsfiLHV2nxRDwN47ddvb1pHhPyz7WXUB9TtaYBVZsnCnjgqSSMeE2jTrtapc9wByc8\" target=\"_blank\" rel=\"noopener\">настоящая оплата в Solana</a> и <a href=\"https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code\" target=\"_blank\" rel=\"noopener\">проверенный контракт в BNB Chain</a>.",
+"ho_h": "Честно",
+"ho1": "<b>Независимого аудита у контрактов нет.</b> Мы проверили их сами, но это не то же самое. Не держите в кассе больше, чем готовы потерять.",
+"ho_dev": "<b>Проект делает один разработчик.</b> Код открыт — его можно прочитать и проверить.",
+"ho3": "<b>Правила у стран разные.</b> Кое-где расчёты криптовалютой запрещены. Проверьте правила своей страны.",
+"c_h": "Контракты",
+"c_intro": "Всё, что делает приложение, лежит в открытых контрактах. Их можно прочитать в обозревателе блоков и не верить нам на слово.",
+"c1": "Оплата и возвраты",
+"c3": "Кошелёк сервиса, сюда приходит 1%",
+"c7": "Оплата в Ethereum",
+"c8": "Оплата в Base",
+"c9": "Кошелёк сервиса в Solana",
+"c4": "Счёт в сети",
+"c_one": "<b>Четыре сети: BNB Chain, Ethereum, Base и Solana.</b> В Ethereum и Base стоит тот же код оплаты, что в BNB Chain. В Solana контракта нет: покупатель подписывает одну операцию, в которой 99% идут продавцу и 1% — сервису. В другие сети приложение не ходит.",
+"wt_h": "Нужен кошелёк, чтобы принимать оплату?",
+"wt_t": "NoN Wallet — бесплатный некастодиальный кошелёк с кассой внутри. Ключи на вашем телефоне, шесть языков, браузер и Android.",
+"wt_a": "Подробнее о NoN Wallet →",
+"q3": "Сколько это стоит?",
+"a3": "Кошелёк бесплатный. С покупок, оплаченных через приложение, удерживается один процент — его платит продавец, а не покупатель. Комиссия сети идёт сети, а не нам: в BNB Chain, Base и Solana это доли цента, в Ethereum — заметно больше. Обмен монет и перевод между сетями внутри кошелька стоят 0,5% — они идут на развитие проекта, и сумма видна до подтверждения.",
+"qp1": "Нужна регистрация или документы?",
+"ap1": "Нет. Деньги приходят на ваш собственный кошелёк, мы их не держим. Соблюдать законы своей страны, включая налоги, — ваша ответственность.",
+"qp2": "Чем может заплатить покупатель?",
+"ap2": "Любым кошельком с USDT или USDC: NoN Wallet, MetaMask, Trust Wallet, OKX, Phantom и другими. Он выбирает сеть, где у него уже лежат деньги: BNB Chain, Ethereum, Base (только USDC) или Solana.",
+"q5": "А если покупатель хочет вернуть покупку?",
+"a5": "Продавец возвращает кнопкой, покупателю приходит ровно то, что он заплатил. Один процент остаётся в казне.",
+"pf_h": "Деньги — сразу у вас.",
+"pf_t": "Касса открывается за минуту — без регистрации, прямо в браузере.",
+"f_a2": "Выставить счёт",
+"fc1": "Продукт",
+"f_a10": "API для сайтов",
+"f_bot": "Telegram-бот",
+"f_wc": "Плагин для WooCommerce",
+"fc2": "Узнать больше",
+"f_usdt": "Как принимать USDT",
+"f_partners": "Партнёрская программа",
+"f_a8": "Цифровым магазинам",
+"fc3": "Открытость",
+"f_a3": "Контракт оплаты",
+"f_a5": "Кошелёк сервиса",
+"f_a6": "Контракт имён",
+"f_a9": "Исходный код",
+"fc4": "Мы на связи",
+"f_tg": "Новости в Telegram",
+"f_x": "Мы в X",
+"disc": "NoN Wallet — некастодиальный кошелёк: ключи мы не храним и доступа к вашим деньгам не имеем. Ничто на этой странице не является инвестиционным советом. Криптовалюты меняются в цене, и потерять на них можно всё. В ряде стран расчёты криптовалютой за товары и услуги ограничены или запрещены — проверьте правила своей страны.",
+"f_a7": "Политика конфиденциальности",
+"f_terms": "Условия использования"
+};  // русский — словарём, разметка теперь на английском
+T.ru = RU;
+/* 20.10.2026: проще и понятнее — кнопка «Начать бесплатно», ясный подзаголовок и три случая под роликом. */
+const T6 = {"en": {"p_cta1": "Start free", "p_sub": "Type an amount or send a link. The buyer pays from any wallet, both screens say “Paid”, and the money is already yours. We never hold it.", "u_h": "How do you sell?", "u1h": "In a shop or café", "u1t": "Type the amount — the buyer scans a QR code.", "u1a": "Open the checkout →", "u2h": "Online and in chats", "u2t": "Send a payment link — the page shows “Paid” by itself.", "u2a": "Create an invoice →", "u3h": "Streams and content", "u3t": "Tips with an alert in OBS, straight to your wallet.", "u3a": "Set up tips →", "u_dev": "WooCommerce store or your own site?", "u_dev2": "Plugin and API →"}, "es": {"p_cta1": "Empieza gratis", "p_sub": "Escribe el monto o envía un link. El comprador paga desde cualquier billetera, las dos pantallas dicen «Pagado» y el dinero ya es tuyo. Nunca lo retenemos.", "u_h": "¿Cómo vendes?", "u1h": "En una tienda o café", "u1t": "Escribe el monto: el cliente escanea un código QR.", "u1a": "Abrir la caja →", "u2h": "Online y en chats", "u2t": "Envía un link de pago: la página muestra «Pagado» sola.", "u2a": "Crear una factura →", "u3h": "Streams y contenido", "u3t": "Propinas con alerta en OBS, directo a tu billetera.", "u3a": "Configurar propinas →", "u_dev": "¿Tienda WooCommerce o tu propio sitio?", "u_dev2": "Plugin y API →"}, "pt": {"p_cta1": "Comece grátis", "p_sub": "Digite o valor ou envie um link. O comprador paga de qualquer carteira, as duas telas mostram «Pago» e o dinheiro já é seu. Nunca ficamos com ele.", "u_h": "Como você vende?", "u1h": "Numa loja ou café", "u1t": "Digite o valor: o cliente escaneia um QR code.", "u1a": "Abrir o caixa →", "u2h": "Online e em conversas", "u2t": "Envie um link de pagamento: a página mostra «Pago» sozinha.", "u2a": "Criar uma cobrança →", "u3h": "Lives e conteúdo", "u3t": "Gorjetas com alerta no OBS, direto na sua carteira.", "u3a": "Configurar gorjetas →", "u_dev": "Loja WooCommerce ou site próprio?", "u_dev2": "Plugin e API →"}, "tr": {"p_cta1": "Ücretsiz başla", "p_sub": "Tutarı yazın ya da bir bağlantı gönderin. Alıcı herhangi bir cüzdandan öder, iki ekranda da «Ödendi» yazar ve para zaten sizindir. Parayı biz asla tutmayız.", "u_h": "Nasıl satıyorsunuz?", "u1h": "Mağazada veya kafede", "u1t": "Tutarı yazın, müşteri QR kodu okutur.", "u1a": "Kasayı aç →", "u2h": "Online ve sohbetlerde", "u2t": "Ödeme bağlantısı gönderin, sayfa «Ödendi» durumunu kendisi gösterir.", "u2a": "Fatura oluştur →", "u3h": "Yayınlar ve içerik", "u3t": "OBS'te bildirimli bağışlar, doğrudan cüzdanınıza.", "u3a": "Bağışları kur →", "u_dev": "WooCommerce mağazası ya da kendi siteniz mi?", "u_dev2": "Eklenti ve API →"}, "ru": {"p_cta1": "Начать бесплатно", "p_sub": "Введите сумму или отправьте ссылку. Покупатель платит с любого кошелька, на обоих экранах «Оплачено» — и деньги уже у вас. Мы их не держим.", "u_h": "Как вы продаёте?", "u1h": "В магазине или кафе", "u1t": "Набрали сумму — покупатель сканирует QR-код.", "u1a": "Открыть кассу →", "u2h": "Онлайн и в переписке", "u2t": "Отправьте ссылку на оплату — страница сама покажет «Оплачено».", "u2a": "Выставить счёт →", "u3h": "Стримы и контент", "u3t": "Донаты с оповещением в OBS — сразу на ваш кошелёк.", "u3a": "Настроить донаты →", "u_dev": "Магазин на WooCommerce или свой сайт?", "u_dev2": "Плагин и API →"}, "tg": {"p_cta1": "Ройгон оғоз кунед", "p_sub": "Маблағро ворид кунед ё пайванд фиристед. Харидор аз ҳар гуна ҳамён пардохт мекунад, дар ҳарду экран «Пардохт шуд» менависад — ва пул аллакай аз они шумост. Мо онро нигоҳ намедорем.", "u_h": "Шумо чӣ тавр мефурӯшед?", "u1h": "Дар мағоза ё қаҳвахона", "u1t": "Маблағро ворид кунед — харидор QR-кодро скан мекунад.", "u1a": "Кассаро кушоед →", "u2h": "Онлайн ва дар чат", "u2t": "Пайванди пардохтро фиристед — саҳифа худаш «Пардохт шуд»-ро нишон медиҳад.", "u2a": "Ҳисобнома баровардан →", "u3h": "Стрим ва контент", "u3t": "Донатҳо бо огоҳӣ дар OBS — бевосита ба ҳамёни шумо.", "u3a": "Донатҳоро танзим кунед →", "u_dev": "Мағоза дар WooCommerce ё сайти худ?", "u_dev2": "Плагин ва API →"}};
+for (const k in T6){ T[k] = T[k] || {}; Object.assign(T[k], T6[k]); }
+
+const PAYMENT_CTA = {en:'Connect payments',ru:'Подключить платежи',es:'Conectar pagos',tr:'Ödemeleri bağla',pt:'Conectar pagamentos',tg:'Пайваст кардани пардохтҳо'};
+for(const code in PAYMENT_CTA) T[code].p_cta1=PAYMENT_CTA[code];
+
+const TITLES = {
+ "ru": "Tavarov Pay — принимайте USDT и USDC сразу на свой кошелёк",
+ "en": "Tavarov Pay — get paid in USDT and USDC straight to your wallet",
+ "es": "Tavarov Pay — cobra en USDT y USDC directo a tu billetera",
+ "tr": "Tavarov Pay — USDT ve USDC ödemelerini doğrudan cüzdanınıza alın",
+ "pt": "Tavarov Pay — receba em USDT e USDC direto na sua carteira",
+ "tg": "Tavarov Pay — USDT ва USDC-ро бевосита ба ҳамёни худ қабул кунед"
+};
+const NAMES = { en:'English', es:'Español', pt:'Português', tr:'Türkçe', ru:'Русский', tg:'Тоҷикӣ' };
+/* Для таджикского отдельных страниц и роликов нет — показываем русские. */
+const near = c => (c === 'ru' || c === 'tg') ? 'ru' : 'en';
+let lang = 'en';
+
+function apply(code){
+  const d = T[code] || T.ru;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = d[el.dataset.t];
+    if (v !== undefined) el.innerHTML = v;
+  });
+  document.documentElement.lang = code;
+  lang = code;
+  /* Отдельные страницы есть на русском и английском: остальным — английские. */
+  document.querySelectorAll('a[data-page]').forEach(a => {
+    a.setAttribute('href', (near(code) === 'ru' ? './' : './en/') + a.dataset.page);
+  });
+  /* Остальные ссылки на те же страницы — отдельным признаком: проверка
+     подвала считает ровно пять ссылок data-page, и эта пятёрка не должна
+     разрастаться от каждой новой кнопки на витрине. */
+  document.querySelectorAll('a[data-pg]').forEach(a => {
+    a.setAttribute('href', (near(code) === 'ru' ? './' : './en/') + a.dataset.pg);
+  });
+  /* Снимки экрана тоже на языке страницы. Английская витрина с русскими
+     снимками читается как чужая работа, наспех переведённая. */
+  document.querySelectorAll('img[data-shot]').forEach(img => {
+    img.src = './shots/' + code + '/' + img.dataset.shot + '.webp?v=' + '1023';
+  });
+  try { localStorage.setItem('tavarov.site.lang', code); } catch (e) {}
+  document.querySelectorAll('#langs [data-code]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.code === code)));
+  const cur = document.getElementById('langCur'); if (cur) cur.textContent = code === 'tg' ? 'TJ' : code.toUpperCase();
+  document.title = TITLES[code] || TITLES.ru;
+  /* Ссылки на кассу уносят выбранный язык с собой: касса живёт на другом
+     адресе, и её хранилище про наш выбор ничего не знает. */
+  /* Ролик снят на двух языках. Русскому показываем русский, всем остальным —
+     английский: подписи в кадре читать должны, а не угадывать. */
+  document.querySelectorAll('video.dv').forEach(v => {
+    const one = near(code);
+    /* Обложку ставим всегда, даже когда ролик уже на нужном языке: у
+       второго и третьего роликов её нет в разметке, чтобы не качать чужую. */
+    if (v.dataset.poster){ const pu = './video/' + v.dataset.v + '-poster-' + one + '.jpg'; if (v.getAttribute('poster') !== pu) v.poster = pu; }
+    const w = v.querySelector('source[data-f="webm"]'), m = v.querySelector('source[data-f="mp4"]');
+    if (!w || !m || w.getAttribute('src').includes('-' + one + '.')) return;
+    w.src = './video/' + v.dataset.v + '-' + one + '.webm';
+    m.src = './video/' + v.dataset.v + '-' + one + '.mp4';
+    const was = !v.paused;
+    v.load();
+    if (was) v.play().catch(() => {});
+  });
+  document.querySelectorAll('a[href*="wallet.tavarov.com/invoice"]').forEach(a => {
+    a.href = 'https://wallet.tavarov.com/invoice?lang=' + (code === 'tg' ? 'ru' : code);
+  });
+}
+
+/* Ролики играют, только пока их видно. */
+(() => {
+  const vids = document.querySelectorAll('video.dv');
+  if (!('IntersectionObserver' in window)){ vids.forEach(v => v.play().catch(() => {})); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting){ e.target.play().catch(() => {}); } else { e.target.pause(); }
+  }), { threshold: 0.35 });
+  vids.forEach(v => io.observe(v));
+})();
+
+/* Язык — одна кнопка: глобус и код, по нажатию список, где каждый язык
+   назван по-своему. Шесть кодов в ряд читались как шум и ломали шапку
+   на телефоне. */
+const box = document.getElementById('langs');
+box.innerHTML = '<button type="button" class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.9 5.8 3.9 9s-1.3 6.2-3.9 9c-2.6-2.8-3.9-5.8-3.9-9S9.4 5.8 12 3z"/></svg>'
+  + '<span id="langCur">EN</span><svg class="chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>'
+  + '<div class="lang-menu" id="langMenu" role="menu" hidden></div>';
+const langBtn = document.getElementById('langBtn'), langMenu = document.getElementById('langMenu');
+const langOpen = on => { langMenu.hidden = !on; langBtn.setAttribute('aria-expanded', String(on)); };
+Object.keys(NAMES).forEach(code => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = NAMES[code];
+  b.dataset.code = code;
+  b.setAttribute('role', 'menuitemradio');
+  b.setAttribute('lang', code === 'tg' ? 'tg' : code);
+  b.onclick = () => { apply(code); langOpen(false); langBtn.focus(); };
+  langMenu.appendChild(b);
+});
+langBtn.onclick = e => { e.stopPropagation(); langOpen(langMenu.hidden); };
+document.addEventListener('click', e => { if (!box.contains(e.target)) langOpen(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !langMenu.hidden){ langOpen(false); langBtn.focus(); } });
+
+/* Язык: сначала прошлый выбор, потом язык браузера, иначе английский —
+   он чужой всем поровну. */
+
+Object.assign(T.en,{"p_cta1": "Connect payments", "p_sub": "Accept payments by checkout, invoice link or API. Customers pay with a compatible wallet; funds are transferred to your wallet when the network confirms the transaction.", "p_note": "USDT and USDC · Four networks · 1% current service fee", "s_digital": "Payment tools for digital goods →", "ot_t": "The current payment split is 99% to the seller and 1% to Tavarov Pay, in the same transaction. We do not hold a merchant balance or operate a payout schedule. Network fees are separate.", "c_intro": "Payment smart-contract source is published for inspection. The wallet, cashier and API also use off-chain software. Published source is not an independent security audit.", "c_one": "Payments are supported on BNB Chain, Ethereum, Base and Solana. EVM payments use smart contracts. Solana payments use a transaction signed by the payer that includes the seller transfer and service fee.", "ho_dev": "<b>Independently developed.</b> Review the published source code or contact the project at <a href=\"mailto:hi@tavarov.com\">hi@tavarov.com</a>.", "ho1": "<b>No independent smart-contract audit.</b> Internal checks do not replace an external security review. Understand the risks and start with a small payment.", "wt_h": "NoN Wallet is a separate product.", "wt_t": "A non-custodial wallet for managing your own crypto. It is optional: you can use Tavarov Pay with other compatible wallets.", "wt_a": "Explore NoN Wallet →", "a3": "Tavarov Pay currently charges 1% per payment, deducted from the seller’s proceeds. Blockchain network fees are separate and vary with the network and demand. On BNB Chain, Ethereum and Base, the contract owner can change the service fee up to the on-chain maximum of 2%. See the Terms for details.", "a5": "Blockchain payments cannot be cancelled by Tavarov Pay. The seller handles refunds from their own wallet. Available refund tools depend on the payment network and integration. The service fee is not refunded.", "qp1": "How do I connect my store?", "ap1": "Connect through the API dashboard using a wallet signature, or create a payment link. You remain responsible for your sales, refunds, taxes and compliance with the rules that apply to your business.", "ap2": "A wallet compatible with the chosen network and token, such as MetaMask, Trust Wallet, OKX, Phantom, Solflare or NoN Wallet. Supported networks are BNB Chain, Ethereum, Base (USDC only) and Solana.", "pf_h": "Ready to connect your store?", "pf_t": "Open the developer dashboard or create your first payment request.", "s5t": "Create an invoice through the API and receive a signed webhook when its payment is confirmed. Sign in to the developer dashboard with your wallet. Optional test mode is available.", "disc": "Tavarov Pay provides payment software and does not hold merchant funds. NoN Wallet is a separate non-custodial wallet. Blockchain transactions carry risks, and crypto payment rules vary by country."});
+if(typeof TITLES!=='undefined') TITLES.en="Tavarov Pay \u2014 USDT & USDC Payments to Your Wallet";
+apply('en');
+
+/* ---------- Файл для Android ----------
+   Кнопка появляется, только если файл действительно выложен: рядом с ним
+   лежит apk.json с версией, размером и отпечатком. Мёртвая кнопка «Скачать»,
+   ведущая в 404, — худшее, что может встретить человек на витрине. */
+if (document.getElementById('apkBox')) fetch('./apk.json', { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(d => {
+    if (!d || !d.file || !d.sha256) return Promise.reject();
+    document.getElementById('apkLink').href = './' + String(d.file).replace(/[^A-Za-z0-9._-]/g, '');
+    document.getElementById('apkLink').textContent = 'APK · ' + (d.version || '');
+    document.getElementById('apkVer').textContent  = d.version || '—';
+    document.getElementById('apkSize').textContent = d.size || '—';
+    document.getElementById('apkHash').textContent = d.sha256;
+    document.getElementById('apkBox').classList.remove('hidden');
+    document.getElementById('apkNone').classList.add('hidden');
+    document.getElementById('apkTop').classList.remove('hidden');
+    if (!/android/i.test(navigator.userAgent)){
+      /* Не Android — файл ему не поставить: главная кнопка остаётся «Открыть кошелёк». */
+      const a = document.getElementById('apkLink'); a.classList.remove('btn-main'); a.classList.add('btn-plain');
+    } else {
+      const w = document.getElementById('dlWeb'); w.classList.remove('btn-main'); w.classList.add('btn-plain');
+      document.getElementById('dlIos').classList.add('hidden');
+    }
+  })
+  .catch(() => {});
+</script>
+<!-- Счётчик посещений. Только витрина: на страницах кошелька, кассы и
+     оплаты никакого постороннего кода нет и не будет — там человек вводит
+     пароль и видит суммы. Cloudflare Web Analytics не ставит cookie и не
+     следит за человеком между сайтами, поэтому баннер про печеньки не
+     нужен. Считает просмотры страниц и откуда пришли, не более. -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;807d9906067747c9ba6d53e1cc9f4520&quot;}"></script>
+<script>
+/* Ссылка приглашения (?ref=адрес или имя) должна дожить до кошелька:
+   человек читает эту страницу, а закрепляет пригласившего уже в кошельке.
+   Передаём её только в ссылки на сам кошелёк и только проверенную. */
+(function(){
+  try{
+    var r = new URLSearchParams(location.search).get('ref') || '';
+    if (!/^0x[0-9a-fA-F]{40}$/.test(r) && !/^@?[a-zA-Z][a-zA-Z0-9_]{2,19}$/.test(r)) return;
+    var links = document.querySelectorAll('a[href="https://wallet.tavarov.com/"]');
+    for (var i = 0; i < links.length; i++) links[i].href = 'https://wallet.tavarov.com/?ref=' + encodeURIComponent(r.replace(/^@+/, ''));
+  } catch(e){}
+})();
+</script>
+<script>
+/* ---------- витрина «ночь»: движение и вкладки ---------- */
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Шапка становится стеклянной, как только страницу сдвинули. */
+  var hdr = document.getElementById('hdr');
+  var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 8); };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* Появление при прокрутке. Без поддержки — показываем всё сразу. */
+  var rv = document.querySelectorAll('.rv');
+  if (!('IntersectionObserver' in window) || reduce){ rv.forEach(function(e){ e.classList.add('in'); }); }
+  else {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },
+      { threshold:0.12, rootMargin:'0px 0px -6% 0px' });
+    rv.forEach(function(e){ io.observe(e); });
+  }
+
+  /* Вкладки роликов: видна одна сцена; остальные спрятаны и не качаются. */
+  var tabs = document.querySelectorAll('.tabs button'), figs = document.querySelectorAll('.screen figure');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){
+    var n = +b.dataset.tab;
+    tabs.forEach(function(x, i){ x.setAttribute('aria-selected', String(i === n)); });
+    figs.forEach(function(f, i){
+      var v = f.querySelector('video');
+      if (i === n){ f.classList.add('on'); if (v && v.preload === 'none') v.preload = 'metadata'; }
+      else { f.classList.remove('on'); if (v) v.pause(); }
+    });
+  }); });
+
+  if (reduce) return;
+  /* Свет за курсором на карточках. */
+  document.querySelectorAll('.card').forEach(function(c){
+    c.addEventListener('pointermove', function(e){
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+  /* Телефоны в первом экране чуть поворачиваются за мышью. */
+  var stage = document.getElementById('stage'), tilt = document.getElementById('tilt');
+  if (stage && tilt && matchMedia('(pointer:fine)').matches){
+    document.querySelector('.hero').addEventListener('pointermove', function(e){
+      var r = stage.getBoundingClientRect();
+      var x = (e.clientX - (r.left + r.width / 2)) / r.width, y = (e.clientY - (r.top + r.height / 2)) / r.height;
+      tilt.style.transform = 'rotateY(' + (x * 10).toFixed(2) + 'deg) rotateX(' + (-y * 8).toFixed(2) + 'deg)';
+    });
+    document.querySelector('.hero').addEventListener('pointerleave', function(){ tilt.style.transform = ''; });
+  }
+})();
+</script>
+<script>
+/* ---------- демо оплаты (главная) ----------
+   Ничего не отправляет и никуда не ходит: два нарисованных телефона.
+   Код на экране продавца — случайный узор, его нельзя отсканировать. */
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  if (!$('dShow')) return;
+  var v = '';
+  var tr = function(k){ var d = T[lang] || T.ru; return d[k] || T.ru[k]; };
+  var fmt = function(x){ return (Math.round(x * 100) / 100).toFixed(2); };
+  function draw(){ $('amt').textContent = v || '0'; $('dShow').disabled = !(parseFloat(v) > 0); }
+  document.querySelectorAll('.keys button').forEach(function(b){ b.addEventListener('click', function(){
+    var k = b.dataset.k || b.textContent;
+    if (k === 'del') v = v.slice(0, -1);
+    else if (k === '.'){ if (v.indexOf('.') < 0) v = (v || '0') + '.'; }
+    else if (v.replace('.', '').length < 6 && !(v.indexOf('.') >= 0 && v.split('.')[1].length >= 2)) v = (v === '0' ? '' : v) + k;
+    draw(); }); });
+  function qr(){ var c = $('qr').getContext('2d'), n = 29, s = 168 / n, seed = Math.floor(parseFloat(v) * 100) + 7;
+    var rnd = function(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    c.fillStyle = '#fff'; c.fillRect(0, 0, 168, 168); c.fillStyle = '#1D1D1F';
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++){ var fp = (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9); if (!fp && rnd() < .48) c.fillRect(x * s, y * s, s + .3, s + .3); }
+    [[0, 0], [n - 7, 0], [0, n - 7]].forEach(function(p){ c.fillRect(p[0] * s, p[1] * s, 7 * s, 7 * s); c.fillStyle = '#fff'; c.fillRect((p[0] + 1) * s, (p[1] + 1) * s, 5 * s, 5 * s); c.fillStyle = '#1D1D1F'; c.fillRect((p[0] + 2) * s, (p[1] + 2) * s, 3 * s, 3 * s); }); }
+  $('dShow').addEventListener('click', function(){
+    var a = parseFloat(v); $('amt2').textContent = fmt(a); $('sKey').hidden = true; $('sQr').hidden = false; qr();
+    setTimeout(function(){ var fee = Math.round(a) / 100;
+      $('bIdle').hidden = true; $('bPay').hidden = false; $('bAmt').textContent = fmt(a);
+      $('bSel').textContent = fmt(a - fee) + ' USDT'; $('bFee').textContent = fmt(fee) + ' USDT'; }, 900);
+  });
+  $('dPay').addEventListener('click', function(){
+    $('dPay').disabled = true; $('dPay').textContent = tr('dm_paying'); $('sWait').textContent = tr('dm_found');
+    setTimeout(function(){ $('bOk').hidden = false; $('sOk').hidden = false; $('okAmt').textContent = fmt(parseFloat(v)) + ' USDT'; $('dAgain').hidden = false; }, 1100);
+  });
+  $('dAgain').addEventListener('click', function(){ v = ''; draw();
+    ['sQr', 'bPay', 'bOk', 'sOk'].forEach(function(id){ $(id).hidden = true; }); $('sKey').hidden = false; $('bIdle').hidden = false; $('dAgain').hidden = true;
+    $('dPay').disabled = false; $('dPay').textContent = tr('dm_pay'); $('sWait').textContent = tr('dm_wait'); });
+  draw();
+})();
+</script>
+<script>
+const DESKTOP_COPY = {"en": {"eyebrow": "Tavarov Pay Till · Desktop", "heading": "A proper place<br>for your checkout.", "intro": "Your counter, your computer, your wallet. Accept USDT and USDC with a dedicated Windows app.", "preview": "Interface preview", "checkout": "Checkout", "history": "History", "settings": "Settings", "connected": "Your wallet connected", "newSale": "NEW SALE", "create": "Create payment", "flow": "Enter the amount. Show the QR.<br>See the payment arrive.", "customerDisplay": "Customer display", "secondScreen": "Second screen", "paymentHistory": "Payment history", "notifications": "Notifications", "on": "On", "illustration": "Illustration · no real transaction", "macMeta": "macOS 13 or later. Choose your Mac’s chip.", "chipHelp": "Apple menu → About This Mac → Chip or Processor.", "winMeta": "Windows 10 / 11 · 64-bit.", "installer": "Download installer", "portableHelp": "Portable opens without installation.", "setup": "Connect your Tavarov Pay API key in Settings. The app keeps your checkout and history on this computer.", "getKey": "Get an API key ↗", "installation": "Installation & file verification", "installHelp": "Windows: open the installer or use the portable file. The builds are unsigned; Windows may show a security prompt.", "verify": "Check the file’s SHA-256 checksum before installing.", "checksums": "Download SHA-256 checksums ↗", "previewLabel": "Illustration of Tavarov Pay Till checkout", "nav": "Desktop app", "hero": "Download desktop app", "direct": "From the counter.<br>Straight to your wallet."}, "ru": {"eyebrow": "Tavarov Pay Till · Приложение для кассы", "heading": "Касса на своём месте.<br>На вашем компьютере.", "intro": "Ваш прилавок, ваш компьютер, ваш кошелёк. Принимайте USDT и USDC в отдельном приложении для Windows.", "preview": "Пример интерфейса", "previewLabel": "Иллюстрация интерфейса кассы Tavarov Pay Till", "checkout": "Касса", "history": "История", "settings": "Настройки", "connected": "Ваш кошелёк подключён", "newSale": "НОВАЯ ПРОДАЖА", "create": "Создать платёж", "direct": "От прилавка.<br>Прямо в ваш кошелёк.", "flow": "Введите сумму. Покажите QR.<br>Получите подтверждение оплаты.", "customerDisplay": "Экран покупателя", "secondScreen": "Второй монитор", "paymentHistory": "История платежей", "notifications": "Уведомления", "on": "Включены", "illustration": "Иллюстрация · без настоящей транзакции", "macMeta": "macOS 13 и новее. Выберите процессор вашего Mac.", "chipHelp": "Меню Apple → «Об этом Mac» → «Чип» или «Процессор».", "winMeta": "Windows 10 / 11 · 64 бита.", "installer": "Скачать установщик", "portableHelp": "Portable запускается без установки.", "setup": "Подключите API-ключ Tavarov Pay в настройках. Касса и история сохраняются на этом компьютере.", "getKey": "Получить API-ключ ↗", "installation": "Установка и проверка файлов", "installHelp": "Windows: запустите установщик или portable-файл. Сборки не подписаны сертификатом издателя; система может показать предупреждение безопасности.", "verify": "Перед установкой сравните контрольную сумму SHA-256.", "checksums": "Скачать контрольные суммы SHA-256 ↗", "nav": "Приложение", "hero": "Скачать для компьютера"}, "es": {"eyebrow": "Tavarov Pay Till · Aplicación de escritorio", "heading": "Tu caja, en su sitio.<br>En tu ordenador.", "intro": "Tu mostrador, tu ordenador, tu cartera. Acepta USDT y USDC con una aplicación para Windows.", "preview": "Vista previa de la interfaz", "previewLabel": "Ilustración de la caja de Tavarov Pay Till", "checkout": "Caja", "history": "Historial", "settings": "Ajustes", "connected": "Tu cartera está conectada", "newSale": "NUEVA VENTA", "create": "Crear pago", "direct": "Desde el mostrador.<br>Directo a tu cartera.", "flow": "Introduce el importe. Muestra el QR.<br>Recibe la confirmación del pago.", "customerDisplay": "Pantalla del cliente", "secondScreen": "Segunda pantalla", "paymentHistory": "Historial de pagos", "notifications": "Notificaciones", "on": "Activadas", "illustration": "Ilustración · sin transacción real", "macMeta": "macOS 13 o posterior. Elige el procesador de tu Mac.", "chipHelp": "Menú Apple → Acerca de este Mac → Chip o Procesador.", "winMeta": "Windows 10 / 11 · 64 bits.", "installer": "Descargar instalador", "portableHelp": "La versión portable se abre sin instalación.", "setup": "Conecta tu clave API de Tavarov Pay en Ajustes. La aplicación guarda la caja y el historial en este ordenador.", "getKey": "Obtener una clave API ↗", "installation": "Instalación y verificación de archivos", "installHelp": "Windows: abre el instalador o utiliza el archivo portable. Las versiones no están firmadas por un editor verificado; el sistema puede mostrar un aviso de seguridad.", "verify": "Comprueba la suma SHA-256 del archivo antes de instalarlo.", "checksums": "Descargar sumas SHA-256 ↗", "nav": "Aplicación de escritorio", "hero": "Descargar para ordenador"}, "tr": {"eyebrow": "Tavarov Pay Till · Masaüstü uygulaması", "heading": "Kasanız yerini buldu.<br>Kendi bilgisayarınızda.", "intro": "Tezgâhınız, bilgisayarınız, cüzdanınız. Windows uygulamasıyla USDT ve USDC ödemeleri alın.", "preview": "Arayüz önizlemesi", "previewLabel": "Tavarov Pay Till kasa arayüzü görseli", "checkout": "Kasa", "history": "Geçmiş", "settings": "Ayarlar", "connected": "Cüzdanınız bağlı", "newSale": "YENİ SATIŞ", "create": "Ödeme oluştur", "direct": "Tezgâhtan.<br>Doğrudan cüzdanınıza.", "flow": "Tutarı girin. QR kodunu gösterin.<br>Ödeme onayını alın.", "customerDisplay": "Müşteri ekranı", "secondScreen": "İkinci ekran", "paymentHistory": "Ödeme geçmişi", "notifications": "Bildirimler", "on": "Açık", "illustration": "Örnek görsel · gerçek işlem yapılmaz", "macMeta": "macOS 13 veya üzeri. Mac’inizin işlemcisini seçin.", "chipHelp": "Apple menüsü → Bu Mac Hakkında → Çip veya İşlemci.", "winMeta": "Windows 10 / 11 · 64 bit.", "installer": "Yükleyiciyi indir", "portableHelp": "Portable sürüm kurulum gerektirmez.", "setup": "Ayarlar’dan Tavarov Pay API anahtarınızı bağlayın. Uygulama kasayı ve geçmişi bu bilgisayarda saklar.", "getKey": "API anahtarı al ↗", "installation": "Kurulum ve dosya doğrulama", "installHelp": "Windows: yükleyiciyi açın veya portable dosyayı kullanın. Sürümler doğrulanmış bir yayıncı tarafından imzalanmamıştır; sistem bir güvenlik uyarısı gösterebilir.", "verify": "Kurulumdan önce dosyanın SHA-256 sağlama toplamını kontrol edin.", "checksums": "SHA-256 sağlama toplamlarını indir ↗", "nav": "Masaüstü uygulaması", "hero": "Bilgisayar için indir"}, "pt": {"eyebrow": "Tavarov Pay Till · Aplicativo para computador", "heading": "Seu caixa no lugar certo.<br>No seu computador.", "intro": "Seu balcão, seu computador, sua carteira. Receba USDT e USDC com um aplicativo para Windows.", "preview": "Prévia da interface", "previewLabel": "Ilustração do caixa do Tavarov Pay Till", "checkout": "Caixa", "history": "Histórico", "settings": "Configurações", "connected": "Sua carteira está conectada", "newSale": "NOVA VENDA", "create": "Criar pagamento", "direct": "Do balcão.<br>Direto para sua carteira.", "flow": "Digite o valor. Mostre o QR.<br>Receba a confirmação do pagamento.", "customerDisplay": "Tela do cliente", "secondScreen": "Segunda tela", "paymentHistory": "Histórico de pagamentos", "notifications": "Notificações", "on": "Ativadas", "illustration": "Ilustração · sem transação real", "macMeta": "macOS 13 ou posterior. Escolha o processador do seu Mac.", "chipHelp": "Menu Apple → Sobre Este Mac → Chip ou Processador.", "winMeta": "Windows 10 / 11 · 64 bits.", "installer": "Baixar instalador", "portableHelp": "A versão portable abre sem instalação.", "setup": "Conecte sua chave de API do Tavarov Pay nas Configurações. O aplicativo mantém o caixa e o histórico neste computador.", "getKey": "Obter uma chave de API ↗", "installation": "Instalação e verificação dos arquivos", "installHelp": "Windows: abra o instalador ou use o arquivo portable. As versões não têm assinatura de um editor verificado; o sistema pode exibir um aviso de segurança.", "verify": "Confira a soma de verificação SHA-256 do arquivo antes de instalar.", "checksums": "Baixar somas de verificação SHA-256 ↗", "nav": "Aplicativo para computador", "hero": "Baixar para computador"}, "tg": {"eyebrow": "Tavarov Pay Till · Барнома барои компютер", "heading": "Хазина дар ҷойи худ.<br>Дар компютери шумо.", "intro": "Пештахтаи шумо, компютери шумо, ҳамёни шумо. Бо барномаи Windows пардохтҳоро бо USDT ва USDC қабул кунед.", "preview": "Намунаи интерфейс", "previewLabel": "Тасвири интерфейси хазинаи Tavarov Pay Till", "checkout": "Хазина", "history": "Таърих", "settings": "Танзимот", "connected": "Ҳамёни шумо пайваст аст", "newSale": "ФУРӮШИ НАВ", "create": "Сохтани пардохт", "direct": "Аз пештахта.<br>Бевосита ба ҳамёни шумо.", "flow": "Маблағро ворид кунед. QR-ро нишон диҳед.<br>Тасдиқи пардохтро гиред.", "customerDisplay": "Экрани харидор", "secondScreen": "Экрани дуюм", "paymentHistory": "Таърихи пардохтҳо", "notifications": "Огоҳиҳо", "on": "Фаъоланд", "illustration": "Тасвири намунавӣ · бе амалиёти воқеӣ", "macMeta": "macOS 13 ё навтар. Протсессори Mac-и худро интихоб кунед.", "chipHelp": "Менюи Apple → «Дар бораи ин Mac» → «Чип» ё «Протсессор».", "winMeta": "Windows 10 / 11 · 64-битӣ.", "installer": "Боргирии насбкунанда", "portableHelp": "Нусхаи portable бе насб кушода мешавад.", "setup": "Калиди API-и Tavarov Pay-ро дар танзимот пайваст кунед. Барнома хазина ва таърихро дар ҳамин компютер нигоҳ медорад.", "getKey": "Гирифтани калиди API ↗", "installation": "Насб ва санҷиши файлҳо", "installHelp": "Windows: насбкунандаро кушоед ё файли portable-ро истифода баред. Нусхаҳо имзои ношири санҷидашуда надоранд; система метавонад огоҳии амниятӣ нишон диҳад.", "verify": "Пеш аз насб маблағи санҷишии SHA-256-и файлро муқоиса кунед.", "checksums": "Боргирии маблағҳои санҷишии SHA-256 ↗", "nav": "Барнома барои компютер", "hero": "Боргирӣ барои компютер"}};
+Object.values(DESKTOP_COPY).forEach(d=>Object.assign(d,{webOpen:'Open checkout ↗',webHelp:'Open in your browser. No installation needed.'}));
+Object.assign(DESKTOP_COPY.ru,{webOpen:'Открыть кассу ↗',webHelp:'Работает в браузере. Установка не нужна.'});
+function translateDesktop(code){const d=DESKTOP_COPY[code]||DESKTOP_COPY.en;document.querySelectorAll('[data-desktop]').forEach(el=>{const value=d[el.dataset.desktop];if(value!==undefined)el.innerHTML=value});document.querySelectorAll('[data-desktop-aria]').forEach(el=>el.setAttribute('aria-label',d[el.dataset.desktopAria]||DESKTOP_COPY.en[el.dataset.desktopAria]));}
+Object.assign(DESKTOP_COPY.en,{eyebrow:'Tavarov Pay · Cashier',winMeta:'Windows 10 / 11 · 64-bit · Unsigned preview',installHelp:'The Windows preview is not signed by a verified publisher. A checksum verifies the downloaded file, not the publisher’s identity. Use the browser checkout if you prefer not to install an unsigned preview.'});
+translateDesktop(document.documentElement.lang);
+new MutationObserver(()=>translateDesktop(document.documentElement.lang)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+</script>
+
+
+</body></html>

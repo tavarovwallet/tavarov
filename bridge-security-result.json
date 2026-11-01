@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "wrongOriginRejected": true,
+  "wrongNonceRejected": true,
+  "lockedWalletRejected": true,
+  "walletMismatchRejected": true,
+  "networkMismatchRejected": true,
+  "explicitApprovalRequired": true,
+  "transactionMethodsIgnored": true,
+  "privateKeysNotReturned": true
+}

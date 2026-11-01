@@ -154,6 +154,40 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
 .steps li.done{color:var(--label)} .steps li.done .n{background:var(--green); color:#fff}
 .steps li.fail .n{background:var(--red); color:#fff}
 .steps small{display:block; font-size:12.5px; color:var(--label-3); font-family:var(--mono)}
+/* ===== ЧИСТОВОЙ СЛОЙ (23.10.2026): как в кошельке ===== */
+:root{ --bg:#F4F4F6; --card:#FFFFFF; --card-solid:#FFFFFF; --label:#0B0B10; --label-2:rgba(14,14,22,.56); --label-3:rgba(14,14,22,.40);
+  --sep:rgba(14,14,22,.08); --accent:#5B3DF5; --accent-2:#5B3DF5; --btn-bg:#0B0B10; --btn-fg:#FFFFFF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#08080A; --card:#131316; --card-solid:#131316; --label:#F5F5F7;
+  --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.38); --sep:rgba(255,255,255,.07); --accent:#A495FF; --accent-2:#A495FF;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D; } }
+:root[data-theme="dark"]{ --bg:#08080A; --card:#131316; --card-solid:#131316; --label:#F5F5F7;
+  --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.38); --sep:rgba(255,255,255,.07); --accent:#A495FF; --accent-2:#A495FF;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D; }
+body{ font-feature-settings:"ss01" on, "cv11" on; letter-spacing:-.006em; }
+/* Подписи полей и разделов — обычным регистром, тихо */
+label, .lbl, .sec, .sum-row .k{ text-transform:none !important; letter-spacing:-.005em !important;
+  font-size:13px !important; font-weight:600 !important; color:var(--label-2) !important; }
+/* Главная кнопка — монохромная, без свечения */
+.btn:not(.btn-ghost):not(.btn-plain), .btn-main{ background:var(--btn-bg) !important; color:var(--btn-fg) !important;
+  box-shadow:none !important; border-color:transparent !important; filter:none !important; }
+.btn{ border-radius:14px; font-weight:650; letter-spacing:-.018em; transition:opacity .15s ease, transform .12s ease; }
+.btn:hover{ filter:none; opacity:.88; }
+.card{ box-shadow:none !important; border-color:var(--sep) !important; border-radius:20px !important; }
+.brand svg{ box-shadow:none !important; }
+/* значок на монохромной кнопке — в цвет текста кнопки */
+.btn-main .ico path{ stroke:currentColor; }
+.btn-main .ico circle{ fill:currentColor; }
+/* Чек покупателя (RECEIPTS-V1) */
+.rc-items{ margin:10px 0 4px; display:grid; gap:4px; font-size:14px; }
+.rc-items .rc-l{ display:flex; justify-content:space-between; gap:12px; color:var(--label-2); font-weight:600; }
+.rc-items .rc-l b{ color:var(--label); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.rc-box{ margin-top:14px; padding:16px; border:1px dashed var(--sep); border-radius:16px; font-variant-numeric:tabular-nums; }
+.rc-box .rc-h{ text-align:center; font-weight:700; }
+.rc-box .rc-s{ text-align:center; font-size:12px; color:var(--label-2); margin:2px 0 10px; }
+.rc-box .rc-tot{ display:flex; justify-content:space-between; font-weight:800; font-size:17px; border-top:1px dashed var(--sep); margin-top:8px; padding-top:8px; }
+.rc-box .rc-kv{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--label-2); margin-top:4px; }
+.rc-box .rc-kv b{ color:var(--label); font-weight:600; }
+.rc-box .rc-f{ font-size:11.5px; color:var(--label-3); text-align:center; margin-top:10px; }
 </style>
 </head>
 <body>
@@ -254,6 +288,7 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
   <div class="card" id="main">
     <h1 id="shop">—</h1>
     <div class="muted" id="item"></div>
+    <div class="rc-items hidden" id="rcItems"></div>
     <div class="sum" id="amount">—</div>
     <div class="tiny" id="expires"></div>
 
@@ -301,6 +336,7 @@ h1{font-size:21px; margin:0 0 4px; letter-spacing:-.015em; line-height:1.25}
 
   <div class="card" id="stateCard">
     <div class="state" id="state"><span class="dot"></span><span id="stateText">Ждём оплату…</span></div>
+    <div class="rc-box hidden" id="rcBox"></div>
     <div class="note" id="stateNote">
       Страница сама увидит платёж — обычно это несколько секунд. Закрывать её не нужно.
     </div>
@@ -1776,8 +1812,90 @@ function redrawState(){
 
 /* Смотрим сами, не полагаясь на магазин: человеку нужно увидеть «оплачено»
    сразу, а не после того, как сработает вебхук у продавца. */
+/* ===================== Чек покупателя (RECEIPTS-V1) =====================
+   Если касса передала позиции — показываем их до оплаты, а после оплаты —
+   чек. Чек кладём в память браузера: NoN Wallet, открытый на этом же сайте,
+   покажет его в «Моих чеках». */
+const RC_KEY = 'tavarov.receipts.v1';
+const RC_TXT = {
+  ru: { receipt: 'Чек', total: 'Итого', paid: 'Оплачено', net: 'Сеть', from: 'От', tx: 'Транзакция', saved: 'Чек сохранён на этом устройстве', note: 'Не является фискальным документом' },
+  en: { receipt: 'Receipt', total: 'Total', paid: 'Paid', net: 'Network', from: 'From', tx: 'Transaction', saved: 'The receipt is saved on this device', note: 'Not a tax document' },
+  es: { receipt: 'Recibo', total: 'Total', paid: 'Pagado', net: 'Red', from: 'De', tx: 'Transacción', saved: 'El recibo se guardó en este dispositivo', note: 'No es un documento fiscal' },
+  tr: { receipt: 'Fiş', total: 'Toplam', paid: 'Ödendi', net: 'Ağ', from: 'Gönderen', tx: 'İşlem', saved: 'Fiş bu cihaza kaydedildi', note: 'Mali belge değildir' },
+  pt: { receipt: 'Recibo', total: 'Total', paid: 'Pago', net: 'Rede', from: 'De', tx: 'Transação', saved: 'O recibo foi salvo neste dispositivo', note: 'Não é um documento fiscal' }
+};
+const rcT = k => (RC_TXT[LANG] || RC_TXT.en)[k] || RC_TXT.en[k];
+const rcCents = v => { const [a, b = ''] = String(v).split('.'); return BigInt(a || '0') * 100n + BigInt((b + '00').slice(0, 2)); };
+const rcMoney = c => (c / 100n).toString() + '.' + String(c % 100n).padStart(2, '0');
+let rcData = null;
+function rcEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function rcSane(d){
+  if (!d || typeof d !== 'object' || d.id !== String(inv.h).toLowerCase()) return null;
+  if (!/^\d{1,12}(\.\d{1,18})?$/.test(String(d.amount)) || rcCents(d.amount) !== rcCents(inv.a)) return null;
+  const items = Array.isArray(d.items) ? d.items.filter(it => it && typeof it.name === 'string' && Number.isInteger(it.qty) && /^\d{1,9}(\.\d{1,2})?$/.test(String(it.price))) : [];
+  return { id: d.id, status: String(d.status || ''), shop: typeof d.shop_name === 'string' ? d.shop_name.slice(0, 48) : '',
+           description: typeof d.description === 'string' ? d.description.slice(0, 64) : '', amount: String(d.amount), currency: String(d.currency || ''),
+           network: String(d.network || ''), created: Number(d.created_at) || 0, items: items.slice(0, 50),
+           payment: d.payment && typeof d.payment === 'object' ? { payer: String(d.payment.payer || '').slice(0, 64), tx: String(d.payment.tx || '').slice(0, 100) } : null };
+}
+function rcDrawItems(){
+  const box = $('rcItems'); if (!box || !rcData || !rcData.items.length) return;
+  box.textContent = '';
+  rcData.items.forEach(it => {
+    const l = rcEl('div', 'rc-l');
+    l.appendChild(rcEl('span', '', it.qty > 1 ? it.name + ' × ' + it.qty : it.name));
+    l.appendChild(rcEl('b', '', rcMoney(rcCents(it.price) * BigInt(it.qty))));
+    box.appendChild(l);
+  });
+  box.classList.remove('hidden');
+  const item = $('item'); if (item) item.classList.add('hidden');
+}
+function rcDrawReceipt(){
+  const box = $('rcBox'); if (!box || !rcData) return;
+  box.textContent = '';
+  box.appendChild(rcEl('div', 'rc-h', rcData.shop || inv.n || 'Tavarov Pay'));
+  const when = rcData.created ? new Date(rcData.created * 1000).toLocaleString() : '';
+  box.appendChild(rcEl('div', 'rc-s', rcT('receipt') + (when ? ' · ' + when : '')));
+  const lines = rcData.items.length ? rcData.items : [{ name: rcData.description || inv.i || rcT('receipt'), qty: 1, price: rcMoney(rcCents(rcData.amount)) }];
+  const list = rcEl('div', 'rc-items');
+  lines.forEach(it => { const l = rcEl('div', 'rc-l'); l.appendChild(rcEl('span', '', it.qty > 1 ? it.name + ' × ' + it.qty : it.name)); l.appendChild(rcEl('b', '', rcMoney(rcCents(it.price) * BigInt(it.qty)))); list.appendChild(l); });
+  box.appendChild(list);
+  const tot = rcEl('div', 'rc-tot'); tot.appendChild(rcEl('span', '', rcT('total'))); tot.appendChild(rcEl('span', '', rcMoney(rcCents(rcData.amount)) + ' ' + rcData.currency)); box.appendChild(tot);
+  const kv = (k, v) => { if (!v) return; const r = rcEl('div', 'rc-kv'); r.appendChild(rcEl('span', '', k)); r.appendChild(rcEl('b', '', v)); box.appendChild(r); };
+  const sh = a => a && a.length > 16 ? a.slice(0, 8) + '…' + a.slice(-6) : a;
+  kv(rcT('net'), NET_NAMES[rcData.network] || rcData.network);
+  if (rcData.payment){ kv(rcT('from'), sh(rcData.payment.payer)); kv(rcT('tx'), sh(rcData.payment.tx)); }
+  box.appendChild(rcEl('div', 'rc-f', rcT('saved') + ' · ' + rcT('note')));
+  box.classList.remove('hidden');
+}
+function rcStore(){
+  try{
+    const all = JSON.parse(localStorage.getItem(RC_KEY) || '{}') || {};
+    const prev = all[rcData.id] || {};
+    all[rcData.id] = Object.assign({}, prev, rcData, { own: prev.own || '', net: prev.net || inv.net || '', tx: (rcData.payment && rcData.payment.tx) || prev.tx || '', saved: Date.now() });
+    const ids = Object.keys(all).sort((a, b) => (all[b].saved || 0) - (all[a].saved || 0)).slice(0, 200);
+    const out = {}; ids.forEach(k => { out[k] = all[k]; });
+    localStorage.setItem(RC_KEY, JSON.stringify(out));
+  } catch(e){}
+}
+async function rcLoad(paid){
+  if (!inv || !inv.api || !/^0x[0-9a-fA-F]{64}$/.test(String(inv.h || ''))) return;
+  for (let i = 0; i < (paid ? 4 : 1); i++){
+    try{
+      const r = await fetch('/api/v1/receipts/' + encodeURIComponent(String(inv.h).toLowerCase()), { cache: 'no-store' });
+      if (r.ok){
+        const d = rcSane(await r.json());
+        if (d){ rcData = d; rcDrawItems(); if (paid && (d.status === 'paid' || i === 3)){ rcDrawReceipt(); rcStore(); return; } }
+        if (!paid) return;
+      }
+    } catch(e){}
+    await new Promise(res => setTimeout(res, 4000));
+  }
+}
+
 async function watch(){
   let done = false;
+  rcLoad(false);
   const ask = async () => {
     if (done) return;
     try{
@@ -1822,6 +1940,7 @@ async function watch(){
         setState('ok', 'paidH',
           inv.r ? 'paidNoteBack' : 'paidNote',
           inv.r ? new URL(inv.r).hostname : null);
+        rcLoad(true);
         if (inv.r){
           setTimeout(() => {
             const u = new URL(inv.r);

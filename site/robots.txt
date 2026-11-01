@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /kazna
+Disallow: /vypusk-v3
+Disallow: /vypusk-seti
+
+Sitemap: https://tavarov.com/sitemap.xml

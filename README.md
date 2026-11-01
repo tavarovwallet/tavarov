@@ -139,6 +139,8 @@ functions/api/      server side: "has this been paid?", "what is the till
 solana/             a dependency-free Solana Pay library (see its README)
 woocommerce/        the Tavarov Pay plugin for WooCommerce (GPL)
 site/               the tavarov.com website
+creator/            creator.tavarov.com, the creator dashboard (donations on all four networks)
+tests/              Node checks run before every deploy
 token/              contracts
 i18n/               dictionaries for five languages, and the build script
 audit/              checks that run in a real browser
@@ -167,6 +169,9 @@ type the amount themselves after checking it with the seller.
 
 The app is a single HTML file with no build step. It opens from disk and works
 offline wherever the network is not the point.
+
+
+**Deploys.** Every push to `main` deploys what changed to Cloudflare Pages (`.github/workflows/deploy.yml`): `www/` + `functions/` to wallet.tavarov.com, `creator/` to creator.tavarov.com, `site/` to tavarov.com. Tests in `tests/` run first; a failing test stops the deploy.
 
 ## Run it yourself
 

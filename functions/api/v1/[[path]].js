@@ -362,6 +362,41 @@ function publicInvoice(rec, origin){
   };
 }
 
+/* ===================== Чек покупателя (RECEIPTS-V1) =====================
+   Касса кладёт позиции в metadata.receipt: [["Капучино",2,"4.50"], …].
+   Отдаём их, только если всё сходится до цента с суммой счёта: чек, который
+   не бьётся с суммой, хуже, чем никакого. Номер счёта случайный (32 байта)
+   и есть только у того, кто видел код или ссылку, — как бумажный чек. */
+function receiptItems(rec){
+  try{
+    const raw = rec && rec.md && rec.md.receipt;
+    if (typeof raw !== 'string' || raw.length > 500) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || !arr.length || arr.length > 50) return null;
+    const cents = v => { const [a, b = ''] = String(v).split('.'); return BigInt(a) * 100n + BigInt((b + '00').slice(0, 2)); };
+    let total = 0n; const out = [];
+    for (const it of arr){
+      if (!Array.isArray(it) || it.length !== 3) return null;
+      const name = cleanText(it[0], 40), qty = it[1], price = String(it[2]);
+      if (!name || !Number.isInteger(qty) || qty < 1 || qty > 999 || !/^\d{1,9}(\.\d{1,2})?$/.test(price)) return null;
+      total += cents(price) * BigInt(qty);
+      out.push({ name, qty, price });
+    }
+    const frac = (String(rec.a).split('.')[1] || '').replace(/0+$/, '');
+    if (frac.length > 2 || total !== cents(rec.a)) return null;
+    return out;
+  } catch(e){ return null; }
+}
+function receiptView(rec){
+  return {
+    id: rec.h, object: 'receipt', status: statusOf(rec), livemode: rec.mode === 'live',
+    network: rec.net, shop_name: rec.n || null, description: rec.i || null,
+    amount: rec.a, currency: rec.c, items: receiptItems(rec), created_at: rec.ct,
+    payment: rec.pay ? { payer: rec.pay.payer, amount: rec.pay.amount, currency: rec.pay.cur || rec.c,
+                         tx: rec.pay.tx || null, paid_after_expiry: !!rec.pay.late } : null
+  };
+}
+
 function okReturnUrl(v){
   if (v === undefined || v === null || v === '') return '';
   if (typeof v !== 'string' || v.length > 500) return null;
@@ -742,22 +777,34 @@ async function checkInvoice(env, id, origin, waitUntil){
 }
 
 /* Таймер. Воркер tavarov-api-cron зовёт это раз в минуту. Смотрит журнал
-   контракта за последние минуты и повторяет вебхуки, которые не дошли. */
-async function runCron(env, origin){
+   контракта за последние минуты и повторяет вебхуки, которые не дошли.
+
+   15.10.2026: работа разбита на части (?phase=…). На бесплатном тарифе
+   Cloudflare у одного запроса всего 10 мс процессора, и обход всех сетей
+   разом в них не влезал — Cloudflare обрывал таймер на середине (письмо
+   «Workers CPU limit exceeded», 100+ раз в сутки). Теперь таймер зовёт
+   каждую часть отдельным запросом, и у каждой свои 10 мс. Без phase
+   работает всё сразу, как раньше: так старый таймер не ломается, пока
+   новый не выложен, и так же зовут проверки. */
+export const CRON_PHASES = ['bnb', 'bnbTestnet', 'eth', 'base', 'sol', 'retry', 'don', 'ref', 'ref2'];
+async function runCron(env, origin, phase){
+  if (phase && !CRON_PHASES.includes(phase)) return fail(400, 'bad_phase', 'Unknown phase.');
+  const want = p => !phase || phase === p;
   if (typeof caches !== 'undefined' && caches.default && !env.V1_NO_THROTTLE){
     try{
-      const req = new Request(origin + '/__v1/cron-lock');
+      const req = new Request(origin + '/__v1/cron-lock/' + (phase || 'all'));
       if (await caches.default.match(req)) return json({ skipped: true });
       await caches.default.put(req, new Response('1', { headers: { 'cache-control': 'max-age=25' } }));
     } catch(e){}
   }
-  const out = { scanned: {}, delivered: 0, retried: 0 };
+  const out = { phase: phase || 'all', scanned: {}, delivered: 0, retried: 0 };
   const now = sec();
   let q = (await kvGet(env, K_QUEUE)) || [];
   const qBefore = JSON.stringify(q);
   const push = (h, at) => { q = q.filter(e => e.h !== h); if (at) q.push({ h, n: at }); };
 
   for (const net of Object.keys(NETS)){
+    if (!want(net)) continue;
     if (!NETS[net].pay && !env.TAVAROV_PAY) continue;     // контракт в сети ещё не выпущен
     try{
       const cfg = netConfig(net, env);
@@ -793,14 +840,16 @@ async function runCron(env, origin){
 
   /* Solana: обходим неоплаченные счета по их меткам. Просроченные больше
      суток назад выбрасываем — платить по ним уже некому. */
-  try{
+  if (want('sol')) try{
     let sq = (await kvGet(env, K_SOLQ)) || [];
     const sqBefore = JSON.stringify(sq);
     let checked = 0;
     /* По двадцать за проход, окно сдвигается каждую минуту — без записи в
        хранилище (бесплатных записей в сутки всего тысяча). */
-    const start = sq.length > 20 ? (Math.floor(now / 60) * 20) % sq.length : 0;
-    const batch = sq.length > 20 ? sq.slice(start).concat(sq.slice(0, start)).slice(0, 20) : sq.slice();
+    /* По частям — по десять: у каждого запроса таймера свои 10 мс. */
+    const SOL_BATCH = phase ? 10 : 20;
+    const start = sq.length > SOL_BATCH ? (Math.floor(now / 60) * SOL_BATCH) % sq.length : 0;
+    const batch = sq.length > SOL_BATCH ? sq.slice(start).concat(sq.slice(0, start)).slice(0, SOL_BATCH) : sq.slice();
     for (const e of batch){
       const rec = await kvGet(env, kInv(e.h));
       if (!rec || !isSolNet(rec.net)){ sq = sq.filter(x => x.h !== e.h); continue; }
@@ -815,7 +864,7 @@ async function runCron(env, origin){
     out.scanned.solana = checked;
   } catch(e){ out.scanned.solana = 'error'; }
 
-  const due = q.filter(e => e.n <= now).slice(0, 10);
+  const due = want('retry') ? q.filter(e => e.n <= now).slice(0, phase ? 5 : 10) : [];
   for (const e of due){
     try{
       const rec = await kvGet(env, kInv(e.h));
@@ -826,18 +875,20 @@ async function runCron(env, origin){
     } catch(err){ /* сеть молчит — попробуем в следующую минуту */ }
   }
   if (JSON.stringify(q) !== qBefore) await kvPut(env, K_QUEUE, q.slice(-500));
-  try{ const mig = await migrateDonIndex(env); if (mig) out.migrated = mig; } catch(e){ /* в следующую минуту */ }
-  /* Донаты в Solana: журнала контракта нет, ждущие лежат в своей очереди. */
-  try{ const sd = await promoteSolDonations(env); if (sd && (sd.promoted || sd.waiting)) out.solDonations = sd; } catch(e){ /* в следующую минуту */ }
+  if (want('don')){
+    try{ const mig = await migrateDonIndex(env); if (mig) out.migrated = mig; } catch(e){ /* в следующую минуту */ }
+    /* Донаты в Solana: журнала контракта нет, ждущие лежат в своей очереди. */
+    try{ const sd = await promoteSolDonations(env); if (sd && (sd.promoted || sd.waiting)) out.solDonations = sd; } catch(e){ /* в следующую минуту */ }
+  }
   /* Партнёрская программа: дочитываем журнал контракта оплаты. BNB Chain —
      каждую минуту; Ethereum и Base — по очереди, через минуту (8.10.2026):
      так обход не упирается в предел запросов таймера. */
-  try{
+  if (want('ref')) try{
     const cfg = netConfig('bnb', env);
     const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
     out.referrals = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay, Math.max(0, latest - CONFIRMATIONS), refTokens('bnb'), 'bnb');
   } catch(e){ out.referrals = 'error'; }
-  try{
+  if (want('ref2')) try{
     const net = (Math.floor(Date.now() / 60000) % 2) ? 'base' : 'eth';
     const cfg = netConfig(net, env);
     if (cfg.pay){
@@ -992,6 +1043,13 @@ async function devRoute(parts, request, env, origin, waitUntil){
   }
   if (parts[0] === 'account' && method === 'GET') return json(accountView(acct, who.w));
 
+  /* До любых изменений, включая выдачу/отзыв ключей: каждая выдача
+     расходует общую квоту KV. Лимит по кошельку сохраняется при смене IP. */
+  if (method === 'POST' && (
+      await overLimit(request, env, 'v1dev', 30, 600) ||
+      await overLimit(request, env, 'v1devacct', 30, 600, who.w)))
+    return fail(429, 'rate_limited', 'Too many changes. Try again in a few minutes.');
+
   if (parts[0] === 'keys' && method === 'POST'){
     const rb = await readBody(request);
     if (rb.tooBig || rb.bad) return fail(400, 'bad_json', 'Body must be a JSON object.');
@@ -1013,8 +1071,6 @@ async function devRoute(parts, request, env, origin, waitUntil){
     return json(Object.assign(accountView(acct, who.w), { new_key: key }));
   }
 
-  if (method === 'POST' && await overLimit(request, env, 'v1dev', 30, 600))
-    return fail(429, 'rate_limited', 'Too many changes. Try again in a few minutes.');
   if (parts[0] === 'webhook' && parts[1] === 'test' && method === 'POST'){
     if (!acct.webhook) return fail(400, 'no_webhook', 'Set a webhook URL first.');
     if (await overLimit(request, env, 'v1whtest', 5, 60)) return fail(429, 'rate_limited', 'At most 5 test events a minute.');
@@ -1089,9 +1145,11 @@ export async function handle(request, env, waitUntil){
     if (parts[0] === 'cron' && (method === 'GET' || method === 'POST')){
       /* Таймер — только с секретом. Без него любой мог бы дёргать обход
          сети и повторы вебхуков сколько угодно раз и параллельно. */
-      if (env.CRON_SECRET && !safeEqual((request.headers.get('authorization') || '').trim(), 'Bearer ' + String(env.CRON_SECRET).trim()))
+      const cronSecret = String(env.CRON_SECRET || '').trim();
+      if (!cronSecret) return fail(503, 'cron_not_configured', 'Scheduled processing is not configured.');
+      if (!safeEqual((request.headers.get('authorization') || '').trim(), 'Bearer ' + cronSecret))
         return fail(404, 'not_found', 'No such method. See ' + origin + '/dev');
-      return await runCron(env, origin);
+      return await runCron(env, origin, url.searchParams.get('phase') || '');
     }
     if (parts[0] === 'dev') return await devRoute(parts.slice(1), request, env, origin, wait);
     /* Кабинет партнёра: кого привёл и сколько заработал. Всё это и так
@@ -1103,6 +1161,22 @@ export async function handle(request, env, waitUntil){
     if (parts[0] === 'invoices' && okHash(parts[1]) && parts[2] === 'check' && method === 'POST'){
       if (await overLimit(request, env, 'v1check', 30, 60)) return fail(429, 'rate_limited', 'Too many checks. Try again in a minute.');
       return await checkInvoice(env, parts[1], origin, wait);
+    }
+
+    /* Чек покупателя (RECEIPTS-V1): без ключа, только чтение. Кошелёк
+       покупателя и страница оплаты спрашивают его сразу после оплаты. */
+    if (parts[0] === 'receipts' && okHash(parts[1]) && !parts[2] && method === 'GET'){
+      const cors = { 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
+      if (await overLimit(request, env, 'v1rcpt', 30, 60)) return json({ error: { code: 'rate_limited', message: 'Too many requests. Try again in a minute.' } }, 429, cors);
+      const rec = await kvGet(env, kInv(parts[1]));
+      if (!rec) return json({ error: { code: 'not_found', message: 'No such receipt.' } }, 404, cors);
+      if (statusOf(rec) === 'pending'){
+        try{
+          const { retryAt } = await refresh(env, rec, origin, { noDeliver: true });
+          if (retryAt) wait(enqueue(env, rec.h, retryAt));
+        } catch(e){ /* сеть молчит — отдаём, что знаем */ }
+      }
+      return json(receiptView(rec), 200, cors);
     }
 
     if (parts[0] === 'invoices' || parts[0] === 'me'){

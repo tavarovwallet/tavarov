@@ -1,0 +1,73 @@
+# Auto-deploy to Cloudflare Pages on every push to main.
+#   www/ + functions/  -> tavarov-wallet  (wallet.tavarov.com: wallet, pay & donate pages, API, Telegram bot)
+#   creator/           -> tavarov-creator (creator.tavarov.com: creator dashboard)
+#   site/              -> tavarov-site    (tavarov.com)
+# Manual run: Actions -> Deploy -> Run workflow.
+# Needs the repository secret CLOUDFLARE_API_TOKEN (Account · Cloudflare Pages · Edit).
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "all / wallet / creator / site"
+        default: all
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: dee58450dba50489948c254917eaa3c2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Token present
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "::error::Add the CLOUDFLARE_API_TOKEN repository secret"; exit 1; fi
+      - name: What changed
+        id: c
+        run: |
+          T="${{ github.event.inputs.target }}"
+          if [ -n "$T" ] && [ "$T" != "all" ]; then echo "$T=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$T" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            CH=$(git diff --name-only "$BEFORE" HEAD)
+          else
+            CH=$(printf "www/\ncreator/\nsite/\n")
+          fi
+          echo "$CH"
+          echo "$CH" | grep -qE '^(www/|functions/)' && echo "wallet=1" >> "$GITHUB_OUTPUT" || true
+          echo "$CH" | grep -q '^creator/' && echo "creator=1" >> "$GITHUB_OUTPUT" || true
+          echo "$CH" | grep -q '^site/' && echo "site=1" >> "$GITHUB_OUTPUT" || true
+      - name: Tests
+        if: steps.c.outputs.wallet || steps.c.outputs.creator
+        run: for t in tests/*.mjs; do node "$t"; done
+      - name: Deploy wallet.tavarov.com
+        if: steps.c.outputs.wallet
+        run: npx --yes wrangler@4 pages deploy www --project-name tavarov-wallet --branch main --commit-dirty=true
+      - name: Deploy creator.tavarov.com
+        if: steps.c.outputs.creator
+        working-directory: creator
+        run: npx --yes wrangler@4 pages deploy . --project-name tavarov-creator --branch production --commit-dirty=true
+      - name: Deploy tavarov.com
+        if: steps.c.outputs.site
+        working-directory: site
+        run: npx --yes wrangler@4 pages deploy . --project-name tavarov-site --branch production --commit-dirty=true
+      - name: Check live
+        run: |
+          sleep 20
+          fail=0
+          for u in https://wallet.tavarov.com/ https://wallet.tavarov.com/api/tg https://creator.tavarov.com/ https://tavarov.com/; do
+            c=$(curl -s -o /dev/null -w '%{http_code}' -L "$u"); echo "$c $u"; [ "$c" = 200 ] || fail=1
+          done
+          exit $fail
