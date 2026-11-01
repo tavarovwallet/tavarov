@@ -7977,7 +7977,11 @@ async function loadIncoming(){
        (~9 000 блоков, около суток). */
     const cid = NETWORKS[network].chainId;
     const span = ({ 56: 50000, 8453: 50000 })[cid] || NETWORKS[network].logSpan || 5000;
-    const back = ({ 56: 806400, 8453: 302400, 1: 9000 })[cid] || 28800;
+    const back = ({ 56: 345600, 8453: 302400, 1: 9000 })[cid] || 28800;
+    /* Журнал — сначала у узла, который его отдаёт (узлы Binance отвечают
+       «limit exceeded» на любой диапазон), остальные — в запас. */
+    const base = NETWORKS[network], logRpcs = rpcList(base).slice().sort((a, b) => (/publicnode/.test(b) ? 1 : 0) - (/publicnode/.test(a) ? 1 : 0));
+    const logCfg = Object.assign({}, base, { rpcs: logRpcs });
     const stop = Math.max(0, latest - back);
     const paidTopic = ethers.utils.id('Paid(address,address,address,uint256,uint256,uint256,bytes32)');
     let logs = [];
@@ -7989,10 +7993,17 @@ async function loadIncoming(){
          Chain) журнал событий не отдают вовсе — «limit exceeded» на любой
          диапазон, — и раньше список оплат в BNB Chain всегда кончался
          «сеть не отвечает». Перебор доходит до узла, который отдаёт. */
-      logs = logs.concat(...await withTimeout(Promise.all(payHubs().map(hub =>
-        evmRpcAny(NETWORKS[network], 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
+      /* Старше часа часть серверов публичного узла отвечает пустым списком,
+         хотя события есть (проверено 1.11.2026: блок суточной давности —
+         0, 0, 79, 79, 0, 79 событий на шесть одинаковых запросов). Пустой
+         ответ по старым блокам переспрашиваем, до пяти раз. */
+      const ask = () => withTimeout(Promise.all(payHubs().map(hub =>
+        evmRpcAny(logCfg, 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
           topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }]))),
-        30000, t('k5f6d1e24')));
+        30000, t('k5f6d1e24'));
+      let got = [].concat(...await ask());
+      for (let tries = 1; !got.length && latest - to > 4000 && tries < 5; tries++) got = [].concat(...await ask());
+      logs = logs.concat(got);
     }
 
     const iface = new ethers.utils.Interface(PAY_ABI);

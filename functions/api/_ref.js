@@ -149,6 +149,13 @@ export async function scanReferrals(env, rpc, pay, safe, tokens, net){
       if (chunks > 0) break;          // часть уже прочитана — сохраним её
       throw e;
     }
+    /* Старые блоки часть серверов публичного узла отдаёт пустыми, хотя
+       события там есть (1.11.2026: суточной давности — пусто в половине
+       ответов). Пустой ответ по старым блокам переспрашиваем один раз. */
+    if (Array.isArray(logs) && !logs.length && safe - end > 4000){
+      try{ logs = await rpc('eth_getLogs', [{ address: pay, fromBlock: hex(cur + 1), toBlock: hex(end),
+        topics: [[REF_TOPIC_SET, REF_TOPIC_PAID]] }]); } catch(e){ logs = []; }
+    }
     found += await applyRefLogs(env, logs, tokens, net);
     cur = end; chunks++;
   }
