@@ -7977,34 +7977,35 @@ async function loadIncoming(){
        (~9 000 блоков, около суток). */
     const cid = NETWORKS[network].chainId;
     const span = ({ 56: 50000, 8453: 50000 })[cid] || NETWORKS[network].logSpan || 5000;
-    const back = ({ 56: 345600, 8453: 302400, 1: 9000 })[cid] || 28800;
+    const back = ({ 56: 800000, 8453: 302400, 1: 9000 })[cid] || 28800;   // BNB Chain ~0,33 с на блок (ноябрь 2026): 800 000 — около трёх суток
     /* Журнал — сначала у узла, который его отдаёт (узлы Binance отвечают
        «limit exceeded» на любой диапазон), остальные — в запас. */
     const base = NETWORKS[network], logRpcs = rpcList(base).slice().sort((a, b) => (/publicnode/.test(b) ? 1 : 0) - (/publicnode/.test(a) ? 1 : 0));
     const logCfg = Object.assign({}, base, { rpcs: logRpcs });
     const stop = Math.max(0, latest - back);
     const paidTopic = ethers.utils.id('Paid(address,address,address,uint256,uint256,uint256,bytes32)');
+    /* Куски — по четыре сразу. Старше часа часть серверов публичного
+       узла отвечает пустым списком, хотя события есть (1.11.2026: блок
+       суточной давности — 0, 0, 79, 79, 0, 79 событий на шесть одинаковых
+       запросов), поэтому по старым кускам спрашиваем трижды параллельно и
+       объединяем ответы. */
+    const ranges = [];
+    for (let to = latest; to > stop; to -= span) ranges.push([Math.max(stop, to - span + 1), to]);
+    const askRange = ([from, to]) => Promise.all(payHubs().map(hub =>
+      evmRpcAny(logCfg, 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
+        topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }]))).then(a => [].concat(...a));
+    const chunk = async r => {
+      const tries = latest - r[1] > 4000 ? 3 : 1;
+      const answers = await Promise.all(Array.from({ length: tries }, () => askRange(r).catch(e => e)));
+      const ok = answers.filter(a => Array.isArray(a));
+      if (!ok.length) throw answers[0];
+      const seen = new Map();
+      ok.forEach(a => a.forEach(l => seen.set(l.transactionHash + ':' + l.logIndex, l)));
+      return [...seen.values()];
+    };
     let logs = [];
-    for (let to = latest; to > stop && logs.length < 10; to -= span){
-      const from = Math.max(stop, to - span + 1);
-      /* По каждому контракту отдельно: библиотека принимает в фильтре один
-         адрес, а не список. */
-      /* Через evmRpcAny, как история: узлы Binance (первые в списке BNB
-         Chain) журнал событий не отдают вовсе — «limit exceeded» на любой
-         диапазон, — и раньше список оплат в BNB Chain всегда кончался
-         «сеть не отвечает». Перебор доходит до узла, который отдаёт. */
-      /* Старше часа часть серверов публичного узла отвечает пустым списком,
-         хотя события есть (проверено 1.11.2026: блок суточной давности —
-         0, 0, 79, 79, 0, 79 событий на шесть одинаковых запросов). Пустой
-         ответ по старым блокам переспрашиваем, до пяти раз. */
-      const ask = () => withTimeout(Promise.all(payHubs().map(hub =>
-        evmRpcAny(logCfg, 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
-          topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }]))),
-        30000, t('k5f6d1e24'));
-      let got = [].concat(...await ask());
-      for (let tries = 1; !got.length && latest - to > 4000 && tries < 5; tries++) got = [].concat(...await ask());
-      logs = logs.concat(got);
-    }
+    for (let i = 0; i < ranges.length && logs.length < 10; i += 4)
+      logs = logs.concat(...await withTimeout(Promise.all(ranges.slice(i, i + 4).map(chunk)), 30000, t('k5f6d1e24')));
 
     const iface = new ethers.utils.Interface(PAY_ABI);
     const tk = tokensFor(network);
