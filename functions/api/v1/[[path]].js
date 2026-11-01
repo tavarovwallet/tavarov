@@ -206,18 +206,19 @@ function netConfig(net, env){
 }
 
 async function rpc(urls, method, params){
-  let last = null;
+  const errs = [];
   for (const url of urls){
+    const host = url.replace(/^https?:\/\//, '').split('/')[0];
     try{
       const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
-      if (!r.ok){ last = 'node answered ' + r.status; continue; }
+      if (!r.ok){ errs.push(host + ': answered ' + r.status); continue; }
       const d = await r.json();
-      if (d.error){ last = d.error.message || 'node error'; continue; }
+      if (d.error){ errs.push(host + ': ' + (d.error.message || 'node error')); continue; }
       if (d.result !== undefined && d.result !== null) return d.result;
-    } catch(e){ last = String(e && e.message || e); }
+    } catch(e){ errs.push(host + ': ' + String(e && e.message || e)); }
   }
-  throw new Error(last || 'no node answered');
+  throw new Error(errs.join(' | ') || 'no node answered');
 }
 
 /* ===================== хранилище ===================== */
@@ -835,7 +836,7 @@ async function runCron(env, origin, phase){
         if (!had && rec.wh && rec.wh.ok) out.delivered++;
         push(h, retryAt);
       }
-    } catch(e){ out.scanned[net] = 'error'; }
+    } catch(e){ out.scanned[net] = 'error'; console.log('cron ' + net + ':', String(e && e.message || e).slice(0, 300)); }
   }
 
   /* Solana: обходим неоплаченные счета по их меткам. Просроченные больше
