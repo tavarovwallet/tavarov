@@ -52,7 +52,10 @@ minutes — better to hear it from us.
 * **The Telegram bot keeps a little more.** If you use @tavarov_pay_bot, it
   stores your Telegram chat id, the wallet address you gave it and the invoices
   it created, so it can tell you when one is paid. Delete the chat and it has
-  nothing to send to. See `functions/api/tg/`.
+  nothing to send to. See `functions/api/tg/`. A creator who turns on
+  donation notifications in the creator dashboard also leaves which chat gets
+  them for that wallet; the link is made by a message the wallet owner signs,
+  and `/donoff` in the bot removes it.
 * **In-wallet swap charges 0.5%.** NoN Wallet swaps through the KyberSwap
   aggregator (BNB Chain, Ethereum, Base) and Jupiter (Solana), and between
   networks through Relay; 0.5% of the swap goes to the development wallet. The
