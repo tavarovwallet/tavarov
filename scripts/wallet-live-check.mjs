@@ -24,7 +24,13 @@ for (const [net, addr] of cases){
   }, [net, addr]);
   out.push({ net, addr, ...r });
 }
-console.log(JSON.stringify({ pageErrors: errs, out }, null, 1));
+const direct = await p.evaluate(async () => {
+  const call = async (u, m, pr) => { try{ const r = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: m, params: pr }) }); return r.status + ' ' + (await r.text()).slice(0, 160); } catch(e){ return 'X ' + e; } };
+  const u = 'https://bsc-rpc.publicnode.com'; const head = parseInt(JSON.parse((await call(u, 'eth_blockNumber', [])).slice(4)).result, 16);
+  const q = n => [{ address: '0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35', fromBlock: '0x' + (head - n).toString(16), toBlock: '0x' + head.toString(16) }];
+  return { head, r1k: await call(u, 'eth_getLogs', q(1000)), r10k: await call(u, 'eth_getLogs', q(10000)), r49k: await call(u, 'eth_getLogs', q(49999)) };
+});
+console.log(JSON.stringify({ pageErrors: errs, direct, out }, null, 1));
 await b.close();
 const failed = out.some(o => /не отвечает|not answering/i.test(o.box)) || errs.length;
 process.exit(failed ? 1 : 0);
