@@ -887,7 +887,7 @@ async function runCron(env, origin, phase){
     const cfg = netConfig('bnb', env);
     const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
     out.referrals = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay, Math.max(0, latest - CONFIRMATIONS), refTokens('bnb'), 'bnb');
-  } catch(e){ out.referrals = 'error'; }
+  } catch(e){ out.referrals = 'error'; console.log('cron ref bnb:', String(e && e.message || e).slice(0, 200)); }
   if (want('ref2')) try{
     const net = (Math.floor(Date.now() / 60000) % 2) ? 'base' : 'eth';
     const cfg = netConfig(net, env);
@@ -896,7 +896,7 @@ async function runCron(env, origin, phase){
       out['referrals_' + net] = await scanReferrals(env, (m, p) => rpc(cfg.rpcs, m, p), cfg.pay,
         Math.max(0, latest - (NETS[net].conf || CONFIRMATIONS)), refTokens(net), net);
     }
-  } catch(e){ out.referrals_other = 'error'; }
+  } catch(e){ out.referrals_other = 'error'; console.log('cron ref2:', String(e && e.message || e).slice(0, 200)); }
   return json(out);
 }
 
