@@ -1,0 +1,17 @@
+# Manual: open the live wallet in a real browser and check the incoming
+# payments list (Refund button) on BNB Chain and Base. Read-only.
+name: Wallet live check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+      - run: node scripts/wallet-live-check.mjs
