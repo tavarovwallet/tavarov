@@ -29,6 +29,7 @@ export const REF_START = 122500000;
 export const REF_STARTS = { bnb: REF_START, eth: 26140000, base: 52300000 };
 const CHUNK = 4999;          // узлы не отдают журнал шире ~5000 блоков за раз
 const CHUNKS_PER_RUN = 2;
+const SMALL_CHUNK = 999;
 /* Сколько блоков назад бесплатный узел ещё отдаёт журнал (проверено
    1.11.2026 с запасом): over — отставание, после которого ошибка узла
    значит «архив», keep — куда прыгаем от вершины. */
@@ -118,11 +119,21 @@ export async function scanReferrals(env, rpc, pay, safe, tokens, net){
   let jumped = 0;
   while (cur < safe && chunks < CHUNKS_PER_RUN){
     const to = Math.min(cur + CHUNK, safe);
-    let logs;
+    let logs, end = to;
     try{
       logs = await rpc('eth_getLogs', [{ address: pay, fromBlock: hex(cur + 1), toBlock: hex(to),
         topics: [[REF_TOPIC_SET, REF_TOPIC_PAID]] }]);
-    } catch(e){
+    } catch(e0){
+      /* Узел с серверов Cloudflare то и дело отвечает «node error» на
+         широкий запрос — пробуем кусок поменьше, прежде чем сдаваться. */
+      end = Math.min(cur + SMALL_CHUNK, safe);
+      try{
+        logs = await rpc('eth_getLogs', [{ address: pay, fromBlock: hex(cur + 1), toBlock: hex(end),
+          topics: [[REF_TOPIC_SET, REF_TOPIC_PAID]] }]);
+      } catch(e){ logs = null; var failed = e; }
+    }
+    if (logs === null){
+      const e = failed;
       /* 1.11.2026: бесплатные узлы отдают журнал только за последние дни
          (Ethereum — ~10 000 блоков, BNB и Base — сотни тысяч). Отстав
          дальше, обход месяц упирался в «Archive requests require a token»
@@ -135,15 +146,18 @@ export async function scanReferrals(env, rpc, pay, safe, tokens, net){
         await env.TILL.put(kCur(net) + ':gap', JSON.stringify({ from: cur + 1, to: next, at: Math.floor(Date.now() / 1000) }));
         cur = next; jumped = next; continue;
       }
+      if (chunks > 0) break;          // часть уже прочитана — сохраним её
       throw e;
     }
     found += await applyRefLogs(env, logs, tokens, net);
-    cur = to; chunks++;
+    cur = end; chunks++;
   }
   /* Около получаса блоков (2400 × 0,75 с) — не чаще: так в обычный день
      это ~50 записей, а не 1440. Шаг обхода (10 000) больше этого порога,
      поэтому догоняющий обход курсор всегда двигает. */
-  if (cur !== written && (found > 0 || cur - written >= CUR_EVERY))
+  /* Догоняя (отстали больше чем на CUR_EVERY), пишем каждый шаг: иначе
+     мелкие куски по 999 блоков никогда не дотянули бы до порога. */
+  if (cur !== written && (found > 0 || cur - written >= CUR_EVERY || safe - cur > CUR_EVERY))
     await env.TILL.put(K_CUR, String(cur));
   return { cur, found, behind: Math.max(0, safe - cur), jumped: jumped || undefined };
 }
