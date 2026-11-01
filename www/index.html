@@ -7991,7 +7991,7 @@ async function loadIncoming(){
          «сеть не отвечает». Перебор доходит до узла, который отдаёт. */
       logs = logs.concat(...await withTimeout(Promise.all(payHubs().map(hub =>
         evmRpcAny(NETWORKS[network], 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
-          topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }])))),
+          topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }]))),
         30000, t('k5f6d1e24')));
     }
 

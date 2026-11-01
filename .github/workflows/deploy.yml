@@ -51,7 +51,7 @@ jobs:
           echo "$CH" | grep -q '^site/' && echo "site=1" >> "$GITHUB_OUTPUT" || true
       - name: Tests
         if: steps.c.outputs.wallet || steps.c.outputs.creator
-        run: for t in tests/*.mjs; do node "$t"; done
+        run: for t in tests/*.mjs; do node --experimental-vm-modules "$t"; done
       - name: Deploy wallet.tavarov.com
         if: steps.c.outputs.wallet
         run: npx --yes wrangler@4 pages deploy www --project-name tavarov-wallet --branch main --commit-dirty=true
