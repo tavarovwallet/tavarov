@@ -7985,10 +7985,14 @@ async function loadIncoming(){
       const from = Math.max(stop, to - span + 1);
       /* По каждому контракту отдельно: библиотека принимает в фильтре один
          адрес, а не список. */
+      /* Через evmRpcAny, как история: узлы Binance (первые в списке BNB
+         Chain) журнал событий не отдают вовсе — «limit exceeded» на любой
+         диапазон, — и раньше список оплат в BNB Chain всегда кончался
+         «сеть не отвечает». Перебор доходит до узла, который отдаёт. */
       logs = logs.concat(...await withTimeout(Promise.all(payHubs().map(hub =>
-        provider.getLogs({ address: hub, fromBlock: from, toBlock: to,
-          topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }))),
-        15000, t('k5f6d1e24')));
+        evmRpcAny(NETWORKS[network], 'eth_getLogs', [{ address: hub, fromBlock: '0x' + from.toString(16), toBlock: '0x' + to.toString(16),
+          topics: [paidTopic, ethers.utils.hexZeroPad(w.evm.address, 32)] }])))),
+        30000, t('k5f6d1e24')));
     }
 
     const iface = new ethers.utils.Interface(PAY_ABI);
@@ -8011,7 +8015,7 @@ async function loadIncoming(){
         invoice: d.args.invoice,
         hub: l.address,                 // через какой контракт шла покупка — туда и возврат (сверяется с payHubs ниже)
         tx: l.transactionHash,
-        block: l.blockNumber
+        block: typeof l.blockNumber === 'string' ? parseInt(l.blockNumber, 16) : l.blockNumber
       };
     }).filter(it => payHubs().some(h => h.toLowerCase() === String(it.hub || '').toLowerCase()))
       .sort((a, b) => b.block - a.block).slice(0, 10);
