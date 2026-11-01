@@ -12,17 +12,18 @@ export function validAddress(net,address){
 }
 export const sameAddress=(net,a,b)=>net==='solana'?a===b:String(a).toLowerCase()===String(b).toLowerCase();
 export function profilePayload(value,now=Math.floor(Date.now()/1000)){
- const b={action:'profile',net:value.net,to:value.to,greeting:value.greeting??'',goal:value.goal??'',target:value.target??'',restart:!!value.restart,ts:value.ts??now};
+ const b={action:'profile',net:value.net,to:value.to,greeting:value.greeting??'',goal:value.goal??'',target:value.target??'',restart:!!value.restart,ts:value.ts??now,telegram:value.telegram??''};
  if(!validAddress(b.net,b.to))throw new Error('invalid_address');
  if(typeof b.greeting!=='string'||[...b.greeting].length>200||BAD_TEXT.test(b.greeting))throw new Error('invalid_greeting');
  if(typeof b.goal!=='string'||[...b.goal].length>48||BAD_TEXT.test(b.goal))throw new Error('invalid_goal');
  if(typeof b.target!=='string'||(b.target&&!/^\d{1,7}(\.\d{1,2})?$/.test(b.target)))throw new Error('invalid_target');
  const target=b.target?Number(b.target):0;
  if((b.target&&(target<1||target>1000000))||Boolean(b.goal.trim())!==(target>0))throw new Error('invalid_target');
+ if(typeof b.telegram!=='string'||(b.telegram&&!/^[A-Za-z0-9_-]{20,32}$/.test(b.telegram)))throw new Error('invalid_telegram');
  if(!Number.isInteger(b.ts)||Math.abs(now-b.ts)>300)throw new Error('expired_request');
  return b;
 }
-export function profileText(o){return ['Tavarov donation page','wallet: '+(o.net==='solana'?o.to:o.to.toLowerCase()),'network: '+o.net,'greeting: '+o.greeting,'goal: '+o.goal,'target: '+o.target,'restart: '+(o.restart?'yes':'no'),'time: '+o.ts].join('\n')}
+export function profileText(o){return ['Tavarov donation page','wallet: '+(o.net==='solana'?o.to:o.to.toLowerCase()),'network: '+o.net,'greeting: '+o.greeting,'goal: '+o.goal,'target: '+o.target,'restart: '+(o.restart?'yes':'no'),'time: '+o.ts].concat(o.telegram?['telegram: '+o.telegram]:[]).join('\n')}
 export function donationLinks(net,address,language='en',settings={},evm=''){
  if(!validAddress(net,address))throw new Error('invalid_address');
  const lang=['en','ru','es','pt','tr'].includes(language)?language:'en';

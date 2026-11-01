@@ -117,6 +117,7 @@ async function rpc(urls, method, params){
 import { solBinding, partnerAtaFor } from './_solref.js';
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
+import { tgCall, esc } from './_tg.js';
 import { SOL, SOLNETS, solRpc, solRefSigs, solTxBatches } from './_sol.js';
 
 const PAID_TOPIC = '0x5862fc5c885dd22d0d12c28144427d16ae076a4ce245f7525c310fcc15d08861';
@@ -248,10 +249,11 @@ async function readIndex(env, net, to){
 async function addToIndex(env, net, to, meta){
   const list = await readIndex(env, net, to);
   const h = String(meta.h).toLowerCase();
-  if (list.some(m => String(m.h).toLowerCase() === h)) return;
+  if (list.some(m => String(m.h).toLowerCase() === h)) return false;
   list.unshift(meta);
   const cut = Date.now() - DONE_TTL * 1000;
   await env.TILL.put(iKey(net, to), JSON.stringify(list.filter(m => m.ts >= cut).slice(0, INDEX_MAX)), { expirationTtl: DONE_TTL });
+  return true;
 }
 /* Сообщение на экран стрима — только за настоящие деньги: USDT или USDC и
    не меньше 10 центов. Иначе любой выпустит свою пустую монету, «заплатит»
@@ -274,8 +276,9 @@ async function promote(env, cfg, net, to, entry){
      без перебора списка (перебор на бесплатном тарифе — тысяча в сутки на
      всех, а экран спрашивает часто). */
   await env.TILL.put(hKey(entry.h), JSON.stringify(Object.assign({ to: ak(net, to), net }, meta)), { expirationTtl: DONE_TTL });
-  await addToIndex(env, net, to, meta);
+  const added = await addToIndex(env, net, to, meta);
   await env.TILL.delete(pKey(net, to, entry.h));
+  if (added) try{ await notifyDonation(env, net, to, meta); } catch(e){ /* Telegram молчит — донат всё равно засчитан */ }
   return meta;
 }
 /* Подтвердить донат по номеру счёта, если он ещё ждёт. Зовут таймер API
@@ -363,6 +366,23 @@ export async function promoteSolDonations(env){
    сбить двумя одновременными запросами: любой пересчёт из сети даёт то же
    самое. Храним только «до какого блока досчитали» и сумму на тот блок. */
 const kProf = (net, to) => 'donprof:' + net + ':' + ak(net, to);
+export const TG_CODE = /^[A-Za-z0-9_-]{20,32}$/;
+export const kTgPend = code => 'tgpend:' + code;
+export const kTgDon = chat => 'tgdon:' + chat;
+export const kAlert = (net, to) => 'donalert:' + net + ':' + ak(net, to);
+const NET_TITLE = { bnb: 'BNB Chain', eth: 'Ethereum', base: 'Base', solana: 'Solana' };
+export async function notifyDonation(env, net, to, meta){
+  if (!env.TG_BOT_TOKEN) return;
+  let a = null;
+  try{ a = JSON.parse(await env.TILL.get(kAlert(net, to)) || 'null'); } catch(e){}
+  if (!a || !a.c) return;
+  const ru = a.l === 'ru';
+  const amount = fmtUnits(meta.a || '0', Number(meta.d) || 18);
+  const lines = [(ru ? '💜 <b>Донат ' : '💜 <b>Donation ') + esc(amount) + ' ' + esc(meta.s) + '</b> · ' + (NET_TITLE[net] || net)];
+  if (meta.n) lines.push((ru ? 'От: ' : 'From: ') + '<b>' + esc(meta.n) + '</b>');
+  if (meta.m) lines.push('«' + esc(meta.m) + '»');
+  await tgCall(env, 'sendMessage', { chat_id: a.c, text: lines.join('\n'), parse_mode: 'HTML', disable_web_page_preview: true });
+}
 const MAX_GREETING = 200, MAX_GOAL_TITLE = 48;
 const CONFIRM_BLOCKS = 12;
 const GOAL_STEP = 20000;           // сколько блоков журнала спрашиваем за раз
@@ -376,7 +396,7 @@ export function profileText(o){
           'goal: ' + (o.goal || ''),
           'target: ' + (o.target || ''),
           'restart: ' + (o.restart ? 'yes' : 'no'),
-          'time: ' + o.ts].join('\n');
+          'time: ' + o.ts].concat(o.telegram ? ['telegram: ' + o.telegram] : []).join('\n');
 }
 const centsStr = c => { const n = Math.max(0, Math.round(Number(c) || 0)); return (n / 100).toFixed(2).replace(/\.?0+$/, ''); };
 function toCents(m){
@@ -421,7 +441,9 @@ async function saveProfile(env, net, b){
   const ts = Number(b.ts);
   const now = Math.floor(Date.now() / 1000);
   if (!Number.isInteger(ts) || Math.abs(now - ts) > 300) return json({ error: 'the signature is too old, sign again' }, 400);
-  const text = profileText({ to, net, greeting, goal, target: b.target === undefined ? '' : String(b.target), restart: !!b.restart, ts });
+  const telegram = b.telegram === undefined ? '' : b.telegram;
+  if (typeof telegram !== 'string' || (telegram && !TG_CODE.test(telegram))) return json({ error: 'bad telegram code' }, 400);
+  const text = profileText({ to, net, greeting, goal, target: b.target === undefined ? '' : String(b.target), restart: !!b.restart, ts, telegram });
   if (isSol(net)){
     /* Solana: подпись ed25519 ключом кошелька (base58, 64 байта) — как
        «подписать сообщение» в Phantom. Проверяем здесь, сеть не нужна. */
@@ -456,8 +478,24 @@ async function saveProfile(env, net, b){
       p.goal = { t: goal.trim(), c: target, s: now, b: start, x: start, r: 0 };
     }
   }
+  /* Уведомления в Telegram (1.11.2026). Код автор получил в кабинете,
+     открыл им бота — бот записал, какой чат его открыл. Код стоит в
+     подписанном тексте, поэтому привязать чужой кошелёк к своему чату
+     нельзя: подписать может только владелец кошелька. */
+  let tgOn = false;
+  if (telegram){
+    let pend = null;
+    try{ pend = JSON.parse(await env.TILL.get(kTgPend(telegram)) || 'null'); } catch(e){}
+    if (!pend || !/^-?\d{1,20}$/.test(String(pend.c))) return json({ error: 'open the Telegram bot link again, the code has expired', code: 'telegram_expired' }, 410);
+    await env.TILL.put(kAlert(net, to), JSON.stringify({ c: String(pend.c), l: pend.l === 'ru' ? 'ru' : 'en' }));
+    let mine = [];
+    try{ mine = JSON.parse(await env.TILL.get(kTgDon(pend.c)) || '[]'); } catch(e){}
+    const key = net + ':' + ak(net, to);
+    if (!mine.includes(key)){ mine.push(key); await env.TILL.put(kTgDon(pend.c), JSON.stringify(mine.slice(-20))); }
+    tgOn = true;
+  }
   await env.TILL.put(kProf(net, to), JSON.stringify(p));
-  return json({ ok: true, profile: { greeting: p.g, goal: p.goal ? { title: p.goal.t, target: centsStr(p.goal.c), raised: centsStr(p.goal.r), since: p.goal.s } : null } });
+  return json({ ok: true, telegram: tgOn || undefined, profile: { greeting: p.g, goal: p.goal ? { title: p.goal.t, target: centsStr(p.goal.c), raised: centsStr(p.goal.r), since: p.goal.s } : null } });
 }
 
 /* Досчитать цель по журналу контракта от последнего посчитанного блока.
@@ -640,7 +678,7 @@ async function onGet({ request, env }){
       try{ await refreshGoal(env, cfg, net, to, p); } catch(e){ /* сеть молчит — отдадим сохранённое */ }
       goal = { title: p.goal.t, target: centsStr(p.goal.c), raised: centsStr(p.goal.r), since: p.goal.s };
     }
-    return json({ profile: { greeting: (p && p.g) || '', goal } });
+    return json({ profile: { greeting: (p && p.g) || '', goal, telegram: !!(await env.TILL.get(kAlert(net, to))) } });
   }
 
   /* Итоги для автора: суммы по часам за 30 дней. Спрашивает только

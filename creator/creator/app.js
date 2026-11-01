@@ -1,13 +1,13 @@
-import {NETWORKS,base58,validAddress,sameAddress,profilePayload,profileText,donationLinks,obsSettings,totals} from './core.mjs?v=0595b6336dc5';
+import {NETWORKS,base58,validAddress,sameAddress,profilePayload,profileText,donationLinks,obsSettings,totals} from './core.mjs?v=e7a7927ff4ae';
 const $=id=>document.getElementById(id),t=value=>window.tavarovText?.(value)||value;
 // The dashboard lives on its own origin (creator.tavarov.com); the wallet and its API stay on wallet.tavarov.com.
 // Different origins mean this page can talk to the wallet window only through messages, never reach into it.
 const LOCAL=['127.0.0.1','localhost'].includes(location.hostname),WALLET=LOCAL?location.protocol+'//'+location.hostname+':8898':'https://wallet.tavarov.com';
 const NETS=Object.keys(NETWORKS),familyOf=net=>net==='solana'?'solana':'evm';
-let profilesOk=false,otherGoals=[],retry=null,recentSave=null;
+let profilesOk=false,otherGoals=[],retry=null,recentSave=null,tgCode='',tgOn=false;
 let recipient=null,session=null,profile=null,profileLoaded=false,goalRaised=null,epoch=0,dirty=false,loading=false,saving=false,lastSavedTime=0;
 let popup=null,bridgeNonce='',bridgeAddresses=null;const pending=new Map();
-const errors={invalid_address:'Enter a valid wallet address for the selected network.',invalid_greeting:'Use up to 200 characters, without line breaks or hidden characters.',invalid_goal:'Use a goal name of up to 48 characters, without hidden characters.',invalid_target:'Add both a goal name and a target from 1 to 1,000,000.',expired_request:'The request expired. Please try again.',cancelled:'Cancelled.',unavailable:'Open this page in your wallet browser, or connect NoN Wallet.',disconnected:'Your wallet connection changed. Connect again.',popup_blocked:'Allow the NoN Wallet window to open, then try again.',timeout:'The wallet did not respond. Please try again.',rate_limit:'Too many changes in a short time. Wait a few minutes and try again.',no_network_address:'This wallet has no address on this network.',clock:'Your device clock is off. Set the correct time and try again.',profiles_incomplete:'Could not load your page settings on every network. Press Refresh, then save again.'};
+const errors={telegram_expired:'The Telegram link has expired. Press “Telegram notifications” again.',invalid_telegram:'The Telegram link has expired. Press “Telegram notifications” again.',invalid_address:'Enter a valid wallet address for the selected network.',invalid_greeting:'Use up to 200 characters, without line breaks or hidden characters.',invalid_goal:'Use a goal name of up to 48 characters, without hidden characters.',invalid_target:'Add both a goal name and a target from 1 to 1,000,000.',expired_request:'The request expired. Please try again.',cancelled:'Cancelled.',unavailable:'Open this page in your wallet browser, or connect NoN Wallet.',disconnected:'Your wallet connection changed. Connect again.',popup_blocked:'Allow the NoN Wallet window to open, then try again.',timeout:'The wallet did not respond. Please try again.',rate_limit:'Too many changes in a short time. Wait a few minutes and try again.',no_network_address:'This wallet has no address on this network.',clock:'Your device clock is off. Set the correct time and try again.',profiles_incomplete:'Could not load your page settings on every network. Press Refresh, then save again.'};
 function errorText(e){return t(errors[e?.code||e?.message]||'Could not complete this request. Please try again.')}
 const failure=code=>Object.assign(new Error(code),{code});
 function notify(text,isError=false,id='creator-status'){const el=$(id);el.textContent=text;el.classList.toggle('is-error',isError)}
@@ -27,13 +27,14 @@ function renderScope(){
  const note=document.querySelector('.stats-note');
  if(note)note.textContent=t(allNetworks()?'Totals across BNB Chain, Ethereum, Base and Solana. USDT and USDC, before service fees. Network fees are separate.':'USDT and USDC totals, before service fees. Blockchain network fees are separate.');
 }
-function updateEditing(){const edit=canEdit()&&profileLoaded&&!saving;$('save-profile').disabled=!edit;$('connect-for-editing').hidden=canEdit();for(const id of ['creator-greeting','creator-goal-title','creator-goal-target'])$(id).disabled=!edit;$('restart-goal').disabled=!edit;$('account-kind').textContent=t(allNetworks()?'Connected wallet · all networks':canEdit()?'Connected wallet':'Viewing only');renderScope()}
+function updateEditing(){const edit=canEdit()&&profileLoaded&&!saving;$('save-profile').disabled=!edit;$('connect-for-editing').hidden=canEdit();for(const id of ['creator-greeting','creator-goal-title','creator-goal-target'])$(id).disabled=!edit;$('restart-goal').disabled=!edit;$('tg-connect').disabled=!edit;$('account-kind').textContent=t(allNetworks()?'Connected wallet · all networks':canEdit()?'Connected wallet':'Viewing only');renderScope()}
 function currentObs(){return obsSettings({min:$('obs-min').value,d:$('obs-duration').value,snd:$('obs-sound').checked,msg:$('obs-message').checked})}
 function renderLinks(){if(!recipient)return;const links=donationLinks(recipient.net,recipient.address,language(),currentObs(),allNetworks()?session.addresses.evm:'');$('share-link').value=links.tip;$('view-donation-page').href=links.tip;$('obs-alert-url').value=links.alert;$('obs-preview').href=links.preview;$('obs-goal-url').value=links.goal;$('obs-goal-preview').href=links.goalPreview}
 function renderProfile(){
  if(!profileLoaded)return;
  if(!dirty){$('creator-greeting').value=profile?.greeting||'';$('creator-goal-title').value=profile?.goal?.title||'';$('creator-goal-target').value=profile?.goal?.target||''}
  const goal=profile?.goal;$('goal-progress').hidden=!goal;if(goal){$('goal-settings').open=true;const raised=goalRaised===null?String(goal.raised):String(Math.round(goalRaised)/100);const pct=Math.max(0,Math.min(100,Number(raised)/Number(goal.target)*100||0));$('goal-progress-bar').value=pct;$('goal-raised').textContent=raised+' / '+goal.target+' USDT / USDC';$('goal-percent').textContent=Math.floor(pct)+'%'}
+ $('tg-status').textContent=t(tgCode?'Telegram is open. Press Start in the bot, then press Save changes here.':tgOn?'On: every donation arrives in Telegram. To turn off, send /donoff to the bot.':'Get a Telegram message for every donation.');
  updateEditing();
 }
 function selectTool(id,focus=false){const ids=['creator-page','creator-history','stream-alerts'];const target=ids.includes(id)?id:'creator-page';document.querySelectorAll('.creator-tabs [role=tab]').forEach(button=>{const on=button.getAttribute('aria-controls')===target;button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;$(button.getAttribute('aria-controls')).hidden=!on;if(on&&focus)button.focus()})}
@@ -42,7 +43,7 @@ document.querySelectorAll('.creator-tabs [role=tab]').forEach((button,i,all)=>{b
 window.addEventListener('hashchange',hashTool);hashTool();
 async function api(query,body){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
- try{const response=await fetch(WALLET+'/api/donate'+(query?'?'+query:''),{method:body?'POST':'GET',cache:'no-store',credentials:'omit',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,signal:controller.signal});let data;try{data=await response.json()}catch{throw failure('request_failed')}if(!response.ok){const e=failure(response.status===429?'rate_limit':response.status===400&&/too old/.test(String(data?.error))?'clock':'request_failed');e.status=response.status;throw e}return data}finally{clearTimeout(timer)}
+ try{const response=await fetch(WALLET+'/api/donate'+(query?'?'+query:''),{method:body?'POST':'GET',cache:'no-store',credentials:'omit',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,signal:controller.signal});let data;try{data=await response.json()}catch{throw failure('request_failed')}if(!response.ok){const e=failure(response.status===429?'rate_limit':response.status===410?'telegram_expired':response.status===400&&/too old/.test(String(data?.error))?'clock':'request_failed');e.status=response.status;throw e}return data}finally{clearTimeout(timer)}
 }
 function query(extra={}){return new URLSearchParams({net:recipient.net,to:recipient.address,...extra}).toString()}
 function renderHistory(items){const list=$('donation-history');list.replaceChildren();if(!items.length){const p=document.createElement('p');p.className='empty-state';p.textContent=t('No confirmed donations yet.');list.append(p);return}for(const it of items.slice(0,100)){const row=document.createElement('article');row.className='donation-row';const top=document.createElement('div'),amount=document.createElement('strong'),date=document.createElement('time');amount.textContent='+'+String(it.amount||'0')+' '+String(it.cur||'');const stamp=Number(it.ts);date.textContent=Number.isFinite(stamp)?new Date(stamp).toLocaleString(language(),{dateStyle:'medium',timeStyle:'short'}):'';top.append(amount,date);const name=document.createElement('p');name.className='donation-name';name.textContent=(it.nick||t('Anonymous'))+(it.net&&NETWORKS[it.net]?' · '+NETWORKS[it.net]:'');row.append(top,name);if(it.msg){const msg=document.createElement('p');msg.className='donation-message';msg.textContent=it.msg;row.append(msg)}list.append(row)}}
@@ -55,7 +56,7 @@ async function loadDashboard(){
  let failed=false;const mine=Math.max(0,list.findIndex(x=>x.net===recipient.net));
  goalRaised=null;profilesOk=list.every((x,i)=>ok(part(i,0),'profile'));otherGoals=list.map((x,i)=>ok(part(i,0),'profile')?part(i,0).value.profile.goal:null).filter(Boolean);
  if(ok(part(mine,0),'profile')){
-  profile=part(mine,0).value.profile;
+  profile=part(mine,0).value.profile;tgOn=!!profile?.telegram||(tgOn&&!!recentSave);
   // Right after a save the storage may still return the previous text for a minute: keep what was just saved.
   if(recentSave&&Date.now()<recentSave.until&&recentSave.net===recipient.net&&(profile.greeting!==recentSave.profile.greeting||(profile.goal?.title||'')!==(recentSave.profile.goal?.title||'')||(profile.goal?.target||'')!==(recentSave.profile.goal?.target||'')))profile=recentSave.profile;profileLoaded=true;$('profile-load-state').textContent='';
   if(many&&profile.goal){let cents=0;list.forEach((x,i)=>{const g=ok(part(i,0),'profile')?part(i,0).value.profile.goal:null;if(g&&g.title===profile.goal.title&&Number(g.target)===Number(profile.goal.target))cents+=Math.round(Number(g.raised)*100)||0});goalRaised=cents}
@@ -154,7 +155,7 @@ async function saveProfile(restart=false){
  if(saving||!canEdit()||!profileLoaded)return;
  if(allNetworks()&&!profilesOk){notify(errorText(failure('profiles_incomplete')),true,'profile-status');return}
  const line=id=>$(id).value.trim().replace(/[\r\n\t]+/g,' ');
- const fields={greeting:line('creator-greeting'),goal:line('creator-goal-title'),target:line('creator-goal-target').replace(',','.')},key=JSON.stringify(fields);
+ const fields={greeting:line('creator-greeting'),goal:line('creator-goal-title'),target:line('creator-goal-target').replace(',','.'),telegram:tgCode},key=JSON.stringify(fields);
  // After a partial save, pressing Save with the same text finishes only the networks that are still missing (and keeps a pending restart).
  const again=retry&&retry.key===key&&!restart;if(again)restart=retry.restart;
  let payloads;
@@ -169,11 +170,12 @@ async function saveProfile(restart=false){
   const signatures=await signPayloads(payloads);if(epoch!==requestEpoch)throw failure('disconnected');
   let own=null,firstError=null;const failed=[];
   for(let i=0;i<payloads.length;i++){
-   try{const data=await api('',{...payloads[i],sig:signatures[i]});if(!data.ok||!data.profile)throw failure('request_failed');if(payloads[i].net===recipient.net)own=data.profile}
+   try{const data=await api('',{...payloads[i],sig:signatures[i]});if(!data.ok||!data.profile)throw failure('request_failed');if(payloads[i].net===recipient.net)own=data.profile;if(data.telegram){tgOn=true}}
    catch(e){firstError??=e;failed.push(payloads[i].net)}
    if(epoch!==requestEpoch)return;
   }
   if(failed.length===payloads.length)throw firstError||failure('request_failed');
+  if(tgOn&&tgCode&&!failed.length)tgCode='';
   lastSavedTime=payload.ts;if(own){profile=own;profileLoaded=true;recentSave={net:recipient.net,profile:own,until:Date.now()+120000}}
   if(!failed.length){retry=null;dirty=false;renderProfile();notify(t(targets().length>1?'Saved on all networks. Your donation page is up to date.':'Saved. Your donation page is up to date.'),false,'profile-status')}
   else{retry={key,nets:failed,restart};renderProfile();notify(t(firstError?.code==='rate_limit'?'Saved on some networks only. Wait a few minutes, then press Save to finish.':'Saved on some networks only. Press Save again to finish.'),true,'profile-status')}
@@ -182,6 +184,7 @@ async function saveProfile(restart=false){
  finally{saving=false;updateEditing()}
 }
 function confirmDiscard(){return !dirty||confirm(t('Discard unsaved changes?'))}
+$('tg-connect').addEventListener('click',()=>{if(!canEdit())return;const b=new Uint8Array(18);crypto.getRandomValues(b);tgCode=btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');window.open('https://t.me/tavarov_pay_bot?start=dn_'+tgCode,'_blank','noopener');renderProfile()});
 $('connect-non').addEventListener('click',connectNoN);$('choose-non').addEventListener('click',connectNoN);
 const dialogText=[];{const walk=document.createTreeWalker($('wallet-dialog'),NodeFilter.SHOW_TEXT);while(walk.nextNode())if(walk.currentNode.textContent.trim())dialogText.push([walk.currentNode,walk.currentNode.textContent])}
 function translateDialog(){for(const [node,original]of dialogText)node.textContent=t(original.trim())}

@@ -24,6 +24,7 @@ import { SOL } from '../_sol.js';
 import { qrPng } from '../_qr.js';
 import { createTgInvoice, readTgInvoice, checkTgInvoice, checksumAddress, tgPayUrl, partnerInfo, TG_TTL } from '../v1/[[path]].js';
 import { overLimit } from '../_limit.js';
+import { TG_CODE, kTgPend, kTgDon } from '../donate.js';
 
 const okAddr = v => /^0x[0-9a-fA-F]{40}$/.test(v || '');
 /* Адрес кошелька Solana: base58, 32 байта, точка на кривой (у адреса
@@ -290,6 +291,28 @@ async function onMessage(env, m){
   const arg = cm ? (cm[2] || '').trim() : '';
   const u = await kvGet(env, kUser(chat));
 
+  if (cmd === 'start' && /^dn_/.test(arg)){
+    /* Уведомления о донатах: кабинет автора дал код и ссылку
+       t.me/бот?start=dn_<код>. Запоминаем на 15 минут, какой чат её
+       открыл; привяжет кошелёк уже подписанное сохранение в кабинете. */
+    const code = arg.slice(3);
+    if (!TG_CODE.test(code)) return send(env, chat, lang === 'ru' ? 'Ссылка неполная. Откройте её из кабинета автора ещё раз.' : 'This link is incomplete. Open it again from the creator dashboard.');
+    if (await overLimit(new Request(TG_HOOK_URL), env, 'tgdon', 10, 600, 'tg' + chat))
+      return send(env, chat, lang === 'ru' ? 'Слишком часто. Попробуйте через несколько минут.' : 'Too many attempts. Try again in a few minutes.');
+    await env.TILL.put(kTgPend(code), JSON.stringify({ c: chat, l: lang }), { expirationTtl: 900 });
+    return send(env, chat, lang === 'ru'
+      ? '🔔 Почти готово. Вернитесь в кабинет автора и нажмите <b>«Сохранить»</b> — после подписи сюда будут приходить донаты.\n\nОтключить: /donoff'
+      : '🔔 Almost done. Go back to the creator dashboard and press <b>Save</b> — once you sign, donations will arrive here.\n\nTurn off: /donoff');
+  }
+  if (cmd === 'donoff'){
+    let mine = [];
+    try{ mine = JSON.parse(await env.TILL.get(kTgDon(chat)) || '[]'); } catch(e){}
+    for (const k of mine) await env.TILL.delete('donalert:' + k);
+    if (mine.length) await env.TILL.delete(kTgDon(chat));
+    return send(env, chat, mine.length
+      ? (lang === 'ru' ? '🔕 Уведомления о донатах отключены.' : '🔕 Donation notifications are off.')
+      : (lang === 'ru' ? 'Уведомления о донатах и так не включены.' : 'Donation notifications were not on.'));
+  }
   if (cmd === 'start'){
     /* Ссылка партнёра: t.me/бот?start=r_0x… — запоминаем, кто привёл. */
     const r = arg.match(/^r_(0x[0-9a-fA-F]{40})$/);
