@@ -1,0 +1,49 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Tavarov Pay for WooCommerce — demo",
+    "description": "WordPress + WooCommerce with the Tavarov Pay plugin (USDT / USDC on BNB Chain, Ethereum, Base or Solana).",
+    "author": "tavarov"
+  },
+  "landingPage": "/wp-admin/admin.php?page=wc-settings&tab=checkout&section=tavarov_pay",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "woocommerce"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "tavarov-pay"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "woocommerce_currency": "USD",
+        "woocommerce_onboarding_profile": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require '/wordpress/wp-load.php'; delete_transient('_wc_activation_redirect'); delete_option('_wc_activation_redirect');"
+    }
+  ]
+}

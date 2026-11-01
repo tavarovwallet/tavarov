@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Live wall — Tavarov Pay</title>
+<meta name="description" content="A live wall of real crypto payments: send any amount from any wallet and your message appears here. Powered by Tavarov Pay.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="./icon-192.png">
+<!--
+  Живая стена (13.10.2026).
+
+  Что это. Любой автор, продавец или организатор открывает у себя на экране
+  эту страницу — на запуске, на стриме, на встрече. Люди сканируют код и
+  отправляют любую сумму со своим сообщением, а сообщение появляется на
+  стене. Это те же донаты, что у стримеров (страница /d/…, сервер
+  /api/donate), только показаны списком для всех.
+
+  Главное правило то же, что у донатов: на стене только сообщения, за
+  которыми стоит НАСТОЯЩАЯ оплата этому кошельку, проверенная в сети, —
+  USDT или USDC и не меньше 10 центов. Нарисовать здесь чужое сообщение
+  или поддельную оплату нельзя: страница сама ничего не придумывает,
+  она только читает подтверждённый список.
+
+  Пример (?demo=1) — только для показа и подписан крупно «пример».
+
+  Без адреса в ссылке страница превращается в конструктор: человек вводит
+  свои адреса и получает ссылку на свою стену. Внизу каждой стены — «сделать
+  свою»: так стена сама приводит новых людей.
+-->
+<style>
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800; src:url(./fonts/manrope-latin.woff2) format('woff2')}
+:root{--bg:#000; --card:#111113; --card2:#18181B; --text:#F5F5F7; --muted:#A1A1A6; --faint:#6E6E73; --line:#2C2C2E; --acc:#7C5CFF; --g2:#E25FB4; --ok:#30D158;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Manrope','Segoe UI',system-ui,Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0; background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased}
+a{color:#A98BFF; text-decoration:none} a:hover{text-decoration:underline}
+.hidden{display:none !important}
+.g{background:linear-gradient(100deg,var(--acc),var(--g2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.wrap{max-width:1280px; margin:0 auto; padding:36px 32px 40px}
+.top{display:flex; align-items:center; gap:12px; margin-bottom:28px}
+.live{display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:13px; letter-spacing:.12em; color:#FF453A}
+.live i{width:10px; height:10px; border-radius:50%; background:#FF453A; box-shadow:0 0 0 0 rgba(255,69,58,.6); animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,69,58,.55)} 70%{box-shadow:0 0 0 12px rgba(255,69,58,0)} 100%{box-shadow:0 0 0 0 rgba(255,69,58,0)}}
+.brand{margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; font-weight:600}
+.brand svg{width:22px; height:22px}
+.demo-badge{background:#FF9F0A; color:#000; font-weight:800; font-size:12px; letter-spacing:.08em; padding:4px 10px; border-radius:999px}
+.grid{display:grid; grid-template-columns:420px 1fr; gap:40px; align-items:start}
+.side{position:sticky; top:24px}
+h1{font-size:clamp(34px,4vw,54px); line-height:1.04; letter-spacing:-.035em; margin:0 0 14px; font-weight:700; overflow-wrap:anywhere}
+.sub{color:var(--muted); font-size:18px; line-height:1.45; margin:0 0 24px}
+.nets{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px}
+.nets button{border:1px solid var(--line); background:transparent; color:var(--muted); font:600 13px var(--font); padding:7px 12px; border-radius:999px; cursor:pointer}
+.nets button[aria-pressed="true"]{background:var(--text); color:#000; border-color:var(--text)}
+.qrbox{background:#fff; border-radius:24px; padding:18px; width:100%; max-width:300px; aspect-ratio:1}
+.qrbox canvas,.qrbox img{width:100% !important; height:auto !important; display:block}
+.paylink{display:inline-block; margin-top:14px; font-size:14px; color:var(--muted); word-break:break-all}
+.btn{display:inline-block; background:var(--acc); color:#fff; font-weight:600; font-size:17px; padding:13px 24px; border-radius:999px; border:0; cursor:pointer; margin-top:16px}
+.btn:hover{text-decoration:none; filter:brightness(1.1)}
+.btn.ghost{background:transparent; border:1px solid var(--line); color:var(--text)}
+.stats{display:flex; gap:28px; margin-top:28px; padding-top:22px; border-top:1px solid var(--line)}
+.stats b{display:block; font-size:30px; letter-spacing:-.03em}
+.stats span{color:var(--faint); font-size:13px}
+.feed{display:flex; flex-direction:column; gap:12px; min-height:300px}
+.item{background:var(--card); border:1px solid var(--line); border-radius:22px; padding:20px 22px; display:grid; grid-template-columns:44px 1fr auto; gap:14px; align-items:start; animation:in .5s cubic-bezier(.2,.7,.2,1)}
+.item.new{border-color:rgba(124,92,255,.7); box-shadow:0 0 0 1px rgba(124,92,255,.35), 0 20px 60px -30px rgba(124,92,255,.8)}
+@keyframes in{from{opacity:0; transform:translateY(-14px) scale(.98)} to{opacity:1; transform:none}}
+.av{width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--acc),var(--g2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:#fff}
+.who{font-weight:700; font-size:17px; overflow-wrap:anywhere}
+.msg{color:var(--text); font-size:20px; line-height:1.35; margin-top:4px; overflow-wrap:anywhere; white-space:pre-wrap}
+.meta{color:var(--faint); font-size:13px; margin-top:8px}
+.meta a{color:var(--faint)}
+.amt{text-align:right; font-weight:700; font-size:20px; white-space:nowrap}
+.amt small{display:block; color:var(--faint); font-weight:600; font-size:12px; margin-top:4px}
+.empty{border:1px dashed var(--line); border-radius:22px; padding:48px 24px; text-align:center; color:var(--muted); font-size:18px; line-height:1.5}
+.foot{margin-top:40px; color:var(--faint); font-size:13px; display:flex; gap:18px; flex-wrap:wrap; justify-content:space-between}
+.foot a{color:var(--muted)}
+.mk{max-width:640px}
+.mk label{display:block; font-size:14px; color:var(--muted); margin:20px 0 8px}
+.mk input{width:100%; background:var(--card); border:1px solid var(--line); color:var(--text); font:16px var(--font); padding:14px 16px; border-radius:14px}
+.mk input:focus{outline:none; border-color:var(--acc)}
+.mk .hint{font-size:13px; color:var(--faint); margin-top:6px}
+.out{margin-top:24px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; word-break:break-all; font-size:14px}
+.err{color:#FF453A; font-size:14px; margin-top:12px}
+.langs{display:flex; gap:2px}
+.langs button{background:none; border:0; color:var(--faint); font:600 12px var(--font); padding:4px 6px; cursor:pointer}
+.langs button[aria-pressed="true"]{color:var(--text); box-shadow:inset 0 -1.5px 0 var(--text)}
+@media (max-width:900px){
+  .wrap{padding:22px 16px 32px} .grid{grid-template-columns:1fr; gap:28px} .side{position:static}
+  .qrbox{max-width:240px} .msg{font-size:18px} .item{grid-template-columns:38px 1fr; padding:16px} .av{width:38px; height:38px; font-size:16px}
+  .amt{grid-column:2; text-align:left} .amt small{display:inline; margin-left:6px}
+}
+@media (max-width:520px){ .top{flex-wrap:wrap; row-gap:10px} .langs{order:3; width:100%} .stats{gap:18px} .stats b{font-size:24px} }
+@media (prefers-reduced-motion: reduce){ *{animation:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="live" id="liveTag"><i></i>LIVE</span>
+    <span class="demo-badge hidden" id="demoBadge"></span>
+    <div class="langs" id="langs"></div>
+    <a class="brand" href="https://tavarov.com/" target="_blank" rel="noopener"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="wm" x1="0" x2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset="1" stop-color="#E25FB4"/></linearGradient></defs><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="url(#wm)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="url(#wm)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="url(#wm)"/></svg>Tavarov Pay</a>
+  </div>
+
+  <!-- стена -->
+  <div id="wall" class="grid hidden">
+    <div class="side">
+      <h1 id="title"></h1>
+      <p class="sub" id="sub"></p>
+      <div class="nets" id="nets"></div>
+      <div class="qrbox" id="qr"></div>
+      <a class="paylink" id="payLink" target="_blank" rel="noopener"></a><br>
+      <a class="btn" id="payBtn" target="_blank" rel="noopener"></a>
+      <div class="stats">
+        <div><b id="sCount">0</b><span id="sCountL"></span></div>
+        <div><b id="sSum">$0</b><span id="sSumL"></span></div>
+        <div><b id="sNets">0</b><span id="sNetsL"></span></div>
+      </div>
+    </div>
+    <div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+
+  <!-- конструктор -->
+  <div id="maker" class="mk hidden">
+    <h1 id="mkH"></h1>
+    <p class="sub" id="mkT"></p>
+    <label for="mkTitle" id="mkTitleL"></label>
+    <input id="mkTitle" maxlength="60" autocomplete="off">
+    <label for="mkEvm" id="mkEvmL"></label>
+    <input id="mkEvm" placeholder="0x…" autocomplete="off" spellcheck="false">
+    <div class="hint" id="mkEvmH"></div>
+    <label for="mkSol" id="mkSolL"></label>
+    <input id="mkSol" placeholder="Solana" autocomplete="off" spellcheck="false">
+    <div class="hint" id="mkSolH"></div>
+    <div class="err hidden" id="mkErr"></div>
+    <button class="btn" id="mkGo"></button>
+    <div class="out hidden" id="mkOut"></div>
+    <div id="mkBtns" class="hidden"><a class="btn" id="mkOpen" target="_blank" rel="noopener"></a> <button class="btn ghost" id="mkCopy"></button></div>
+  </div>
+
+  <div class="foot">
+    <span id="footNote"></span>
+    <a href="./wall" id="footMake"></a>
+  </div>
+</div>
+
+<script src="./lib/qrcode.min.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+
+/* ---------- языки ---------- */
+const L = {
+  en: { title:'Say hi to the launch', sub:'Send any amount from any wallet — your message appears here as soon as the payment lands. Every message on this wall is a real on-chain payment.',
+        pay:'Pay from this phone', count:'payments', sum:'received', nets:'networks', anon:'Anonymous', empty:'No messages yet. Scan the code and be the first.',
+        ago:{ s:'just now', m:'min ago', h:'h ago', d:'d ago' }, verified:'paid on-chain', demo:'EXAMPLE — not real payments',
+        foot:'Only real payments of $0.10+ in USDT or USDC show up here. 99% goes straight to the owner’s wallet.', make:'Make your own live wall →',
+        mkH:'Make your own live wall', mkT:'For a launch, a stream, a meetup or a fundraiser. People scan the code, pay any amount with a message, and it appears on your screen. The money goes straight to your wallet — 99%, in the same transaction.',
+        mkTitle:'Title on the wall', mkTitlePh:'Say hi to our launch!', mkEvm:'Your address on BNB Chain, Ethereum and Base', mkEvmH:'Starts with 0x. Leave empty if you only use Solana.',
+        mkSol:'Your Solana address', mkSolH:'Optional. Leave empty if you only use BNB Chain, Ethereum and Base.', mkGo:'Create the wall', mkOpen:'Open the wall', mkCopy:'Copy link', mkCopied:'Copied ✓',
+        mkErr:'Add at least one address: 0x… for BNB Chain, Ethereum and Base, or a Solana address.' },
+  ru: { title:'Поддержите запуск', sub:'Отправьте любую сумму с любого кошелька — ваше сообщение появится здесь, как только придёт оплата. Каждое сообщение на этой стене — настоящая оплата в сети.',
+        pay:'Оплатить с этого телефона', count:'оплат', sum:'получено', nets:'сетей', anon:'Аноним', empty:'Сообщений пока нет. Отсканируйте код и будьте первым.',
+        ago:{ s:'только что', m:'мин назад', h:'ч назад', d:'дн назад' }, verified:'оплачено в сети', demo:'ПРИМЕР — не настоящие оплаты',
+        foot:'Здесь появляются только настоящие оплаты от $0.10 в USDT или USDC. 99% сразу на кошелёк владельца.', make:'Сделать свою живую стену →',
+        mkH:'Сделайте свою живую стену', mkT:'Для запуска, стрима, встречи или сбора. Люди сканируют код, платят любую сумму с сообщением — и оно появляется у вас на экране. Деньги сразу на ваш кошелёк — 99%, в той же операции.',
+        mkTitle:'Заголовок стены', mkTitlePh:'Поддержите наш запуск!', mkEvm:'Ваш адрес в BNB Chain, Ethereum и Base', mkEvmH:'Начинается с 0x. Оставьте пустым, если пользуетесь только Solana.',
+        mkSol:'Ваш адрес в Solana', mkSolH:'Необязательно. Оставьте пустым, если пользуетесь только BNB Chain, Ethereum и Base.', mkGo:'Создать стену', mkOpen:'Открыть стену', mkCopy:'Скопировать ссылку', mkCopied:'Скопировано ✓',
+        mkErr:'Укажите хотя бы один адрес: 0x… для BNB Chain, Ethereum и Base или адрес в Solana.' },
+  es: { title:'Saluda al lanzamiento', sub:'Envía cualquier monto desde cualquier billetera: tu mensaje aparece aquí en cuanto llega el pago. Cada mensaje de este muro es un pago real en la cadena.',
+        pay:'Pagar desde este teléfono', count:'pagos', sum:'recibido', nets:'redes', anon:'Anónimo', empty:'Aún no hay mensajes. Escanea el código y sé el primero.',
+        ago:{ s:'ahora', m:'min', h:'h', d:'d' }, verified:'pagado en la cadena', demo:'EJEMPLO — no son pagos reales',
+        foot:'Aquí solo aparecen pagos reales desde $0.10 en USDT o USDC. El 99% va directo a la billetera del dueño.', make:'Crea tu propio muro en vivo →',
+        mkH:'Crea tu propio muro en vivo', mkT:'Para un lanzamiento, un directo, un encuentro o una colecta. La gente escanea el código, paga cualquier monto con un mensaje y aparece en tu pantalla. El dinero va directo a tu billetera: el 99%, en la misma transacción.',
+        mkTitle:'Título del muro', mkTitlePh:'¡Saluda a nuestro lanzamiento!', mkEvm:'Tu dirección en BNB Chain, Ethereum y Base', mkEvmH:'Empieza con 0x. Déjalo vacío si solo usas Solana.',
+        mkSol:'Tu dirección de Solana', mkSolH:'Opcional. Déjalo vacío si solo usas BNB Chain, Ethereum y Base.', mkGo:'Crear el muro', mkOpen:'Abrir el muro', mkCopy:'Copiar enlace', mkCopied:'Copiado ✓',
+        mkErr:'Añade al menos una dirección: 0x… para BNB Chain, Ethereum y Base, o una de Solana.' },
+  tr: { title:'Lansmana selam verin', sub:'Herhangi bir cüzdandan istediğiniz tutarı gönderin — ödeme gelir gelmez mesajınız burada görünür. Bu duvardaki her mesaj zincir üzerinde gerçek bir ödemedir.',
+        pay:'Bu telefondan öde', count:'ödeme', sum:'alındı', nets:'ağ', anon:'Anonim', empty:'Henüz mesaj yok. Kodu okutun ve ilk siz olun.',
+        ago:{ s:'şimdi', m:'dk önce', h:'sa önce', d:'g önce' }, verified:'zincirde ödendi', demo:'ÖRNEK — gerçek ödemeler değil',
+        foot:'Burada yalnızca USDT veya USDC ile $0.10 ve üzeri gerçek ödemeler görünür. %99’u doğrudan sahibinin cüzdanına gider.', make:'Kendi canlı duvarınızı yapın →',
+        mkH:'Kendi canlı duvarınızı yapın', mkT:'Bir lansman, yayın, buluşma veya bağış kampanyası için. İnsanlar kodu okutur, mesajla istedikleri tutarı öder ve mesaj ekranınızda görünür. Para doğrudan cüzdanınıza gider — %99’u, aynı işlemde.',
+        mkTitle:'Duvar başlığı', mkTitlePh:'Lansmanımıza selam verin!', mkEvm:'BNB Chain, Ethereum ve Base adresiniz', mkEvmH:'0x ile başlar. Yalnızca Solana kullanıyorsanız boş bırakın.',
+        mkSol:'Solana adresiniz', mkSolH:'İsteğe bağlı. Yalnızca BNB Chain, Ethereum ve Base kullanıyorsanız boş bırakın.', mkGo:'Duvarı oluştur', mkOpen:'Duvarı aç', mkCopy:'Bağlantıyı kopyala', mkCopied:'Kopyalandı ✓',
+        mkErr:'En az bir adres ekleyin: BNB Chain, Ethereum ve Base için 0x… veya bir Solana adresi.' },
+  pt: { title:'Dê um oi ao lançamento', sub:'Envie qualquer valor de qualquer carteira — sua mensagem aparece aqui assim que o pagamento chega. Cada mensagem neste mural é um pagamento real na blockchain.',
+        pay:'Pagar deste celular', count:'pagamentos', sum:'recebido', nets:'redes', anon:'Anônimo', empty:'Ainda não há mensagens. Escaneie o código e seja o primeiro.',
+        ago:{ s:'agora', m:'min', h:'h', d:'d' }, verified:'pago na blockchain', demo:'EXEMPLO — não são pagamentos reais',
+        foot:'Aqui só aparecem pagamentos reais a partir de $0.10 em USDT ou USDC. 99% vão direto para a carteira do dono.', make:'Crie seu próprio mural ao vivo →',
+        mkH:'Crie seu próprio mural ao vivo', mkT:'Para um lançamento, uma live, um encontro ou uma vaquinha. As pessoas escaneiam o código, pagam qualquer valor com uma mensagem e ela aparece na sua tela. O dinheiro vai direto para a sua carteira — 99%, na mesma transação.',
+        mkTitle:'Título do mural', mkTitlePh:'Dê um oi ao nosso lançamento!', mkEvm:'Seu endereço na BNB Chain, Ethereum e Base', mkEvmH:'Começa com 0x. Deixe vazio se você só usa Solana.',
+        mkSol:'Seu endereço na Solana', mkSolH:'Opcional. Deixe vazio se você só usa BNB Chain, Ethereum e Base.', mkGo:'Criar o mural', mkOpen:'Abrir o mural', mkCopy:'Copiar link', mkCopied:'Copiado ✓',
+        mkErr:'Adicione pelo menos um endereço: 0x… para BNB Chain, Ethereum e Base, ou um endereço Solana.' },
+  tg: { title:'Ба оғози лоиҳа салом гӯед', sub:'Аз ҳар гуна ҳамён ҳар маблағро фиристед — паёми шумо ҳамин ки пардохт расид, дар ин ҷо пайдо мешавад. Ҳар паём дар ин девор пардохти воқеӣ дар шабака аст.',
+        pay:'Аз ҳамин телефон пардохт кунед', count:'пардохт', sum:'гирифта шуд', nets:'шабака', anon:'Беном', empty:'Ҳоло паём нест. Кодро скан кунед ва аввалин бошед.',
+        ago:{ s:'ҳозир', m:'дақ пеш', h:'соат пеш', d:'рӯз пеш' }, verified:'дар шабака пардохт шуд', demo:'НАМУНА — пардохтҳои воқеӣ нестанд',
+        foot:'Дар ин ҷо танҳо пардохтҳои воқеӣ аз $0.10 бо USDT ё USDC пайдо мешаванд. 99% бевосита ба ҳамёни соҳиб.', make:'Девори зиндаи худро созед →',
+        mkH:'Девори зиндаи худро созед', mkT:'Барои оғози лоиҳа, стрим, вохӯрӣ ё ҷамъоварӣ. Одамон кодро скан мекунанд, бо паём ҳар маблағро пардохт мекунанд ва он дар экрани шумо пайдо мешавад. Пул бевосита ба ҳамёни шумо — 99%, дар ҳамон амалиёт.',
+        mkTitle:'Сарлавҳаи девор', mkTitlePh:'Ба оғози мо салом гӯед!', mkEvm:'Суроғаи шумо дар BNB Chain, Ethereum ва Base', mkEvmH:'Бо 0x оғоз мешавад. Агар танҳо Solana истифода баред, холӣ гузоред.',
+        mkSol:'Суроғаи шумо дар Solana', mkSolH:'Ихтиёрӣ. Агар танҳо BNB Chain, Ethereum ва Base истифода баред, холӣ гузоред.', mkGo:'Деворро созед', mkOpen:'Деворро кушоед', mkCopy:'Пайвандро нусха кунед', mkCopied:'Нусха шуд ✓',
+        mkErr:'Ақаллан як суроға илова кунед: 0x… барои BNB Chain, Ethereum ва Base ё суроғаи Solana.' }
+};
+const NAMES = { en:'EN', ru:'RU', es:'ES', tr:'TR', pt:'PT', tg:'TJ' };
+let LANG = (() => {
+  const q = Q.get('lang'); if (L[q]) return q;
+  try { const s = localStorage.getItem('tavarov.wall.lang'); if (L[s]) return s; } catch (e) {}
+  const n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  return L[n] ? n : 'en';
+})();
+const t = k => (L[LANG] && L[LANG][k]) || L.en[k];
+
+/* ---------- кому платят ---------- */
+const EVM = (Q.get('to') || '').trim();
+const SOLA = (Q.get('sol') || '').trim();
+const EVM_OK = /^0x[0-9a-fA-F]{40}$/.test(EVM);
+const SOL_OK = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(SOLA);
+const TITLE = Array.from(String(Q.get('t') || '')).slice(0, 60).join('').trim();
+const DEMO = Q.get('demo') === '1';
+/* Скрыть сообщение со стены может только тот, кто держит ссылку: ?hide=номер,номер
+   (первые 8 знаков номера счёта). Деньги при этом, конечно, у владельца. */
+/* Стена события показывает только то, что пришло с его начала: ?since=2026-10-15
+   (дата по UTC) — старые донаты этому кошельку на стену не попадут. */
+const SINCE = (() => { const v = Q.get('since') || ''; const t = /^\d{4}-\d{2}-\d{2}$/.test(v) ? Date.parse(v + 'T00:00:00Z') : NaN; return isFinite(t) ? t : 0; })();
+const HIDE = (Q.get('hide') || '').toLowerCase().split(',').map(s => s.trim()).filter(s => /^[0-9a-fx]{6,}$/.test(s));
+
+const NETS = {
+  solana: { name:'Solana', ok: SOL_OK, to: SOLA, exp: a => 'https://solscan.io/account/' + a },
+  bnb:    { name:'BNB Chain', ok: EVM_OK, to: EVM, exp: a => 'https://bscscan.com/address/' + a },
+  base:   { name:'Base', ok: EVM_OK, to: EVM, exp: a => 'https://basescan.org/address/' + a },
+  eth:    { name:'Ethereum', ok: EVM_OK, to: EVM, exp: a => 'https://etherscan.io/address/' + a }
+};
+const ON = Object.keys(NETS).filter(k => NETS[k].ok);
+let net = ON[0] || 'solana';
+
+/* ---------- отрисовка ---------- */
+const items = new Map();      // h → { net, nick, msg, amount, cur, ts, payer }
+let firstLoad = true;
+
+function payUrl(n){ return location.origin + '/d/' + encodeURIComponent(NETS[n].to) + '?net=' + n + '&lang=' + (LANG === 'tg' ? 'ru' : LANG); }
+function drawQr(){
+  const box = $('qr'); box.innerHTML = '';
+  const url = payUrl(net);
+  try { new QRCode(box, { text: url, width: 600, height: 600, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {}
+  $('payLink').textContent = url.replace(/^https?:\/\//, '').replace(/&lang=.*$/, '');
+  $('payLink').href = url; $('payBtn').href = url;
+}
+function drawNets(){
+  const box = $('nets'); box.innerHTML = '';
+  ON.forEach(k => { const b = document.createElement('button'); b.textContent = NETS[k].name; b.setAttribute('aria-pressed', String(k === net));
+    b.onclick = () => { net = k; drawNets(); drawQr(); }; box.appendChild(b); });
+}
+function ago(ts){
+  const s = Math.max(0, (Date.now() - ts) / 1000), a = t('ago');
+  if (s < 60) return a.s; if (s < 3600) return Math.floor(s / 60) + ' ' + a.m;
+  if (s < 86400) return Math.floor(s / 3600) + ' ' + a.h; return Math.floor(s / 86400) + ' ' + a.d;
+}
+function drawFeed(fresh){
+  const feed = $('feed'); feed.innerHTML = '';
+  const list = [...items.entries()].filter(([h]) => !HIDE.some(x => h.toLowerCase().startsWith(x))).map(([h, v]) => Object.assign({ h }, v))
+    .sort((a, b) => b.ts - a.ts).slice(0, 60);
+  if (!list.length){ const e = document.createElement('div'); e.className = 'empty'; e.textContent = t('empty'); feed.appendChild(e); }
+  list.forEach(v => {
+    const el = document.createElement('div'); el.className = 'item' + (fresh && fresh.has(v.h) ? ' new' : '');
+    const av = document.createElement('div'); av.className = 'av'; av.textContent = (v.nick || '?').slice(0, 1).toUpperCase();
+    const mid = document.createElement('div');
+    const who = document.createElement('div'); who.className = 'who'; who.textContent = v.nick || t('anon');
+    const msg = document.createElement('div'); msg.className = 'msg'; msg.textContent = v.msg || '';
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.append(NETS[v.net].name + ' · ' + ago(v.ts) + ' · ');
+    if (v.payer && !DEMO){ const a = document.createElement('a'); a.href = NETS[v.net].exp(v.payer); a.target = '_blank'; a.rel = 'noopener'; a.textContent = t('verified') + ' ↗'; meta.append(a); }
+    else meta.append(t('verified'));
+    mid.append(who); if (v.msg) mid.append(msg); mid.append(meta);
+    const amt = document.createElement('div'); amt.className = 'amt'; amt.textContent = fmtAmt(v.amount) + ' ';
+    const sm = document.createElement('small'); sm.textContent = v.cur; amt.append(sm);
+    el.append(av, mid, amt); feed.append(el);
+  });
+  const all = [...items.values()];
+  $('sCount').textContent = all.length;
+  $('sSum').textContent = '$' + all.reduce((s, v) => s + (parseFloat(v.amount) || 0), 0).toFixed(2).replace(/\.00$/, '');
+  $('sNets').textContent = new Set(all.map(v => v.net)).size;
+}
+function fmtAmt(a){ const x = parseFloat(a) || 0; return x >= 100 ? x.toFixed(0) : x.toFixed(2).replace(/\.?0+$/, ''); }
+
+/* ---------- данные ----------
+   Те же подтверждённые донаты, что видит владелец в приложении. Сервер
+   держит ответ в кэше 10 секунд, поэтому десятки зрителей одной стены
+   стоят ему как один. */
+async function load(){
+  const fresh = new Set();
+  await Promise.all(ON.map(async n => {
+    try {
+      const r = await fetch('/api/donate?net=' + n + '&to=' + encodeURIComponent(NETS[n].to) + '&limit=60', { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      (d.items || []).forEach(m => {
+        if (!m || !m.h || items.has(m.h) || (Number(m.ts) || 0) < SINCE) return;
+        items.set(m.h, { net: n, nick: String(m.nick || '').slice(0, 32), msg: String(m.msg || '').slice(0, 200), amount: m.amount, cur: m.cur, ts: Number(m.ts) || Date.now(), payer: m.payer || '' });
+        if (!firstLoad) fresh.add(m.h);
+      });
+    } catch (e) {}
+  }));
+  firstLoad = false;
+  drawFeed(fresh);
+}
+
+function demoData(){
+  const now = Date.now();
+  [['Anna','gm from Lisbon! 🇵🇹','5','USDC','solana',40e3],['Kemal','Paid in 4 seconds, wow 🔥','2','USDT','bnb',190e3],
+   ['Dilshod','Салом аз Душанбе!','10','USDT','bnb',420e3],['','Good luck with the launch','1','USDC','base',900e3],['Lucía','¡Qué rápido!','3','USDC','solana',1500e3]]
+   .forEach((x, i) => items.set('demo' + i, { nick: x[0], msg: x[1], amount: x[2], cur: x[3], net: ON.includes(x[4]) ? x[4] : ON[0], ts: now - x[5], payer: '' }));
+}
+
+/* ---------- конструктор ---------- */
+function maker(){
+  $('maker').classList.remove('hidden'); $('liveTag').classList.add('hidden');
+  $('mkGo').onclick = () => {
+    const e = $('mkEvm').value.trim(), s = $('mkSol').value.trim(), ti = $('mkTitle').value.trim();
+    const eOk = /^0x[0-9a-fA-F]{40}$/.test(e), sOk = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s) && !/^0x/i.test(s);
+    if ((!eOk && !sOk) || (e && !eOk) || (s && !sOk)){ $('mkErr').textContent = t('mkErr'); $('mkErr').classList.remove('hidden'); return; }
+    $('mkErr').classList.add('hidden');
+    const p = new URLSearchParams(); if (eOk) p.set('to', e); if (sOk) p.set('sol', s); if (ti) p.set('t', ti);
+    p.set('since', new Date().toISOString().slice(0, 10));   // новая стена — с сегодняшнего дня
+    const url = location.origin + '/wall?' + p.toString();
+    $('mkOut').textContent = url; $('mkOut').classList.remove('hidden'); $('mkBtns').classList.remove('hidden');
+    $('mkOpen').href = url;
+    $('mkCopy').onclick = () => { try { navigator.clipboard.writeText(url); $('mkCopy').textContent = t('mkCopied'); } catch (x) {} };
+  };
+}
+
+function texts(){
+  document.documentElement.lang = LANG;
+  $('title').innerHTML = ''; $('title').textContent = TITLE || t('title');
+  $('sub').textContent = t('sub'); $('payBtn').textContent = t('pay');
+  $('sCountL').textContent = t('count'); $('sSumL').textContent = t('sum'); $('sNetsL').textContent = t('nets');
+  $('footNote').textContent = t('foot'); $('footMake').textContent = t('make');
+  $('demoBadge').textContent = t('demo');
+  ['mkH','mkT','mkTitle','mkEvm','mkEvmH','mkSol','mkSolH','mkGo','mkOpen','mkCopy'].forEach(k => {
+    const el = $(k === 'mkTitle' ? 'mkTitleL' : k === 'mkEvm' ? 'mkEvmL' : k === 'mkSol' ? 'mkSolL' : k); if (el) el.textContent = t(k); });
+  $('mkTitle').placeholder = t('mkTitlePh');
+  document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+  if (ON.length) drawFeed();
+}
+Object.keys(NAMES).forEach(c => { const b = document.createElement('button'); b.textContent = NAMES[c]; b.dataset.l = c;
+  b.onclick = () => { LANG = c; try { localStorage.setItem('tavarov.wall.lang', c); } catch (e) {} texts(); if (ON.length) drawQr(); }; $('langs').appendChild(b); });
+
+texts();
+if (!ON.length){ maker(); }
+else {
+  $('wall').classList.remove('hidden');
+  drawNets(); drawQr();
+  if (DEMO){ $('demoBadge').classList.remove('hidden'); demoData(); drawFeed(); }
+  else {
+    load();
+    let timer = setInterval(load, 15000);
+    document.addEventListener('visibilitychange', () => {
+      clearInterval(timer); if (!document.hidden){ load(); timer = setInterval(load, 15000); } });
+    setInterval(() => drawFeed(), 60000);   // «мин назад» обновляем и без новых оплат
+  }
+}
+</script>
+</body>
+</html>

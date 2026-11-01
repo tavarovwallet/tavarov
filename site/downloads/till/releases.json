@@ -1,0 +1,16 @@
+{
+  "version": "1.0.5",
+  "channel": "preview",
+  "artifacts": [
+    {
+      "filename": "Tavarov-Pay-Till-Setup-1.0.5.exe",
+      "size": 115559796,
+      "sha256": "75bba2e254110598bd850cdc2768e847cea7d95d565876e0232534dfb24b1a12"
+    },
+    {
+      "filename": "Tavarov-Pay-Till-1.0.5-portable.exe",
+      "size": 115343871,
+      "sha256": "ecde6381903008b89e41f77e1e9cf4faa988e2fe336a0b4ae24e6199c0a87872"
+    }
+  ]
+}

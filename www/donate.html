@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Донат · Tavarov Pay</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22 aria-hidden=%22true%22%3E%3Cpath d=%22M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76%22 fill=%22none%22 stroke=%22%239875F5%22 stroke-width=%2216%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2219%22 fill=%22%239875F5%22/%3E%3C/svg%3E">
 <style>
 /* ===================== Внешний вид =====================
 
@@ -186,21 +186,59 @@ input:focus, textarea:focus{border-color:var(--accent)}
 .facts li{margin:6px 0}
 @media (max-width:360px){ .chips{grid-template-columns:repeat(3, 1fr)} }
 </style>
+<style>
+/* Вид как у tavarov.com и кабинета автора: Inter, белый фон, светлые
+   карточки, фиолетовые кнопки-пилюли. Только внешний вид, логика не тронута. */
+@font-face{font-family:Inter;src:url('/creator/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--bg:#fff;--glow-1:rgba(119,80,228,.045);--glow-2:rgba(0,0,0,0);--glow-3:rgba(0,0,0,0);
+  --card:#fafafc;--card-solid:#fff;--card-edge:#eeecf2;--card-hi:inset 0 0 0 transparent;--shadow:0 8px 30px rgba(38,32,51,.035);
+  --label:#1d1d1f;--label-2:#6e6e73;--label-3:#8e8e96;--sep:#e7e4ec;--accent:#7750e4;--accent-2:#6840d3;
+  --fill:#f1eff5;--ghost-bg:#fff;--ghost-edge:#dedce5;--seg-on:#fff;--seg-on-text:#1d1d1f;
+  --font:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#0f0e12;--glow-1:rgba(152,117,245,.10);--card:#18171c;--card-solid:#18171c;--card-edge:#2a2830;
+  --shadow:none;--label:#f5f5f7;--label-2:#a1a1aa;--label-3:#7c7c85;--sep:#2c2a32;--accent:#8b66f0;--accent-2:#7750e4;
+  --fill:#232129;--ghost-bg:#1d1c22;--ghost-edge:#34313b;--seg-on:#2e2b36;--seg-on-text:#fff}}
+body{font-size:15px;letter-spacing:-.01em;padding-top:28px}
+.box{max-width:460px}
+.card{border-radius:22px;padding:26px;-webkit-backdrop-filter:none;backdrop-filter:none}
+h1{font-size:25px;font-weight:600;letter-spacing:-.045em}
+.sum{font-weight:650;letter-spacing:-.05em}
+.muted{font-size:14px}.tiny{font-size:12.5px}
+.brand{font-size:17px;font-weight:650;letter-spacing:-.04em;margin:4px 0 18px}
+.brand svg{width:26px;height:26px;border-radius:0;box-shadow:none}
+.brand small{font-size:11.5px;letter-spacing:0;font-weight:500}
+.langs,.langs button,.seg,.seg button{border-radius:100px}
+.langs button{font-size:11.5px;font-weight:600;padding:5px 10px}
+.btn{border-radius:100px;font-size:14.5px;font-weight:550;padding:14px 22px;letter-spacing:-.01em}
+.btn-main{background:var(--accent);box-shadow:0 10px 24px -14px rgba(119,80,228,.75)}
+.btn-main:hover{background:var(--accent-2)}
+.btn-ghost{font-size:14.5px}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.06em}
+.chip{border-radius:100px;font-size:14px;font-weight:600;padding:10px 0}
+.chip.on{background:var(--accent)}
+input,textarea{border-radius:12px;font-size:15px;padding:12px 14px}
+input:focus,textarea:focus{border-color:var(--ghost-edge);outline:2px solid #9c80e4;outline-offset:2px}
+#amount{font-size:21px;font-weight:600}
+.seg button{font-size:13px;font-weight:600;padding:0 14px}
+.avatar{background:var(--accent);box-shadow:0 12px 26px -14px rgba(119,80,228,.8);font-weight:600}
+.greet{border-radius:14px;font-size:14.5px}
+.gbar i{background:var(--accent)}
+.note{border-radius:14px;font-size:13.5px}
+.facts{font-size:13.5px}
+.qr{box-shadow:0 0 0 1px #eeecf2}
+.sheet{border-radius:26px 26px 0 0}
+.wrow .wi{background:var(--accent)}
+.steps li.run .n{background:var(--accent)}
+.net-seg{display:flex;flex-wrap:wrap;width:100%;margin-bottom:8px}.net-seg button{flex:1 1 auto;padding:9px 10px;min-height:38px}
+.net-hint{margin:0 2px 18px;line-height:1.5}
+</style>
 </head>
 <body>
 <div class="box">
 
   <div class="brand">
-    <svg viewBox="0 0 120 120" aria-hidden="true">
-      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
-      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
-        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
-        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
-        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
-        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
-      </g>
-    </svg>
-    <span>Tavarov Pay<small data-t="brandSub">Донаты напрямую автору</small></span>
+    <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#9875F5"/></svg>
+    <span>Tavarov Donate<small data-t="brandSub">Донаты напрямую автору</small></span>
   </div>
   <div class="langs" id="langs"></div>
 
@@ -233,6 +271,11 @@ input:focus, textarea:focus{border-color:var(--accent)}
     </div>
 
     <div class="card">
+      <div class="hidden" id="netPick">
+        <div class="lbl" data-t="netPickL">Сеть для оплаты</div>
+        <div class="seg net-seg" id="netSeg"></div>
+        <div class="tiny net-hint" data-t="netHint"></div>
+      </div>
       <div class="lbl" data-t="howMuch">Сколько</div>
       <div class="chips" id="chips"></div>
       <div class="field">
@@ -309,7 +352,7 @@ const T = {
         f2:'Нужны {0} в сети {1} и немного {2} на комиссию сети. Платить можно NoN Wallet, MetaMask, Trust Wallet и другими.',
         f1Sol:'Деньги идут с вашего кошелька прямо автору одной операцией в сети Solana: 99% автору, 1% сервису. Мы их не держим ни секунды.', f2Sol:'Нужны {0} в сети Solana и совсем немного SOL на комиссию сети. Платить можно NoN Wallet, Phantom, Solflare, Trust Wallet — по QR-коду Solana Pay.', netL:'Сеть', or:' или ',
         f3:'Сообщение автор увидит только после оплаты. Оно не секретное: не пишите в нём ничего личного.',
-        f4:'Донат — это подарок: вернуть его может только сам автор.', whatIs:'Что такое Tavarov Pay?', item:'Донат', goalL:'Цель сбора', goalOf:'Собрано {0} $ из {1} $' },
+        f4:'Донат — это подарок: вернуть его может только сам автор.', whatIs:'Что такое Tavarov Pay?', item:'Донат', goalL:'Цель сбора', goalOf:'Собрано {0} $ из {1} $', netPickL:'Сеть для оплаты', netHint:'Выберите сеть, где у вас есть USDT или USDC. В BNB Chain, Base и Solana комиссия сети — доли цента, в Ethereum — дороже.' },
   en: { brandSub:'Tips straight to the creator', tnH:'This is the TEST network', tnNote:'Money here is not real. Do not send real USDT here.',
         loading:'Looking for the creator…', errH:'Page not found', errNote:'There is no such name. Check the link with the creator.',
         errNet:'The network did not answer. Refresh the page in a minute.', support:'Support the creator', wallet:'Creator’s wallet',
@@ -321,7 +364,7 @@ const T = {
         f2:'You need {0} on {1} and a little {2} for the network fee. Pay with NoN Wallet, MetaMask, Trust Wallet and others.',
         f1Sol:'The money goes from your wallet straight to the creator in one Solana transaction: 99% to the creator, 1% service fee. We never hold it, not even for a second.', f2Sol:'You need {0} on Solana and a tiny bit of SOL for the network fee. Pay with NoN Wallet, Phantom, Solflare, Trust Wallet via the Solana Pay QR code.', netL:'Network', or:' or ',
         f3:'The creator sees your message only after the payment. It is not private: do not write anything personal.',
-        f4:'A tip is a gift: only the creator can send it back.', whatIs:'What is Tavarov Pay?', item:'Tip', goalL:'Goal', goalOf:'{0} $ raised of {1} $' },
+        f4:'A tip is a gift: only the creator can send it back.', whatIs:'What is Tavarov Pay?', item:'Tip', goalL:'Goal', goalOf:'{0} $ raised of {1} $', netPickL:'Network', netHint:'Pick the network where you hold USDT or USDC. Network fees are a fraction of a cent on BNB Chain, Base and Solana, higher on Ethereum.' },
   es: { brandSub:'Donaciones directas al autor', tnH:'Esta es la red de PRUEBA', tnNote:'Aquí el dinero no es real. No envíes USDT reales.',
         loading:'Buscando al autor…', errH:'Página no encontrada', errNote:'Ese nombre no existe. Revisa el enlace con el autor.',
         errNet:'La red no respondió. Recarga la página en un minuto.', support:'Apoyar al autor', wallet:'Billetera del autor',
@@ -333,7 +376,7 @@ const T = {
         f2:'Necesitas {0} en {1} y un poco de {2} para la comisión de red. Paga con NoN Wallet, MetaMask, Trust Wallet y otras.',
         f1Sol:'El dinero va de tu billetera directamente al autor en una sola operación de Solana: 99 % al autor, 1 % de comisión. No lo retenemos ni un segundo.', f2Sol:'Necesitas {0} en Solana y muy poco SOL para la comisión de red. Paga con NoN Wallet, Phantom, Solflare o Trust Wallet con el código QR de Solana Pay.', netL:'Red', or:' o ',
         f3:'El autor ve tu mensaje solo después del pago. No es privado: no escribas nada personal.',
-        f4:'Una donación es un regalo: solo el autor puede devolverla.', whatIs:'¿Qué es Tavarov Pay?', item:'Donación', goalL:'Meta', goalOf:'Recaudado {0} $ de {1} $' },
+        f4:'Una donación es un regalo: solo el autor puede devolverla.', whatIs:'¿Qué es Tavarov Pay?', item:'Donación', goalL:'Meta', goalOf:'Recaudado {0} $ de {1} $', netPickL:'Red', netHint:'Elige la red donde tienes USDT o USDC. En BNB Chain, Base y Solana la comisión de red es de fracciones de centavo; en Ethereum, más alta.' },
   tr: { brandSub:'Doğrudan içerik üreticisine bağış', tnH:'Bu TEST ağı', tnNote:'Buradaki para gerçek değil. Gerçek USDT göndermeyin.',
         loading:'İçerik üreticisi aranıyor…', errH:'Sayfa bulunamadı', errNote:'Böyle bir ad yok. Bağlantıyı üreticiyle kontrol edin.',
         errNet:'Ağ yanıt vermedi. Bir dakika sonra sayfayı yenileyin.', support:'Üreticiyi destekle', wallet:'Üreticinin cüzdanı',
@@ -345,7 +388,7 @@ const T = {
         f2:'{1} ağında {0} ve ağ ücreti için biraz {2} gerekir. NoN Wallet, MetaMask, Trust Wallet ve diğerleriyle ödeyin.',
         f1Sol:'Para cüzdanınızdan tek bir Solana işlemiyle doğrudan üreticiye gider: %99 üreticiye, %1 hizmet komisyonu. Bir saniye bile bizde durmaz.', f2Sol:'Solana ağında {0} ve ağ ücreti için çok az SOL gerekir. NoN Wallet, Phantom, Solflare veya Trust Wallet ile Solana Pay QR koduyla ödeyin.', netL:'Ağ', or:' veya ',
         f3:'Üretici mesajınızı yalnızca ödemeden sonra görür. Gizli değildir: kişisel bir şey yazmayın.',
-        f4:'Bağış bir hediyedir: yalnızca üretici geri gönderebilir.', whatIs:'Tavarov Pay nedir?', item:'Bağış', goalL:'Hedef', goalOf:'{1} $ hedefin {0} $ kadarı toplandı' },
+        f4:'Bağış bir hediyedir: yalnızca üretici geri gönderebilir.', whatIs:'Tavarov Pay nedir?', item:'Bağış', goalL:'Hedef', goalOf:'{1} $ hedefin {0} $ kadarı toplandı', netPickL:'Ağ', netHint:'USDT veya USDC’nizin bulunduğu ağı seçin. BNB Chain, Base ve Solana’da ağ ücreti kuruşun altında, Ethereum’da daha yüksek.' },
   pt: { brandSub:'Doações direto para o criador', tnH:'Esta é a rede de TESTE', tnNote:'O dinheiro aqui não é real. Não envie USDT de verdade.',
         loading:'Procurando o criador…', errH:'Página não encontrada', errNote:'Esse nome não existe. Confira o link com o criador.',
         errNet:'A rede não respondeu. Atualize a página em um minuto.', support:'Apoiar o criador', wallet:'Carteira do criador',
@@ -357,7 +400,7 @@ const T = {
         f2:'Você precisa de {0} na {1} e um pouco de {2} para a taxa da rede. Pague com NoN Wallet, MetaMask, Trust Wallet e outras.',
         f1Sol:'O dinheiro vai da sua carteira direto para o criador em uma única operação na Solana: 99% para o criador, 1% de taxa. Não ficamos com ele nem por um segundo.', f2Sol:'Você precisa de {0} na Solana e um pouquinho de SOL para a taxa da rede. Pague com NoN Wallet, Phantom, Solflare ou Trust Wallet pelo QR code do Solana Pay.', netL:'Rede', or:' ou ',
         f3:'O criador vê sua mensagem só depois do pagamento. Ela não é privada: não escreva nada pessoal.',
-        f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $' }
+        f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $', netPickL:'Rede', netHint:'Escolha a rede onde você tem USDT ou USDC. Em BNB Chain, Base e Solana a taxa de rede é de frações de centavo; na Ethereum, maior.' }
 };
 const LANGS = ['ru', 'en', 'es', 'tr', 'pt'];
 let LANG = 'en';
@@ -402,8 +445,68 @@ async function loadProfile(){
   try{
     const r = await fetch('/api/donate?net=' + NET + '&to=' + encodeURIComponent(who.addr) + '&profile=1', { cache: 'no-store' });
     const d = await r.json();
-    if (d && d.profile){ PROFILE = d.profile; renderProfile(); }
+    if (d && d.profile){ PROFILE = d.profile; renderProfile(); sumGoal(); }
   } catch(e){ /* без приветствия страница всё равно работает */ }
+}
+/* ---------- выбор сети зрителем ----------
+   Одна ссылка — четыре сети: зритель платит там, где у него уже есть доллары.
+   В EVM-сетях адрес автора один. Адрес в Solana берём только из связки,
+   которую сам кошелёк автора подписал обоими ключами (/api/solname), — его
+   нельзя подменить, дописав чужой адрес в ссылку. Смена сети — это та же
+   страница с другим ?net=: оплата идёт обычным, проверенным путём. */
+let NETINFO = { evm: '', sol: '', list: [] };
+async function findNetworks(){
+  if (NETS[NET].test) return { evm: '', sol: '', list: [NET] };
+  let evm = '', sol = '';
+  if (NETS[NET].sol){ sol = who.addr; const e = new URLSearchParams(location.search).get('evm') || ''; if (/^0x[0-9a-fA-F]{40}$/.test(e)) evm = e; }
+  else evm = who.addr;
+  if (evm){
+    try{
+      const r = await fetch('/api/solname?evm=' + encodeURIComponent(evm), { cache: 'no-store' });
+      const d = await r.json();
+      const bound = d && typeof d.sol === 'string' && SOL_ADDR.test(d.sol) ? d.sol : '';
+      if (NETS[NET].sol){ if (bound !== sol) evm = ''; } else sol = bound;
+    } catch(e){ if (NETS[NET].sol) evm = ''; }
+  }
+  const list = [];
+  if (evm) list.push('bnb', 'eth', 'base');
+  if (sol) list.push('solana');
+  return { evm, sol, list: list.length ? list : [NET] };
+}
+function netUrl(n){
+  const q = new URLSearchParams();
+  let path;
+  if (NETS[n].sol){ path = NETINFO.sol; q.set('net', 'solana'); q.set('evm', NETINFO.evm); }
+  else { path = (who.name && !NETS[NET].sol) ? who.name : NETINFO.evm; if (n !== 'bnb') q.set('net', n); }
+  q.set('lang', LANG);
+  return '/d/' + encodeURIComponent(path) + '?' + q.toString();
+}
+function renderNetPick(){
+  const many = NETINFO.list.length > 1;
+  $('netPick').classList.toggle('hidden', !many);
+  if (!many) return;
+  const seg = $('netSeg'); seg.innerHTML = '';
+  NETINFO.list.forEach(n => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = NETS[n].label; b.setAttribute('aria-pressed', String(n === NET));
+    if (n !== NET) b.onclick = () => { location.href = netUrl(n); };
+    seg.appendChild(b);
+  });
+}
+/* Цель одна на все сети: «собрано» складываем по сетям с той же целью. */
+async function sumGoal(){
+  const g = PROFILE && PROFILE.goal;
+  if (!g || NETINFO.list.length < 2) return;
+  let cents = Math.round(Number(g.raised) * 100) || 0;
+  await Promise.all(NETINFO.list.filter(n => n !== NET).map(async n => {
+    try{
+      const a = NETS[n].sol ? NETINFO.sol : NETINFO.evm;
+      const r = await fetch('/api/donate?net=' + n + '&to=' + encodeURIComponent(a) + '&profile=1', { cache: 'no-store' });
+      const d = await r.json(), o = d && d.profile && d.profile.goal;
+      if (o && o.title === g.title && Number(o.target) === Number(g.target)) cents += Math.round(Number(o.raised) * 100) || 0;
+    } catch(e){}
+  }));
+  if (PROFILE && PROFILE.goal === g){ PROFILE = Object.assign({}, PROFILE, { goal: Object.assign({}, g, { raised: String(cents / 100) }) }); renderProfile(); }
 }
 function pickLang(){
   const q = new URLSearchParams(location.search).get('lang');
@@ -609,6 +712,8 @@ applyLang();
   document.title = (who.name ? '@' + who.name : who.addr.slice(0, 8)) + ' · ' + t('support');
   $('main').classList.remove('hidden');
   render();
+  try{ NETINFO = await findNetworks(); } catch(e){ NETINFO = { evm: '', sol: '', list: [NET] }; }
+  renderNetPick();
   loadProfile();
 })();
 </script>

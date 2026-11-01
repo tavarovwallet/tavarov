@@ -1,0 +1,25 @@
+# Настройки выкладки сайта-визитки.
+# Публикуется эта же папка целиком: страница одна и лежит в одном файле.
+[build]
+  publish = "."
+
+# Страницу не кешируем: поправили текст — человек должен увидеть
+# новый, а не вчерашний. Файл маленький, экономить тут нечего.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Мелочи для безопасности: страница ничего не подгружает со стороны,
+# так что запретить встраивание и угадывание типов ничего не сломает.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

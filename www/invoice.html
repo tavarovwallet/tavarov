@@ -169,6 +169,26 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
       box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)}
 .brand{color:var(--label); font-weight:650; font-size:15px}
 .brand svg{width:30px; height:30px; border-radius:9px; box-shadow:0 6px 16px -8px rgba(75,31,232,.6)}
+/* ===== ЧИСТОВОЙ СЛОЙ (23.10.2026): как в кошельке ===== */
+:root{ --bg:#F4F4F6; --card:#FFFFFF; --card-solid:#FFFFFF; --label:#0B0B10; --label-2:rgba(14,14,22,.56); --label-3:rgba(14,14,22,.40);
+  --sep:rgba(14,14,22,.08); --accent:#5B3DF5; --accent-2:#5B3DF5; --btn-bg:#0B0B10; --btn-fg:#FFFFFF; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#08080A; --card:#131316; --card-solid:#131316; --label:#F5F5F7;
+  --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.38); --sep:rgba(255,255,255,.07); --accent:#A495FF; --accent-2:#A495FF;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D; } }
+:root[data-theme="dark"]{ --bg:#08080A; --card:#131316; --card-solid:#131316; --label:#F5F5F7;
+  --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.38); --sep:rgba(255,255,255,.07); --accent:#A495FF; --accent-2:#A495FF;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D; }
+body{ font-feature-settings:"ss01" on, "cv11" on; letter-spacing:-.006em; }
+/* Подписи полей и разделов — обычным регистром, тихо */
+label, .lbl, .sec, .sum-row .k{ text-transform:none !important; letter-spacing:-.005em !important;
+  font-size:13px !important; font-weight:600 !important; color:var(--label-2) !important; }
+/* Главная кнопка — монохромная, без свечения */
+.btn:not(.btn-ghost):not(.btn-plain), .btn-main{ background:var(--btn-bg) !important; color:var(--btn-fg) !important;
+  box-shadow:none !important; border-color:transparent !important; filter:none !important; }
+.btn{ border-radius:14px; font-weight:650; letter-spacing:-.018em; transition:opacity .15s ease, transform .12s ease; }
+.btn:hover{ filter:none; opacity:.88; }
+.card{ box-shadow:none !important; border-color:var(--sep) !important; border-radius:20px !important; }
+.brand svg{ box-shadow:none !important; }
 </style>
 </head>
 <body>

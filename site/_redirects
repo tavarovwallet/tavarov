@@ -1,13 +1,52 @@
-# Чистые адреса без .html — и почему здесь НЕТ ни одного правила.
-#
-# 17 сентября 2026. Раньше тут стояло:
-#     /sellers   /sellers.html   200
-#     /privacy   /privacy.html   200
-# Из-за них tavarov.com/sellers отвечал ERR_TOO_MANY_REDIRECTS.
-#
-# Cloudflare Pages сам отдаёт /sellers из файла sellers.html и сам
-# переадресовывает /sellers.html обратно на /sellers. Наше правило
-# просило .html, хостинг отвечал переадресацией на чистый адрес, правило
-# снова просило .html — круг замкнулся.
-#
-# Чистые адреса работают и без правил. Ничего сюда не дописывать.
+# Cloudflare Pages handles clean .html URLs automatically.
+# Desktop installers are hosted on GitHub Releases (larger than Pages file limits).
+/downloads/till/Tavarov-Pay-Till-1.0.4-portable.exe https://github.com/tavarovwallet/tavarov/releases/download/till-v1.0.4-preview/Tavarov-Pay-Till-1.0.4-portable.exe 302
+/downloads/till/Tavarov-Pay-Till-Setup-1.0.4.exe https://github.com/tavarovwallet/tavarov/releases/download/till-v1.0.4-preview/Tavarov-Pay-Till-Setup-1.0.4.exe 302
+
+/downloads/till/Tavarov-Pay-Till-Setup-1.0.5.exe https://github.com/tavarovwallet/tavarov/releases/download/till-v1.0.5/Tavarov-Pay-Till-Setup-1.0.5.exe 302
+
+/downloads/till/Tavarov-Pay-Till-1.0.5-portable.exe https://github.com/tavarovwallet/tavarov/releases/download/till-v1.0.5/Tavarov-Pay-Till-1.0.5-portable.exe 302
+
+# English canonical pages; preserve old incoming links.
+/privacy /en/privacy 301
+/privacy.html /en/privacy 301
+
+
+/terms /en/terms 301
+/terms.html /en/terms 301
+/woocommerce /en/woocommerce 301
+/woocommerce.html /en/woocommerce 301
+/accept-usdt /en/accept-usdt 301
+/accept-usdt.html /en/accept-usdt 301
+
+
+/partners /en/partners 301
+/partners.html /en/partners 301
+/streamlabs-crypto-tips /en/streamlabs-crypto-tips 301
+/streamlabs-crypto-tips.html /en/streamlabs-crypto-tips 301
+/donationalerts-alternative /en/donationalerts-alternative 301
+/donationalerts-alternative.html /en/donationalerts-alternative 301
+/donatepay-alternative /en/donatepay-alternative 301
+/donatepay-alternative.html /en/donatepay-alternative 301
+
+/en/start / 301
+/en/start.html / 301
+
+# Current product routes (legacy links keep working).
+/sellers /pay 301
+/sellers.html /pay 301
+/en/sellers /pay 301
+/en/sellers.html /pay 301
+/en/wallet /wallet?lang=en 301
+/en/wallet.html /wallet?lang=en 301
+/en/pay /pay?lang=en 301
+/en/pay.html /pay?lang=en 301
+
+/crypto-donations /creators 301
+/crypto-donations.html /creators 301
+/en/crypto-donations /creators?lang=en 301
+/en/crypto-donations.html /creators?lang=en 301
+/en/creators /creators?lang=en 301
+/en/creators.html /creators?lang=en 301
+/en/fundraising /fundraising?lang=en 301
+/en/fundraising.html /fundraising?lang=en 301

@@ -667,8 +667,19 @@ async function onGet({ request, env }){
   /* Ожидания здесь больше не перебираем: их подтверждают таймер API (раз в
      минуту по журналу контракта), страница оплаты сразу после «Оплачено» и
      экран стрима. */
-  if (await overLimit(request, env, 'donlist', 60, 60)) return tooMany();
   const lim = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+  /* Живая стена (www/wall.html, 13.10.2026): одну стену смотрят десятки
+     людей разом, и каждый спрашивает список раз в 15 секунд. Без кэша это
+     десятки чтений KV в минуту на одну стену — бесплатные сто тысяч в сутки
+     кончились бы за вечер. Поэтому список держим в кэше дата-центра
+     10 секунд: сколько бы зрителей ни было, KV читается не чаще раза в 10 с.
+     Список публичный (то же видно в сети), поэтому кэш общий для всех. */
+  const ck = (typeof caches !== 'undefined' && caches.default)
+    ? new Request(url.origin + '/__donlist/' + net + '/' + encodeURIComponent(ak(net, to)) + '/' + lim) : null;
+  if (ck){
+    try{ const hit = await caches.default.match(ck); if (hit) return json(JSON.parse(await hit.text())); } catch(e){}
+  }
+  if (await overLimit(request, env, 'donlist', 60, 60)) return tooMany();
   const items = [], seenH = new Set();
   for (const m of await readIndex(env, net, to)){
     if (items.length >= lim) break;
@@ -679,10 +690,13 @@ async function onGet({ request, env }){
     seenH.add(String(m.h).toLowerCase());
     items.push(view(m));
   }
+  if (ck){
+    try{ await caches.default.put(ck, new Response(JSON.stringify({ items }), { headers: { 'cache-control': 'max-age=10' } })); } catch(e){}
+  }
   return json({ items });
 }
 
-const APP_ORIGINS = ['https://localhost', 'capacitor://localhost'];
+const APP_ORIGINS = ['https://localhost', 'capacitor://localhost', 'https://creator.tavarov.com'];
 function cors(request, res){
   const o = request.headers.get('origin');
   if (o && APP_ORIGINS.includes(o)){

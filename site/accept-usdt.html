@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Как принимать USDT: на сайте, в магазине и по ссылке — Tavarov Pay</title>
+<meta name="description" content="Три способа принимать оплату в USDT и USDC: API и плагин для сайта, QR-код на кассе, счёт по ссылке в мессенджере. Деньги сразу на ваш кошелёк, комиссия 1%.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tavarov.com/accept-usdt">
+<link rel="alternate" hreflang="ru" href="https://tavarov.com/accept-usdt">
+<link rel="alternate" hreflang="en" href="https://tavarov.com/en/accept-usdt">
+<link rel="alternate" hreflang="x-default" href="https://tavarov.com/en/accept-usdt">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Как принимать USDT: на сайте, в магазине и по ссылке — Tavarov Pay">
+<meta property="og:description" content="Три способа принимать оплату в USDT и USDC: API и плагин для сайта, QR-код на кассе, счёт по ссылке в мессенджере. Деньги сразу на ваш кошелёк, комиссия 1%.">
+<meta property="og:url" content="https://tavarov.com/accept-usdt">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--label-3:rgba(48,33,79,.46);
+--sep:rgba(90,60,150,.16);--accent:#7C3AED;--accent-2:#4B1FE8;--r:16px;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+--mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#140B2B;--card:#20153D;--label:#FFFFFF;
+--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}}
+:root[data-theme="dark"]{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);
+--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex;align-items:center;gap:14px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--label);font-size:17px}
+.brand:hover{text-decoration:none}.brand svg{width:30px;height:30px;border-radius:8px;display:block}
+.bar nav{margin-left:auto;display:flex;gap:6px}
+.bar nav a{font-size:13.5px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--label-2)}
+.bar nav a[aria-current="true"]{background:var(--card);color:var(--label);box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:44px 0 12px;overflow-wrap:anywhere}
+.lead{font-size:19px;color:var(--label-2);margin:0 0 26px}
+h2{font-size:22px;font-weight:760;letter-spacing:-.01em;margin:38px 0 10px}
+h3{font-size:18px;font-weight:720;margin:22px 0 6px}
+p{margin:0 0 13px;color:var(--label-2)}p b,li b{color:var(--label)}
+ul,ol{margin:0 0 13px;padding-left:22px;color:var(--label-2)}li{margin-bottom:7px}
+.box{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px 24px;margin:22px 0}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.btn{display:inline-block;padding:13px 20px;border-radius:13px;font-weight:700;font-size:16px}
+.btn:hover{text-decoration:none}
+.btn-main{background:var(--accent-2);color:#fff}.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--sep)}
+code,pre{font-family:var(--mono);font-size:14px}
+pre{background:#170D31;color:#EDE7FF;padding:16px 18px;border-radius:14px;overflow:auto;line-height:1.5}
+code{background:rgba(124,58,237,.10);padding:1px 6px;border-radius:6px}pre code{background:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.grid .box{margin:0}.grid h3{margin-top:0}
+.note{font-size:14.5px;color:var(--label-3);margin:0 0 13px}
+.date{color:var(--label-3);font-size:15px;margin-bottom:24px}
+details{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--label)}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--sep);margin-top:48px;padding:26px 0 52px;color:var(--label-3);font-size:14.5px}
+footer a{color:var(--label-2);font-size:15px;margin-right:18px;display:inline-block;margin-bottom:6px}
+.tbl{overflow-x:auto;margin:18px 0;border:1px solid var(--sep);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45}
+th,td{padding:10px 12px;border-bottom:1px solid var(--sep);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}th{color:var(--label);font-weight:720}td{color:var(--label-2)}td:first-child{color:var(--label);font-weight:650}
+@media (max-width:600px){.tbl table,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}.tbl tr:first-child{display:none}
+.tbl tr{border-bottom:1px solid var(--sep);padding:10px 14px}.tbl tr:last-child{border-bottom:0}.tbl td{border:0;padding:3px 0}
+.tbl td:first-child{font-size:16px;margin-bottom:4px}.tbl td[data-label]:before{content:attr(data-label) ': ';color:var(--label);font-weight:650}}
+@media (max-width:430px){.wrap{padding:0 16px}.brand{font-size:15px}.bar nav a{padding:5px 7px}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebPage", "name": "Как принимать USDT: на сайте, в магазине и по ссылке — Tavarov Pay", "description": "Три способа принимать оплату в USDT и USDC: API и плагин для сайта, QR-код на кассе, счёт по ссылке в мессенджере. Деньги сразу на ваш кошелёк, комиссия 1%.", "url": "https://tavarov.com/accept-usdt", "inLanguage": "ru", "dateModified": "2026-10-02", "publisher": {"@type": "Organization", "name": "Tavarov", "url": "https://tavarov.com"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Сколько стоит приём USDT?", "acceptedAnswer": {"@type": "Answer", "text": "1% с каждой оплаты, он удерживается автоматически в той же операции. Покупатель платит только сетевую комиссию: в BNB Chain, Base и Solana это доли цента, в Ethereum — больше."}}, {"@type": "Question", "name": "Какие монеты и сети поддерживаются?", "acceptedAnswer": {"@type": "Answer", "text": "USDT и USDC в BNB Chain, Ethereum и Solana, USDC в Base."}}, {"@type": "Question", "name": "Нужна ли регистрация или проверка документов?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Вы принимаете деньги на свой кошелёк, мы их не держим. При этом соблюдать законы своей страны, в том числе налоговые, — ваша ответственность."}}, {"@type": "Question", "name": "Можно ли принимать оплату без своего сайта?", "acceptedAnswer": {"@type": "Answer", "text": "Да: счёт по ссылке или QR-код на кассе в приложении NoN Wallet."}}]}]</script>
+<link rel="stylesheet" href="/min.css">
+</head>
+<body>
+<header><div class="wrap bar"><a class="brand" href="./"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#9875F5"/></svg> Tavarov</a><nav><a href="./accept-usdt" aria-current="true">RU</a><a href="en/accept-usdt" >EN</a></nav></div></header>
+<main class="wrap">
+
+<h1>Как принимать оплату в USDT</h1>
+<p class="lead">Tavarov Pay — это приём USDT и USDC в сетях BNB Chain, Ethereum, Base и Solana без посредника: покупатель платит с любого кошелька из той сети, где у него деньги, и той же операцией они приходят на ваш. Комиссия 1%, никаких договоров и выплат.</p>
+
+<h2>1. На сайте: API или плагин</h2>
+<p>Ваш сервер одним запросом выставляет счёт и отправляет покупателя по ссылке на оплату. Когда деньги пришли, на ваш сервер приходит подписанный вебхук <code>invoice.paid</code>.</p>
+<pre><code>curl https://wallet.tavarov.com/api/v1/invoices \
+  -H "Authorization: Bearer tp_live_..." \
+  -d '{"amount":"12.50","currency":"USDT","order_id":"1001"}'</code></pre>
+<p>Сеть задаёт поле <code>network</code>: <code>bnb</code> (по умолчанию), <code>ethereum</code>, <code>base</code> или <code>solana</code> — для Solana добавьте свой адрес в <code>solana_address</code>.</p>
+<p>Документация, примеры на PHP, Node.js и Python и тестовый режим — в <a href="https://wallet.tavarov.com/dev">кабинете разработчика</a>. Магазин на WordPress? Возьмите готовый <a href="./woocommerce">плагин для WooCommerce</a>.</p>
+
+<h2>2. В магазине или кафе: QR-код</h2>
+<p>В приложении NoN Wallet продавец набирает сумму — на экране появляется QR-код. Покупатель сканирует его своим кошельком и платит, у продавца загорается «Оплачено». Можно распечатать наклейку на кассу: сумма подставится с телефона продавца, а сеть покупатель выберет сам — любую из четырёх.</p>
+
+<h2>3. По ссылке: счёт в мессенджере</h2>
+<p>Продаёте в Instagram, Telegram или на маркетплейсе? Выставьте счёт на <a href="https://wallet.tavarov.com/invoice">wallet.tavarov.com/invoice</a>: сумма, за что — и готовая ссылка с QR-кодом, которую можно отправить в любом чате. Регистрация не нужна.</p>
+
+<div class="box">
+<p><b>Почему это безопасно для продавца.</b> В BNB Chain, Ethereum и Base оплата идёт через открытый контракт (в BNB Chain он <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code">проверен на BscScan</a>), в Solana — одной операцией, где 99% идут вам, а 1% — сервису. Платёж в блокчейне нельзя отменить через банк — чарджбэков нет. «Оплачено» страница показывает, только когда видит в сети платёж именно по этому счёту, на нужную сумму и в нужной монете.</p>
+</div>
+
+<h2>Что нужно</h2>
+<ul>
+<li>Кошелёк для приёма денег — например, <a href="./wallet">NoN Wallet</a> (бесплатно, Android и веб): в нём сразу есть адреса во всех четырёх сетях.</li>
+<li>Покупателю — любой кошелёк с USDT или USDC в BNB Chain, Ethereum или Solana либо с USDC в Base.</li>
+</ul>
+
+<h2>Вопросы</h2><details><summary>Сколько стоит приём USDT?</summary><p>1% с каждой оплаты, он удерживается автоматически в той же операции. Покупатель платит только сетевую комиссию: в BNB Chain, Base и Solana это доли цента, в Ethereum — больше.</p></details><details><summary>Какие монеты и сети поддерживаются?</summary><p>USDT и USDC в BNB Chain, Ethereum и Solana, USDC в Base.</p></details><details><summary>Нужна ли регистрация или проверка документов?</summary><p>Нет. Вы принимаете деньги на свой кошелёк, мы их не держим. При этом соблюдать законы своей страны, в том числе налоговые, — ваша ответственность.</p></details><details><summary>Можно ли принимать оплату без своего сайта?</summary><p>Да: счёт по ссылке или QR-код на кассе в приложении NoN Wallet.</p></details>
+</main>
+<footer><div class="wrap"><a href="./">Главная</a><a href="https://wallet.tavarov.com/">Открыть кошелёк</a><a href="https://wallet.tavarov.com/dev">API для сайтов</a><a href="./woocommerce">Плагин WooCommerce</a><a href="./accept-usdt">Приём USDT</a><a href="./crypto-donations">Донаты стримерам</a><a href="./partners">Партнёрам</a><a href="./terms">Условия</a><a href="./privacy">Конфиденциальность</a><p style="margin:14px 0 0">NoN Wallet и Tavarov Pay некастодиальны: мы не храним ключи и деньги. В ряде стран расчёты криптовалютой ограничены — проверьте правила своей страны.</p><p style="margin:6px 0 0">© 2026 Tavarov</p></div></footer>
+</body>
+</html>

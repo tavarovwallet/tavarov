@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="ru" data-lang="ru">
+<html lang="en" data-lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tavarov Pay API</title>
 <meta name="description" content="Приём USDT и USDC на вашем сайте: ключ, счёт одним запросом, вебхук об оплате. Деньги идут сразу на ваш кошелёк.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='27' fill='%23EFE7FE'/%3E%3Cg transform='translate(60 60) scale(0.62) translate(-60 -60)'%3E%3Crect x='37' y='13' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='13' width='15' height='39' fill='%23fff'/%3E%3Crect x='37' y='92' width='46' height='15' fill='%23fff'/%3E%3Crect x='52.5' y='68' width='15' height='39' fill='%23fff'/%3E%3Crect x='13' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='13' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3Crect x='92' y='37' width='15' height='46' fill='%234B1FE8'/%3E%3Crect x='68' y='52.5' width='39' height='15' fill='%234B1FE8'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="/dev-brand.svg" type="image/svg+xml">
 <style>
 /* Кабинет разработчика и документация API — одна страница.
 
@@ -133,21 +133,13 @@ pre .c{color:var(--code-dim)}
 .endpoint{font-family:var(--mono); font-size:14.5px; margin:14px 0 6px; font-weight:600}
 footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26px}
 </style>
-</head>
+<link rel="stylesheet" href="/dev-design.css?v=20261030"><meta name="theme-color" content="#ffffff"></head>
 <body>
 <div class="wrap">
 
 <header>
-  <a class="brand" href="/dev">
-    <svg viewBox="0 0 120 120" aria-hidden="true">
-      <rect width="120" height="120" rx="27" fill="#EFE7FE"/>
-      <g transform="translate(60 60) scale(0.62) translate(-60 -60)">
-        <rect x="37" y="13" width="46" height="15" fill="#fff"/><rect x="52.5" y="13" width="15" height="39" fill="#fff"/>
-        <rect x="37" y="92" width="46" height="15" fill="#fff"/><rect x="52.5" y="68" width="15" height="39" fill="#fff"/>
-        <rect x="13" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="13" y="52.5" width="39" height="15" fill="#4B1FE8"/>
-        <rect x="92" y="37" width="15" height="46" fill="#4B1FE8"/><rect x="68" y="52.5" width="39" height="15" fill="#4B1FE8"/>
-      </g>
-    </svg>
+  <a class="brand" href="https://tavarov.com/pay">
+    <img src="/dev-brand.svg" width="28" height="28" alt="">
     <span>Tavarov Pay API<small><span class="ru">для разработчиков</span><span class="en">for developers</span></small></span>
   </a>
   <nav>
@@ -162,21 +154,21 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
 </header>
 
 <!-- ===================== Витрина ===================== -->
-<div class="card">
-  <h1><span class="ru">Приём USDT и USDC на вашем сайте</span><span class="en">Accept USDT and USDC on your site</span></h1>
+<div class="card api-hero">
+  <h1><span class="ru">Криптоплатежи.<br>В вашем магазине.</span><span class="en">Crypto payments.<br>For your checkout.</span></h1>
   <p class="lead">
-    <span class="ru">Один запрос — и у покупателя ссылка на оплату. Он платит из своего кошелька, деньги приходят сразу на ваш, а ваш сервер получает вебхук «оплачено». Без подключения, без договоров, без выплат раз в неделю.</span>
-    <span class="en">One request gives your customer a payment link. They pay from their own wallet, the money lands straight in yours, and your server gets a signed “paid” webhook. No onboarding, no contracts, no weekly payouts.</span>
+    <span class="ru">Создавайте платёжные ссылки одним запросом. Принимайте USDT и USDC из совместимых кошельков: средства идут в ваш кошелёк, а сервер получает подписанный вебхук.</span>
+    <span class="en">Create a payment link with one request. Accept USDT and USDC from compatible wallets, with funds sent to your wallet and signed webhooks for your server.</span>
   </p>
   <div class="facts">
-    <div class="fact"><b>1%</b><span class="ru">комиссия, платит магазин. Покупатель — только комиссию сети: доли цента, в Ethereum — больше.</span><span class="en">fee, paid by the shop. The buyer only pays the network fee: a fraction of a cent, more on Ethereum.</span></div>
-    <div class="fact"><b><span class="ru">Сразу</span><span class="en">Instantly</span></b><span class="ru">99% приходят на ваш кошелёк в той же операции. Мы деньги не держим ни секунды.</span><span class="en">99% arrives in your wallet in the same transaction. We never hold your money.</span></div>
+    <div class="fact"><b>1%</b><span class="ru">текущая комиссия сервиса, платит продавец. Комиссия блокчейна оплачивается отдельно.</span><span class="en">current service fee, paid by the seller. Blockchain network fees are separate.</span></div>
+    <div class="fact"><b><span class="ru">Сразу</span><span class="en">Wallet to wallet</span></b><span class="ru">99% приходят на ваш кошелёк в той же операции. Мы деньги не держим ни секунды.</span><span class="en">The payment and service fee are split in one transaction. Confirmation times depend on the network.</span></div>
     <div class="fact"><b><span class="ru">4 сети</span><span class="en">4 networks</span></b><span class="ru">BNB Chain, Ethereum, Base и Solana; USDT и USDC (в Base — USDC). Платить можно MetaMask, Trust Wallet, Phantom, NoN Wallet и другими.</span><span class="en">BNB Chain, Ethereum, Base and Solana; USDT and USDC (USDC on Base). Buyers can pay with MetaMask, Trust Wallet, Phantom, NoN Wallet and more.</span></div>
   </div>
 </div>
 
 <!-- ===================== Кабинет ===================== -->
-<div class="card" id="cabinet">
+<div class="api-disclosure"><span class="ru">Текущая комиссия 1%. В сетях EVM владелец контракта может повысить её до 2%. Независимый аудит контрактов не проводился.</span><span class="en">Current fee: 1%. On EVM networks, the contract owner can change it up to 2%. Contracts have not been independently audited.</span></div><div class="card" id="cabinet">
   <h2><span class="ru">Кабинет</span><span class="en">Dashboard</span></h2>
 
   <div id="cabOut">
@@ -185,8 +177,8 @@ footer{text-align:center; color:var(--label-3); font-size:13.5px; margin-top:26p
       <span class="en">Signing in means signing a message with the wallet you want to get paid to. It is free and moves no money. No passwords, no sign-up.</span>
     </p>
     <div class="btns">
-      <button class="btn btn-main" id="mmLogin"><span class="ru">Войти через MetaMask</span><span class="en">Sign in with MetaMask</span></button>
-      <button class="btn btn-ghost" id="nonLogin"><span class="ru">Войти через NoN Wallet</span><span class="en">Sign in with NoN Wallet</span></button>
+      <button class="btn btn-main" id="nonLogin"><span class="ru">Войти через NoN Wallet</span><span class="en">Sign in with NoN Wallet</span></button>
+      <button class="btn btn-ghost" id="mmLogin"><span class="ru">Войти через MetaMask</span><span class="en">Sign in with MetaMask</span></button>
     </div>
     <div class="note hidden" id="nonHow">
       <span class="ru">Откройте NoN Wallet → вкладка <b>«Оплата»</b> → внизу <b>«Приём оплаты на сайте (API)»</b> → <b>«Открыть кабинет»</b>. Кошелёк подпишет вход сам и откроет эту страницу уже внутри кабинета.</span>
@@ -535,7 +527,7 @@ let SESS = null, ACCT = null, invMode = 'live', NEW_SECRET = null, INV = [];
   let want = null;
   try{ want = new URLSearchParams(location.search).get('lang'); } catch(e){}
   if (!want){ try{ want = localStorage.getItem('tp.dev.lang'); } catch(e){} }
-  if (!want) want = /^(ru|uk|be|kk|uz|tg|ky)\b/i.test(navigator.language || '') ? 'ru' : 'en';
+  if (!want) want = 'en';
   setLang(want === 'ru' ? 'ru' : 'en');
 })();
 function setLang(l){

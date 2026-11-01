@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tavarov Pay — Payments for Digital Goods</title>
+<meta name="description" content="Accept USDT and USDC for digital products with payment links, a WooCommerce plugin or API. Funds go to your own wallet; current service fee 1%.">
+<meta property="og:title" content="Tavarov Pay — Payments for Digital Goods">
+<meta property="og:description" content="Accept USDT and USDC for digital products with payment links, a WooCommerce plugin or API. Funds go to your own wallet; current service fee 1%.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+
+<style>
+/* Тот же набор цветов и та же типографика, что на главной: страница обязана
+   выглядеть частью одного сайта, а не найденной на стороне. */
+:root{
+  --bg:#F7F2FE; --card:#FFFFFF; --label:#1C1330; --label-2:rgba(48,33,79,.66);
+  --label-3:rgba(48,33,79,.40); --sep:rgba(90,60,150,.16); --accent:#7C3AED;
+  --ok:#128A5A; --fill:rgba(124,58,237,.08); --r:16px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --page-bg:
+    radial-gradient(circle at 8% -8%, #EBDDFD 0%, transparent 50%),
+    radial-gradient(circle at 102% 4%, #E2D2FB 0%, transparent 46%),
+    linear-gradient(170deg, #FFFFFF 0%, #F7F2FE 55%, #EFE5FD 100%);
+  --shadow:0 1px 2px rgba(40,20,80,.06), 0 12px 34px rgba(60,30,120,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0D0716; --card:#181026; --label:#FFFFFF; --label-2:rgba(235,225,255,.68);
+    --label-3:rgba(235,225,255,.42); --sep:rgba(160,120,240,.20); --accent:#A97BFF;
+    --ok:#3DD598; --fill:rgba(169,123,255,.12);
+    --page-bg:
+      radial-gradient(circle at 8% -8%, #1F1235 0%, transparent 52%),
+      radial-gradient(circle at 102% 4%, #1B1030 0%, transparent 48%),
+      linear-gradient(170deg, #120A20 0%, #0D0716 60%);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.45);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); background-image:var(--page-bg); background-attachment:fixed;
+  color:var(--label); font-family:var(--font); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px; margin:0 auto; padding:0 22px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.2; margin:0; letter-spacing:-.02em}
+h1{font-size:clamp(32px,6vw,52px); font-weight:800}
+h2{font-size:clamp(23px,3.4vw,30px); font-weight:750; margin-bottom:24px}
+h3{font-size:17.5px; font-weight:700; margin-bottom:5px}
+p{margin:0 0 14px}
+section{padding:56px 0; border-top:1px solid var(--sep)}
+.lead{font-size:19px; color:var(--label-2); max-width:58ch; margin-top:20px}
+
+header{position:sticky; top:0; z-index:20;
+  backdrop-filter:saturate(180%) blur(18px); -webkit-backdrop-filter:saturate(180%) blur(18px);
+  background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--sep)}
+.bar{display:flex; align-items:center; gap:14px; height:60px}
+.brand{display:flex; align-items:center; gap:10px; font-weight:750; color:var(--label); font-size:17px}
+.brand:hover{text-decoration:none}
+.brand svg{width:30px; height:30px; border-radius:8px; display:block}
+.bar nav{margin-left:auto; display:flex; align-items:center; gap:14px; font-size:15px; color:var(--label-2)}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:9px; padding:2px}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:13px; font-weight:650;
+  color:var(--label-2); padding:5px 9px; border-radius:7px}
+.langs button[aria-pressed="true"]{background:var(--card); color:var(--label); box-shadow:0 1px 3px rgba(40,20,80,.14)}
+@media(max-width:520px){ .bar nav a{display:none} }
+/* На 320 точках строка «знак + Tavarov Pay + пять языков» не помещалась:
+   последний язык уезжал за край и появлялась прокрутка вбок. */
+@media(max-width:380px){
+  .brand{font-size:15px; gap:7px} .brand svg{width:26px; height:26px}
+  .langs button{padding:5px 5px; font-size:11.5px}
+}
+@media(max-width:340px){ .brand .bt{display:none} }
+
+.hero{padding-top:64px; padding-bottom:8px}
+.cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:30px}
+.btn{display:inline-block; padding:14px 24px; border-radius:13px; font-weight:650; font-size:16.5px}
+.btn-main{background:var(--accent); color:#fff}
+.btn-main:hover{text-decoration:none; filter:brightness(1.06)}
+.btn-plain{border:1px solid var(--sep); color:var(--label); background:var(--card)}
+.btn-plain:hover{text-decoration:none}
+.note{font-size:15px; color:var(--label-3); margin-top:16px}
+
+/* Показ вместо рассказа: слева счёт, справа сообщение о том, что заплатили.
+   Это единственное, что человек всё равно захочет увидеть глазами. */
+.demo{display:grid; gap:18px; margin:44px 0 0}
+@media(min-width:720px){ .demo{grid-template-columns:1fr 1fr; align-items:start; gap:26px} }
+.panel{background:var(--card); border:1px solid var(--sep); border-radius:var(--r);
+       box-shadow:var(--shadow); padding:20px 22px}
+.panel .cap{font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+            color:var(--label-3); margin-bottom:14px}
+.field{border:1px solid var(--sep); border-radius:11px; padding:10px 13px; margin-bottom:10px;
+       background:var(--fill)}
+.field span{display:block; font-size:12.5px; color:var(--label-3)}
+.field b{font-weight:650; font-size:16px}
+.link{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; color:var(--label-2);
+      word-break:break-all}
+.bubble{background:var(--fill); border-radius:14px 14px 14px 4px; padding:14px 16px; margin-top:6px}
+.bubble .top{display:flex; align-items:center; gap:9px; font-weight:750; color:var(--ok)}
+.tick{width:20px; height:20px; border-radius:50%; background:var(--ok); display:inline-flex;
+      align-items:center; justify-content:center; flex:0 0 20px}
+.tick svg{width:11px; height:11px; display:block}
+.bubble .amt{font-size:26px; font-weight:800; letter-spacing:-.02em; margin:8px 0 2px}
+.bubble .meta{font-size:13.5px; color:var(--label-3)}
+
+.rows{display:grid; gap:26px 34px}
+@media(min-width:680px){ .rows{grid-template-columns:1fr 1fr} }
+.rows p{color:var(--label-2); font-size:16px; margin:0}
+.steps{counter-reset:s; display:grid; gap:14px}
+.step{display:flex; gap:14px; align-items:flex-start}
+.step .n{flex:0 0 28px; height:28px; border-radius:9px; background:var(--fill); color:var(--accent);
+         font-weight:750; font-size:15px; display:flex; align-items:center; justify-content:center}
+.step p{margin:0; color:var(--label-2); font-size:16px}
+.step b{color:var(--label); font-weight:650}
+.honest{background:var(--card); border:1px solid var(--sep); border-radius:var(--r); padding:22px 24px;
+        box-shadow:var(--shadow)}
+.honest ul{margin:0; padding-left:20px}
+.honest li{color:var(--label-2); font-size:16px; margin-bottom:13px}
+.honest li:last-child{margin-bottom:0}
+.honest b{color:var(--label); font-weight:650}
+footer{border-top:1px solid var(--sep); padding:34px 0 56px; font-size:14.5px; color:var(--label-3)}
+footer a{color:var(--label-3)}
+footer p{margin:0 0 10px}
+
+/* Выбранная кнопка в тёмной теме — СВЕТЛЕЕ дорожки, а не темнее.
+   Раньше она брала цвет карточки, а карточка в тёмной теме темнее фона
+   дорожки: выбранный язык выглядел дыркой, а невыбранные — выпуклыми, то
+   есть ровно наоборот. Так рисует и iOS: выбранный сегмент в тёмной теме
+   поднят светлым, а не утоплен. */
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;} }
+:root[data-theme="dark"] .langs button[aria-pressed="true"]{background:rgba(255,255,255,.16); color:#fff; box-shadow:none;}
+</style>
+<link rel="stylesheet" href="/min.css">
+<style id="english-marketing">#langs{display:none!important}.apk-hash{overflow-wrap:anywhere}</style>
+<meta name="robots" content="index, follow"><link rel="canonical" href="https://tavarov.com/en/sellers"><meta property="og:url" content="https://tavarov.com/en/sellers"><meta property="og:site_name" content="Tavarov Pay"><meta property="og:locale" content="en_US"><meta property="og:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@TavarovWallet"><meta name="twitter:title" content="Tavarov Pay — Payments for Digital Goods"><meta name="twitter:description" content="Accept USDT and USDC for digital products with payment links, a WooCommerce plugin or API. Funds go to your own wallet; current service fee 1%."><meta name="twitter:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta name="twitter:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."></head>
+<body id="top">
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg>
+      <span class="bt">Tavarov Pay</span>
+    </a>
+    <nav>
+      <a href="/">← Main page</a>
+      
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <h1>Accept USDT and USDC for digital goods.</h1>
+    <p class="lead">Payment links and an API for digital products and licences. Customers pay with a compatible wallet; funds go to your wallet after network confirmation. Current service fee: 1%.</p>
+    <div class="cta">
+      <a class="btn btn-main" href="https://wallet.tavarov.com/invoice?lang=en">Create an invoice</a>
+      <a class="btn btn-plain" href="https://wallet.tavarov.com/">Explore NoN Wallet</a>
+    </div>
+    <p class="note">Use payment links or connect your checkout through the API. Your business remains responsible for its sales, refunds and compliance.</p>
+
+    <div class="demo">
+      <div class="panel">
+        <div class="cap">You make an invoice</div>
+        <div class="field"><span>Amount</span><b>12.00 USDT</b></div>
+        <div class="field"><span>What for</span><b>Steam key — Hades II</b></div>
+        <div class="cap" style="margin:16px 0 6px">Link to send</div>
+        <div class="link">wallet.tavarov.com/pay.html#p=eyJtIjoiMHg…</div>
+      </div>
+      <div class="panel">
+        <div class="cap">You are told it is paid</div>
+        <div class="bubble">
+          <div class="top"><span class="tick"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6.4 4.4 9.2 10.5 2.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span>Paid</span></div>
+          <div class="amt">12.00 USDT</div>
+          <div class="meta">from 0x7f3a…c214 · invoice #A-1183<br>11.88 USDT reached your wallet — that is 12.00 minus 1%</div>
+        </div>
+        <p class="note" style="margin-top:14px">The invoice page shows “Paid” by itself, and the invoice is marked in your log.</p>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2>Why digital sellers</h2>
+      <div class="rows">
+        <div>
+          <h3>A clear payment status</h3>
+          <p>The invoice page shows confirmation after an on-chain payment is verified. Check the server-side payment status before delivering a digital product.</p>
+        </div>
+        <div>
+          <h3>Funds go to your wallet</h3>
+          <p>Tavarov Pay does not hold a merchant balance or schedule payouts. Access to the API may be restricted under the Terms; blockchain networks and token issuers have their own rules.</p>
+        </div>
+        <div>
+          <h3>Use a compatible wallet</h3>
+          <p>Connect the receiving wallet you control. NoN Wallet is optional; customers can use other compatible wallets on the selected network.</p>
+        </div>
+        <div>
+          <h3>Understand the fees</h3>
+          <p>The current Tavarov Pay fee is 1%. Blockchain network fees are separate and vary. On BNB Chain, Ethereum and Base, the contract owner can change the fee up to 2%; see the Terms.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>How a sale goes</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><p><b>You make an invoice.</b> Amount, currency, what it is for. You get a link and a QR code.</p></div>
+        <div class="step"><div class="n">2</div><p><b>You send the link.</b> In chat, in email, on your site — wherever you already talk to buyers.</p></div>
+        <div class="step"><div class="n">3</div><p><b>The customer pays</b> with a wallet compatible with the selected network and token. Confirmation time depends on the network.</p></div>
+        <div class="step"><div class="n">4</div><p><b>You see the payment.</b> The invoice page and your invoice log show “Paid” as soon as the network confirms it.</p></div>
+      </div>
+      <p class="note" style="max-width:62ch">Selling through a website? Use the <a href="https://wallet.tavarov.com/dev">Tavarov Pay API</a> or <a href="/en/woocommerce">WooCommerce plugin</a>. Verify the invoice status on your server before delivering goods.</p>
+      <p class="note" style="max-width:62ch">Use Tavarov Pay for payment requests and checkout integration. NoN Wallet is a separate, optional wallet product.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Honestly</h2>
+      <div class="honest">
+        <ul>
+          <li><b>The contracts have no independent audit.</b> We checked them ourselves, many times, and the checks are public — but that is not the same thing. Start small.</li>
+          <li><b>Rules differ by country.</b> In some places paying with crypto for goods and services is restricted or forbidden. Check the rules where you are registered.</li>
+          <li><b>Refunds remain the seller’s responsibility.</b> A blockchain payment cannot be cancelled by Tavarov Pay. Refund tools vary by network; you may need to send a separate transfer.</li>
+          <li><b>TVR points are not an investment.</b> They have no price and are not for sale. Anyone offering to sell you TVR is a fraud.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+<p id="fee-note" class="small">Current service fee: 1%. Network fees are separate. EVM fee settings may be changed up to the 2% contract limit; <a href="/en/terms#fees">read the fee terms</a>.</p></main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="/">tavarov.com</a> ·
+       <a href="https://wallet.tavarov.com/invoice?lang=en">Create an invoice</a> ·
+       <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35">Payment contract</a> ·
+       <a href="/en/privacy">Privacy policy</a></p>
+    <p>NoN Wallet is a non-custodial wallet: we do not keep your keys and have no access to your money. © 2026 Tavarov</p>
+  </div>
+</footer>
+
+
+
+<!-- Счётчик посещений. Только витрина: на страницах кошелька, кассы и
+     оплаты никакого постороннего кода нет и не будет — там человек вводит
+     пароль и видит суммы. Cloudflare Web Analytics не ставит cookie и не
+     следит за человеком между сайтами, поэтому баннер про печеньки не
+     нужен. Считает просмотры страниц и откуда пришли, не более. -->
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;807d9906067747c9ba6d53e1cc9f4520&quot;}"></script>
+
+
+
+</body></html>

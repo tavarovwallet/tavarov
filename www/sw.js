@@ -23,7 +23,7 @@
  *   меняются годами. Когда меняются, у них меняется и версия в имени
  *   кэша ниже.
  */
-const CACHE = 'tavarov-v4';   // v4: шрифты витрины (Manrope, Unbounded) лежат в кэше, чтобы без сети не прыгал текст
+const CACHE = 'tavarov-v9';   // v9: версии в адресах каталога и логотипов, избранное, поиск монет на адресе
 const FILES = [
   './',
   './index.html',
@@ -33,6 +33,9 @@ const FILES = [
   './lib/qrcode.min.js',
   './lib/qr-scanner.umd.min.js',
   './lib/qr-scanner-worker.min.js',
+  './lib/tokens-top.js',
+  './lib/coin-logos.js',
+  './img/coins.webp',
   './fonts/manrope-cyrillic.woff2',
   './fonts/manrope-latin.woff2',
   './fonts/unbounded-cyrillic.woff2',

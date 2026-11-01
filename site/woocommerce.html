@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Приём USDT и USDC в WooCommerce — плагин Tavarov Pay</title>
+<meta name="description" content="Бесплатный плагин для WooCommerce: USDT и USDC в BNB Chain, Ethereum, Base или Solana, деньги сразу на ваш кошелёк, комиссия 1%.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tavarov.com/woocommerce">
+<link rel="alternate" hreflang="ru" href="https://tavarov.com/woocommerce">
+<link rel="alternate" hreflang="en" href="https://tavarov.com/en/woocommerce">
+<link rel="alternate" hreflang="x-default" href="https://tavarov.com/en/woocommerce">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Приём USDT и USDC в WooCommerce — плагин Tavarov Pay">
+<meta property="og:description" content="Бесплатный плагин для WooCommerce: USDT и USDC в BNB Chain, Ethereum, Base или Solana, деньги сразу на ваш кошелёк, комиссия 1%.">
+<meta property="og:url" content="https://tavarov.com/woocommerce">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--label-3:rgba(48,33,79,.46);
+--sep:rgba(90,60,150,.16);--accent:#7C3AED;--accent-2:#4B1FE8;--r:16px;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+--mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#140B2B;--card:#20153D;--label:#FFFFFF;
+--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}}
+:root[data-theme="dark"]{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);
+--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex;align-items:center;gap:14px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--label);font-size:17px}
+.brand:hover{text-decoration:none}.brand svg{width:30px;height:30px;border-radius:8px;display:block}
+.bar nav{margin-left:auto;display:flex;gap:6px}
+.bar nav a{font-size:13.5px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--label-2)}
+.bar nav a[aria-current="true"]{background:var(--card);color:var(--label);box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:44px 0 12px;overflow-wrap:anywhere}
+.lead{font-size:19px;color:var(--label-2);margin:0 0 26px}
+h2{font-size:22px;font-weight:760;letter-spacing:-.01em;margin:38px 0 10px}
+h3{font-size:18px;font-weight:720;margin:22px 0 6px}
+p{margin:0 0 13px;color:var(--label-2)}p b,li b{color:var(--label)}
+ul,ol{margin:0 0 13px;padding-left:22px;color:var(--label-2)}li{margin-bottom:7px}
+.box{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px 24px;margin:22px 0}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.btn{display:inline-block;padding:13px 20px;border-radius:13px;font-weight:700;font-size:16px}
+.btn:hover{text-decoration:none}
+.btn-main{background:var(--accent-2);color:#fff}.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--sep)}
+code,pre{font-family:var(--mono);font-size:14px}
+pre{background:#170D31;color:#EDE7FF;padding:16px 18px;border-radius:14px;overflow:auto;line-height:1.5}
+code{background:rgba(124,58,237,.10);padding:1px 6px;border-radius:6px}pre code{background:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.grid .box{margin:0}.grid h3{margin-top:0}
+.note{font-size:14.5px;color:var(--label-3);margin:0 0 13px}
+.date{color:var(--label-3);font-size:15px;margin-bottom:24px}
+details{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--label)}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--sep);margin-top:48px;padding:26px 0 52px;color:var(--label-3);font-size:14.5px}
+footer a{color:var(--label-2);font-size:15px;margin-right:18px;display:inline-block;margin-bottom:6px}
+.tbl{overflow-x:auto;margin:18px 0;border:1px solid var(--sep);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45}
+th,td{padding:10px 12px;border-bottom:1px solid var(--sep);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}th{color:var(--label);font-weight:720}td{color:var(--label-2)}td:first-child{color:var(--label);font-weight:650}
+@media (max-width:600px){.tbl table,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}.tbl tr:first-child{display:none}
+.tbl tr{border-bottom:1px solid var(--sep);padding:10px 14px}.tbl tr:last-child{border-bottom:0}.tbl td{border:0;padding:3px 0}
+.tbl td:first-child{font-size:16px;margin-bottom:4px}.tbl td[data-label]:before{content:attr(data-label) ': ';color:var(--label);font-weight:650}}
+@media (max-width:430px){.wrap{padding:0 16px}.brand{font-size:15px}.bar nav a{padding:5px 7px}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebPage", "name": "Приём USDT и USDC в WooCommerce — плагин Tavarov Pay", "description": "Бесплатный плагин для WooCommerce: USDT и USDC в BNB Chain, Ethereum, Base или Solana, деньги сразу на ваш кошелёк, комиссия 1%.", "url": "https://tavarov.com/woocommerce", "inLanguage": "ru", "dateModified": "2026-10-02", "publisher": {"@type": "Organization", "name": "Tavarov", "url": "https://tavarov.com"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Сколько стоит?", "acceptedAnswer": {"@type": "Answer", "text": "Плагин бесплатный. Комиссия — 1% с каждой оплаты, она удерживается в момент платежа. Абонплаты нет."}}, {"@type": "Question", "name": "В какой валюте должен быть магазин?", "acceptedAnswer": {"@type": "Answer", "text": "В долларах США (USD): цены списываются один к одному в долларовых стейблкоинах USDT или USDC. Для магазинов в других валютах способ оплаты не показывается."}}, {"@type": "Question", "name": "Нужен ли покупателю NoN Wallet?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Подходит любой кошелёк с USDT или USDC в той сети, которую вы выбрали: MetaMask, Trust Wallet, OKX, Phantom и другие. В Base — только USDC."}}, {"@type": "Question", "name": "Что если покупатель заплатит меньше?", "acceptedAnswer": {"@type": "Answer", "text": "Заказ получит статус «На удержании» с заметкой, а не «Оплачен». То же — если заплатить не той монетой."}}, {"@type": "Question", "name": "Как вернуть деньги покупателю?", "acceptedAnswer": {"@type": "Answer", "text": "Возврат делается из вашего кошелька: в приложении NoN Wallet у оплат через контракт в BNB Chain есть кнопка возврата. Возвраты из самого WooCommerce пока не поддерживаются."}}]}]</script>
+<link rel="stylesheet" href="/min.css">
+</head>
+<body>
+<header><div class="wrap bar"><a class="brand" href="./"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#9875F5"/></svg> Tavarov</a><nav><a href="./woocommerce" aria-current="true">RU</a><a href="en/woocommerce" >EN</a></nav></div></header>
+<main class="wrap">
+
+<h1>Приём USDT и USDC в WooCommerce</h1>
+<p class="lead">Плагин Tavarov Pay добавляет в магазин на WordPress способ оплаты «USDT или USDC». Покупатель платит с любого кошелька, а деньги той же операцией приходят на ваш — без посредника, выплат и чарджбэков.</p>
+<div class="cta"><a class="btn btn-main" href="https://wordpress.org/plugins/tavarov-pay/" target="_blank" rel="noopener">Плагин на WordPress.org</a><a class="btn btn-ghost" href="https://tavarov.com/downloads/tavarov-pay.zip">Скачать .zip</a><a class="btn btn-ghost" href="https://wallet.tavarov.com/dev">Получить ключ API</a><a class="btn btn-ghost" href="https://playground.wordpress.net/?blueprint-url=https://tavarov.com/downloads/playground.json" target="_blank" rel="noopener">Попробовать в браузере</a></div>
+<p class="note">«Попробовать в браузере» открывает временный WordPress с WooCommerce и уже включённым плагином — ничего не нужно устанавливать, после закрытия вкладки он исчезает.</p>
+
+<h2>Как это работает</h2>
+<ol>
+<li>Покупатель выбирает «USDT или USDC» при оформлении заказа.</li>
+<li>Плагин выставляет счёт через API Tavarov Pay и отправляет покупателя на страницу оплаты с QR-кодом и кнопками кошельков: MetaMask, Trust Wallet, OKX, Phantom, NoN Wallet и других.</li>
+<li>Покупатель платит в сети, которую вы выбрали в настройках: BNB Chain, Ethereum, Base или Solana. <b>99% уходят на ваш кошелёк в той же операции</b>, 1% — комиссия сервиса.</li>
+<li>Заказ сам становится «В обработке»: по подписанному вебхуку, когда покупатель возвращается на страницу заказа, или при фоновой проверке. Каждый раз плагин сам спрашивает API, поэтому поддельный вебхук заказ не закроет.</li>
+</ol>
+
+<div class="grid">
+<div class="box"><h3>Деньги не у нас</h3><p>Никакого баланса в сервисе и вывода раз в неделю: каждая оплата — одна операция в блокчейне прямо на ваш адрес.</p></div>
+<div class="box"><h3>Без чарджбэков</h3><p>Платёж в блокчейне нельзя отозвать через банк. Вернуть деньги можете только вы, если сами решите.</p></div>
+<div class="box"><h3>Открытый код</h3><p>Контракты оплаты открыты (в BNB Chain — <a href="https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code">проверены на BscScan</a>), в Solana оплата — одна операция без нашего контракта. Плагин — под лицензией GPL.</p></div>
+</div>
+
+<h2>Установка за 5 минут</h2>
+<ol>
+<li>В WordPress откройте <b>Плагины → Добавить новый</b>, найдите <b>Tavarov Pay</b>, нажмите «Установить» и «Активировать» (нужен WooCommerce). Плагин проверен и опубликован в <a href="https://wordpress.org/plugins/tavarov-pay/" target="_blank" rel="noopener">каталоге WordPress.org</a>, обновления придут сами.</li>
+<li>Откройте <a href="https://wallet.tavarov.com/dev">кабинет разработчика</a> и войдите тем кошельком, на который должны приходить деньги. Вход — бесплатная подпись сообщения, деньги она не двигает.</li>
+<li>Создайте ключ. Для пробы возьмите тестовый <code>tp_test_…</code>: он работает в тестовой сети BNB, а тестовые доллары выдаёт кнопка в кабинете.</li>
+<li>Вставьте ключ в <b>WooCommerce → Настройки → Платежи → Tavarov Pay</b> и выберите сеть: BNB Chain, Ethereum, Base или Solana (для Solana впишите ещё свой адрес Solana). Там же будет адрес вебхука: впишите его в кабинете и вставьте в плагин секрет <code>whsec_…</code>.</li>
+<li>Сделайте тестовый заказ, оплатите тестовыми долларами и замените ключ на боевой <code>tp_live_…</code>.</li>
+</ol>
+
+<h2>Что умеет плагин</h2>
+<ul>
+<li>Сеть на выбор: BNB Chain, Ethereum, Base или Solana. В BNB Chain, Base и Solana комиссия сети — доли цента, в Ethereum — заметно больше.</li><li>Классическое оформление заказа и новый блок Checkout.</li>
+<li>Совместим с HPOS (быстрое хранилище заказов WooCommerce).</li>
+<li>Недоплата или оплата не той монетой — заказ «На удержании» с пояснением, а не «Оплачен».</li>
+<li>Кнопка «Проверить оплату Tavarov Pay» в карточке заказа.</li>
+<li>Русский и английский интерфейс.</li>
+</ul>
+<p>Покупателю плагин ничего о нём не передаёт: в счёт уходят только сумма, номер заказа и название магазина. Подробно — в <a href="./privacy">политике конфиденциальности</a>.</p>
+
+<h2>Вопросы</h2><details><summary>Сколько стоит?</summary><p>Плагин бесплатный. Комиссия — 1% с каждой оплаты, она удерживается в момент платежа. Абонплаты нет.</p></details><details><summary>В какой валюте должен быть магазин?</summary><p>В долларах США (USD): цены списываются один к одному в долларовых стейблкоинах USDT или USDC. Для магазинов в других валютах способ оплаты не показывается.</p></details><details><summary>Нужен ли покупателю NoN Wallet?</summary><p>Нет. Подходит любой кошелёк с USDT или USDC в той сети, которую вы выбрали: MetaMask, Trust Wallet, OKX, Phantom и другие. В Base — только USDC.</p></details><details><summary>Что если покупатель заплатит меньше?</summary><p>Заказ получит статус «На удержании» с заметкой, а не «Оплачен». То же — если заплатить не той монетой.</p></details><details><summary>Как вернуть деньги покупателю?</summary><p>Возврат делается из вашего кошелька: в приложении NoN Wallet у оплат через контракт в BNB Chain есть кнопка возврата. Возвраты из самого WooCommerce пока не поддерживаются.</p></details>
+</main>
+<footer><div class="wrap"><a href="./">Главная</a><a href="https://wallet.tavarov.com/">Открыть кошелёк</a><a href="https://wallet.tavarov.com/dev">API для сайтов</a><a href="./woocommerce">Плагин WooCommerce</a><a href="./accept-usdt">Приём USDT</a><a href="./crypto-donations">Донаты стримерам</a><a href="./partners">Партнёрам</a><a href="./terms">Условия</a><a href="./privacy">Конфиденциальность</a><p style="margin:14px 0 0">NoN Wallet и Tavarov Pay некастодиальны: мы не храним ключи и деньги. В ряде стран расчёты криптовалютой ограничены — проверьте правила своей страны.</p><p style="margin:6px 0 0">© 2026 Tavarov</p></div></footer>
+</body>
+</html>

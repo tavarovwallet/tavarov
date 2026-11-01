@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Альтернатива DonatePay: крипто-донаты с комиссией 1%</title>
+<meta name="description" content="Донаты в USDT и USDC с комиссией 1% вместо процента за приём и вывод: деньги сразу на ваш кошелёк, оповещения в OBS. Сравнение с тарифами DonatePay.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tavarov.com/donatepay-alternative">
+<link rel="alternate" hreflang="ru" href="https://tavarov.com/donatepay-alternative">
+<link rel="alternate" hreflang="en" href="https://tavarov.com/en/donatepay-alternative">
+<link rel="alternate" hreflang="x-default" href="https://tavarov.com/en/donatepay-alternative">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Альтернатива DonatePay: крипто-донаты с комиссией 1%">
+<meta property="og:description" content="Донаты в USDT и USDC с комиссией 1% вместо процента за приём и вывод: деньги сразу на ваш кошелёк, оповещения в OBS. Сравнение с тарифами DonatePay.">
+<meta property="og:url" content="https://tavarov.com/donatepay-alternative">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--label-3:rgba(48,33,79,.46);
+--sep:rgba(90,60,150,.16);--accent:#7C3AED;--accent-2:#4B1FE8;--r:16px;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+--mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#140B2B;--card:#20153D;--label:#FFFFFF;
+--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}}
+:root[data-theme="dark"]{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);
+--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex;align-items:center;gap:14px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--label);font-size:17px}
+.brand:hover{text-decoration:none}.brand svg{width:30px;height:30px;border-radius:8px;display:block}
+.bar nav{margin-left:auto;display:flex;gap:6px}
+.bar nav a{font-size:13.5px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--label-2)}
+.bar nav a[aria-current="true"]{background:var(--card);color:var(--label);box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:44px 0 12px;overflow-wrap:anywhere}
+.lead{font-size:19px;color:var(--label-2);margin:0 0 26px}
+h2{font-size:22px;font-weight:760;letter-spacing:-.01em;margin:38px 0 10px}
+h3{font-size:18px;font-weight:720;margin:22px 0 6px}
+p{margin:0 0 13px;color:var(--label-2)}p b,li b{color:var(--label)}
+ul,ol{margin:0 0 13px;padding-left:22px;color:var(--label-2)}li{margin-bottom:7px}
+.box{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px 24px;margin:22px 0}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.btn{display:inline-block;padding:13px 20px;border-radius:13px;font-weight:700;font-size:16px}
+.btn:hover{text-decoration:none}
+.btn-main{background:var(--accent-2);color:#fff}.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--sep)}
+code,pre{font-family:var(--mono);font-size:14px}
+pre{background:#170D31;color:#EDE7FF;padding:16px 18px;border-radius:14px;overflow:auto;line-height:1.5}
+code{background:rgba(124,58,237,.10);padding:1px 6px;border-radius:6px}pre code{background:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.grid .box{margin:0}.grid h3{margin-top:0}
+.note{font-size:14.5px;color:var(--label-3);margin:0 0 13px}
+.date{color:var(--label-3);font-size:15px;margin-bottom:24px}
+details{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--label)}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--sep);margin-top:48px;padding:26px 0 52px;color:var(--label-3);font-size:14.5px}
+footer a{color:var(--label-2);font-size:15px;margin-right:18px;display:inline-block;margin-bottom:6px}
+.tbl{overflow-x:auto;margin:18px 0;border:1px solid var(--sep);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45}
+th,td{padding:10px 12px;border-bottom:1px solid var(--sep);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}th{color:var(--label);font-weight:720}td{color:var(--label-2)}td:first-child{color:var(--label);font-weight:650}
+@media (max-width:600px){.tbl table,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}.tbl tr:first-child{display:none}
+.tbl tr{border-bottom:1px solid var(--sep);padding:10px 14px}.tbl tr:last-child{border-bottom:0}.tbl td{border:0;padding:3px 0}
+.tbl td:first-child{font-size:16px;margin-bottom:4px}.tbl td[data-label]:before{content:attr(data-label) ': ';color:var(--label);font-weight:650}}
+@media (max-width:430px){.wrap{padding:0 16px}.brand{font-size:15px}.bar nav a{padding:5px 7px}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebPage", "name": "Альтернатива DonatePay: крипто-донаты с комиссией 1%", "description": "Донаты в USDT и USDC с комиссией 1% вместо процента за приём и вывод: деньги сразу на ваш кошелёк, оповещения в OBS. Сравнение с тарифами DonatePay.", "url": "https://tavarov.com/donatepay-alternative", "inLanguage": "ru", "dateModified": "2026-10-01", "publisher": {"@type": "Organization", "name": "Tavarov", "url": "https://tavarov.com"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Сколько я получу с доната в 10 USDT?", "acceptedAnswer": {"@type": "Answer", "text": "9,9 USDT сразу на ваш кошелёк. Вывода и других комиссий с нашей стороны нет. Зритель отдельно платит сетевую комиссию — доли цента."}}, {"@type": "Question", "name": "Нужно ли выводить деньги?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Донат приходит прямо на ваш кошелёк в NoN Wallet или любой другой, который вы укажете."}}, {"@type": "Question", "name": "Можно ли держать DonatePay и Tavarov вместе?", "acceptedAnswer": {"@type": "Answer", "text": "Да. Это разные ссылки и разные источники в OBS."}}, {"@type": "Question", "name": "Что если зритель ошибётся суммой?", "acceptedAnswer": {"@type": "Answer", "text": "Сумму зритель видит до оплаты и подтверждает в своём кошельке. Платёж в блокчейне отменить нельзя, поэтому возврат — только по вашему решению, обычным переводом."}}]}]</script>
+<link rel="stylesheet" href="/min.css">
+</head>
+<body>
+<header><div class="wrap bar"><a class="brand" href="./"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#9875F5"/></svg> Tavarov</a><nav><a href="./donatepay-alternative" aria-current="true">RU</a><a href="en/donatepay-alternative" >EN</a></nav></div></header>
+<main class="wrap">
+
+<h1>Альтернатива DonatePay для крипто-донатов</h1>
+<p class="lead">У DonatePay комиссия берётся и при приёме доната, и при выводе. В Tavarov вывода нет вовсе: донат в USDT или USDC сразу приходит на ваш кошелёк, контракт удерживает 1%.</p>
+<p class="date">Тарифы DonatePay — по <a href="https://donatepay.ru/tariffs" rel="nofollow noopener">их странице тарифов</a> на 30.09.2026</p>
+
+<h2>Сравнение</h2>
+<div class="tbl"><table>
+<tr><th></th><th>DonatePay</th><th>Tavarov</th></tr>
+<tr><td>Комиссия за приём</td><td data-label="DonatePay">9% для зарегистрированных после 15.06.2024, 7% для прежних</td><td data-label="Tavarov">1%</td></tr>
+<tr><td>Вывод</td><td data-label="DonatePay">Отдельная комиссия, зависит от способа. В USDT — 7% плюс сетевой сбор</td><td data-label="Tavarov">Не нужен: деньги уже у вас</td></tr>
+<tr><td>Где лежат деньги</td><td data-label="DonatePay">На балансе сервиса до вывода</td><td data-label="Tavarov">Сразу на вашем кошельке</td></tr>
+<tr><td>Чем платит зритель</td><td data-label="DonatePay">Карты, СБП, кошельки и другое</td><td data-label="Tavarov">USDT или USDC в BNB Chain, Ethereum, Base или Solana</td></tr>
+<tr><td>Оповещения в OBS</td><td data-label="DonatePay">Да</td><td data-label="Tavarov">Да, сообщение — только после оплаты</td></tr>
+</table></div>
+
+<div class="box"><p><b>Честно о минусе.</b> У DonatePay зритель может заплатить картой или через СБП, у нас — только криптой. Поэтому разумнее не менять сервис, а добавить крипто-кнопку рядом: зрители с криптой заплатят без лишних процентов.</p></div>
+
+<h2>Как добавить крипто-донаты за 5 минут</h2>
+<ol>
+<li>Поставьте NoN Wallet и выберите режим <b>«Автор»</b>.</li>
+<li>На вкладке «Оплата» — ваша ссылка вида <code>wallet.tavarov.com/d/ваше_имя</code>. Поставьте её в описание канала рядом с привычной кнопкой доната.</li>
+<li>Добавьте в OBS источник «Браузер» со ссылкой на оповещения: ширина 800, высота 400. Он работает рядом с оповещениями других сервисов и им не мешает.</li>
+</ol>
+<div class="cta"><a class="btn btn-main" href="./crypto-donations">Подробнее о донатах</a><a class="btn btn-ghost" href="https://wallet.tavarov.com/">Открыть NoN Wallet</a></div>
+<div class="box"><p><b>Бонус для стримеров.</b> Зовите других стримеров и продавцов по своей ссылке — год получаете 20% нашей комиссии с их донатов и продаж. <a href="./partners">Как работает партнёрская программа</a>.</p></div>
+<p class="note">DonatePay — товарный знак своего владельца. Tavarov с ним не связан. Условия чужих сервисов меняются: перед решением проверьте их актуальные тарифы по ссылке.</p>
+<h2>Вопросы</h2><details><summary>Сколько я получу с доната в 10 USDT?</summary><p>9,9 USDT сразу на ваш кошелёк. Вывода и других комиссий с нашей стороны нет. Зритель отдельно платит сетевую комиссию — доли цента.</p></details><details><summary>Нужно ли выводить деньги?</summary><p>Нет. Донат приходит прямо на ваш кошелёк в NoN Wallet или любой другой, который вы укажете.</p></details><details><summary>Можно ли держать DonatePay и Tavarov вместе?</summary><p>Да. Это разные ссылки и разные источники в OBS.</p></details><details><summary>Что если зритель ошибётся суммой?</summary><p>Сумму зритель видит до оплаты и подтверждает в своём кошельке. Платёж в блокчейне отменить нельзя, поэтому возврат — только по вашему решению, обычным переводом.</p></details>
+</main>
+<footer><div class="wrap"><a href="./">Главная</a><a href="https://wallet.tavarov.com/">Открыть кошелёк</a><a href="https://wallet.tavarov.com/dev">API для сайтов</a><a href="./woocommerce">Плагин WooCommerce</a><a href="./accept-usdt">Приём USDT</a><a href="./crypto-donations">Донаты стримерам</a><a href="./partners">Партнёрам</a><a href="./terms">Условия</a><a href="./privacy">Конфиденциальность</a><p style="margin:14px 0 0">NoN Wallet и Tavarov Pay некастодиальны: мы не храним ключи и деньги. В ряде стран расчёты криптовалютой ограничены — проверьте правила своей страны.</p><p style="margin:6px 0 0">© 2026 Tavarov</p></div></footer>
+</body>
+</html>

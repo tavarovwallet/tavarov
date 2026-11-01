@@ -24,6 +24,69 @@
 
 # Витрину незачем встраивать в чужую страницу рамкой.
 /*
-  X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+
+# Плагин WooCommerce: его скачивают магазины и проверочные стенды (WordPress
+# Playground берёт файл из браузера — нужен CORS). Файл публичный.
+/downloads/*
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+
+# Общий слой оформления страниц — пусть браузер проверяет свежесть.
+/min.css
+  Cache-Control: no-cache
+
+# Product design and desktop release metadata
+/studio.css
+  Cache-Control: no-cache
+/downloads/till/releases.json
+  Cache-Control: no-cache
+/downloads/till/SHA256SUMS.txt
+  Cache-Control: no-cache
+
+# Marketing pages only. Wallet and cashier are separate deployments/origins.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self'; connect-src 'self' https://cloudflareinsights.com https://bsc-rpc.publicnode.com https://bsc-dataseed.binance.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Frame-Options: DENY
+/social/*
+  Cache-Control: public, max-age=86400
+/en/*
+  Cache-Control: no-cache
+
+# Revalidate the new product presentation and localization files.
+/pay
+  Cache-Control: no-cache
+/wallet
+  Cache-Control: no-cache
+/site.css
+  Cache-Control: no-cache
+/site.js
+  Cache-Control: no-cache
+/i18n.js
+  Cache-Control: no-cache
+/translations.js
+  Cache-Control: no-cache
+
+/creators
+  Cache-Control: no-cache
+
+/fundraising
+  Cache-Control: no-cache
+
+/donate
+  Cache-Control: no-cache
+
+/donate.js
+  Cache-Control: no-cache
+
+/donate.css
+  Cache-Control: no-cache
+
+/donate-core.mjs
+  Cache-Control: no-cache
+
+/audience-translations.js
+  Cache-Control: no-cache

@@ -29,6 +29,10 @@ export const REF_START = 122500000;
 export const REF_STARTS = { bnb: REF_START, eth: 26140000, base: 52300000 };
 const CHUNK = 4999;          // узлы не отдают журнал шире ~5000 блоков за раз
 const CHUNKS_PER_RUN = 2;
+/* Сколько блоков назад бесплатный узел ещё отдаёт журнал (проверено
+   1.11.2026 с запасом): over — отставание, после которого ошибка узла
+   значит «архив», keep — куда прыгаем от вершины. */
+const ARCHIVE_EDGE = { bnb: { over: 600000, keep: 400000 }, eth: { over: 30000, keep: 9000 }, base: { over: 600000, keep: 400000 } };
 const CUR_EVERY = 2400;      // курсор без событий пишем раз в столько блоков
 const SEEN_MAX = 300;
 const MERCHANTS_MAX = 500;
@@ -111,10 +115,28 @@ export async function scanReferrals(env, rpc, pay, safe, tokens, net){
   let cur = Number(await env.TILL.get(K_CUR)) || REF_STARTS[net || 'bnb'] || REF_START;
   const written = cur;
   let found = 0, chunks = 0;
+  let jumped = 0;
   while (cur < safe && chunks < CHUNKS_PER_RUN){
     const to = Math.min(cur + CHUNK, safe);
-    const logs = await rpc('eth_getLogs', [{ address: pay, fromBlock: hex(cur + 1), toBlock: hex(to),
-      topics: [[REF_TOPIC_SET, REF_TOPIC_PAID]] }]);
+    let logs;
+    try{
+      logs = await rpc('eth_getLogs', [{ address: pay, fromBlock: hex(cur + 1), toBlock: hex(to),
+        topics: [[REF_TOPIC_SET, REF_TOPIC_PAID]] }]);
+    } catch(e){
+      /* 1.11.2026: бесплатные узлы отдают журнал только за последние дни
+         (Ethereum — ~10 000 блоков, BNB и Base — сотни тысяч). Отстав
+         дальше, обход месяц упирался в «Archive requests require a token»
+         и не двигался вовсе. Отстали за край — прыгаем к тому, что узел
+         ещё отдаёт; пропуск помечаем. Рядом с вершиной ошибка — просто
+         сбой узла: ждём следующей минуты, ничего не пропуская. */
+      const lim = ARCHIVE_EDGE[net || 'bnb'] || ARCHIVE_EDGE.bnb;
+      if (safe - cur > lim.over && !jumped){
+        const next = safe - lim.keep;
+        await env.TILL.put(kCur(net) + ':gap', JSON.stringify({ from: cur + 1, to: next, at: Math.floor(Date.now() / 1000) }));
+        cur = next; jumped = next; continue;
+      }
+      throw e;
+    }
     found += await applyRefLogs(env, logs, tokens, net);
     cur = to; chunks++;
   }
@@ -123,7 +145,7 @@ export async function scanReferrals(env, rpc, pay, safe, tokens, net){
      поэтому догоняющий обход курсор всегда двигает. */
   if (cur !== written && (found > 0 || cur - written >= CUR_EVERY))
     await env.TILL.put(K_CUR, String(cur));
-  return { cur, found, behind: Math.max(0, safe - cur) };
+  return { cur, found, behind: Math.max(0, safe - cur), jumped: jumped || undefined };
 }
 
 /* Для людей: суммы в монетах, а не в единицах контракта.
