@@ -20,7 +20,7 @@ on:
       - "www/**"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -52,3 +52,13 @@ jobs:
           name: non-wallet-unsigned-apk
           path: android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 14
+      - name: Hand the unsigned APK over through this temporary branch
+        run: |
+          cp android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk /tmp/u.apk
+          git config user.name ci; git config user.email ci@users.noreply.github.com
+          git checkout --orphan apk-out-tmp
+          git rm -rq --cached .
+          cp /tmp/u.apk unsigned.apk
+          git add -f unsigned.apk
+          git commit -qm "unsigned apk"
+          git push -f origin apk-out-tmp
