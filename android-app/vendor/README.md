@@ -9,11 +9,12 @@ the code.
 | `capacitor-android/` | `@capacitor/android` | 6.2.1 | https://github.com/ionic-team/capacitor |
 | `capacitor-native-biometric/` | `@capgo/capacitor-native-biometric` | 6.0.4 | https://github.com/Cap-go/capacitor-native-biometric |
 
-Left out: the iOS parts, tests, and the plugin's standalone Gradle wrapper,
+Left out: the npm package.json files (F-Droid's scanner treats them as
+unlocked dependency files; the versions are in this table), the iOS parts, tests, and the plugin's standalone Gradle wrapper,
 settings and properties files (the plugin is built as a module of
 `../android`).
 
 To update, copy the same paths from a newer npm package
-(`node_modules/@capacitor/android/{LICENSE,package.json,capacitor/}` and
-`node_modules/@capgo/capacitor-native-biometric/{LICENSE,package.json,android/}`)
+(`node_modules/@capacitor/android/{LICENSE,capacitor/}` and
+`node_modules/@capgo/capacitor-native-biometric/{LICENSE,android/}`)
 and change the versions in this table.
