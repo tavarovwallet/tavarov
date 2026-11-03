@@ -1,0 +1,1 @@
+Create a wallet with just a name and a password. Your name is registered for free, and a backup to iCloud or Google Drive is offered right away. The 12 words are in Settings.
