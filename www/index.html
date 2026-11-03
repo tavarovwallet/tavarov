@@ -4191,6 +4191,16 @@ async function shareBackup(){
   const str = document.getElementById('backupText').value;
   if (!str) return;
   let file = null;
+  /* Android-приложение: своё окно «Поделиться» (ShareFilePlugin), в нём
+     Google Диск. navigator.share во встроенном WebView нет. */
+  const NS = IS_NATIVE_APP && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NonShare;
+  if (NS){
+    try{
+      const r = await NS.shareFile({ name: backupFileName(), text: str, title: 'NoN Wallet' });
+      if (r && r.shared) setBackupPending(false);
+      return;
+    } catch(e){ logError('копия: ' + shortErr(e)); }
+  }
   try{ file = new File([str], backupFileName(), {type:'application/octet-stream'}); } catch(e){}
   if (file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
     try{ await navigator.share({files:[file], title:'NoN Wallet'}); setBackupPending(false); return; }
@@ -4216,6 +4226,9 @@ function offerCloudBackup(){
   document.getElementById('backupModal').classList.remove('hidden');
 }
 function downloadBackup(){
+  /* В приложении скачивание из WebView не работает: тот же путь, что у
+     кнопки облака, — там есть и «Файлы», и «Загрузки». */
+  if (IS_NATIVE_APP && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NonShare){ shareBackup(); return; }
   try{
     const str = document.getElementById('backupText').value;
     const blob = new Blob([str], {type:'application/octet-stream'});
