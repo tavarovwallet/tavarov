@@ -712,5 +712,15 @@
  "k1ad945ab": "Name: 6 to 20 characters — Latin letters, digits and _, starting with a letter.",
  "k6e8f9ef7": "This name is taken. Choose another one.",
  "kac0da405": "This name now belongs to your wallet: ",
- "kb56c43da": "The name was not registered yet. You can claim it later in Settings, in the name section."
+ "kb56c43da": "The name was not registered yet. You can claim it later in Settings, in the name section.",
+ "k1883ebac": "Choose a name and a password, and your wallet is ready. Then save a copy to iCloud or Google Drive: with it the wallet comes back on any phone.",
+ "k4fe4fd3f": "Show the 12 words first",
+ "kbf23801c": "Right now the wallet exists only on this phone. Save a copy to iCloud or Google Drive so you don't lose your money along with the phone.",
+ "k85ff0b56": "Save a copy",
+ "ka8917512": "Show the 12 words",
+ "k6db0134c": "The wallet key, to write down on paper",
+ "k3328a11f": "These 12 words are the key to your wallet. Write them down on paper in order: with them the wallet comes back even without the backup and the password.",
+ "k24656e45": "Thirteenth word",
+ "k61ea0113": "This wallet has no 12-word phrase: it was added with a private key. Keep it safe with a backup.",
+ "k3e8679c3": "Choose a name: 6 to 20 characters, Latin letters, digits and _, starting with a letter."
 }

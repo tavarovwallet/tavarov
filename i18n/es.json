@@ -712,5 +712,15 @@
  "k1ad945ab": "Nombre: de 6 a 20 caracteres — letras latinas, cifras y _, empezando por una letra.",
  "k6e8f9ef7": "Este nombre ya está ocupado. Elige otro.",
  "kac0da405": "Este nombre ya es de tu billetera: ",
- "kb56c43da": "El nombre aún no se registró. Puedes reservarlo más tarde en Ajustes, en la sección del nombre."
+ "kb56c43da": "El nombre aún no se registró. Puedes reservarlo más tarde en Ajustes, en la sección del nombre.",
+ "k1883ebac": "Elige un nombre y una contraseña, y tu monedero estará listo. Luego guarda una copia en iCloud o Google Drive: con ella el monedero vuelve en cualquier teléfono.",
+ "k4fe4fd3f": "Mostrar primero las 12 palabras",
+ "kbf23801c": "Por ahora el monedero solo está en este teléfono. Guarda una copia en iCloud o Google Drive para no perder tu dinero junto con el teléfono.",
+ "k85ff0b56": "Guardar copia",
+ "ka8917512": "Mostrar las 12 palabras",
+ "k6db0134c": "La clave del monedero, para anotarla en papel",
+ "k3328a11f": "Estas 12 palabras son la clave de tu monedero. Anótalas en papel en orden: con ellas el monedero vuelve incluso sin la copia y la contraseña.",
+ "k24656e45": "Decimotercera palabra",
+ "k61ea0113": "Este monedero no tiene frase de 12 palabras: se añadió con una clave privada. Guárdalo con una copia de seguridad.",
+ "k3e8679c3": "Elige un nombre: de 6 a 20 caracteres, letras latinas, cifras y _, empezando por una letra."
 }
