@@ -5,6 +5,9 @@
 name: Android build
 on:
   push:
+    # Without "branches", GitHub ran this only for wallet-v* tags, so the build
+    # check silently never ran for commits on main.
+    branches: [main]
     paths:
       - "android-app/**"
       - "www/**"

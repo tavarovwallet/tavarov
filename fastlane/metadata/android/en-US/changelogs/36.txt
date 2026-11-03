@@ -1,1 +1,0 @@
-Backup to Google Drive in one tap: the button opens the Android share window with Google Drive, Files and other apps.

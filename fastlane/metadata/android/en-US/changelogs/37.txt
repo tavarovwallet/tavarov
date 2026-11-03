@@ -1,0 +1,1 @@
+Create a wallet with just a name and a password. Your name for payments is registered for free: people can send you USDT and USDC by name instead of a long address. Back up to Google Drive in one tap. Your 12 words are in Settings.

@@ -11,10 +11,10 @@
 """
 import json, glob, os, re
 
-SRC = '/home/claude/apk/www/index.html'
+SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'www', 'index.html')
 HERE = os.path.dirname(os.path.abspath(__file__))
 MARK = '/* СЛОВАРЬ ВСТАВЛЯЕТСЯ СЮДА */'
-ORDER = ['ru', 'en', 'es', 'tr', 'pt']
+ORDER = ['ru', 'en', 'es', 'tr', 'pt', 'tg']
 
 
 def main():

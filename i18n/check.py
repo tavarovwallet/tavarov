@@ -14,7 +14,7 @@
 """
 import re, json, os, sys
 
-SRC = '/home/claude/apk/www/index.html'
+SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'www', 'index.html')
 HERE = os.path.dirname(os.path.abspath(__file__))
 RU = os.path.join(HERE, 'ru.json')
 
