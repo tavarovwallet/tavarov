@@ -4189,7 +4189,10 @@ async function openPhraseSheet(){
   document.getElementById('phraseModal').classList.remove('hidden');
 }
 function closePhraseSheet(){ document.getElementById('phraseGrid').innerHTML = ''; document.getElementById('phrase13v').textContent = ''; document.getElementById('phraseModal').classList.add('hidden'); }
-function closeBackupSheet(){ document.getElementById('backupIntro').classList.add('hidden'); document.getElementById('backupModal').classList.add('hidden'); }
+/* Закрыли — убираем и сам текст копии. Иначе после окна «сохраните копию»
+   при создании он оставался в поле до следующего открытия, хотя показывать
+   его положено только после подтверждения (проверка t44). */
+function closeBackupSheet(){ document.getElementById('backupIntro').classList.add('hidden'); document.getElementById('backupModal').classList.add('hidden'); document.getElementById('backupText').value = ''; }
 /* Копия в облако одной кнопкой. Системное окно «Поделиться» само предлагает
    «Сохранить в Файлы» (iCloud Drive) на iPhone и «Google Диск» на Android:
    договариваться с Apple и Google не нужно, и у нас копия не хранится.
