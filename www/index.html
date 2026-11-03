@@ -7700,7 +7700,7 @@ async function diagnoseVault(){
     const c = contractsFor();
 
     // 1. Сборка и сеть
-    add(true, t('k7fac3d63') + BUILD);
+    add(true, t('k7fac3d63') + BUILD + ' · ' + APP_VERSION);
     if (!CONTRACT_KEYS[network]){
       fail(t('k698afbb2') + NETWORKS[network].name + t('k964a0a39'),
            t('k04914359'));
@@ -13401,16 +13401,19 @@ async function askPersistentStorage(){
 
 /* Номер сборки. Нужен ровно для одного: понять, ту ли версию человек
    смотрит. Без него на вопрос «а вы обновились?» ответить нечем. */
-const BUILD = '1.1.3';
-/* Та же версия — в подвале настроек. Раньше там стояло «версия 1.0»,
-   вписанное прямо в перевод, и оно не менялось с выпусками. */
-try{ const v = document.getElementById('appVersion'); if (v) v.textContent = BUILD; }catch(e){}
+const BUILD = '2026-11-03.2';
+/* Версия приложения — та же, что у Android-сборки (versionName). Её видно
+   в подвале настроек; раньше там стояло «версия 1.0», вписанное прямо в
+   перевод, и оно не менялось с выпусками. Номер сборки (дата) остаётся
+   для разбора неполадок: по нему видно, что именно открыто. */
+const APP_VERSION = '1.1.3';
+try{ const v = document.getElementById('appVersion'); if (v) v.textContent = APP_VERSION; }catch(e){}
 
 async function renderEnvInfo(){
   const where = document.getElementById('envWhere');
   if (!where) return;
   const build = document.getElementById('envBuild');
-  if (build) build.textContent = BUILD;
+  if (build) build.textContent = BUILD + ' · ' + APP_VERSION;
   where.textContent = IS_NATIVE ? t('k4b74278d')
                     : IS_STANDALONE ? t('k9640c480')
                     : t('kdd286747');
