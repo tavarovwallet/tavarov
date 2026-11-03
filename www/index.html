@@ -2880,7 +2880,17 @@ function applyContractTokens(){
 applyContractTokens();
 
 const VAULT_KEY = 'tavarov.vault.v1';
-const KDF_ITERATIONS = 310000;
+/* Сколько раз прогоняется пароль, прежде чем стать ключом шифрования.
+
+   С ноября 2026 копию кошелька предлагаем сразу положить в iCloud или Google
+   Диск. Файл там защищён только паролем, и тот, кто доберётся до облака,
+   может перебирать пароли у себя сколько угодно. Поэтому новые кошельки и
+   копии — 600 000 повторов (столько советует OWASP для PBKDF2-SHA256), вдвое
+   больше прежнего: перебор вдвое дороже, а вход на телефоне медленнее на
+   доли секунды. Старые хранилища и копии открываются как раньше — число
+   повторов записано в самом файле. */
+const KDF_ITERATIONS = 600000;
+const KDF_ITERATIONS_LEGACY = 310000;       // для файлов, где число не записано
 
 /* ---------- Какие сети включены ----------
    Кошелёк умеет четыре сети, но показывает только те, что здесь перечислены.
@@ -3156,7 +3166,11 @@ async function encryptVault(payload, password){
 async function decryptVault(vaultStr, password){
   const v = JSON.parse(vaultStr);
   if (!v || !v.data || !v.salt || !v.iv) throw new Error(t('k5e2809cb'));
-  const key = await deriveVaultKey(password, b64dec(v.salt), v.iterations || KDF_ITERATIONS);
+  const iters = v.iterations === undefined ? KDF_ITERATIONS_LEGACY : Number(v.iterations);
+  /* Число повторов берём из файла — значит, и проверяем его: чужой файл с
+     миллиардом повторов просто повесил бы вкладку. */
+  if (!(Number.isInteger(iters) && iters >= 10000 && iters <= 5000000)) throw new Error(t('k5e2809cb'));
+  const key = await deriveVaultKey(password, b64dec(v.salt), iters);
   let plain;
   try{
     plain = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64dec(v.iv)}, key, b64dec(v.data));
