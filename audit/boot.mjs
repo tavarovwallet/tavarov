@@ -14,7 +14,7 @@ export const URL = 'http://localhost:8099/index.html';
    сломалось приложение. Проверка не должна зависеть от того, что кто-то
    помнит лишний шаг. */
 const ROOT = '/home/claude/apk/www';
-const TYPES = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
+const TYPES = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8',
                 '.json':'application/json; charset=utf-8', '.css':'text/css; charset=utf-8',
                 '.png':'image/png', '.svg':'image/svg+xml', '.webp':'image/webp' };
 let siteSrv = null;
@@ -102,6 +102,12 @@ export async function boot(opts = {}) {
      опасные действия подтверждает лицо или отпечаток, а в браузере без
      них — пароль от кошелька. Ждём просто готового кошелька. */
   await page.waitForFunction(() => flowStage === 'ready');
+  /* С 2 ноября после создания кошелёк сам предлагает сохранить копию в
+     облако: окно открывается через полсекунды и закрывает собой экран.
+     Человек нажимает «Готово» — делаем то же. */
+  await page.waitForFunction(() => !document.getElementById('backupModal').classList.contains('hidden'),
+                             null, { timeout: 3000 }).catch(() => {});
+  await page.evaluate(() => { if (!document.getElementById('backupModal').classList.contains('hidden')) closeBackupSheet(); });
 
   return { browser, ctx, page, errors, console_ };
 }

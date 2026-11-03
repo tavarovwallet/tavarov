@@ -97,8 +97,14 @@ R.ok('называются оба непонятных слова, а не од�
 /* Слова все из списка, но порядок другой. Контрольная сумма это ловит, и
    человеку надо сказать именно про порядок: искать «неправильное слово» он
    будет впустую. */
-const shuffled = WORDS.slice();
-const tmp = shuffled[0]; shuffled[0] = shuffled[1]; shuffled[1] = tmp;
+/* Перестановку берём такую, при которой контрольная сумма точно не сходится:
+   у фразы из 12 слов она сходится в одной перестановке из шестнадцати, и
+   тогда проверка падала через раз (3.11.2026). */
+let shuffled = WORDS.slice();
+for (let i = 1; i < WORDS.length; i++){
+  shuffled = WORDS.slice(); const tmp = shuffled[0]; shuffled[0] = shuffled[i]; shuffled[i] = tmp;
+  if (!(await page.evaluate(x => ethers.utils.isValidMnemonic(x), shuffled.join(' ')))) break;
+}
 R.ok('перестановка слов сама по себе не считается неизвестным словом',
   (await problem(shuffled.join(' '))) === null);
 

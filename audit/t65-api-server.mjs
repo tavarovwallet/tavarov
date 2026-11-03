@@ -35,7 +35,9 @@ function makeKV(){
     async put(k, body, o){ puts++; map.set(k, { body, until: o && o.expirationTtl ? Date.now() + o.expirationTtl * 1000 : 0 }); },
     async delete(k){ map.delete(k); } };
 }
-const env = { TILL: makeKV(), V1_NO_THROTTLE: 1 };
+/* Таймер (/cron) с октября 2026 — только с секретом в Authorization. */
+const CRON = 'cron-secret-for-tests';
+const env = { TILL: makeKV(), V1_NO_THROTTLE: 1, CRON_SECRET: CRON };
 
 /* ---------- сеть ---------- */
 const V3 = '0x1fc681fa250a17e66b57b7150f2eed4e71d1ca35';
@@ -117,8 +119,12 @@ const call = async (method, path, body, auth, raw) => {
   let j = null; try{ j = await r.json(); } catch(e){}
   return { status: r.status, j, r };
 };
-const signLogin = async (wallet, addr, ts) => wallet.signMessage(API.loginText(addr || wallet.address, ts === undefined ? now() : ts));
-const login = async wallet => (await call('POST', '/dev/login', { address: wallet.address, ts: now(), sig: await signLogin(wallet) })).j.session;
+/* Вход в кабинет (SIWE): с октября 2026 в тексте есть одноразовый nonce, и
+   сервер помнит использованные. Каждая попытка — свой nonce. */
+const fresh = () => crypto.randomUUID().replace(/-/g, '');
+let NONCE = fresh();
+const signLogin = async (wallet, addr, ts, nonce) => wallet.signMessage(API.loginText(addr || wallet.address, nonce || NONCE, ts === undefined ? now() : ts));
+const login = async wallet => (await call('POST', '/dev/login', { address: wallet.address, ts: now(), nonce: (NONCE = fresh()), sig: await signLogin(wallet) })).j.session;
 
 // ---------- основа ----------
 let r = await call('GET', '');
@@ -129,19 +135,19 @@ t('несуществующий метод — 404 с понятной ошиб�
 
 // ---------- вход в кабинет ----------
 t('ВХОД: чужая подпись под своим адресом — 403',
-  (await call('POST', '/dev/login', { address: shop.address, ts: now(), sig: await other.signMessage(API.loginText(shop.address, now())) })).status === 403);
+  (await call('POST', '/dev/login', { address: shop.address, ts: now(), nonce: (NONCE = fresh()), sig: await other.signMessage(API.loginText(shop.address, NONCE, now())) })).status === 403);
 t('ВХОД: подпись под другим временем — 403',
-  (await call('POST', '/dev/login', { address: shop.address, ts: now(), sig: await signLogin(shop, shop.address, now() - 1) })).status === 403);
+  (await call('POST', '/dev/login', { address: shop.address, ts: now(), nonce: (NONCE = fresh()), sig: await signLogin(shop, shop.address, now() - 1) })).status === 403);
 t('ВХОД: подпись старше пяти минут — 400',
-  (await call('POST', '/dev/login', { address: shop.address, ts: now() - 400, sig: await signLogin(shop, shop.address, now() - 400) })).status === 400);
-t('ВХОД: кривая подпись — 400', (await call('POST', '/dev/login', { address: shop.address, ts: now(), sig: '0x12' })).status === 400);
+  (await call('POST', '/dev/login', { address: shop.address, ts: now() - 400, nonce: (NONCE = fresh()), sig: await signLogin(shop, shop.address, now() - 400) })).status === 400);
+t('ВХОД: кривая подпись — 400', (await call('POST', '/dev/login', { address: shop.address, ts: now(), nonce: (NONCE = fresh()), sig: '0x12' })).status === 400);
 liar = true;
 t('ВХОД: один узел врёт — не впускаем',
-  (await call('POST', '/dev/login', { address: shop.address, ts: now(), sig: await signLogin(shop) })).status === 403);
+  (await call('POST', '/dev/login', { address: shop.address, ts: now(), nonce: (NONCE = fresh()), sig: await signLogin(shop) })).status === 403);
 liar = false;
 nodeDead = true;
 t('ВХОД: сеть молчит — 503, а не «входите»',
-  (await call('POST', '/dev/login', { address: shop.address, ts: now(), sig: await signLogin(shop) })).status === 503);
+  (await call('POST', '/dev/login', { address: shop.address, ts: now(), nonce: (NONCE = fresh()), sig: await signLogin(shop) })).status === 503);
 nodeDead = false;
 let S = 'Session ' + await login(shop);
 t('ВХОД своей подписью — выдана сессия', /^Session sess_/.test(S));
@@ -232,14 +238,22 @@ t('вебхук на http:// — 400', (await call('POST', '/dev/webhook', { url
 t('вебхук на голый IP — 400', (await call('POST', '/dev/webhook', { url: 'https://10.0.0.1/hook' }, S)).status === 400);
 t('вебхук на localhost — 400', (await call('POST', '/dev/webhook', { url: 'https://localhost/hook' }, S)).status === 400);
 t('вебхук на нас же — 400', (await call('POST', '/dev/webhook', { url: 'https://wallet.tavarov.com/api/v1/cron' }, S)).status === 400);
+/* Секрет целиком отдаётся один раз, при создании (new_secret); дальше в
+   ответах только хвост: укравший сессию не должен получить секрет. */
 r = await call('POST', '/dev/webhook', { url: 'https://shop.example/hook' }, S);
-const SECRET = r.j.webhook && r.j.webhook.secret;
+const SECRET = r.j.new_secret;
 t('вебхук записан, выдан секрет whsec_', r.status === 200 && /^whsec_/.test(SECRET || ''));
+t('в ответе о вебхуке — только хвост секрета', r.j.webhook && !('secret' in r.j.webhook) && r.j.webhook.secret_tail === String(SECRET).slice(-4));
+r = await call('POST', '/dev/webhook', { url: 'https://shop.example/hook' }, S);
+t('тот же адрес ещё раз — секрет прежний', !r.j.new_secret && r.j.webhook.secret_tail === String(SECRET).slice(-4));
+/* Новый адрес — новый секрет: перенаправивший вебхук на свой сервер не
+   должен получать подписи, годные для настоящего адреса. */
 r = await call('POST', '/dev/webhook', { url: 'https://shop.example/hook2' }, S);
-t('смена адреса секрет не меняет', r.j.webhook.secret === SECRET);
-r = await call('POST', '/dev/webhook', { url: 'https://shop.example/hook', rotate_secret: true }, S);
-t('секрет меняется только по просьбе', r.j.webhook.secret !== SECRET);
-const SEC = r.j.webhook.secret;
+const SECRET2 = r.j.new_secret;
+t('НОВЫЙ АДРЕС ВЕБХУКА — НОВЫЙ СЕКРЕТ', /^whsec_/.test(SECRET2 || '') && SECRET2 !== SECRET);
+r = await call('POST', '/dev/webhook', { url: 'https://shop.example/hook2', rotate_secret: true }, S);
+t('секрет меняется и по просьбе', /^whsec_/.test(r.j.new_secret || '') && r.j.new_secret !== SECRET2);
+const SEC = r.j.new_secret;
 r = await call('POST', '/dev/webhook/test', {}, S);
 const ping = hooks.pop();
 t('проверочный вебхук дошёл', r.j.ok === true && r.j.status_code === 200 && JSON.parse(ping.body).type === 'ping');
@@ -277,7 +291,7 @@ t('но ставит счёт в очередь таймеру', JSON.parse(awai
 puts = 0;
 await call('GET', '/invoices/' + inv1.id, undefined, L);
 t('повторное чтение очередь заново не пишет', puts === 0, 'записей: ' + puts);
-await call('POST', '/cron', {});
+await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('номер транзакции и плательщик — из сети', r.j.payment.tx === tx1 && r.j.payment.payer === BUYER && r.j.payment.amount === '12.5', JSON.stringify(r.j.payment) + ' ' + tx1);
 const hook = hooks.shift();
 t('ВЕБХУК invoice.paid ДОШЁЛ', hook && JSON.parse(hook.body).type === 'invoice.paid');
@@ -298,10 +312,10 @@ t('ВОЗВРАТ ПОКУПАТЕЛЮ — статус refunded', r.j.status ==
 const inv2 = (await call('POST', '/invoices', { amount: '3', order_id: 'B-7' }, L)).j;
 pay(inv2.id, SHOP, 3n * 10n ** 18n, USDT);
 block += 5;
-r = await call('POST', '/cron', {});
+r = await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('ТАЙМЕР САМ НАШЁЛ ОПЛАТУ В ЖУРНАЛЕ И ПОСЛАЛ ВЕБХУК', r.j.delivered === 1 && hooks.length === 1 && JSON.parse(hooks[0].body).data.id === inv2.id, JSON.stringify(r.j));
 hooks.length = 0;
-r = await call('POST', '/cron', {});
+r = await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('второй проход таймера второй вебхук не шлёт', r.j.delivered === 0 && !hooks.length);
 
 // ---------- магазин лёг: повторы ----------
@@ -316,11 +330,11 @@ let q = JSON.parse(await env.TILL.get('v1:q'));
 t('и счёт встал в очередь повторов', q.some(e => e.h === inv3.id));
 hooks.length = 0;
 hookCode = 200;
-await call('POST', '/cron', {});
+await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('до срока повтор не шлём', hooks.length === 0);
 shift += 70;
 block += 100;
-r = await call('POST', '/cron', {});
+r = await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('ПОВТОР ЧЕРЕЗ МИНУТУ — ДОШЁЛ, и ровно один раз', hooks.length === 1 && r.j.retried + r.j.delivered === 1, JSON.stringify(r.j));
 q = JSON.parse(await env.TILL.get('v1:q') || '[]');
 t('очередь очищена', !q.some(e => e.h === inv3.id));
@@ -330,8 +344,8 @@ const inv4 = (await call('POST', '/invoices', { amount: '1' }, L)).j;
 hookDown = true;
 pay(inv4.id, SHOP, 10n ** 18n, USDT);
 block += 5;
-await call('POST', '/cron', {});
-for (let i = 0; i < 9; i++){ shift += 90000; block += 50; await call('POST', '/cron', {}); }
+await call('POST', '/cron', {}, 'Bearer ' + CRON);
+for (let i = 0; i < 9; i++){ shift += 90000; block += 50; await call('POST', '/cron', {}, 'Bearer ' + CRON); }
 const rec4 = JSON.parse(await env.TILL.get('v1:inv:' + inv4.id));
 t('МАГАЗИН ЛЕЖИТ ДВОЕ СУТОК — восемь попыток и стоп, без бесконечного цикла', rec4.wh.n === 8 && rec4.wh.dead === true, JSON.stringify(rec4.wh));
 hookDown = false;
@@ -362,7 +376,7 @@ nodeDead = true;
 r = await call('GET', '/invoices/' + inv7.id, undefined, L);
 t('СЕТЬ МОЛЧИТ — отдаём сохранённое с пометкой stale, «оплачено» не выдумываем', r.status === 200 && r.j.stale === true && r.j.status === 'pending');
 t('проверка со страницы при молчащей сети — 503', (await call('POST', '/invoices/' + inv7.id + '/check', {})).status === 503);
-r = await call('POST', '/cron', {});
+r = await call('POST', '/cron', {}, 'Bearer ' + CRON);
 t('таймер при молчащей сети не падает', r.status === 200 && r.j.scanned.bnb === 'error');
 nodeDead = false;
 
@@ -403,5 +417,9 @@ shift += 13 * 3600;
 t('сессия сама гаснет через 12 часов', (await call('GET', '/dev/account', undefined, S2)).status === 401);
 
 Date.now = realNow;
+// ---------- таймер только с секретом ----------
+t('ТАЙМЕР БЕЗ СЕКРЕТА — 404', (await call('POST', '/cron', {})).status === 404);
+t('таймер с чужим секретом — 404', (await call('POST', '/cron', {}, 'Bearer wrong')).status === 404);
+
 console.log('\n--- ' + ok + ' из ' + (ok + bad) + ' ---');
 process.exit(bad ? 1 : 0);

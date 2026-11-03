@@ -36,8 +36,9 @@ const { browser, page, errors } = await boot({ role: 'buyer', testnet: true, rpc
 
 const mk = (m, p) => page.evaluate(async ([mm, pp]) => {
   const w = await walletFromMnemonicAll(mm, pp);
-  return { evm: w.evm.address, tron: w.tron.address, sol: w.solana.address, pass: w.pass,
-           totp: await totpSecretFor(w) };
+  /* Кода Google Authenticator в кошельке больше нет (3.11.2026): проверяем
+     адреса всех сетей. */
+  return { evm: w.evm.address, tron: w.tron.address, sol: w.solana.address, pass: w.pass };
 }, [m, p]);
 
 // ---------- без слова всё как было ----------
@@ -82,9 +83,9 @@ R.ok('а одно и то же слово даёт один и тот же ко�
 const spaced = await mk(PHRASE, 'сорока-восемь ');
 R.ok('лишний пробел в слове даёт другой кошелёк', spaced.evm !== withWord.evm);
 
-// ---------- код Authenticator ----------
-R.ok('КОД ТОЖЕ СЧИТАЕТСЯ СО СЛОВОМ, А НЕ ТОЛЬКО С ФРАЗОЙ',
-  withWord.totp !== plain.totp, withWord.totp.slice(0, 10) + '…');
+// ---------- со словом другие адреса во всех сетях ----------
+R.ok('СО СЛОВОМ ДРУГОЙ КОШЕЛЁК И В TRON, И В SOLANA',
+  withWord.tron !== plain.tron && withWord.sol !== plain.sol, withWord.sol);
 
 // ---------- слово переживает хранилище ----------
 const kept = await page.evaluate(async ([m, p]) => {

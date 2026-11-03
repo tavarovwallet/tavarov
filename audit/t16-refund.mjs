@@ -3,7 +3,7 @@
    Возврат — это второй платёж, и ошибиться в нём так же дорого, как в
    первом. Поэтому проверяем не «кнопка есть», а куда именно и сколько
    уходит, и что человека честно предупредили, чего это ему стоит. */
-import { boot, reporter } from './boot.mjs';
+import { boot, reporter, answerConfirm } from './boot.mjs';
 import { start, state, paidLog, ADDR } from './mocknode.mjs';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -35,7 +35,7 @@ R.ok('продавцу видна отдельная полка поступле
 
 await page.evaluate(() => loadIncoming());
 await page.waitForTimeout(2500);
-const list = await page.evaluate(() => document.getElementById('incomingList').innerText);
+const list = await page.evaluate(() => document.getElementById('incomingList').textContent);
 R.ok('оплата в списке есть', /12[.,]34/.test(list), list.replace(/\n/g, ' ').slice(0, 90));
 R.ok('ПОКАЗЫВАЕМ, СКОЛЬКО ЗАПЛАТИЛ ПОКУПАТЕЛЬ, А НЕ СКОЛЬКО ДОШЛО',
   list.includes('12.34') && !list.includes('12.2166'), list.replace(/\n/g, ' ').slice(0, 90));
@@ -52,7 +52,10 @@ page.on('dialog', async d => { dialogs.push(d.message()); await d.accept(); });
 const askedText = () => dialogs[0] || '';
 
 state.sent.length = 0;
-await page.evaluate(() => doRefund(0));
+/* Возврат с октября 2026 подтверждается лицом или паролем, как перевод. */
+const refunding = page.evaluate(() => doRefund(0)).catch(() => {});
+await answerConfirm(page).catch(() => {});
+await refunding;
 await page.waitForTimeout(9000);
 
 const asked = askedText();
@@ -81,12 +84,17 @@ state.sent.length = 0;
 dialogs.length = 0;
 await page.evaluate(() => loadIncoming());
 await page.waitForTimeout(2000);
-await page.evaluate(() => doRefund(0));
+const refunding2 = page.evaluate(() => doRefund(0)).catch(() => {});
+await answerConfirm(page).catch(() => {});
+await refunding2;
 await page.waitForTimeout(12000);
 
 const asked2 = askedText();
-R.ok('на новом контракте предупреждение другое — про отмену бонусов',
-  /отменит бонусы/i.test(asked2), asked2.slice(-140));
+/* Бонусы TVR закончились, и про их отмену больше не говорят. Говорят о
+   другом: деньги вернутся на адрес, с которого платили, а с биржи такой
+   возврат может не дойти. */
+R.ok('на новом контракте предупреждение — про адрес плательщика и биржи',
+  /с которого платили/i.test(asked2) && /бирж/i.test(asked2), asked2.slice(-140));
 
 const rf = state.sent.find(tx => tx.data.startsWith(iRefund.getSighash('refund')));
 R.ok('ВОЗВРАТ ПОШЁЛ ЧЕРЕЗ КОНТРАКТ', !!rf, state.sent.map(tx => tx.data.slice(0, 10)).join(','));

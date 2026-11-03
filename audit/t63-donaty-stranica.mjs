@@ -1,3 +1,4 @@
+import nodeCrypto from 'node:crypto';
 /* Донаты: страница wallet.tavarov.com/d/имя.
 
    Проверяется путь зрителя целиком: нашли автора по имени из блокчейна,
@@ -12,16 +13,19 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const { chromium } = require('/home/claude/.npm-global/lib/node_modules/playwright');
 
-const WWW = '/home/claude/apk/www', PORT = 8835;
+const WWW = new URL('../www', import.meta.url).pathname, PORT = 8835;
 const BLOGGER = '0x73bbcd23735257660a9f6be57d057dc4a2abf432';
 let posts = [], postStatus = 200;
 const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   if (u.pathname === '/api/donate' && req.method === 'POST'){
     let b = ''; req.on('data', d => b += d); req.on('end', () => {
-      posts.push(JSON.parse(b));
+      const body = JSON.parse(b);
+      /* Как настоящий сервер с 7.10.2026: номер доната — SHA-256 от nonce страницы. */
+      body.h = '0x' + nodeCrypto.createHash('sha256').update('tavarov-donate:' + String(body.nonce || '').toLowerCase()).digest('hex');
+      posts.push(body);
       res.writeHead(postStatus, { 'content-type': 'application/json' });
-      res.end(JSON.stringify(postStatus === 200 ? { ok: true } : { error: 'storage is not configured' }));
+      res.end(JSON.stringify(postStatus === 200 ? { ok: true, h: body.h } : { error: 'storage is not configured' }));
     });
     return;
   }
@@ -107,7 +111,7 @@ ok('СООБЩЕНИЕ УШЛО НА СЕРВЕР', posts.length === 1, JSON.str
 const p0 = posts[0] || {};
 ok('кому — автору', p0.to && p0.to.toLowerCase() === BLOGGER);
 ok('ник и текст как написаны', p0.nick === 'Ваня' && p0.msg === 'Спасибо за стрим! 🔥');
-ok('номер счёта — 32 случайных байта', /^0x[0-9a-f]{64}$/.test(p0.h || ''));
+ok('страница прислала nonce — 32 случайных байта, номер выдал сервер', /^0x[0-9a-f]{64}$/.test(p0.nonce || '') && /^0x[0-9a-f]{64}$/.test(p0.h || '') && p0.h !== p0.nonce);
 ok('сеть основная', p0.net === 'bnb');
 const url = page.url();
 ok('ДАЛЬШЕ — ОБЫЧНАЯ СТРАНИЦА ОПЛАТЫ', /\/pay\?lang=ru#p=/.test(url), url.slice(0, 80));

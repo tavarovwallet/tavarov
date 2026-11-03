@@ -3,15 +3,15 @@
    отвечает операцией, которую мы описали. */
 import { toRaw } from './solraw.mjs';
 import crypto from 'node:crypto';
-const API = await import('/home/claude/apk/functions/api/v1/[[path]].js');
-const { SOL } = await import('/home/claude/apk/functions/api/_sol.js');
+const API = await import(new URL('../functions/api/v1/[[path]].js', import.meta.url).href);
+const { SOL } = await import(new URL('../functions/api/_sol.js', import.meta.url).href);
 let okN = 0, badN = 0;
 const ok = (n, c, d) => { if (c) okN++; else badN++; console.log((c ? 'OK   ' : 'ПРОВАЛ ') + n + (d !== undefined ? '  [' + String(d).slice(0, 160) + ']' : '')); };
 const USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', TREASURY = 'Ew2cTsGyPv7pmn6CyLzV1X1K8A6nBWvJvmkvMY1sM4KU';
 const SM = 'GdegE4nrvYZFqdm63wWTQaZwVsfuDkEUPgtMKYdnVpFw', BUYER = 'CttRr6et6TryhMzCgZyKk9YyXp4TWXeYBkgZUg22Bxnt';
 const ataOf = async (o, m) => SOL.b58enc(await SOL.ata(SOL.b58dec(o, 32), SOL.b58dec(m, 32)));
 const map = new Map();
-const env = { TILL: { async get(k){ return map.has(k) ? map.get(k) : null; }, async put(k, v){ map.set(k, v); }, async delete(k){ map.delete(k); } }, V1_NO_THROTTLE: 1 };
+const env = { TILL: { async get(k){ return map.has(k) ? map.get(k) : null; }, async put(k, v){ map.set(k, v); }, async delete(k){ map.delete(k); } }, V1_NO_THROTTLE: 1, CRON_SECRET: 'cron-secret-for-tests' };
 const paidRefs = new Map();       // метка -> операция
 const hooks = [];
 globalThis.fetch = async (url, init) => {
@@ -54,7 +54,7 @@ const ref = SOL.refFromInvoice(inv.id);
 paidRefs.set(ref, { meta: { err: null, innerInstructions: [] }, transaction: { message: { accountKeys: [{ pubkey: BUYER }, { pubkey: ref }], instructions: [
   { program: 'spl-token', parsed: { type: 'transferChecked', info: { mint: USDC, destination: await ataOf(SM, USDC), authority: BUYER, tokenAmount: { amount: '24750000' } } } },
   { program: 'spl-token', parsed: { type: 'transferChecked', info: { mint: USDC, destination: await ataOf(TREASURY, USDC), authority: BUYER, tokenAmount: { amount: '250000' } } } } ] } } });
-const cron = await API.handle(new Request('https://wallet.tavarov.com/api/v1/cron', { method: 'POST' }), env, () => {});
+const cron = await API.handle(new Request('https://wallet.tavarov.com/api/v1/cron', { method: 'POST', headers: { authorization: 'Bearer cron-secret-for-tests' } }), env, () => {});
 const cj = await cron.json();
 ok('таймер обошёл счета Solana', typeof cj.scanned.solana === 'number' && cj.scanned.solana >= 1, JSON.stringify(cj));
 r = await call('GET', '/invoices/' + inv.id);

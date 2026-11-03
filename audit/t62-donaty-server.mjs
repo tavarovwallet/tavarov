@@ -4,7 +4,7 @@
    автор видит текст только если по номеру счёта в контракте есть оплата
    именно ему. И что к чужой уже оплаченной операции нельзя приписать свой
    текст задним числом. */
-const { onRequestGet, onRequestPost, onRequestOptions } = await import('/home/claude/apk/functions/api/donate.js');
+const { onRequestGet, onRequestPost, onRequestOptions, promoteByHash } = await import(new URL('../functions/api/donate.js', import.meta.url).href);
 
 let ok = 0, bad = 0;
 const t = (имя, условие, детали = '') => {
@@ -67,7 +67,14 @@ const OTHER = '0x2222222222222222222222222222222222222222';
 const BUYER = '0x3333333333333333333333333333333333333333';
 const H = n => '0x' + String(n).padStart(2, '0').repeat(32).slice(0, 64);
 
+/* С 7 октября 2026 номер доната выдаёт сервер: страница присылает случайное
+   число (nonce), номер — его SHA-256 с приставкой. Здесь hN — это nonce, а
+   номер, под которым оплата лежит в контракте, — await id(hN). */
+const id = async nonce => '0x' + Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
+  new TextEncoder().encode('tavarov-donate:' + String(nonce).toLowerCase())))).map(x => x.toString(16).padStart(2, '0')).join('');
+
 const post = async (body, origin) => {
+  if (body && typeof body === 'object' && 'h' in body){ body = Object.assign({}, body, { nonce: body.h }); delete body.h; }
   const r = await onRequestPost({ env, request: new Request('https://wallet.tavarov.com/api/donate', {
     method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, origin ? { origin } : {}),
     body: typeof body === 'string' ? body : JSON.stringify(body) }) });
@@ -103,24 +110,34 @@ t('ПОКА НЕ ОПЛАЧЕНО — АВТОР НИЧЕГО НЕ ВИДИТ', 
 
 t('ПОВТОРНОЕ СООБЩЕНИЕ К ТОМУ ЖЕ СЧЁТУ — 409', (await post({ to: BLOGGER, h: h1, msg: 'подмена' })).status === 409);
 
+/* Список сам ждущие донаты больше не перебирает: их подтверждает таймер API
+   по журналу контракта (promoteByHash), страница оплаты и экран стрима.
+   Здесь — путь таймера. */
+const promote = async (h, net = 'bnb') => { try{ await promoteByHash(env, net, BLOGGER, await id(h)); } catch(e){} };
+
 /* Оплатили ДРУГОМУ человеку с тем же номером — не в счёт. */
-sales[h1] = { merchant: OTHER, amount: 5n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+sales[await id(h1)] = { merchant: OTHER, amount: 5n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+await promote(h1);
 r = await get('to=' + BLOGGER);
 t('ОПЛАТА С ТЕМ ЖЕ НОМЕРОМ, НО ДРУГОМУ — СООБЩЕНИЕ НЕ ПОКАЗАНО', r.j.items.length === 0);
 
-sales[h1] = { merchant: BLOGGER, amount: 5n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+sales[await id(h1)] = { merchant: BLOGGER, amount: 5n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+await promote(h1);
 r = await get('to=' + BLOGGER);
 const it = r.j.items[0] || {};
 t('ПОСЛЕ ОПЛАТЫ АВТОРУ — ДОНАТ В СПИСКЕ', r.j.items.length === 1, JSON.stringify(r.j.items));
 t('сумма из контракта, а не со слов зрителя: 5 USDT', it.amount === '5' && it.cur === 'USDT', it.amount + ' ' + it.cur);
 t('ник и текст на месте', it.nick === 'Ваня' && it.msg === 'Спасибо за стрим!');
 t('плательщик — из контракта', it.payer === BUYER);
-t('ожидание убрано из хранилища', ![...env.TILL.map.keys()].some(k => k.startsWith('donp:') && k.endsWith(h1.slice(2))));
-t('донат хранится 180 дней, а не вечно', [...env.TILL.map.entries()].some(([k, v]) => k.startsWith('don:') && v.ttl === 180 * 86400));
+const h1id = await id(h1);
+t('ожидание убрано из хранилища', ![...env.TILL.map.keys()].some(k => k.startsWith('donp:') && k.endsWith(h1id.slice(2))));
+/* Запись подтверждённого доната — donh:<номер> (раньше don:…), с самим донатом
+   вместо отметки «1». */
+t('донат хранится 180 дней, а не вечно', [...env.TILL.map.entries()].some(([k, v]) => k.startsWith('donh:') && v.body !== '1' && v.ttl === 180 * 86400));
 
 // ---------- главное: задним числом к чужой оплате нельзя ----------
 const h2 = H(22);
-sales[h2] = { merchant: BLOGGER, amount: 100n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+sales[await id(h2)] = { merchant: BLOGGER, amount: 100n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
 r = await post({ to: BLOGGER, h: h2, nick: 'хейтер', msg: 'гадость от чужого имени' });
 t('К УЖЕ ОПЛАЧЕННОМУ ДОНАТУ СООБЩЕНИЕ НЕ ПРИПИСАТЬ — 409', r.status === 409, JSON.stringify(r.j));
 r = await get('to=' + BLOGGER);
@@ -129,7 +146,8 @@ t('и в списке его нет', !r.j.items.some(x => /гадость/.test
 // ---------- старый контракт тоже считается ----------
 const h3 = H(33);
 await post({ to: BLOGGER, h: h3, msg: 'через старый контракт' });
-sales[h3] = { merchant: BLOGGER, amount: 25n * 10n ** 17n, buyer: BUYER, token: USDT, hub: V2 };
+sales[await id(h3)] = { merchant: BLOGGER, amount: 25n * 10n ** 17n, buyer: BUYER, token: USDT, hub: V2 };
+await promote(h3);
 r = await get('to=' + BLOGGER);
 t('ОПЛАТА ЧЕРЕЗ v2 ТОЖЕ ПОДТВЕРЖДАЕТ', r.j.items.some(x => x.msg === 'через старый контракт' && x.amount === '2.5'), JSON.stringify(r.j.items.map(x => x.amount)));
 
@@ -158,17 +176,18 @@ t('предварительный запрос OPTIONS', o.status === 204 && o.h
 // ---------- один донат по номеру (так спрашивает экран стрима) ----------
 const h5 = H(55);
 await post({ to: BLOGGER, h: h5, nick: 'Стример-фан', msg: 'Привет чату!' });
-r = await get('to=' + BLOGGER + '&h=' + h5);
+r = await get('to=' + BLOGGER + '&h=' + await id(h5));
 t('ЭКРАН СТРИМА: до оплаты доната нет', r.status === 200 && r.j.item === null && r.j.pending === true, JSON.stringify(r.j));
-sales[h5] = { merchant: BLOGGER, amount: 10n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
-r = await get('to=' + BLOGGER + '&h=' + h5);
+sales[await id(h5)] = { merchant: BLOGGER, amount: 10n * 10n ** 18n, buyer: BUYER, token: USDT, hub: V3 };
+r = await get('to=' + BLOGGER + '&h=' + await id(h5));
 t('ЭКРАН СТРИМА: после оплаты — донат с ником, текстом и суммой', r.j.item && r.j.item.nick === 'Стример-фан' && r.j.item.msg === 'Привет чату!' && r.j.item.amount === '10', JSON.stringify(r.j));
-r = await get('to=' + BLOGGER + '&h=' + h5);
+r = await get('to=' + BLOGGER + '&h=' + await id(h5));
 t('повторный вопрос — тот же донат, уже без обращения к сети', r.j.item && r.j.item.msg === 'Привет чату!');
-t('и он же есть в общем списке', (await get('to=' + BLOGGER)).j.items.some(x => x.h === h5));
-r = await get('to=' + OTHER + '&h=' + h5);
+const h5id = await id(h5);
+t('и он же есть в общем списке', (await get('to=' + BLOGGER)).j.items.some(x => x.h === h5id));
+r = await get('to=' + OTHER + '&h=' + await id(h5));
 t('ЧУЖОМУ АВТОРУ ЧУЖОЙ ДОНАТ ПО НОМЕРУ НЕ ОТДАЁМ', r.j.item === null);
-t('номер, о котором ничего не знаем, — пусто', (await get('to=' + BLOGGER + '&h=' + H(66))).j.item === null);
+t('номер, о котором ничего не знаем, — пусто', (await get('to=' + BLOGGER + '&h=' + await id(H(66)))).j.item === null);
 t('кривой номер — 400', (await get('to=' + BLOGGER + '&h=0x12')).status === 400);
 
 // ---------- тестовая сеть: контракт без saleOf, оплата по журналу ----------
@@ -180,15 +199,15 @@ const logPay = (h, merchant, amount, b) => tLogs.push({ address: TPAY, b,
 /* Старый донат без сообщения, оплаченный ДО того, как кто-то пришёл
    приписать к нему текст. */
 const hOld = H(77);
-logPay(hOld, BLOGGER, 3000000n, tBlock - 50);
+logPay(await id(hOld), BLOGGER, 3000000n, tBlock - 50);
 r = await post({ net: 'bnbTestnet', to: BLOGGER, h: hOld, nick: 'хейтер', msg: 'чужими деньгами' });
 t('ТЕСТОВАЯ СЕТЬ: к уже оплаченному (по журналу) — 409', r.status === 409, JSON.stringify(r.j));
 const hT = H(88);
 r = await post({ net: 'bnbTestnet', to: BLOGGER, h: hT, nick: 'Тест', msg: 'тестовый донат' });
 t('ТЕСТОВАЯ СЕТЬ: сообщение до оплаты принято (раньше отказ старого контракта давал 503)', r.status === 200, JSON.stringify(r.j));
 tBlock += 30;
-logPay(hT, BLOGGER, 2500000n, tBlock - 2);
-r = await get('net=bnbTestnet&to=' + BLOGGER + '&h=' + hT);
+logPay(await id(hT), BLOGGER, 2500000n, tBlock - 2);
+r = await get('net=bnbTestnet&to=' + BLOGGER + '&h=' + await id(hT));
 t('ТЕСТОВАЯ СЕТЬ: оплата найдена в журнале — донат с суммой 2.5 USDT', r.j.item && r.j.item.amount === '2.5' && r.j.item.cur === 'USDT' && r.j.item.msg === 'тестовый донат', JSON.stringify(r.j));
 
 // ---------- без хранилища ----------

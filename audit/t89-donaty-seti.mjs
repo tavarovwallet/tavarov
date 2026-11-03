@@ -2,8 +2,8 @@
    подпись ed25519, очередь для таймера) и Ethereum (тот же контракт v3). */
 import { toRaw } from './solraw.mjs';
 import crypto from 'node:crypto';
-const DON = await import('/home/claude/apk/functions/api/donate.js');
-const { SOL } = await import('/home/claude/apk/functions/api/_sol.js');
+const DON = await import(new URL('../functions/api/donate.js', import.meta.url).href);
+const { SOL } = await import(new URL('../functions/api/_sol.js', import.meta.url).href);
 let okN = 0, badN = 0;
 const ok = (n, c, d) => { if (c) okN++; else badN++; console.log((c ? 'OK   ' : 'ПРОВАЛ ') + n + (d !== undefined ? '  [' + String(d).slice(0, 160) + ']' : '')); };
 
@@ -22,6 +22,9 @@ for (;;){
 }
 const ataOf = async (o, m) => SOL.b58enc(await SOL.ata(SOL.b58dec(o, 32), SOL.b58dec(m, 32)));
 const hx = n => '0x' + String(n).padStart(4, '0').repeat(16);
+/* С 7 октября 2026 номер доната выдаёт сервер: страница шлёт nonce (здесь hx),
+   номер в сети — SHA-256('tavarov-donate:' + nonce). */
+const id = async nonce => '0x' + crypto.createHash('sha256').update('tavarov-donate:' + nonce.toLowerCase()).digest('hex');
 
 const map = new Map();
 const env = { V1_NO_THROTTLE: '1', TILL: {
@@ -61,7 +64,7 @@ async function pay(h, toM, toT, mint, owner){
       { program: 'spl-token', parsed: { type: 'transferChecked', info: { mint, destination: await ataOf(owner || AUTHOR, mint), authority: BUYER, tokenAmount: { amount: String(toM) } } } },
       { program: 'spl-token', parsed: { type: 'transferChecked', info: { mint, destination: await ataOf(TREASURY, mint), authority: BUYER, tokenAmount: { amount: String(toT) } } } } ] } } });
 }
-const post = async body => { const r = await DON.onRequestPost({ env, request: new Request('https://wallet.tavarov.com/api/donate', { method: 'POST',
+const post = async body => { if (body && 'h' in body){ body = Object.assign({}, body, { nonce: body.h }); delete body.h; } const r = await DON.onRequestPost({ env, request: new Request('https://wallet.tavarov.com/api/donate', { method: 'POST',
   headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }) }); return { status: r.status, body: await r.json() }; };
 const get = async qs => { const r = await DON.onRequestGet({ env, request: new Request('https://wallet.tavarov.com/api/donate?' + qs) }); return { status: r.status, body: await r.json() }; };
 
@@ -77,44 +80,45 @@ ok('0x-адрес в Solana — отказ', r.status === 400);
 // ---- сообщение до оплаты ----
 r = await post({ net: 'solana', to: AUTHOR, h: hx(1), nick: 'Ваня', msg: 'Спасибо за стрим' });
 ok('сообщение принято', r.status === 200 && r.body.ok, JSON.stringify(r.body));
-ok('ждущий ключ — с адресом как есть, без строчных', map.has('donp:solana:' + AUTHOR + ':' + hx(1)));
+ok('ждущий ключ — с адресом как есть, без строчных', map.has('donp:solana:' + AUTHOR + ':' + (await id(hx(1)))));
 const q0 = JSON.parse(map.get('donsolq').body);
-ok('счёт лёг в очередь Solana', q0.length === 1 && q0[0].to === AUTHOR && q0[0].h === hx(1), JSON.stringify(q0));
-r = await get('net=solana&to=' + AUTHOR + '&h=' + hx(1));
+const h1id = await id(hx(1));
+ok('счёт лёг в очередь Solana', q0.length === 1 && q0[0].to === AUTHOR && q0[0].h === h1id, JSON.stringify(q0));
+r = await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(1)));
 ok('оплаты нет — ждёт', r.body.item === null && r.body.pending === true, JSON.stringify(r.body));
 
 // ---- оплата без комиссии и копеечная ----
-await pay(hx(1), 4_950_000, 0, USDC);
-r = await get('net=solana&to=' + AUTHOR + '&h=' + hx(1));
+await pay(await id(hx(1)), 4_950_000, 0, USDC);
+r = await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(1)));
 ok('без 1% в казну — не донат', r.body.item === null, JSON.stringify(r.body));
 
 r = await post({ net: 'solana', to: AUTHOR, h: hx(2), nick: '', msg: 'копейка' });
-await pay(hx(2), 49_500, 500, USDC);
-r = await get('net=solana&to=' + AUTHOR + '&h=' + hx(2));
+await pay(await id(hx(2)), 49_500, 500, USDC);
+r = await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(2)));
 ok('5 центов — на экран не идёт', r.body.item === null);
 
 // ---- настоящая оплата ----
-await pay(hx(1), 4_950_000, 50_000, USDC);
-r = await get('net=solana&to=' + AUTHOR + '&h=' + hx(1));
+await pay(await id(hx(1)), 4_950_000, 50_000, USDC);
+r = await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(1)));
 ok('оплата 4.95 + 0.05 USDC — донат 5 USDC', r.body.item && r.body.item.amount === '5' && r.body.item.cur === 'USDC' && r.body.item.nick === 'Ваня', JSON.stringify(r.body));
 ok('плательщик — как в сети, регистр сохранён', r.body.item && r.body.item.payer === BUYER, r.body.item && r.body.item.payer);
-r = await get('net=solana&to=' + AUTHOR.toLowerCase() + '&h=' + hx(1));
+r = await get('net=solana&to=' + AUTHOR.toLowerCase() + '&h=' + await id(hx(1)));
 ok('тот же донат по адресу строчными — не отдаём', r.status === 400);
 r = await post({ net: 'solana', to: AUTHOR, h: hx(1), msg: 'чужой текст' });
 ok('второе сообщение к оплаченному — отказ', r.status === 409);
 r = await post({ net: 'solana', to: AUTHOR, h: hx(3), msg: 'после оплаты' });
-await pay(hx(4), 990_000, 10_000, USDT);
+await pay(await id(hx(4)), 990_000, 10_000, USDT);
 r = await post({ net: 'solana', to: AUTHOR, h: hx(4), msg: 'к чужой оплате' });
 ok('сообщение к уже оплаченному счёту — отказ', r.status === 409, JSON.stringify(r.body));
 
 // ---- USDT, оплата другому автору ----
-await pay(hx(3), 1_980_000, 20_000, USDT, BUYER);
-r = await get('net=solana&to=' + AUTHOR + '&h=' + hx(3));
+await pay(await id(hx(3)), 1_980_000, 20_000, USDT, BUYER);
+r = await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(3)));
 ok('деньги ушли другому — не донат этому автору', r.body.item === null);
 
 // ---- таймер ----
 r = await post({ net: 'solana', to: AUTHOR, h: hx(5), nick: 'Kate', msg: 'из таймера' });
-await pay(hx(5), 2_970_000, 30_000, USDT);
+await pay(await id(hx(5)), 2_970_000, 30_000, USDT);
 const before = JSON.parse(map.get('donsolq').body).length;
 const cr = await DON.promoteSolDonations(env);
 ok('таймер подтвердил донат и почистил очередь', cr && cr.promoted >= 1 && JSON.parse(map.get('donsolq').body).length < before, JSON.stringify(cr));
@@ -129,7 +133,7 @@ ok('адреса долларовых счетов автора', r.body.atas &&
 await new Promise(res => setTimeout(res, 20));
 const t0 = Date.now();
 r = await post({ net: 'solana', to: AUTHOR, h: hx(6), nick: 'Obs', msg: 'с экрана' });
-await pay(hx(6), 990_000, 10_000, USDC);
+await pay(await id(hx(6)), 990_000, 10_000, USDC);
 r = await get('net=solana&to=' + AUTHOR + '&recent=1&since=' + t0);
 ok('экран: свежий донат найден и подтверждён', r.body.items.length === 1 && r.body.items[0].nick === 'Obs', JSON.stringify(r.body));
 
@@ -151,8 +155,8 @@ ok('подпись EVM вместо Solana — отказ', r.status === 400);
 // цель: донат после постановки цели считается
 await new Promise(res => setTimeout(res, 1100));
 r = await post({ net: 'solana', to: AUTHOR, h: hx(7), nick: 'G', msg: 'на цель' });
-await pay(hx(7), 9_900_000, 100_000, USDC);
-await get('net=solana&to=' + AUTHOR + '&h=' + hx(7));
+await pay(await id(hx(7)), 9_900_000, 100_000, USDC);
+await get('net=solana&to=' + AUTHOR + '&h=' + await id(hx(7)));
 r = await get('net=solana&to=' + AUTHOR + '&profile=1');
 ok('цель считает донаты с момента постановки', r.body.profile.goal && r.body.profile.goal.raised === '10' && r.body.profile.greeting === 'Привет', JSON.stringify(r.body));
 r = await get('net=solana&to=' + AUTHOR + '&stats=1');
@@ -169,11 +173,11 @@ const ETH_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 const STREAMER = '0x' + 'aB'.repeat(20);
 r = await post({ net: 'eth', to: STREAMER, h: hx(20), nick: 'Eth', msg: 'gm' });
 ok('Ethereum: сообщение принято', r.status === 200, JSON.stringify(r.body));
-evmSales[hx(20)] = { merchant: STREAMER, amount: 2_000_000n, token: ETH_USDC };
-r = await get('net=eth&to=' + STREAMER + '&h=' + hx(20));
+evmSales[await id(hx(20))] = { merchant: STREAMER, amount: 2_000_000n, token: ETH_USDC };
+r = await get('net=eth&to=' + STREAMER + '&h=' + await id(hx(20)));
 ok('Ethereum: оплата через контракт v3 — донат 2 USDC (6 знаков)', r.body.item && r.body.item.amount === '2' && r.body.item.cur === 'USDC', JSON.stringify(r.body));
 ok('Ethereum: ключ — адрес строчными', map.has('donidx:eth:' + STREAMER.toLowerCase()));
-r = await get('net=bnb&to=' + STREAMER + '&h=' + hx(20));
+r = await get('net=bnb&to=' + STREAMER + '&h=' + await id(hx(20)));
 ok('тот же счёт в другой сети не отдаём', r.body.item === null);
 r = await post({ net: 'base', to: STREAMER, h: hx(21), msg: 'base' });
 ok('Base: сообщение принято', r.status === 200);
