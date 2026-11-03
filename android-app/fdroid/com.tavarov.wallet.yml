@@ -11,7 +11,7 @@ AuthorEmail: hi@tavarov.com
 WebSite: https://tavarov.com
 SourceCode: https://github.com/tavarovwallet/tavarov
 IssueTracker: https://github.com/tavarovwallet/tavarov/issues
-Changelog: https://github.com/tavarovwallet/tavarov/tree/main/fastlane/metadata/android/en-US/changelogs
+Changelog: https://github.com/tavarovwallet/tavarov/releases
 
 AutoName: NoN Wallet
 
@@ -23,11 +23,11 @@ Builds:
     versionCode: 34
     commit: 26d0a0fe03581c4803f7fb712b3d5dd028941b6f
     subdir: android-app/android/app
-    scandelete:
-      - site/downloads
-    prebuild: sh ../../sync-www.sh
     gradle:
       - yes
+    prebuild: sh ../../sync-www.sh
+    scandelete:
+      - site/downloads
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^wallet-v
