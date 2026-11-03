@@ -21,7 +21,7 @@ Repo: https://github.com/tavarovwallet/tavarov.git
 Builds:
   - versionName: 1.1.0
     versionCode: 34
-    commit: 0430e27ef0d7cb3d527adce4c6d3091a8c639f92
+    commit: 26d0a0fe03581c4803f7fb712b3d5dd028941b6f
     subdir: android-app/android/app
     scandelete:
       - site/downloads
