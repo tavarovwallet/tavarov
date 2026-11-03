@@ -16,3 +16,6 @@ keystore.properties
 *.apk
 *.aab
 android/app/build/
+
+# Снимки экрана, которые проверки audit/ пишут при каждом прогоне
+audit/shots/
