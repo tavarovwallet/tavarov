@@ -511,8 +511,12 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 				$this->note_once( $order, 'mismatch', __( 'Tavarov Pay reports the invoice as paid, but its amount or currency does not match this order. The order was NOT marked paid — please check it manually.', 'tavarov-pay' ) );
 				return false;
 			}
-			$tx = isset( $inv['payment']['tx'] ) && is_string( $inv['payment']['tx'] ) && preg_match( '/^0x[0-9a-f]{64}$/', $inv['payment']['tx'] ) ? $inv['payment']['tx'] : '';
 			$test = 'yes' === $order->get_meta( self::META_TEST );
+			$tx   = isset( $inv['payment']['tx'] ) && is_string( $inv['payment']['tx'] ) ? $inv['payment']['tx'] : '';
+			$link = self::explorer_link( (string) $order->get_meta( self::META_NETWORK ), $tx, $test );
+			if ( '' === $link ) {
+				$tx = '';
+			}
 			$order->update_meta_data( self::META_STATUS, 'paid' );
 			$order->payment_complete( $tx );
 			$order->add_order_note(
@@ -522,7 +526,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 					$inv['payment']['amount'] ?? $inv['amount'],
 					$inv['currency'],
 					isset( $inv['payment']['payer'] ) ? $inv['payment']['payer'] : '—',
-					$tx ? ( $test ? 'https://testnet.bscscan.com/tx/' : 'https://bscscan.com/tx/' ) . $tx : '—',
+					$link ? $link : '—',
 					$test ? __( '(TEST network — no real money)', 'tavarov-pay' ) : ''
 				)
 			);
@@ -756,6 +760,33 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$s = number_format( (float) $total, min( 6, max( 2, (int) wc_get_price_decimals() ) ), '.', '' );
 		$s = rtrim( rtrim( $s, '0' ), '.' );
 		return '' === $s ? '0' : $s;
+	}
+
+	/**
+	 * Explorer link for a payment transaction, by the order's network.
+	 * Returns an empty string when the id does not look like a transaction of that network.
+	 *
+	 * @param string $network Network key saved on the order (bnb, ethereum, base, solana).
+	 * @param string $tx      Transaction id from the API.
+	 * @param bool   $test    Test mode (BNB test network).
+	 * @return string
+	 */
+	public static function explorer_link( $network, $tx, $test ) {
+		if ( 'solana' === $network ) {
+			return preg_match( '/^[1-9A-HJ-NP-Za-km-z]{64,90}$/', $tx ) ? 'https://solscan.io/tx/' . $tx : '';
+		}
+		if ( ! preg_match( '/^0x[0-9a-fA-F]{64}$/', $tx ) ) {
+			return '';
+		}
+		$tx = strtolower( $tx );
+		if ( $test ) {
+			return 'https://testnet.bscscan.com/tx/' . $tx;
+		}
+		$hosts = array(
+			'ethereum' => 'https://etherscan.io/tx/',
+			'base'     => 'https://basescan.org/tx/',
+		);
+		return ( isset( $hosts[ $network ] ) ? $hosts[ $network ] : 'https://bscscan.com/tx/' ) . $tx;
 	}
 
 	/**

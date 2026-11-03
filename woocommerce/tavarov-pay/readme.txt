@@ -4,11 +4,11 @@ Tags: crypto, usdt, usdc, cryptocurrency, payment gateway
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. Customers pay from any wallet, the money goes straight to your own wallet. No custodian, 1% fee.
+Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. Customers pay from any wallet, money goes straight to yours. 1% fee.
 
 == Description ==
 
@@ -47,8 +47,9 @@ This plugin relies on the **Tavarov Pay API** (https://wallet.tavarov.com/api/v1
 
 What is sent, and when:
 
-* **When a customer places an order with this method:** order amount, currency (USDT/USDC), the network and, for Solana, your Solana address, an order reference (order ID plus a short hash of your site address), the text "Order #N", your site title, the invoice lifetime, the customer's language, the "order received" page address, the WooCommerce order ID and your site's host name. Your API key is sent in the Authorization header. **No customer name, email, address or phone number is sent.**
+* **When a customer places an order with this method:** order amount, currency (USDT/USDC), the network and, for Solana, your Solana address, an order reference (order ID plus a short hash of your site address), the text "Order #N", your site title, the invoice lifetime, the language WordPress uses on the checkout page (two letters, e.g. "en"), the "order received" page address, the WooCommerce order ID and your site's host name. Your API key is sent in the Authorization header. **No customer name, email, address or phone number is sent.**
 * **When checking a payment** (webhook, return page, background check, or the "Check payment" order action): the invoice ID and your API key.
+* **With every request:** a User-Agent header with the plugin version and your site address, so a failing shop can be identified in the API logs.
 * The customer's browser opens the payment page at https://wallet.tavarov.com/pay, which reads the chosen network through public RPC nodes to show the payment status.
 
 Tavarov Pay terms of use: https://tavarov.com/terms.html
@@ -86,9 +87,20 @@ Refunds are sent from your wallet (the NoN Wallet app has a refund button for pa
 
 No. Payments are in USDT and USDC only.
 
+== Screenshots ==
+
+1. The payment page your customer sees: amount, QR code and "pay with wallet" buttons.
+2. On Solana the customer scans a Solana Pay code or pays in Phantom or Solflare.
+
 == Changelog ==
 
+= 1.1.1 =
+* The order note links the payment to the right explorer: Etherscan, BaseScan or Solscan (it always pointed to BscScan before), and Solana transaction ids are now recorded.
+* Deleting the plugin also removes its pending payment re-checks.
+* The External services section now lists the User-Agent header and says the language sent is the checkout page's.
+
 = 1.1.0 =
+* Translations now come from translate.wordpress.org; the bundled language files are removed.
 * Choose the network: BNB Chain, Ethereum, Base or Solana (Solana needs your Solana address). Base always charges in USDC.
 * The plugin checks that the invoice the API returns is on the network it asked for.
 
