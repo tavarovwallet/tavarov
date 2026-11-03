@@ -700,5 +700,10 @@
  "kfd8eaca1": "Saving to a file didn’t work in this build. Copy the backup text with the button below and paste it into any note or file.",
  "kfd90a131": "Paste the address",
  "kfe7b5df4": "Confirm and send",
- "kff64f183": "waiting for network confirmation"
+ "kff64f183": "waiting for network confirmation",
+ "k47080644": "Save to iCloud or Google Drive",
+ "k44426372": "In the window that opens, choose “Save to Files” → iCloud Drive on iPhone, or “Google Drive” on Android. Then the wallet can be restored on any phone: all it takes is this file and the password.",
+ "kd7b3b80b": "Your wallet is ready. Save a copy to the cloud: if you lose your phone, the wallet comes back with this file and your password.",
+ "kaf0b0041": "This version of the app cannot save the file. The backup text has been copied: paste it into a new file in iCloud Drive or Google Drive, or open the wallet in a browser and save the backup from there.",
+ "k1f8f5b45": "You can pick the file straight from iCloud Drive or Google Drive."
 }

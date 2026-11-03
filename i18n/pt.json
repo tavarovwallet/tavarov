@@ -700,5 +700,10 @@
  "kfd8eaca1": "Salvar em arquivo não funcionou nesta versão. Copie o texto do backup com o botão abaixo e cole em qualquer nota ou arquivo.",
  "kfd90a131": "Cole o endereço",
  "kfe7b5df4": "Confirmar e enviar",
- "kff64f183": "aguardando a confirmação da rede"
+ "kff64f183": "aguardando a confirmação da rede",
+ "k47080644": "Salvar no iCloud ou Google Drive",
+ "k44426372": "Na janela que abrir, escolha “Salvar em Arquivos” → iCloud Drive no iPhone, ou “Google Drive” no Android. Assim a carteira pode ser restaurada em qualquer celular: basta este arquivo e a senha.",
+ "kd7b3b80b": "Sua carteira está pronta. Salve uma cópia na nuvem: se perder o celular, a carteira volta com este arquivo e sua senha.",
+ "kaf0b0041": "Esta versão do app não consegue salvar o arquivo. O texto do backup foi copiado: cole-o num novo arquivo no iCloud Drive ou Google Drive, ou abra a carteira no navegador e salve o backup por lá.",
+ "k1f8f5b45": "Você pode escolher o arquivo direto do iCloud Drive ou Google Drive."
 }

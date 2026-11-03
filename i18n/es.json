@@ -700,5 +700,10 @@
  "kfd8eaca1": "Guardar en un archivo no funcionó en esta versión. Copia el texto de la copia con el botón de abajo y pégalo en cualquier nota o archivo.",
  "kfd90a131": "Pega la dirección",
  "kfe7b5df4": "Confirmar y enviar",
- "kff64f183": "esperando la confirmación de la red"
+ "kff64f183": "esperando la confirmación de la red",
+ "k47080644": "Guardar en iCloud o Google Drive",
+ "k44426372": "En la ventana que se abre, elige «Guardar en Archivos» → iCloud Drive en iPhone, o «Google Drive» en Android. Así podrás restaurar la billetera en cualquier teléfono: solo necesitas este archivo y la contraseña.",
+ "kd7b3b80b": "Tu billetera está lista. Guarda una copia en la nube: si pierdes el teléfono, la billetera se recupera con este archivo y tu contraseña.",
+ "kaf0b0041": "Esta versión de la app no puede guardar el archivo. Se copió el texto de la copia: pégalo en un archivo nuevo en iCloud Drive o Google Drive, o abre la billetera en el navegador y guarda la copia desde allí.",
+ "k1f8f5b45": "Puedes elegir el archivo directamente desde iCloud Drive o Google Drive."
 }

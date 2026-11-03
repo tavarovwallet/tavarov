@@ -700,5 +700,10 @@
  "kfd8eaca1": "Bu sürümde dosyaya kaydetmek işe yaramadı. Aşağıdaki düğmeyle yedek metnini kopyalayıp herhangi bir nota ya da dosyaya yapıştırın.",
  "kfd90a131": "Adresi yapıştırın",
  "kfe7b5df4": "Onayla ve gönder",
- "kff64f183": "ağ onayı bekleniyor"
+ "kff64f183": "ağ onayı bekleniyor",
+ "k47080644": "iCloud veya Google Drive'a kaydet",
+ "k44426372": "Açılan pencerede iPhone'da «Dosyalar'a Kaydet» → iCloud Drive'ı, Android'de «Google Drive»'ı seçin. Böylece cüzdan herhangi bir telefonda geri yüklenebilir: yalnızca bu dosya ve şifre gerekir.",
+ "kd7b3b80b": "Cüzdanınız hazır. Bir kopyasını buluta kaydedin: telefonunuzu kaybederseniz cüzdan bu dosya ve şifrenizle geri gelir.",
+ "kaf0b0041": "Uygulamanın bu sürümü dosyayı kaydedemiyor. Yedek metni kopyalandı: iCloud Drive veya Google Drive'da yeni bir dosyaya yapıştırın ya da cüzdanı tarayıcıda açıp yedeği oradan kaydedin.",
+ "k1f8f5b45": "Dosyayı doğrudan iCloud Drive veya Google Drive'dan seçebilirsiniz."
 }
