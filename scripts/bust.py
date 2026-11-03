@@ -13,3 +13,12 @@ sub('creator/creator/app.js', 'core.mjs', 'creator/creator/core.mjs')
 sub('www/index.html', 'bridge.js', 'www/creator/bridge.js')
 for name in ['app.js', 'app.css', 'creator-translations.js']:
     sub('creator/index.html', name, 'creator/creator/' + name)
+
+# tavarov.com pages. Without a new ?v= a browser that cached the old file keeps
+# it: on 3 Nov the page showed "Version 1.1.3" untranslated because
+# translations.js was still the cached copy with the old key.
+import glob
+for page in sorted(glob.glob(str(R / 'site' / '**' / '*.html'), recursive=True)):
+    rel = str(pathlib.Path(page).relative_to(R))
+    for name in ['translations.js', 'audience-translations.js', 'i18n.js', 'site.js', 'site.css', 'donate.js', 'donate.css']:
+        sub(rel, '/' + name, 'site/' + name)
