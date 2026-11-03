@@ -4,7 +4,7 @@ AntiFeatures:
       that are not open source (public blockchain nodes, CoinGecko, KyberSwap, Jupiter,
       Relay, MoonPay, Transak, Onramper).
 Categories:
-  - Money
+  - Wallet
 License: MIT
 AuthorName: Tavarov
 AuthorEmail: hi@tavarov.com
