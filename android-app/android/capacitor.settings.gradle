@@ -1,0 +1,7 @@
+// Capacitor modules. They live in android-app/vendor (see vendor/README.md),
+// so the app builds with Gradle alone: no Node.js and no npm install needed.
+include ':capacitor-android'
+project(':capacitor-android').projectDir = new File('../vendor/capacitor-android/capacitor')
+
+include ':capgo-capacitor-native-biometric'
+project(':capgo-capacitor-native-biometric').projectDir = new File('../vendor/capacitor-native-biometric/android')

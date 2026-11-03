@@ -1,0 +1,22 @@
+NoN Wallet is a self-custody wallet for the two big dollar stablecoins, USDT and USDC, on BNB Chain, Ethereum, Base and Solana. It is also a till: a seller names an amount, the buyer scans the code and pays straight into the seller's wallet.
+
+Your keys never leave your phone. One 12-word recovery phrase restores the wallet on all four networks. Nobody else, including us, can move or freeze your money.
+
+<b>What it does</b>
+<ul>
+<li>Hold, send and receive USDT, USDC and each network's own coin</li>
+<li>Scan payment QR codes with the camera</li>
+<li>Take payments: create an invoice with a QR code; the buyer pays from their own wallet and the money arrives in yours in the same transaction (1% fee, paid by the seller)</li>
+<li>Receive tips as a creator, with an alert for your stream</li>
+<li>Swap tokens inside the wallet through KyberSwap (BNB Chain, Ethereum, Base) and Jupiter (Solana). The wallet checks the route before you sign. Swaps carry a 0.5% fee</li>
+<li>Unlock with your fingerprint. The keys on the phone are encrypted with your password</li>
+</ul>
+
+<b>Good to know</b>
+<ul>
+<li>The payment contracts are open source and verified on BscScan, but they have not been independently audited yet. Keep amounts you can afford to lose.</li>
+<li>Balances, prices, swaps and optional card top-ups come from third-party services (public blockchain nodes, CoinGecko, KyberSwap, Jupiter, Relay, MoonPay, Transak, Onramper). These services are not open source.</li>
+<li>No ads and no trackers. App backups are switched off, so the keys cannot leave the phone through a backup: keep your recovery phrase on paper.</li>
+</ul>
+
+Source code, contract addresses and an honest list of limitations: https://github.com/tavarovwallet/tavarov

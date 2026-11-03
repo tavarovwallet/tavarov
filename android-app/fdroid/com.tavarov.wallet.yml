@@ -1,0 +1,35 @@
+AntiFeatures:
+  NonFreeNet:
+    en-US: Balances, prices, swaps and optional card top-ups use third-party services
+      that are not open source (public blockchain nodes, CoinGecko, KyberSwap, Jupiter,
+      Relay, MoonPay, Transak, Onramper).
+Categories:
+  - Money
+License: MIT
+AuthorName: Tavarov
+AuthorEmail: hi@tavarov.com
+WebSite: https://tavarov.com
+SourceCode: https://github.com/tavarovwallet/tavarov
+IssueTracker: https://github.com/tavarovwallet/tavarov/issues
+Changelog: https://github.com/tavarovwallet/tavarov/tree/main/fastlane/metadata/android/en-US/changelogs
+
+AutoName: NoN Wallet
+
+RepoType: git
+Repo: https://github.com/tavarovwallet/tavarov.git
+
+Builds:
+  - versionName: 1.1.0
+    versionCode: 34
+    commit: wallet-v1.1.0
+    subdir: android-app/android/app
+    scandelete:
+      - site/downloads
+    prebuild: sh ../../sync-www.sh
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^wallet-v
+CurrentVersion: 1.1.0
+CurrentVersionCode: 34

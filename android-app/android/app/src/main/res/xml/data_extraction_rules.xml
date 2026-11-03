@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Что разрешено вынести из приложения. Правильный ответ для кошелька: ничего.
+
+  allowBackup="false" закрывает копирование в облако и через adb, но начиная
+  с Android 12 остаётся ещё один путь — перенос на новый телефон. По нему
+  хранилище кошелька уезжает на другое устройство, и там пароль к нему можно
+  подбирать сколько угодно, без блокировок и без нашего ведома.
+
+  Поэтому закрыты оба пути. Цена — при переезде на новый телефон кошелёк не
+  переедет сам. Это не потеря: кошелёк восстанавливается фразой из двенадцати
+  слов, и человек, у которого её нет, всё равно потерял бы деньги при первой
+  же поломке телефона.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>

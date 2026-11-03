@@ -1,0 +1,51 @@
+# Builds the Android app the way F-Droid does: copy www into the assets,
+# then an unsigned `assembleRelease` with Gradle only (no Node, no signing key).
+# Runs when the app or the wallet it wraps changes; the unsigned APK is kept as
+# an artifact for 14 days so anyone can try it.
+name: Android build
+on:
+  push:
+    paths:
+      - "android-app/**"
+      - "www/**"
+      - ".github/workflows/android.yml"
+    tags:
+      - "wallet-v*"
+  pull_request:
+    paths:
+      - "android-app/**"
+      - "www/**"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Copy the wallet into the app
+        run: sh android-app/sync-www.sh
+      - name: Build unsigned release APK
+        working-directory: android-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+      - name: Check the APK
+        run: |
+          APK=android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          ls -l "$APK"
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT2" dump badging "$APK" | head -3
+          if unzip -p "$APK" 'classes*.dex' | grep -a -q -E "Lcom/google/(android/gms|firebase)/"; then
+            echo "::error::Google Play services or Firebase classes found in the APK"; exit 1
+          fi
+          echo "No Google Play services or Firebase classes inside."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: non-wallet-unsigned-apk
+          path: android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          retention-days: 14

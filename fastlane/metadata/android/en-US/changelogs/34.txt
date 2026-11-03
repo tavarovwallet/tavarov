@@ -1,0 +1,1 @@
+First F-Droid release. Built from source, with no Google services and no trackers. Wallet, till, swaps and creator tips on BNB Chain, Ethereum, Base and Solana.

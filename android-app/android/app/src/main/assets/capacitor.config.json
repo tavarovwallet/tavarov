@@ -1,0 +1,9 @@
+{
+	"appId": "com.tavarov.wallet",
+	"appName": "NoN Wallet",
+	"webDir": "www",
+	"backgroundColor": "#F4F4F6",
+	"android": {
+		"allowMixedContent": false
+	}
+}
