@@ -59,6 +59,20 @@ jobs:
         if: steps.c.outputs.creator
         working-directory: creator
         run: npx --yes wrangler@4 pages deploy . --project-name tavarov-creator --branch production --commit-dirty=true
+      - name: Put the Android app next to the site
+        if: steps.c.outputs.site
+        run: |
+          # The APK is not in main: *.apk is ignored (and F-Droid must not find
+          # binaries in the source). Since deploys moved here on 1 Nov the file
+          # was simply missing, and tavarov.com/tavarov.apk answered with the
+          # home page. It now lives alone on the android-apk branch, and
+          # site/apk.json says exactly which file the page promises.
+          git fetch --depth=1 origin android-apk
+          git show FETCH_HEAD:tavarov.apk > site/tavarov.apk
+          want=$(python3 -c "import json;print(json.load(open('site/apk.json'))['sha256'])")
+          have=$(sha256sum site/tavarov.apk | cut -d' ' -f1)
+          echo "apk.json $want"; echo "file     $have"
+          [ "$want" = "$have" ] || { echo "::error::android-apk branch does not hold the APK that site/apk.json describes"; exit 1; }
       - name: Deploy tavarov.com
         if: steps.c.outputs.site
         working-directory: site
@@ -70,4 +84,41 @@ jobs:
           for u in https://wallet.tavarov.com/ https://wallet.tavarov.com/api/tg https://creator.tavarov.com/ https://tavarov.com/; do
             c=$(curl -s -o /dev/null -w '%{http_code}' -L "$u"); echo "$c $u"; [ "$c" = 200 ] || fail=1
           done
+          # The download must be the APK the page shows, not a page.
+          want=$(python3 -c "import json;print(json.load(open('site/apk.json'))['sha256'])")
+          type=$(curl -s -o /tmp/live.apk -w '%{content_type}' https://tavarov.com/tavarov.apk)
+          have=$(sha256sum /tmp/live.apk | cut -d' ' -f1)
+          echo "tavarov.apk: $type, $(stat -c %s /tmp/live.apk) bytes, $have"
+          [ "$have" = "$want" ] || { echo "::error::tavarov.com/tavarov.apk is not the APK from site/apk.json"; fail=1; }
           exit $fail
+
+  android-release:
+    # The same APK as a GitHub release, created once per version from
+    # site/apk.json: tag wallet-v<version> on the commit it was built from.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish the release if it is not there yet
+        run: |
+          read tag ver code src want <<< "$(python3 -c "import json;d=json.load(open('site/apk.json'));print(d['tag'],d['version'],d['versionCode'],d['source'],d['sha256'])")"
+          if gh release view "$tag" >/dev/null 2>&1; then echo "$tag is already published"; exit 0; fi
+          git fetch --depth=1 origin android-apk
+          git show FETCH_HEAD:tavarov.apk > tavarov.apk
+          have=$(sha256sum tavarov.apk | cut -d' ' -f1)
+          [ "$have" = "$want" ] || { echo "::error::android-apk branch does not hold the APK that site/apk.json describes"; exit 1; }
+          {
+            cat "fastlane/metadata/android/en-US/changelogs/$code.txt"
+            echo
+            echo "Install: download tavarov.apk on your phone and open it. It updates the app from tavarov.com in place; your wallet stays."
+            echo
+            echo "SHA-256: \`$have\`"
+            echo
+            echo "Signed with the same key as every tavarov.com build (certificate SHA-256 AB9F2354…8AB1)."
+          } > notes.md
+          gh release create "$tag" tavarov.apk --target "$src" --title "NoN Wallet $ver" --notes-file notes.md

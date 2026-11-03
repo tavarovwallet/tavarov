@@ -22,6 +22,14 @@
 /apk.json
   Cache-Control: no-store
 
+# Приложение для Android. Тип — чтобы телефон сразу предложил установку, а
+# не открыл файл как страницу; кэш — проверять при каждом скачивании, иначе
+# после выпуска кто-то получит прошлую версию.
+/tavarov.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="tavarov.apk"
+  Cache-Control: no-cache
+
 # Витрину незачем встраивать в чужую страницу рамкой.
 /*
   Strict-Transport-Security: max-age=31536000
