@@ -143,9 +143,10 @@ solana/             a dependency-free Solana Pay library (see its README)
 woocommerce/        the Tavarov Pay plugin for WooCommerce (GPL)
 site/               the tavarov.com website
 creator/            creator.tavarov.com, the creator dashboard (donations on all four networks)
+android-app/        NoN Wallet for Android: a Capacitor shell around www/, built with Gradle only
 tests/              Node checks run before every deploy
 token/              contracts
-i18n/               dictionaries for five languages, and the build script
+i18n/               the wallet's dictionaries (ru, en, es, tr, pt, tg) and the build script
 audit/              checks that run in a real browser
 ```
 
@@ -201,6 +202,30 @@ capitals. Nothing else to configure.
 Without the binding the endpoint answers honestly and the rest keeps working:
 the till says the amount could not be sent to the sticker, and the buyer's page
 falls back to the on-chain charge, or to typing the amount by hand.
+
+## Android app
+
+NoN Wallet for Android is the same `www/` packaged with Capacitor
+(`android-app/`). Download it from <https://tavarov.com/tavarov.apk> or from
+[GitHub Releases](https://github.com/tavarovwallet/tavarov/releases); both are
+the same file.
+
+* **Check the file.** Its SHA-256 is printed on tavarov.com/wallet, in
+  `site/apk.json` and in the release notes. The deploy refuses to publish an
+  APK whose hash differs from `site/apk.json`, and checks the live download
+  after every deploy.
+* **Check the signature.** Every build from tavarov.com is signed with the same
+  key, certificate SHA-256
+  `AB9F235464A5F2B47BCF38DE47439BB5751860FB86F131BC6E0C8A75D87A8AB1`. A newer
+  version installs over an older one and the wallet stays.
+* **Build it yourself.** `android-app/README.md`: Gradle only, no Node, no
+  Google Play services. The signed file is kept on the `android-apk` branch,
+  not in `main`.
+* **Free names.** When a wallet is created with a name, the name is written to
+  the names contract and we pay the network fee through MegaFuel (BNB Chain's
+  gas sponsorship). The policy pays only for `claim(string)` on the names
+  contract. `functions/api/gasless.js` relays four MegaFuel methods and keeps
+  nothing but rate-limit counters.
 
 ## Found a hole
 
