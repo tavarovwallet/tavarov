@@ -24,6 +24,36 @@ for (const u of ['https://tavarov.com/', 'https://wallet.tavarov.com/', 'https:/
   const c = await code(u); lines.push(`- ${c === 200 ? '✅' : '❌'} ${u} (${c})`); if (c !== 200) problems.push(`${u} answered ${c}`);
 }
 
+lines.push('', '## Android app');
+try{
+  const fs = await import('node:fs'); const { createHash } = await import('node:crypto');
+  const want = JSON.parse(fs.readFileSync(new URL('../site/apk.json', import.meta.url), 'utf8'));
+  const r = await fetch('https://tavarov.com/tavarov.apk', { cache: 'no-store' });
+  const b = Buffer.from(await r.arrayBuffer());
+  const have = createHash('sha256').update(b).digest('hex');
+  const ok = r.status === 200 && have === want.sha256;
+  lines.push(`- ${ok ? '✅' : '❌'} tavarov.com/tavarov.apk: ${r.headers.get('content-type')}, ${b.length} bytes, version ${want.version}`);
+  if (!ok) problems.push(`tavarov.com/tavarov.apk is not the ${want.version} APK from site/apk.json (got ${b.length} bytes, ${have.slice(0, 12)})`);
+} catch(e){ problems.push('could not check the Android download: ' + String(e.message).slice(0, 80)); }
+
+/* Free names: MegaFuel pays the fee for claim(string) on TavarovNames v3 while
+   the sponsor policy has a balance. When it runs out, new users only see
+   "the name was not registered yet", so this is the reminder to top it up. */
+lines.push('', '## Free names (MegaFuel)');
+try{
+  const name = 'dailycheck' + Math.floor(Math.random() * 1e6);
+  const hexName = Buffer.from(name).toString('hex');
+  const data = '0xf3fe12c9' + '20'.padStart(64, '0') + name.length.toString(16).padStart(64, '0') + hexName.padEnd(64, '0');
+  const from = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+  const r = await fetch('https://wallet.tavarov.com/api/gasless', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'pm_isSponsorable',
+      params: [{ from, to: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', value: '0x0', gas: '0x30d40', data }] }) });
+  const j = await r.json();
+  const ok = !!(j && j.result && j.result.sponsorable);
+  lines.push(`- ${ok ? '✅ name registration is sponsored' : '❌ name registration is NOT sponsored'}`);
+  if (!ok) problems.push('free names: MegaFuel does not sponsor claim() any more (policy balance empty or policy off) — top up at dashboard.nodereal.io/megafuel');
+} catch(e){ problems.push('could not ask MegaFuel about free names: ' + String(e.message).slice(0, 80)); }
+
 lines.push('', '## Fees received in the last 24 hours (treasury ' + TREASURY + ')');
 let bnbHead = 0;
 for (const [name, n] of Object.entries(NETS)){

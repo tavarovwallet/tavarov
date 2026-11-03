@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found — Tavarov</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<!-- Без этой страницы Cloudflare Pages отвечал на любой неизвестный адрес
+     главной страницей с кодом 200. Так 1 ноября потерялся tavarov.apk:
+     файла не было, а ссылка «работала» и отдавала 14 КБ HTML вместо
+     приложения. Теперь чего нет — того нет: код 404 и эта страница. -->
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--sep:rgba(90,60,150,.16);--accent:#7C3AED;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--sep:rgba(190,160,255,.18);--accent:#A78BFA}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--label);
+font-family:var(--font);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:24px 16px}
+main{max-width:460px;width:100%;text-align:center}
+svg{width:56px;height:56px;display:block;margin:0 auto 22px}
+h1{font-size:28px;line-height:1.2;margin:0 0 10px;letter-spacing:-.01em}
+p{margin:0 0 26px;color:var(--label-2)}
+nav{display:flex;flex-direction:column;gap:10px}
+a{display:block;padding:14px 18px;border-radius:14px;background:var(--card);border:1px solid var(--sep);color:var(--label);
+text-decoration:none;font-weight:600}
+a:hover{border-color:var(--accent)}
+a.main{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
+</head><body>
+<main>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg>
+<h1 id="t">Page not found</h1>
+<p id="s">This address does not exist on tavarov.com. Perhaps the link is old or has a typo.</p>
+<nav>
+  <a class="main" href="/" id="h">Home page</a>
+  <a href="/wallet">NoN Wallet</a>
+  <a href="/pay">Tavarov Pay</a>
+  <a href="/creators">Tavarov Donate</a>
+</nav>
+</main>
+<script>
+(function(){
+  var T = {
+    ru: ['Страница не найдена', 'Такого адреса на tavarov.com нет. Возможно, ссылка устарела или в ней опечатка.', 'На главную'],
+    tg: ['Саҳифа ёфт нашуд', 'Чунин суроға дар tavarov.com нест. Шояд пайванд кӯҳна аст ё дар он хатое ҳаст.', 'Ба саҳифаи асосӣ'],
+    es: ['Página no encontrada', 'Esta dirección no existe en tavarov.com. Puede que el enlace sea antiguo o tenga un error.', 'Página principal'],
+    pt: ['Página não encontrada', 'Este endereço não existe em tavarov.com. Talvez o link seja antigo ou tenha um erro.', 'Página inicial'],
+    tr: ['Sayfa bulunamadı', 'Bu adres tavarov.com üzerinde yok. Bağlantı eski olabilir ya da yazım hatası içerebilir.', 'Ana sayfa']
+  };
+  var lang = '';
+  try{ lang = (new URLSearchParams(location.search).get('lang') || localStorage.getItem('tavarov-site-language') || navigator.language || '').slice(0, 2).toLowerCase(); }catch(e){}
+  var x = T[lang]; if (!x) return;
+  document.documentElement.lang = lang;
+  document.getElementById('t').textContent = x[0];
+  document.getElementById('s').textContent = x[1];
+  document.getElementById('h').textContent = x[2];
+  document.title = x[0] + ' — Tavarov';
+})();
+</script>
+</body></html>
