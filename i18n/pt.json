@@ -705,5 +705,12 @@
  "k44426372": "Na janela que abrir, escolha “Salvar em Arquivos” → iCloud Drive no iPhone, ou “Google Drive” no Android. Assim a carteira pode ser restaurada em qualquer celular: basta este arquivo e a senha.",
  "kd7b3b80b": "Sua carteira está pronta. Salve uma cópia na nuvem: se perder o celular, a carteira volta com este arquivo e sua senha.",
  "kaf0b0041": "Esta versão do app não consegue salvar o arquivo. O texto do backup foi copiado: cole-o num novo arquivo no iCloud Drive ou Google Drive, ou abra a carteira no navegador e salve o backup por lá.",
- "k1f8f5b45": "Você pode escolher o arquivo direto do iCloud Drive ou Google Drive."
+ "k1f8f5b45": "Você pode escolher o arquivo direto do iCloud Drive ou Google Drive.",
+ "k0330784c": "Nome para pagamentos (opcional)",
+ "k508a8845": "ex.: ali_stream",
+ "k82955160": "Pelo menos 6 caracteres: letras latinas, números e _. Poderão pagar você por este nome em vez de um endereço longo. O registro é grátis.",
+ "k1ad945ab": "Nome: de 6 a 20 caracteres — letras latinas, números e _, começando por uma letra.",
+ "k6e8f9ef7": "Este nome já está em uso. Escolha outro.",
+ "kac0da405": "Este nome agora é da sua carteira: ",
+ "kb56c43da": "O nome ainda não foi registrado. Você pode reservá-lo depois em Ajustes, na seção do nome."
 }

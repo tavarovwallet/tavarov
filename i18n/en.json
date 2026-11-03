@@ -705,5 +705,12 @@
  "k44426372": "In the window that opens, choose “Save to Files” → iCloud Drive on iPhone, or “Google Drive” on Android. Then the wallet can be restored on any phone: all it takes is this file and the password.",
  "kd7b3b80b": "Your wallet is ready. Save a copy to the cloud: if you lose your phone, the wallet comes back with this file and your password.",
  "kaf0b0041": "This version of the app cannot save the file. The backup text has been copied: paste it into a new file in iCloud Drive or Google Drive, or open the wallet in a browser and save the backup from there.",
- "k1f8f5b45": "You can pick the file straight from iCloud Drive or Google Drive."
+ "k1f8f5b45": "You can pick the file straight from iCloud Drive or Google Drive.",
+ "k0330784c": "Name for payments (optional)",
+ "k508a8845": "e.g. ali_stream",
+ "k82955160": "At least 6 characters: Latin letters, digits and _. People can pay you by this name instead of a long address. Registration is free.",
+ "k1ad945ab": "Name: 6 to 20 characters — Latin letters, digits and _, starting with a letter.",
+ "k6e8f9ef7": "This name is taken. Choose another one.",
+ "kac0da405": "This name now belongs to your wallet: ",
+ "kb56c43da": "The name was not registered yet. You can claim it later in Settings, in the name section."
 }

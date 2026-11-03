@@ -705,5 +705,12 @@
  "k44426372": "Açılan pencerede iPhone'da «Dosyalar'a Kaydet» → iCloud Drive'ı, Android'de «Google Drive»'ı seçin. Böylece cüzdan herhangi bir telefonda geri yüklenebilir: yalnızca bu dosya ve şifre gerekir.",
  "kd7b3b80b": "Cüzdanınız hazır. Bir kopyasını buluta kaydedin: telefonunuzu kaybederseniz cüzdan bu dosya ve şifrenizle geri gelir.",
  "kaf0b0041": "Uygulamanın bu sürümü dosyayı kaydedemiyor. Yedek metni kopyalandı: iCloud Drive veya Google Drive'da yeni bir dosyaya yapıştırın ya da cüzdanı tarayıcıda açıp yedeği oradan kaydedin.",
- "k1f8f5b45": "Dosyayı doğrudan iCloud Drive veya Google Drive'dan seçebilirsiniz."
+ "k1f8f5b45": "Dosyayı doğrudan iCloud Drive veya Google Drive'dan seçebilirsiniz.",
+ "k0330784c": "Ödemeler için ad (isteğe bağlı)",
+ "k508a8845": "ör. ali_stream",
+ "k82955160": "En az 6 karakter: Latin harfleri, rakamlar ve _. Uzun bir adres yerine bu adla size ödeme yapılabilir. Kayıt ücretsizdir.",
+ "k1ad945ab": "Ad: 6–20 karakter — Latin harfleri, rakamlar ve _, harfle başlamalı.",
+ "k6e8f9ef7": "Bu ad alınmış. Başka bir ad seçin.",
+ "kac0da405": "Bu ad artık cüzdanınıza ait: ",
+ "kb56c43da": "Ad henüz kaydedilmedi. Daha sonra Ayarlar'daki ad bölümünden alabilirsiniz."
 }

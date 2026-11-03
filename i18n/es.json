@@ -705,5 +705,12 @@
  "k44426372": "En la ventana que se abre, elige «Guardar en Archivos» → iCloud Drive en iPhone, o «Google Drive» en Android. Así podrás restaurar la billetera en cualquier teléfono: solo necesitas este archivo y la contraseña.",
  "kd7b3b80b": "Tu billetera está lista. Guarda una copia en la nube: si pierdes el teléfono, la billetera se recupera con este archivo y tu contraseña.",
  "kaf0b0041": "Esta versión de la app no puede guardar el archivo. Se copió el texto de la copia: pégalo en un archivo nuevo en iCloud Drive o Google Drive, o abre la billetera en el navegador y guarda la copia desde allí.",
- "k1f8f5b45": "Puedes elegir el archivo directamente desde iCloud Drive o Google Drive."
+ "k1f8f5b45": "Puedes elegir el archivo directamente desde iCloud Drive o Google Drive.",
+ "k0330784c": "Nombre para pagos (opcional)",
+ "k508a8845": "p. ej., ali_stream",
+ "k82955160": "Al menos 6 caracteres: letras latinas, cifras y _. Podrán pagarte con este nombre en lugar de una dirección larga. El registro es gratis.",
+ "k1ad945ab": "Nombre: de 6 a 20 caracteres — letras latinas, cifras y _, empezando por una letra.",
+ "k6e8f9ef7": "Este nombre ya está ocupado. Elige otro.",
+ "kac0da405": "Este nombre ya es de tu billetera: ",
+ "kb56c43da": "El nombre aún no se registró. Puedes reservarlo más tarde en Ajustes, en la sección del nombre."
 }
