@@ -8,8 +8,9 @@ as `metadata/com.tavarov.wallet.yml`, through a merge request on GitLab.
 
 1. The "Android build" check on GitHub Actions is green for the commit you
    want to publish.
-2. That commit is tagged `wallet-v<versionName>`, for example `wallet-v1.1.0`,
-   and the tag is pushed. The recipe builds from the tag.
+2. The recipe's `commit:` is that commit's full hash (or its tag). For later
+   versions push a `wallet-v<versionName>` tag, for example `wallet-v1.1.0`:
+   F-Droid looks for these tags to find updates.
 
 ## The merge request
 
