@@ -19,3 +19,7 @@ android/app/build/
 
 # Снимки экрана, которые проверки audit/ пишут при каждом прогоне
 audit/shots/
+
+# Сборка расширения Chrome (python3 tools/build_extension.py)
+/extension/
+/NoN-Wallet-extension.zip
