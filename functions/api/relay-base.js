@@ -88,7 +88,8 @@ async function rpc(method, params, fetchImpl){
   let last = null;
   for (const url of RPCS){
     try{
-      const r = await (fetchImpl || fetch)(url, { method: 'POST', headers: { 'content-type': 'application/json' },
+      const r = await (fetchImpl || fetch)(url, { method: 'POST',
+        headers: { 'content-type': 'application/json', 'user-agent': 'NoN-Wallet/1.1 (+https://tavarov.com)' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
       const j = await r.json();
       if (j.error){ last = j.error; if (method === 'eth_call' || method === 'eth_sendRawTransaction' || method === 'eth_estimateGas') break; continue; }
@@ -109,9 +110,10 @@ export async function onRequestGet({ env }){
   const key = env && env.BASE_RELAYER_KEY;
   if (!key) return reply({ on: false });
   const address = relayerAddress(key);
-  let balance = null;
-  try{ balance = (BigInt(await rpc('eth_getBalance', [address, 'latest'])) ).toString(); } catch(e){}
-  return reply({ on: true, address, balanceWei: balance });
+  let balance = null, rpcError;
+  try{ balance = (BigInt(await rpc('eth_getBalance', [address, 'latest'])) ).toString(); }
+  catch(e){ rpcError = String(e && e.message || e).slice(0, 120); }
+  return reply({ on: true, address, balanceWei: balance, rpcError });
 }
 
 export async function onRequestPost({ request, env }, deps){
