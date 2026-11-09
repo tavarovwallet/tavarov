@@ -12051,31 +12051,55 @@ async function gaslessRpc(method, params){
   if (!j || j.error) throw new Error((j && j.error && j.error.message) || ('HTTP ' + r.status));
   return j.result;
 }
-async function claimNameGasless(v){
-  if (testnetOn() || !wallet || !wallet.evm) return null;
-  const to = CONTRACTS.bnbMainnet.names, from = wallet.evm.address;
-  const data = new ethers.utils.Interface(NAMES_ABI).encodeFunctionData('claim', [v]);
-  let gas = 160000;
+/* Одна операция в BNB Chain, газ за которую платим мы. Подписывает её сам
+   человек, ключом из кошелька, просто с нулевой ценой газа; MegaFuel
+   проводит её, только если она подходит под наше правило. Возвращает хеш
+   операции или null — тогда вызывающий идёт обычным путём, со своей
+   комиссией. */
+async function gaslessSend(evm, to, data, fallbackGas, what){
+  if (testnetOn() || !evm || !evm.address || !evm.privateKey) return null;
+  const from = evm.address;
+  let gas = fallbackGas;
   try{ gas = Math.ceil(Number(await withTimeout(getEvmProvider('bnb').estimateGas({ from, to, data }), 12000, 'timeout')) * 1.3); } catch(e){}
   const probe = { to, from, value: '0x0', data, gas: '0x' + gas.toString(16) };
   let ok = false;
   try{ const s = await gaslessRpc('pm_isSponsorable', [probe]); ok = !!(s === true || (s && (s.sponsorable || s.Sponsorable))); }
-  catch(e){ logError('имя без комиссии: ' + shortErr(e)); return null; }
+  catch(e){ logError(what + ': ' + shortErr(e)); return null; }
   if (!ok) return null;
   for (let attempt = 0; attempt < 2; attempt++){
     try{
       const nonce = Number(await gaslessRpc('eth_getTransactionCount', [from, 'pending']));
-      const raw = await new ethers.Wallet(wallet.evm.privateKey).signTransaction(
+      const raw = await new ethers.Wallet(evm.privateKey).signTransaction(
         { to, data, value: 0, nonce, gasLimit: gas, gasPrice: 0, chainId: 56, type: 0 });
       return await gaslessRpc('eth_sendRawTransaction', [raw]);
     } catch(e){
       /* Сбился номер операции — MegaFuel советует подождать и спросить заново.
          Любая другая ошибка — уходим на обычный путь. */
-      if (!/nonce/i.test(String(e && e.message))) { logError('имя без комиссии: ' + shortErr(e)); return null; }
+      if (!/nonce/i.test(String(e && e.message))) { logError(what + ': ' + shortErr(e)); return null; }
       await new Promise(r => setTimeout(r, 1500));
     }
   }
   return null;
+}
+async function claimNameGasless(v){
+  if (!wallet || !wallet.evm) return null;
+  const data = new ethers.utils.Interface(NAMES_ABI).encodeFunctionData('claim', [v]);
+  return gaslessSend(wallet.evm, CONTRACTS.bnbMainnet.names, data, 160000, 'имя без комиссии');
+}
+/* Перевод USDT или USDC в BNB Chain без BNB на кошельке (9 ноября 2026).
+
+   Человек получил доллары — например, выиграл в розыгрыше — а BNB на
+   комиссию у него нет. Раньше отправить их дальше он не мог вовсе. Теперь
+   комиссию за такой перевод платим мы, тем же MegaFuel, что и за имена.
+
+   Только встроенные USDT и USDC и только в основной сети: монету,
+   добавленную вручную, правило всё равно не пропустит, а спрашивать про
+   неё MegaFuel незачем. И только когда BNB действительно не хватает: у кого
+   он есть, тот платит комиссию сам, как раньше. */
+function gaslessTokenOk(net, sym, tok){
+  if (net !== 'bnb' || testnetOn() || (sym !== 'USDT' && sym !== 'USDC')) return false;
+  const own = MAINNET.bnb.tokens[sym];
+  return !!(own && tok && tok.contract && own.contract.toLowerCase() === String(tok.contract).toLowerCase());
 }
 /* Ждём подтверждения в BNB Chain, в какой бы сети ни был открыт кошелёк. */
 async function waitBnbTx(hash){
@@ -12987,21 +13011,29 @@ async function evmSend(w, send, cfg){
        нулём BNB выглядит полным, но отправить с него нельзя ничего — и узел
        отвечает «insufficient funds for intrinsic transaction cost». Понять это
        из английской строки невозможно; спрашиваем сами и говорим числами. */
+    let noGas = '';
     try{
       const [bnb, gp] = await Promise.all([provider.getBalance(signer.address), provider.getGasPrice()]);
       const need = gp.mul(120000).mul(12).div(10).add(l1Reserve(cfg));   // перевод токена плюс запас
       if (bnb.lt(need)){
         const h = x => ethers.utils.formatUnits(x, cfg.decimalsNative);
-        throw new Error(t('k24947ea0') + cfg.nativeSym + t('k874e1fc5') + ' ' +
-                        t('k8d48be4c') + h(bnb) + ' ' + cfg.nativeSym +
-                        t('k76d43e59') + h(need) + ' ' + cfg.nativeSym + '.');
+        noGas = t('k24947ea0') + cfg.nativeSym + t('k874e1fc5') + ' ' +
+                t('k8d48be4c') + h(bnb) + ' ' + cfg.nativeSym +
+                t('k76d43e59') + h(need) + ' ' + cfg.nativeSym + '.';
       }
-    } catch(e){
-      if (String(e && e.message || '').indexOf(t('k24947ea0')) === 0) throw e;
-    }
+    } catch(e){ /* узел не ответил — не мешаем платить: пусть решает сеть */ }
 
     const iface = new ethers.utils.Interface(['function transfer(address,uint256) returns (bool)']);
     const data = iface.encodeFunctionData('transfer', [send.to, want]);
+    if (noGas){
+      /* BNB на комиссию нет. Для USDT и USDC в BNB Chain её платим мы
+         (MegaFuel, см. gaslessTokenOk); не вышло — честно говорим, чего
+         не хватает, как и раньше. */
+      const h = gaslessTokenOk(network, send.currency, _t)
+        ? await gaslessSend(w.evm, _t.contract, data, 100000, 'перевод без комиссии') : null;
+      if (h){ lastTxHash = h; return cfg.explorerTx(h); }
+      throw new Error(noGas);
+    }
     tx = await signer.sendTransaction({ to: _t.contract, data });
   }
   lastTxHash = tx.hash;

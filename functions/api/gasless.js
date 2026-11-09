@@ -2,8 +2,9 @@
 
    MegaFuel — система оплаты газа за пользователей от BNB Chain (NodeReal).
    Спонсор заводит у них правило «за какие операции платить» и пополняет его
-   баланс. Наше правило пропускает только одно: вызов claim(string) в
-   контракте имён TavarovNames v3. Всё остальное MegaFuel отклонит сам.
+   баланс. Наше правило пропускает: вызов claim(string) в контракте имён
+   TavarovNames v3 и, с 9 ноября 2026, transfer(address,uint256) у USDT и
+   USDC в BNB Chain. Всё остальное MegaFuel отклонит сам.
 
    Этот файл — посредник между кошельком и MegaFuel, а не кошелёк с ключом.
    Своих денег и ключей здесь нет. Посредник нужен ради трёх вещей:
@@ -37,10 +38,13 @@ export async function onRequestPost({ request, env }){
   if (!q || typeof q.method !== 'string' || !ALLOWED.has(q.method) || !Array.isArray(q.params || []))
     return reply({ jsonrpc: '2.0', id: q && q.id || null, error: { code: -32601, message: 'method not allowed' } }, 400);
 
-  /* Проверочные запросы — щедро, отправка — скупо: одно имя на кошелёк, а
-     человеку больше трёх попыток в сутки не нужно. */
+  /* Проверочные запросы — щедро, отправка — скупо. С 9 ноября 2026 через нас
+     идут не только имена (одно на кошелёк), но и переводы USDT/USDC в BNB
+     Chain у тех, кому нечем заплатить комиссию. Десять операций в сутки с
+     одного адреса человеку хватает с запасом, а боту не дают съесть баланс
+     правила за вечер. */
   const send = q.method === 'eth_sendRawTransaction';
-  if (await overLimit(request, env, send ? 'gasless-send' : 'gasless', send ? 3 : 60, send ? 86400 : 60))
+  if (await overLimit(request, env, send ? 'gasless-send' : 'gasless', send ? 10 : 60, send ? 86400 : 60))
     return reply({ jsonrpc: '2.0', id: q.id || null, error: { code: 429, message: 'too many requests' } }, 429);
   if (send && !(typeof (q.params || [])[0] === 'string' && /^0x[0-9a-fA-F]{2,3000}$/.test(q.params[0])))
     return reply({ jsonrpc: '2.0', id: q.id || null, error: { code: -32602, message: 'bad transaction' } }, 400);
