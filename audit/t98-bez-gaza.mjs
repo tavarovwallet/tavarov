@@ -77,7 +77,9 @@ if (raw){
   R.ok('денег в операции нет', tx.value.isZero());
 }
 R.ok('обычным путём ничего не уходило', state.sent.length === 0, String(state.sent.length));
-R.ok('человек видит, что перевод отправлен', !/не хватает/i.test(out1) && /bscscan/i.test(out1), out1.slice(0, 120));
+const html1 = await page.evaluate(() => document.getElementById('sendResult').innerHTML);
+R.ok('человек видит, что перевод отправлен', !/не хватает/i.test(out1) && /href="https:\/\/bscscan\.com\/tx\//.test(html1), out1.slice(0, 120));
+R.ok('и никакой сырой разметки в тексте', !/target=|<a |href=/.test(out1), out1.slice(-80));
 
 /* ---------- 2. BNB нет, MegaFuel отказал ---------- */
 state.sent.length = 0; calls = []; sponsor = false;

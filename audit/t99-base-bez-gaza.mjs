@@ -82,7 +82,9 @@ if (q){
   R.ok('номер подписи случайный, 32 байта', /^0x[0-9a-f]{64}$/.test(q.nonce));
 }
 R.ok('обычным путём ничего не ушло', sentNormal.length === 0);
-R.ok('человек видит «отправлено»', /basescan/i.test(out1) && !/не хватает/i.test(out1), out1.slice(0, 100));
+const html1 = await page.evaluate(() => document.getElementById('sendResult').innerHTML);
+R.ok('человек видит «отправлено»', /href="https:\/\/basescan\.org\/tx\//.test(html1) && !/не хватает/i.test(out1), out1.slice(0, 100));
+R.ok('и никакой сырой разметки в тексте', !/target=|<a |href=/.test(out1), out1.slice(-80));
 
 /* 2. Сервер отказал. */
 relayCalls = []; relayOk = false;

@@ -12870,7 +12870,12 @@ async function doSend(){
        надпись на «сеть подтвердила». Экран при этом не держит человека:
        можно уйти, деньги всё равно идут. */
     const evmKind = cfg.kind === 'evm';
-    resultBox.innerHTML = (evmKind ? t('kba2e5d30') : t('k8c01d8ac')) + escapeHtml(txUrl) + t('k9e48721e');
+    /* У строки kba2e5d30 при выносе в переводы потерялись начало и конец
+       разметки, и человек видел сырое «target="_blank">Open in the explorer»
+       (заметно на записи экрана 10 ноября). Разметку держим здесь, в коде. */
+    resultBox.innerHTML = (evmKind
+        ? '<div class="notice notice-ok">' + escapeHtml(t('kba2e5d30')) + '<a class="link" href="'
+        : t('k8c01d8ac')) + escapeHtml(txUrl) + t('k9e48721e');
     if (evmKind && lastTxHash) watchTxLater(lastTxHash, txUrl, resultBox);
 
     /* Записываем операцию в свой журнал сразу. Сеть о ней забудет через час,
