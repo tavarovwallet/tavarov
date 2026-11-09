@@ -31,7 +31,8 @@ import { getPublicKey, signAsync } from './_secp256k1.js';
 
 const CHAIN_ID = 8453n;
 const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-const RPCS = ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://base.drpc.org'];
+const RPCS = ['https://mainnet.base.org', 'https://base.drpc.org', 'https://base-rpc.publicnode.com',
+              'https://1rpc.io/base', 'https://base.llamarpc.com'];
 const MIN_UNITS = 100000n;                        // 0.10 USDC (6 знаков)
 const HAS_GAS_WEI = 20000000000000n;              // 0.00002 ETH — на свой перевод хватает
 
@@ -92,7 +93,14 @@ async function rpc(method, params, fetchImpl){
         headers: { 'content-type': 'application/json', 'user-agent': 'NoN-Wallet/1.1 (+https://tavarov.com)' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
       const j = await r.json();
-      if (j && j.error){ last = j.error; if (method === 'eth_call' || method === 'eth_sendRawTransaction' || method === 'eth_estimateGas') break; continue; }
+      /* Отказ по существу (контракт отверг, номер операции занят, нет денег)
+         — окончательный. Отказ узла «слишком часто» — не ответ: к следующему.
+         Узлы Base режут общие адреса Cloudflare, это обычное дело. */
+      if (j && j.error){
+        last = j.error;
+        if (/revert|nonce|underpriced|already known|insufficient funds|FiatToken|invalid signature/i.test(String(j.error.message || ''))) break;
+        continue;
+      }
       /* Ответ без result — не ответ узла (заглушка, ограничитель): к следующему. */
       if (!j || j.result === undefined){ last = { message: url.split('/')[2] + ': ' + JSON.stringify(j).slice(0, 80) }; continue; }
       return j.result;
