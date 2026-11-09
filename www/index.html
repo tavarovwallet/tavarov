@@ -12096,6 +12096,41 @@ async function claimNameGasless(v){
    добавленную вручную, правило всё равно не пропустит, а спрашивать про
    неё MegaFuel незачем. И только когда BNB действительно не хватает: у кого
    он есть, тот платит комиссию сам, как раньше. */
+/* USDC в Base без ETH на комиссию (10 ноября 2026). MegaFuel есть только в
+   BNB Chain, а у USDC есть свой способ: «перевод по подписи» (EIP-3009).
+   Человек подписывает у себя «перевести столько-то тому-то» — получатель и
+   сумма внутри подписи, изменить их не может никто, — а в сеть эту подпись
+   отправляет наш служебный кошелёк и платит газ (functions/api/relay-base.js).
+   Подпись живёт час. Не вышло — null, и человек видит обычное «не хватает
+   ETH на комиссию». */
+function relayBaseApi(){ return IS_NATIVE ? 'https://wallet.tavarov.com/api/relay-base' : '/api/relay-base'; }
+async function relayBaseUsdc(evm, to, value){
+  if (testnetOn() || !evm || !evm.privateKey) return null;
+  const usdc = MAINNET.base.tokens.USDC.contract;
+  try{
+    const c = new ethers.Contract(usdc, ['function name() view returns (string)', 'function version() view returns (string)'],
+                                  getEvmProvider('base'));
+    const [name, version] = await withTimeout(Promise.all([c.name(), c.version()]), 12000, 'timeout');
+    const msg = { from: evm.address, to, value: value.toString(), validAfter: 0,
+                  validBefore: Math.floor(Date.now() / 1000) + 3600,
+                  nonce: ethers.utils.hexlify(ethers.utils.randomBytes(32)) };
+    const signature = await new ethers.Wallet(evm.privateKey)._signTypedData(
+      { name, version, chainId: 8453, verifyingContract: usdc },
+      { TransferWithAuthorization: [ { name:'from', type:'address' }, { name:'to', type:'address' },
+          { name:'value', type:'uint256' }, { name:'validAfter', type:'uint256' },
+          { name:'validBefore', type:'uint256' }, { name:'nonce', type:'bytes32' } ] }, msg);
+    const r = await withTimeout(fetch(relayBaseApi(), { method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify(Object.assign({}, msg, { signature })) }), 30000, 'timeout');
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !/^0x[0-9a-fA-F]{64}$/.test(j.hash || '')){ logError('USDC без комиссии: ' + ((j && j.error) || ('HTTP ' + r.status))); return null; }
+    return j.hash;
+  } catch(e){ logError('USDC без комиссии: ' + shortErr(e)); return null; }
+}
+function relayBaseOk(net, sym, tok){
+  if (net !== 'base' || testnetOn() || sym !== 'USDC') return false;
+  const own = MAINNET.base.tokens.USDC;
+  return !!(own && tok && tok.contract && own.contract.toLowerCase() === String(tok.contract).toLowerCase());
+}
 function gaslessTokenOk(net, sym, tok){
   if (net !== 'bnb' || testnetOn() || (sym !== 'USDT' && sym !== 'USDC')) return false;
   const own = MAINNET.bnb.tokens[sym];
@@ -13026,11 +13061,14 @@ async function evmSend(w, send, cfg){
     const iface = new ethers.utils.Interface(['function transfer(address,uint256) returns (bool)']);
     const data = iface.encodeFunctionData('transfer', [send.to, want]);
     if (noGas){
-      /* BNB на комиссию нет. Для USDT и USDC в BNB Chain её платим мы
-         (MegaFuel, см. gaslessTokenOk); не вышло — честно говорим, чего
-         не хватает, как и раньше. */
+      /* Монеты сети на комиссию нет. За USDT и USDC в BNB Chain её платим
+         мы через MegaFuel (gaslessTokenOk), за USDC в Base — своим служебным
+         кошельком (relayBaseOk). Не вышло — честно говорим, чего не хватает,
+         как и раньше. */
       const h = gaslessTokenOk(network, send.currency, _t)
-        ? await gaslessSend(w.evm, _t.contract, data, 100000, 'перевод без комиссии') : null;
+          ? await gaslessSend(w.evm, _t.contract, data, 100000, 'перевод без комиссии')
+        : relayBaseOk(network, send.currency, _t)
+          ? await relayBaseUsdc(w.evm, send.to, want) : null;
       if (h){ lastTxHash = h; return cfg.explorerTx(h); }
       throw new Error(noGas);
     }

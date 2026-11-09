@@ -52,6 +52,21 @@ jobs:
       - name: Tests
         if: steps.c.outputs.wallet || steps.c.outputs.creator
         run: for t in tests/*.mjs; do node --experimental-vm-modules "$t"; done
+      # Gas-free USDC on Base (functions/api/relay-base.js) needs a small relayer
+      # wallet that pays gas. Its key is created here once, straight into the
+      # Pages secrets, and never printed: nobody, human or bot, has seen it.
+      # If the secrets cannot be listed, nothing is created (an existing key
+      # must never be overwritten: the ETH on it would be stranded).
+      - name: Relayer key for gas-free USDC on Base (created once)
+        if: steps.c.outputs.wallet
+        run: |
+          if ! out=$(npx --yes wrangler@4 pages secret list --project-name tavarov-wallet 2>&1); then
+            echo "::warning::could not list Pages secrets, relayer key left as is"; exit 0
+          fi
+          if echo "$out" | grep -q BASE_RELAYER_KEY; then echo "relayer key already set"; exit 0; fi
+          node -e "process.stdout.write('0x'+require('crypto').randomBytes(32).toString('hex'))" \
+            | npx --yes wrangler@4 pages secret put BASE_RELAYER_KEY --project-name tavarov-wallet >/dev/null
+          echo "relayer key created"
       - name: Deploy wallet.tavarov.com
         if: steps.c.outputs.wallet
         run: npx --yes wrangler@4 pages deploy www --project-name tavarov-wallet --branch main --commit-dirty=true
