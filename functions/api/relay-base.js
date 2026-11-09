@@ -22,7 +22,7 @@
      — только USDC в Base и только у тех, у кого ETH на газ действительно нет;
      — от 0.10 USDC (иначе дешевле подарить, чем отправлять);
      — десять переводов в сутки с одного адреса клиента и пять с одного
-       кошелька;
+       кошелька, и не больше ста в сутки на всех;
      — сначала пробный вызов (eth_call): перевод, который не пройдёт, мы не
        отправляем и газ за него не платим. */
 import { overLimit } from './_limit.js';
@@ -165,6 +165,13 @@ export async function onRequestPost({ request, env }, deps){
        отказ здесь, бесплатно, а не в сети за наш газ. */
     try{ await rpc('eth_call', [{ from: me, to: USDC, data }, 'latest'], F); }
     catch(e){ return reply({ error: 'transfer would fail: ' + String(e.message).slice(0, 120) }, 400); }
+
+    /* Общий потолок: не больше 100 оплаченных переводов в сутки на всех.
+       Считаем только те, что дошли до отправки, — отказы выше его не
+       тратят. Счётчик живёт в кэше дата-центра Cloudflare, у каждого свой:
+       это ограничитель расхода, а не точный учёт. */
+    if (await overLimit(request, env, 'relay-base-all', 100, 86400, 'all'))
+      return reply({ error: 'daily limit reached' }, 429);
 
     let gas = 90000n;
     try{ gas = BigInt(await rpc('eth_estimateGas', [{ from: me, to: USDC, data }], F)) * 13n / 10n; } catch(e){}
