@@ -92,7 +92,9 @@ async function rpc(method, params, fetchImpl){
         headers: { 'content-type': 'application/json', 'user-agent': 'NoN-Wallet/1.1 (+https://tavarov.com)' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
       const j = await r.json();
-      if (j.error){ last = j.error; if (method === 'eth_call' || method === 'eth_sendRawTransaction' || method === 'eth_estimateGas') break; continue; }
+      if (j && j.error){ last = j.error; if (method === 'eth_call' || method === 'eth_sendRawTransaction' || method === 'eth_estimateGas') break; continue; }
+      /* Ответ без result — не ответ узла (заглушка, ограничитель): к следующему. */
+      if (!j || j.result === undefined){ last = { message: url.split('/')[2] + ': ' + JSON.stringify(j).slice(0, 80) }; continue; }
       return j.result;
     } catch(e){ last = { message: String(e && e.message || e) }; }
   }
