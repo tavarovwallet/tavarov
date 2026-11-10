@@ -11999,7 +11999,7 @@ async function claimName(){
   await withBusy('claimNameBtn', t('k0b72c5bf'), async ()=>{
     const v = normName(document.getElementById('nameInput').value);
     if (!NAME_RE.test(v)) throw new Error(t('k6cf17a16'));
-    /* Бесплатное имя сначала пробуем без комиссии — её платим мы (MegaFuel).
+    /* Бесплатное имя сначала пробуем без комиссии — её платим мы (dripSend).
        Не вышло — обычный путь ниже, со своей комиссией. */
     const free0 = await nameOffer(v);
     if (free0.sellable && !(free0.price && free0.price.gt(0))){
@@ -12034,59 +12034,23 @@ async function claimName(){
     alert(t('k9ff72df5') + v + t('k433b0aff'));
   });
 }
-/* ===================== Имя без комиссии (MegaFuel) =====================
-   Регистрацию имени оплачиваем мы: через MegaFuel, систему оплаты газа за
-   пользователей от BNB Chain. Правило спонсора пропускает только claim(string)
-   в контракте имён, а наш сервер (functions/api/gasless.js) только передаёт
-   запросы и ограничивает частоту. Ключ остаётся в кошельке: операцию
-   подписывает сам человек, просто с нулевой ценой газа.
-
-   Если спонсорство недоступно (правило выключено, кончился баланс, нет
-   связи) — возвращаем null, и дальше идёт обычный путь со своей комиссией. */
-function gaslessApi(){ return IS_NATIVE ? 'https://wallet.tavarov.com/api/gasless' : '/api/gasless'; }
-async function gaslessRpc(method, params){
-  const r = await fetch(gaslessApi(), { method:'POST', headers:{'content-type':'application/json'},
-    body: JSON.stringify({ jsonrpc:'2.0', id:1, method, params }) });
-  const j = await r.json();
-  if (!j || j.error) throw new Error((j && j.error && j.error.message) || ('HTTP ' + r.status));
-  return j.result;
-}
-/* Одна операция в BNB Chain, газ за которую платим мы. Подписывает её сам
-   человек, ключом из кошелька, просто с нулевой ценой газа; MegaFuel
-   проводит её, только если она подходит под наше правило. Возвращает хеш
-   операции или null — тогда вызывающий идёт обычным путём, со своей
-   комиссией. */
+/* ===================== Имя и перевод без комиссии =====================
+   Регистрацию имени и перевод встроенных USDT/USDC в BNB Chain у того, у
+   кого нет BNB, оплачиваем мы. Операцию подписывает сам человек, ключом из
+   кошелька; мы только кладём ему BNB ровно на неё. Не вышло — null, и
+   дальше идёт обычный путь со своей комиссией. */
 async function gaslessSend(evm, to, data, fallbackGas, what){
-  if (testnetOn() || !evm || !evm.address || !evm.privateKey) return null;
-  const from = evm.address;
-  let gas = fallbackGas;
-  try{ gas = Math.ceil(Number(await withTimeout(getEvmProvider('bnb').estimateGas({ from, to, data }), 12000, 'timeout')) * 1.3); } catch(e){}
-  const probe = { to, from, value: '0x0', data, gas: '0x' + gas.toString(16) };
-  let ok = false;
-  try{ const s = await gaslessRpc('pm_isSponsorable', [probe]); ok = !!(s === true || (s && (s.sponsorable || s.Sponsorable))); }
-  catch(e){ logError(what + ': ' + shortErr(e)); return dripSend(evm, to, data, what); }
-  if (!ok) return dripSend(evm, to, data, what);
-  for (let attempt = 0; attempt < 2; attempt++){
-    try{
-      const nonce = Number(await gaslessRpc('eth_getTransactionCount', [from, 'pending']));
-      const raw = await new ethers.Wallet(evm.privateKey).signTransaction(
-        { to, data, value: 0, nonce, gasLimit: gas, gasPrice: 0, chainId: 56, type: 0 });
-      return await gaslessRpc('eth_sendRawTransaction', [raw]);
-    } catch(e){
-      /* Сбился номер операции — MegaFuel советует подождать и спросить заново.
-         Любая другая ошибка — уходим на обычный путь. */
-      if (!/nonce/i.test(String(e && e.message))) { logError(what + ': ' + shortErr(e)); return dripSend(evm, to, data, what); }
-      await new Promise(r => setTimeout(r, 1500));
-    }
-  }
+  /* С 10 ноября 2026 — без MegaFuel. Его правило было публичным: под него
+     попадал любой перевод USDT в сети, и за сутки на наш баланс прошло
+     8078 чужих переводов. Теперь газ за имя и за перевод USDT/USDC платит
+     только наш служебный кошелёк, с нашими лимитами (dripSend ниже). */
   return dripSend(evm, to, data, what);
 }
-/* Второй путь, свой (10 ноября 2026). MegaFuel — чужой сервис, и 9 ноября
-   он встал. Тогда наш служебный кошелёк кладёт человеку ровно столько BNB,
+/* Свой путь (10 ноября 2026). Наш служебный кошелёк кладёт человеку ровно столько BNB,
    сколько стоит эта операция (functions/api/drip-bnb.js), и мы проводим её
    обычным путём — с теми газом и ценой газа, под которые BNB посчитан.
-   Сервер даёт BNB только на то же, что пропускает MegaFuel: имя и перевод
-   встроенных USDT/USDC. Не вышло — null, как и раньше. */
+   Сервер даёт BNB только на имя и на перевод встроенных USDT/USDC.
+   Не вышло — null. */
 function dripApi(){ return IS_NATIVE ? 'https://wallet.tavarov.com/api/drip-bnb' : '/api/drip-bnb'; }
 async function dripSend(evm, to, data, what){
   if (testnetOn() || !evm || !evm.address || !evm.privateKey) return null;
@@ -12117,14 +12081,13 @@ async function claimNameGasless(v){
 
    Человек получил доллары — например, выиграл в розыгрыше — а BNB на
    комиссию у него нет. Раньше отправить их дальше он не мог вовсе. Теперь
-   комиссию за такой перевод платим мы, тем же MegaFuel, что и за имена.
+   комиссию за такой перевод платим мы, так же, как за имена.
 
    Только встроенные USDT и USDC и только в основной сети: монету,
-   добавленную вручную, правило всё равно не пропустит, а спрашивать про
-   неё MegaFuel незачем. И только когда BNB действительно не хватает: у кого
+   добавленную вручную, наш сервер всё равно не оплатит, а спрашивать про
+   неё незачем. И только когда BNB действительно не хватает: у кого
    он есть, тот платит комиссию сам, как раньше. */
-/* USDC в Base без ETH на комиссию (10 ноября 2026). MegaFuel есть только в
-   BNB Chain, а у USDC есть свой способ: «перевод по подписи» (EIP-3009).
+/* USDC в Base без ETH на комиссию (10 ноября 2026). В Base у USDC есть свой способ: «перевод по подписи» (EIP-3009).
    Человек подписывает у себя «перевести столько-то тому-то» — получатель и
    сумма внутри подписи, изменить их не может никто, — а в сеть эту подпись
    отправляет наш служебный кошелёк и платит газ (functions/api/relay-base.js).
@@ -13094,7 +13057,7 @@ async function evmSend(w, send, cfg){
     const data = iface.encodeFunctionData('transfer', [send.to, want]);
     if (noGas){
       /* Монеты сети на комиссию нет. За USDT и USDC в BNB Chain её платим
-         мы через MegaFuel (gaslessTokenOk), за USDC в Base — своим служебным
+         мы (gaslessTokenOk, dripSend), за USDC в Base — своим служебным
          кошельком (relayBaseOk). Не вышло — честно говорим, чего не хватает,
          как и раньше. */
       const h = gaslessTokenOk(network, send.currency, _t)

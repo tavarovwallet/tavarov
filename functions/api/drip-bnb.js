@@ -1,14 +1,14 @@
 /* BNB на одну операцию для того, у кого его нет (10 ноября 2026).
 
-   ЗАЧЕМ. Имя без комиссии и перевод USDT/USDC без BNB идут через MegaFuel
-   (gasless.js). Но MegaFuel — чужой сервис: 9 ноября у него «съехал» учёт
-   нашего баланса, и до ответа поддержки имена и переводы встали. Зависеть
-   от одного чужого сервиса нельзя, поэтому есть второй путь, свой:
-   служебный кошелёк в BNB Chain кладёт человеку ровно столько BNB, сколько
-   стоит его операция, и кошелёк сразу проводит её обычным путём. MegaFuel
-   по-прежнему первый; сюда приходят, только когда он отказал.
+   ЗАЧЕМ. Имя без комиссии и перевод USDT/USDC без BNB. До 10 ноября газ за
+   них платил MegaFuel (gasless.js), но его правило было публичным: под него
+   попадал любой перевод USDT в сети, и за сутки на наш баланс прошло 8078
+   чужих переводов. Теперь платит только наш служебный кошелёк в BNB Chain:
+   кладёт человеку ровно столько BNB, сколько стоит его операция, и кошелёк
+   сразу проводит её обычным путём. BNB даёт только наш сервер, с нашими
+   лимитами, — чужие сюда не попадут.
 
-   ЧТО ЗДЕСЬ МОЖНО. Только то же, что пропускает правило MegaFuel:
+   ЧТО ЗДЕСЬ МОЖНО. Только две операции:
      — claim(string) в контракте имён TavarovNames v3;
      — transfer(address,uint256) у встроенных USDT и USDC в BNB Chain.
    Операцию сначала проверяет сеть (eth_estimateGas): если имя занято или
@@ -47,7 +47,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods
 const reply = (o, status) => new Response(JSON.stringify(o), { status: status || 200,
   headers: Object.assign({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }, CORS) });
 
-/* Пропускаем ровно то, что пропускает правило MegaFuel. */
+/* Только имя и перевод встроенных USDT/USDC. */
 export function allowedOp(to, data){
   if (typeof to !== 'string' || typeof data !== 'string' || !/^0x[0-9a-fA-F]*$/.test(data) || data.length > 1000) return false;
   const t = to.toLowerCase(), sel = data.slice(0, 10).toLowerCase();
