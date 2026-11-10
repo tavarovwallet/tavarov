@@ -12064,8 +12064,8 @@ async function gaslessSend(evm, to, data, fallbackGas, what){
   const probe = { to, from, value: '0x0', data, gas: '0x' + gas.toString(16) };
   let ok = false;
   try{ const s = await gaslessRpc('pm_isSponsorable', [probe]); ok = !!(s === true || (s && (s.sponsorable || s.Sponsorable))); }
-  catch(e){ logError(what + ': ' + shortErr(e)); return null; }
-  if (!ok) return null;
+  catch(e){ logError(what + ': ' + shortErr(e)); return dripSend(evm, to, data, what); }
+  if (!ok) return dripSend(evm, to, data, what);
   for (let attempt = 0; attempt < 2; attempt++){
     try{
       const nonce = Number(await gaslessRpc('eth_getTransactionCount', [from, 'pending']));
@@ -12075,11 +12075,38 @@ async function gaslessSend(evm, to, data, fallbackGas, what){
     } catch(e){
       /* Сбился номер операции — MegaFuel советует подождать и спросить заново.
          Любая другая ошибка — уходим на обычный путь. */
-      if (!/nonce/i.test(String(e && e.message))) { logError(what + ': ' + shortErr(e)); return null; }
+      if (!/nonce/i.test(String(e && e.message))) { logError(what + ': ' + shortErr(e)); return dripSend(evm, to, data, what); }
       await new Promise(r => setTimeout(r, 1500));
     }
   }
-  return null;
+  return dripSend(evm, to, data, what);
+}
+/* Второй путь, свой (10 ноября 2026). MegaFuel — чужой сервис, и 9 ноября
+   он встал. Тогда наш служебный кошелёк кладёт человеку ровно столько BNB,
+   сколько стоит эта операция (functions/api/drip-bnb.js), и мы проводим её
+   обычным путём — с теми газом и ценой газа, под которые BNB посчитан.
+   Сервер даёт BNB только на то же, что пропускает MegaFuel: имя и перевод
+   встроенных USDT/USDC. Не вышло — null, как и раньше. */
+function dripApi(){ return IS_NATIVE ? 'https://wallet.tavarov.com/api/drip-bnb' : '/api/drip-bnb'; }
+async function dripSend(evm, to, data, what){
+  if (testnetOn() || !evm || !evm.address || !evm.privateKey) return null;
+  try{
+    const r = await withTimeout(fetch(dripApi(), { method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ from: evm.address, to, data }) }), 30000, 'timeout');
+    const j = await r.json().catch(() => null);
+    /* 409 — BNB на эту операцию у человека уже есть: просто проводим её. */
+    if (!j || !/^[0-9]+$/.test(j.gas || '') || !/^[0-9]+$/.test(j.gasPrice || '') || (r.status !== 200 && r.status !== 409)){
+      logError(what + ' (BNB от нас): ' + ((j && j.error) || ('HTTP ' + r.status))); return null;
+    }
+    if (r.status === 200 && !(/^0x[0-9a-fA-F]{64}$/.test(j.hash || '') && await waitBnbTx(j.hash))){
+      logError(what + ' (BNB от нас): не дошёл'); return null;
+    }
+    const p = getEvmProvider('bnb');
+    const nonce = await withTimeout(p.getTransactionCount(evm.address, 'pending'), 12000, 'timeout');
+    const raw = await new ethers.Wallet(evm.privateKey).signTransaction({ to, data, value: 0, nonce,
+      gasLimit: ethers.BigNumber.from(j.gas), gasPrice: ethers.BigNumber.from(j.gasPrice), chainId: 56, type: 0 });
+    return (await withTimeout(p.sendTransaction(raw), 20000, 'timeout')).hash;
+  } catch(e){ logError(what + ' (BNB от нас): ' + shortErr(e)); return null; }
 }
 async function claimNameGasless(v){
   if (!wallet || !wallet.evm) return null;

@@ -46,13 +46,13 @@ const SEL = toHex(keccak256(enc.encode(
   'transferWithAuthorization(address,address,uint256,uint256,uint256,bytes32,uint8,bytes32,bytes32)'))).slice(0, 10);
 
 /* ---------- RLP: упаковка операции перед подписью ---------- */
-function bytesOfInt(n){
+export function bytesOfInt(n){
   n = BigInt(n);
   if (n === 0n) return new Uint8Array(0);
   let h = n.toString(16); if (h.length % 2) h = '0' + h;
   return fromHex(h);
 }
-function rlp(x){
+export function rlp(x){
   if (Array.isArray(x)){
     const body = concat(...x.map(rlp));
     return concat(rlpLen(body.length, 0xc0), body);
@@ -65,7 +65,7 @@ function rlpLen(len, off){
   const l = bytesOfInt(len);
   return concat(Uint8Array.of(off + 55 + l.length), l);
 }
-function concat(...a){
+export function concat(...a){
   const out = new Uint8Array(a.reduce((s, x) => s + x.length, 0));
   let p = 0; for (const x of a){ out.set(x, p); p += x.length; }
   return out;

@@ -67,6 +67,20 @@ jobs:
           node -e "process.stdout.write('0x'+require('crypto').randomBytes(32).toString('hex'))" \
             | npx --yes wrangler@4 pages secret put BASE_RELAYER_KEY --project-name tavarov-wallet >/dev/null
           echo "relayer key created"
+      # BNB for one operation when MegaFuel refuses (functions/api/drip-bnb.js):
+      # a small service wallet on BNB Chain. Same rules as the Base relayer key:
+      # created once, straight into the Pages secrets, never printed, never
+      # overwritten.
+      - name: Service wallet key for BNB drip (created once)
+        if: steps.c.outputs.wallet
+        run: |
+          if ! out=$(npx --yes wrangler@4 pages secret list --project-name tavarov-wallet 2>&1); then
+            echo "::warning::could not list Pages secrets, drip key left as is"; exit 0
+          fi
+          if echo "$out" | grep -q BNB_DRIP_KEY; then echo "drip key already set"; exit 0; fi
+          node -e "process.stdout.write('0x'+require('crypto').randomBytes(32).toString('hex'))" \
+            | npx --yes wrangler@4 pages secret put BNB_DRIP_KEY --project-name tavarov-wallet >/dev/null
+          echo "drip key created"
       - name: Deploy wallet.tavarov.com
         if: steps.c.outputs.wallet
         run: npx --yes wrangler@4 pages deploy www --project-name tavarov-wallet --branch main --commit-dirty=true

@@ -335,7 +335,7 @@ export function start(port = 8555){
             /* Запоминаем и то, как посчитан газ: на этом 7 сентября сломалась
                оплата в основной сети, и проверять это надо машиной. */
             state.sent.push({ to: tx.to, data: tx.data, value: tx.value.toString(), hash: tx.hash,
-                              type: tx.type,
+                              type: tx.type, from: tx.from, gasLimit: tx.gasLimit.toString(),
                               gasPrice: tx.gasPrice ? tx.gasPrice.toString() : null,
                               maxFeePerGas: tx.maxFeePerGas ? tx.maxFeePerGas.toString() : null,
                               maxPriorityFeePerGas: tx.maxPriorityFeePerGas ? tx.maxPriorityFeePerGas.toString() : null });

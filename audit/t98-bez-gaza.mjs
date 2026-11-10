@@ -81,12 +81,35 @@ const html1 = await page.evaluate(() => document.getElementById('sendResult').in
 R.ok('человек видит, что перевод отправлен', !/не хватает/i.test(out1) && /href="https:\/\/bscscan\.com\/tx\//.test(html1), out1.slice(0, 120));
 R.ok('и никакой сырой разметки в тексте', !/target=|<a |href=/.test(out1), out1.slice(-80));
 
-/* ---------- 2. BNB нет, MegaFuel отказал ---------- */
+/* ---------- 2. BNB нет, MegaFuel отказал, и наш BNB не дали ---------- */
+let drips = [], dripOk = false;
+await page.route('**/api/drip-bnb', async route => {
+  drips.push(JSON.parse(route.request().postData() || '{}'));
+  await route.fulfill({ status: dripOk ? 200 : 503, contentType: 'application/json',
+    body: JSON.stringify(dripOk ? { hash: '0x' + 'cd'.repeat(32), gas: '156000', gasPrice: '100000000' } : { error: 'drip has no BNB' }) });
+});
 state.sent.length = 0; calls = []; sponsor = false;
 const out2 = await sendUsdt('0x3333333333333333333333333333333333333333', '1');
 R.ok('без согласия MegaFuel ничего не подписано', !calls.some(c => c.method === 'eth_sendRawTransaction'));
+R.ok('спросили наш BNB — ровно на этот перевод', drips.length === 1 && drips[0].from.toLowerCase() === me.toLowerCase() &&
+     drips[0].to.toLowerCase() === ADDR.usdt.toLowerCase() && /^0xa9059cbb/.test(drips[0].data), JSON.stringify(drips[0] || {}).slice(0, 120));
 R.ok('и говорим про нехватку BNB, как раньше', /BNB/.test(out2) && /не хватает|нужно|нет/i.test(out2), out2.slice(0, 160));
 R.ok('и обычным путём тоже ничего', state.sent.length === 0);
+
+/* ---------- 2б. MegaFuel отказал, наш BNB пришёл — перевод уходит ---------- */
+state.sent.length = 0; calls = []; drips = []; dripOk = true;
+const to2 = '0x5555555555555555555555555555555555555555';
+const out2b = await sendUsdt(to2, '1');
+const t2b = state.sent[0];
+R.ok('перевод ушёл обычным путём', state.sent.length === 1 && t2b.to.toLowerCase() === ADDR.usdt.toLowerCase(), String(state.sent.length));
+if (t2b){
+  const d2 = new E.utils.Interface(['function transfer(address,uint256)']).decodeFunctionData('transfer', t2b.data);
+  R.ok('ровно тот получатель и сумма', d2[0].toLowerCase() === to2 && d2[1].toString() === '1000000');
+  R.ok('газ и цена газа — те, под которые дан BNB', t2b.gasLimit === '156000' && t2b.gasPrice === '100000000', t2b.gasLimit + ' ' + t2b.gasPrice);
+  R.ok('подписал сам человек', String(t2b.from).toLowerCase() === me.toLowerCase());
+}
+R.ok('человек видит «отправлено»', !/не хватает/i.test(out2b), out2b.slice(0, 100));
+dripOk = false;
 
 /* ---------- 3. BNB есть — платит сам ---------- */
 state.balances[me.toLowerCase()] = { native: 1, USDT: 10 };
@@ -113,6 +136,16 @@ if (rawName){
   const d = new E.utils.Interface(['function claim(string)']).decodeFunctionData('claim', tx.data);
   R.ok('имя: в контракт имён', tx.to.toLowerCase() === (await page.evaluate(() => CONTRACTS.bnbMainnet.names)).toLowerCase());
   R.ok('имя: claim(testname1), газ ноль, сеть 56', d[0] === 'testname1' && tx.gasPrice.isZero() && tx.chainId === 56);
+}
+
+/* ---------- 6. Имя: MegaFuel отказал, наш BNB пришёл ---------- */
+state.sent.length = 0; calls = []; drips = []; sponsor = false; dripOk = true;
+const h2 = await page.evaluate(() => claimNameGasless('testname2'));
+const c2 = state.sent[0];
+R.ok('имя через наш BNB: операция ушла', !!h2 && !!c2 && drips.length === 1, String(h2));
+if (c2){
+  const d = new E.utils.Interface(['function claim(string)']).decodeFunctionData('claim', c2.data);
+  R.ok('имя через наш BNB: claim(testname2), газ и цена наши', d[0] === 'testname2' && c2.gasLimit === '156000' && c2.gasPrice === '100000000');
 }
 
 await browser.close();
