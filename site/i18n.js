@@ -1,5 +1,5 @@
 (()=>{
-const dictionaries=window.TAVAROV_TRANSLATIONS||{},valid=new Set(['en','ru','es','pt','tr','tg']);
+const dictionaries=window.TAVAROV_TRANSLATIONS||{},valid=new Set(['en','ru','es','pt','tr','tg','id']);
 const control=document.querySelector('#site-language');if(!control)return;
 const params=new URLSearchParams(location.search);let stored;try{stored=localStorage.getItem('tavarov-site-language')}catch{}
 let language=valid.has(params.get('lang'))?params.get('lang'):valid.has(stored)?stored:'en';
@@ -9,7 +9,7 @@ document.querySelectorAll('[aria-label],img[alt],[placeholder]').forEach(node=>{
 document.querySelectorAll('a[href]').forEach(node=>links.push({node,original:node.getAttribute('href')}));
 window.tavarovText=text=>dictionaries[language]?.[text]||text;
 const originalTitle=document.title;
-const titles={en:['Tavarov — Pay simply. Get paid simply.','Tavarov Pay — Crypto payments for your business','NoN Wallet — Your crypto. In your hands.'],ru:['Tavarov — Платить и получать оплату проще','Tavarov Pay — Криптоплатежи для вашего бизнеса','NoN Wallet — Ваша криптовалюта в ваших руках'],es:['Tavarov — Pagar y cobrar, más fácil','Tavarov Pay — Pagos cripto para tu negocio','NoN Wallet — Tu cripto en tus manos'],pt:['Tavarov — Pagar e receber, mais simples','Tavarov Pay — Pagamentos cripto para seu negócio','NoN Wallet — Sua cripto nas suas mãos'],tr:['Tavarov — Kolay ödeyin, kolay ödeme alın','Tavarov Pay — İşletmeniz için kripto ödemeler','NoN Wallet — Kriptonuz sizin elinizde'],tg:['Tavarov — Пардохт кардан ва гирифтан содатар','Tavarov Pay — Криптопардохтҳо барои тиҷорати шумо','NoN Wallet — Криптовалютаи шумо дар дасти шумо']};
+const titles={en:['Tavarov — Pay simply. Get paid simply.','Tavarov Pay — Crypto payments for your business','NoN Wallet — Your crypto. In your hands.'],ru:['Tavarov — Платить и получать оплату проще','Tavarov Pay — Криптоплатежи для вашего бизнеса','NoN Wallet — Ваша криптовалюта в ваших руках'],es:['Tavarov — Pagar y cobrar, más fácil','Tavarov Pay — Pagos cripto para tu negocio','NoN Wallet — Tu cripto en tus manos'],pt:['Tavarov — Pagar e receber, mais simples','Tavarov Pay — Pagamentos cripto para seu negócio','NoN Wallet — Sua cripto nas suas mãos'],tr:['Tavarov — Kolay ödeyin, kolay ödeme alın','Tavarov Pay — İşletmeniz için kripto ödemeler','NoN Wallet — Kriptonuz sizin elinizde'],tg:['Tavarov — Пардохт кардан ва гирифтан содатар','Tavarov Pay — Криптопардохтҳо барои тиҷорати шумо','NoN Wallet — Криптовалютаи шумо дар дасти шумо'],id:['Tavarov — Bayar dan dibayar jadi lebih mudah','Tavarov Pay — Pembayaran kripto untuk bisnis Anda','NoN Wallet — Kripto Anda. Di tangan Anda.']};
 function apply(value,updateURL){language=valid.has(value)?value:'en';document.documentElement.lang=language;control.value=language;document.getElementById('current-language').textContent=language.toUpperCase();const t=window.tavarovText;
 for(const {node,original,key}of nodes){const translated=t(key);node.textContent=translated===key?original:original.replace(key,translated)}
 for(const {node,attr,original}of attrs)node.setAttribute(attr,t(original));

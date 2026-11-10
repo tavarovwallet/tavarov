@@ -14,7 +14,7 @@ import json, glob, os, re
 SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'www', 'index.html')
 HERE = os.path.dirname(os.path.abspath(__file__))
 MARK = '/* СЛОВАРЬ ВСТАВЛЯЕТСЯ СЮДА */'
-ORDER = ['ru', 'en', 'es', 'tr', 'pt', 'tg']
+ORDER = ['ru', 'en', 'es', 'tr', 'pt', 'tg', 'id']
 
 
 def main():

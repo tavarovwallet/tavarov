@@ -169,10 +169,17 @@ ok('на 320 px нет горизонтальной прокрутки', await p
   await page.evaluate(() => document.documentElement.scrollWidth));
 const missing = await page.evaluate(() => {
   const out = [];
-  Object.keys(T.ru).forEach(k => ['en', 'es', 'tr', 'pt'].forEach(l => { if (!T[l][k]) out.push(l + ':' + k); }));
+  Object.keys(T.ru).forEach(k => ['en', 'es', 'tr', 'pt', 'id'].forEach(l => { if (!T[l][k]) out.push(l + ':' + k); }));
   return out;
 });
-ok('ВСЕ СЛОВА НА ПЯТИ ЯЗЫКАХ', missing.length === 0, missing.join(','));
+ok('ВСЕ СЛОВА НА ШЕСТИ ЯЗЫКАХ', missing.length === 0, missing.join(','));
+await ctx.close();
+
+({ ctx, page } = await fresh({ viewport: { width: 320, height: 640 }, locale: 'id-ID' }));
+await page.goto(B + '/d/streamer'); await page.waitForTimeout(1200);
+ok('ЯЗЫК БРАУЗЕРА — ИНДОНЕЗИЙСКИЙ', /Dukung kreator/i.test(await page.textContent('body')));
+ok('по-индонезийски на 320 px нет горизонтальной прокрутки', await page.evaluate(() => document.documentElement.scrollWidth <= 321),
+  await page.evaluate(() => document.documentElement.scrollWidth));
 await ctx.close();
 
 ok('НИ ОДНОЙ ОШИБКИ В КОДЕ СТРАНИЦ', errors.length === 0, errors.slice(0, 3).join(' | '));

@@ -1052,6 +1052,71 @@ const T = {
     phWalletSol:'endereço Solana…',
     qrHintSol:'Este código é lido pela Phantom, Solflare e NoN Wallet: o comprador escaneia e confirma o pagamento na hora, sem página no meio. Você recebe o valor menos 1%; o 1% é descontado na mesma operação.',
     expired:'A fatura venceu. Crie uma nova.'
+  },
+  id: {
+    title:'Buat tagihan · Tavarov Pay',
+    h1:'Buat tagihan',
+    sub:'Isi formulirnya dan Anda mendapat tautan dan kode. Kirim tautannya ke pembeli lewat chat; tampilkan kodenya di layar atau cetak.',
+    edit:'ubah',
+    lWallet:'Dompet Anda — uangnya masuk ke sini',
+    lShop:'Nama — terlihat oleh pembeli',
+    phShop:'Kedai Kopi Senja',
+    lItem:'Untuk pembayaran apa',
+    phItem:'Cappuccino dan croissant',
+    lAmount:'Jumlah', lCur:'Mata uang', lTtl:'Tagihan berlaku',
+    stickerLink:'Mau cetak stiker untuk meja kasir? Ini dia',
+    ttl15:'15 menit', ttl1h:'1 jam', ttl24:'24 jam',
+    lNet:'Jaringan',
+    lOrder:'Nomor pesanan — untuk Anda sendiri, opsional',
+    phOrder:'order-1024',
+    make:'Buat tagihan',
+    noteDirect:'Uang mengalir dari pembeli langsung ke Anda — kami tidak pernah memegangnya. Jika pembelian lewat kontrak Tavarov Pay (dari NoN Wallet, MetaMask, Trust, atau OKX), 1% dipotong di tempat, dalam transaksi yang sama.',
+    logTitle:'Tagihan yang Anda buat',
+    logDl:'ekspor', logDlT:'Ekspor ke file',
+    logClr:'hapus', logClrT:'Hapus daftar',
+    totToday:'Diterima hari ini', totWeek:'Dalam tujuh hari',
+    logNote:'Daftar ini hanya disimpan di browser ini — tidak ada di perangkat lain. Uang Anda tidak bergantung pada daftar ini: uangnya ada di blockchain dan di dompet Anda meskipun daftar dihapus.',
+    doneH:'Tagihan dibuat',
+    doneSub:'Kirim tautannya ke pembeli atau tampilkan kodenya.',
+    waiting:'Menunggu pembayaran…',
+    copy:'Salin tautan', copied:'Tersalin',
+    share:'Kirim lewat messenger',
+    preview:'Lihat seperti pembeli',
+    again:'Buat tagihan lain',
+    kTo:'Ke', kNet:'Jaringan', kItem:'Untuk', kOrder:'Nomor pesanan', kTill:'Berlaku sampai',
+    doneNote:'Selama halaman ini terbuka, halaman ini memantau pembayaran sendiri dan memberi tahu saat uang masuk. Jika ditutup, tidak ada yang rusak: pembayaran selalu terlihat di blockchain dan di dompet Anda.',
+    curBad:'Kasir tidak menerima %s di jaringan ini. Anda tetap bisa membuat tagihan, tetapi pembeli akan membayar dengan transfer biasa: uangnya sampai ke dompet Anda, sementara halaman tagihan terus menunggu — tidak akan pernah menampilkan “dibayar”. Pilih mata uang lain.',
+    errWallet:'Masukkan alamat dompet — 42 karakter, diawali 0x. Ke dompet inilah uangnya akan masuk.',
+    errAmount:'Masukkan jumlah lebih dari nol.',
+    willPay:'Pembeli membayar',
+    noName:'Tanpa nama', invPrefix:'tagihan-', payDefault:'Pembayaran',
+    qrFail:'Kode tidak muat — kirim tautannya saja.',
+    qrLink:'Tautan', qrWallet:'Langsung ke dompet',
+    qrHintLink:'Pembeli mengarahkan kamera dan halaman pembayaran terbuka. Pembayaran lewat kontrak kami: dengan biaya dan refund cukup sekali tekan tombol.',
+    qrHintWallet:'Kode ini dibaca langsung oleh dompet — Trust, MetaMask, Binance. Pembeli memindainya dan langsung mengonfirmasi transfer, tanpa halaman perantara. Pembayaran seperti ini tanpa biaya.',
+    errCopy:'Gagal menyalin — pilih tautan di atas secara manual.',
+    shareTitle:'Tagihan untuk dibayar', sharePay:'Total bayar ',
+    logEmpty:'Masih kosong. Tagihan yang Anda buat akan muncul di sini dan mengingat apakah sudah dibayar.',
+    pPaid:'Dibayar', pOld:'Kedaluwarsa', pWait:'Menunggu pembayaran',
+    pTest:'jaringan uji', today:'hari ini', rmT:'Hapus dari daftar',
+    cfDrop:'Hapus tagihan ini dari daftar?\n\nIni tidak memengaruhi uang: pembayaran, jika ada, tetap di blockchain dan di dompet Anda.',
+    cfClear:'Hapus seluruh daftar?\n\nIni hanya daftar. Uangnya ada di blockchain dan terlihat di dompet Anda tanpa daftar ini.',
+    csvHead:'tanggal|jumlah|mata uang|untuk|nomor pesanan|status|tagihan|transaksi',
+    csvPaid:'dibayar', csvOld:'kedaluwarsa', csvWait:'menunggu',
+    donePaidDirect:'Transfer sebesar jumlah ini sudah masuk.',
+    donePaidDirectSub:'Transfer masuk langsung ke dompet, tanpa nomor tagihan. Cocokkan pengirim dan jumlahnya dengan pembeli sebelum menyerahkan barang.',
+    pDirect:'Transfer — periksa',
+    donePaid:'Dibayar. Uangnya ada di dompet Anda.',
+    donePaidSub:'Pembeli sudah membayar. Barang bisa diserahkan.',
+    netQuiet:'Jaringan tidak menjawab — kami akan memeriksa lagi…',
+    waitLeft:'Menunggu pembayaran… tagihan masih berlaku %s mnt',
+    netHintEth:'Ethereum: USDT dan USDC. Pembeli membayar biaya jaringan, dan di Ethereum biayanya bisa satu dolar atau lebih — untuk pembelian kecil BNB Chain atau Base lebih praktis.',
+    netHintBase:'Base: hanya USDC (USDT di Base tidak diterbitkan langsung oleh Tether, jadi tidak kami terima). Transfer biayanya beberapa sen.',
+    netHintSol:'Solana: USDC dan USDT, dibayar dari Phantom, Solflare, atau NoN Wallet. Anda perlu alamat dompet Solana — bukan 0x. Biaya 1% dipotong dalam transaksi yang sama.',
+    errWalletSol:'Masukkan alamat dompet Solana — 32 sampai 44 karakter, tanpa 0x (misalnya dari Phantom). Alamat dompetnya, bukan akun token.',
+    phWalletSol:'Alamat Solana…',
+    qrHintSol:'Kode ini dibaca oleh Phantom, Solflare, dan NoN Wallet: pembeli memindainya dan langsung mengonfirmasi pembayaran, tanpa halaman perantara. Anda menerima jumlahnya dikurangi 1%; biaya 1% dipotong dalam transaksi yang sama.',
+    expired:'Tagihan sudah kedaluwarsa. Buat yang baru.'
   }
 };
 
@@ -1061,8 +1126,8 @@ const T = {
    первого applyLang, — иначе первая же отрисовка споткнулась бы. */
 let doneNow = { s:'waiting', sub:'doneSub', arg:null, ok:false };
 
-const NAMES   = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
-const LOCALES = { ru:'ru-RU', en:'en-US', es:'es-ES', tr:'tr-TR', pt:'pt-BR' };
+const NAMES   = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT', id:'ID' };
+const LOCALES = { ru:'ru-RU', en:'en-US', es:'es-ES', tr:'tr-TR', pt:'pt-BR', id:'id-ID' };
 const LANG_KEY = 'tavarov.site.lang';   // тот же ключ, что у сайта: язык один на всё
 
 let LANG = 'ru';
@@ -1821,7 +1886,8 @@ const askedLang = (location.search + ' ' + location.hash).match(/[?&#]lang=([a-z
 if (askedLang && NAMES[askedLang[1]]) startLang = askedLang[1];
 try{ if (!startLang) startLang = localStorage.getItem(LANG_KEY); } catch(e){}
 if (!startLang){
-  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  let nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (nav === 'in') nav = 'id';     // старое обозначение индонезийского
   startLang = NAMES[nav] ? nav : 'en';
 }
 applyLang(NAMES[startLang] ? startLang : 'en');

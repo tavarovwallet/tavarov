@@ -693,6 +693,56 @@ const T = {
     tillOffline:'Não dá para consultar o caixa. Veja a sua conexão — ou digite o valor você mesmo, conferindo com o vendedor.',
     tillBad:'Digite um valor maior que zero',
     tillGaveUp:'O vendedor não chegou a dizer o valor. Pergunte de novo, ou digite você mesmo após conferir com ele.'
+  },
+  id: {
+    title:'Pembayaran · Tavarov Pay',
+    titlePay:'Bayar %s · Tavarov Pay',
+    tnH:'Ini jaringan UJI',
+    tnNote:'Uang di jaringan ini tidak asli: siapa pun bisa mendapatkannya gratis. Toko sungguhan tidak membuat tagihan dengan cara ini. Jika ada yang meminta Anda membayar barang lewat tautan ini, Anda sedang ditipu. Jangan bayar apa pun dan jangan kirim apa pun lagi ke penjual.',
+    qrHint:'Arahkan kamera dari aplikasi Tavarov',
+    qrHintSol:'Pindai dengan Phantom, Solflare, atau NoN Wallet',
+    open:'Buka di dompet',
+    copy:'Salin tautan', copied:'Tersalin',
+    copyManual:'Salin tautan secara manual:',
+    rTo:'Penerima', rNet:'Jaringan', rOrder:'Nomor pesanan',
+    payDefault:'Pembayaran',
+    qrFail:'Kode tidak muat — bayar dengan tombol di bawah',
+    waiting:'Menunggu pembayaran…',
+    waitNote:'Halaman ini akan mendeteksi pembayaran sendiri — biasanya beberapa detik. Halaman tidak perlu ditutup.',
+    errH:'Tautan ini tidak bisa dibaca',
+    errNote:'Kembali ke toko dan mulai pembayaran lagi. Membayar lewat tautan rusak tidak aman: uangnya bisa masuk ke orang yang tidak dikenal.',
+    validFor:'Tagihan masih berlaku %s',
+    expiredLine:'Tagihan sudah habis waktunya — kembali ke toko dan mulai lagi',
+    expiredH:'Tagihan kedaluwarsa',
+    whatIs:'Apa itu Tavarov Pay?',
+    expiredNote:'Tagihan ini tidak perlu dibayar lagi: toko tidak akan menerimanya. Mulai pembayaran lagi.',
+    paidH:'Dibayar',
+    paidNote:'Uangnya sudah masuk ke penjual. Toko akan melihat pembayarannya sendiri.',
+    paidNoteBack:'Uangnya sudah masuk ke penjual. Toko akan melihat pembayarannya sendiri — sekarang Anda diarahkan kembali ke %s.',
+    openOther:'Bayar dari dompet lain',
+    tillTitle:'Kasir · Tavarov Pay',
+    tillWho:'Kasir no. %s',
+    tillWaiting:'Menunggu penjual menyebut jumlahnya',
+    tillWaitNote:'Kasir akan mengetiknya di ponselnya dan jumlahnya akan muncul di sini sendiri. Halaman ini tidak perlu ditutup.',
+    tillChanged:'Penjual baru saja mengubah jumlahnya — periksa lagi.',
+    tillPayBtn:'Bayar',
+    tillNetL:'Jaringan pembayaran — tempat dolar Anda berada:',
+    solPayHere:'Bayar dengan dompet ini',
+    solPhantom:'Bayar di Phantom',
+    solSolflare:'Bayar di Solflare',
+    solPayBusy:'Konfirmasi pembayaran di dompet Anda…',
+    solPaySent:'Terkirim — menunggu konfirmasi jaringan…',
+    solPayFail:'Dompet tidak melakukan pembayaran: ',
+    solPayOld:'dompet ini tidak bisa membayar dari halaman web. Pindai kode di atas dengan Phantom atau Solflare.',
+    tillOwnBtn:'Masukkan jumlah sendiri',
+    tillOwnLabel:'Berapa yang dibayar',
+    tillOwnNote:'Anda mengetik jumlahnya sendiri — cocokkan dengan penjual sebelum membayar. Terlalu sedikit, Anda harus membayar lagi; terlalu banyak, uangnya tidak kembali dengan sendirinya.',
+    tillAgeFresh:'Jumlah baru saja diatur',
+    tillAgeSec:'Jumlah diatur %s detik lalu',
+    tillAgeMin:'Jumlah diatur %s menit lalu — jika Anda sudah lama menunggu, tanyakan lagi ke penjual',
+    tillOffline:'Kasir tidak bisa dihubungi. Periksa koneksi Anda — atau ketik jumlahnya sendiri setelah mencocokkannya dengan penjual.',
+    tillBad:'Masukkan jumlah lebih dari nol',
+    tillGaveUp:'Penjual belum juga menyebut jumlahnya. Tanyakan lagi — atau ketik sendiri setelah mencocokkannya dengan penjual.'
   }
 };
 /* ---------- Строки выбора кошелька ----------
@@ -903,6 +953,47 @@ const T2 = {
     wUsed:'Esta fatura já foi paga. Não é preciso pagar duas vezes.',
     wUnknown:'Não deu certo: %s',
     wDone:'Pagamento enviado. A página vai vê-lo sozinha em alguns segundos.'
+  },
+  id: {
+    brandSub:'Dibayar langsung ke penjual',
+    open:'Bayar dengan NoN Wallet',
+    qrHint:'Arahkan kamera dari aplikasi NoN Wallet',
+    openOther:'Bayar dengan dompet lain',
+    wTitle:'Cara membayar',
+    wSub:'Pembayaran lewat kontrak Tavarov Pay langsung ke penjual. Anda perlu sedikit BNB untuk biaya jaringan.',
+    wHere:'Di perangkat ini',
+    wApps:'Buka di aplikasi',
+    wOtherSec:'Dompet lain',
+    wCopyT:'Salin tautan',
+    wCopyS:'lalu buka di browser dompet Anda',
+    wCopied:'Tersalin — tempel di browser dompet Anda',
+    wCancel:'Batal',
+    wNone:'Tidak ada dompet di browser ini.',
+    wNoneDesk:'Tidak ada dompet di browser ini. Pasang ekstensi MetaMask, Trust, atau OKX — atau buka halaman ini di ponsel.',
+    wFoundHint:'Sudah terpasang di sini',
+    wAppHint:'Halaman akan terbuka di browser-nya',
+    wBrowser:'Dompet browser ini',
+    wRunTitle:'Membayar dengan %s',
+    wRunSub:'Konfirmasi setiap langkah di jendela dompet Anda. Jumlah dan penjualnya sesuai yang di layar.',
+    sConnect:'Menghubungkan dompet',
+    sChain:'Jaringan BNB Chain',
+    sApprove:'Izin untuk jumlah ini',
+    sPay:'Pembayaran ke penjual',
+    sAlready:'sudah diizinkan',
+    sSent:'terkirim, menunggu jaringan',
+    wRetry:'Coba lagi',
+    wBack:'Pilih dompet lain',
+    wRejected:'Anda membatalkan di dompet. Tidak ada yang ditagih.',
+    wPending:'Dompet sudah menunggu jawaban Anda — buka jendelanya.',
+    wSelf:'Ini dompet milik penjual sendiri. Anda tidak bisa membayar diri sendiri — pilih dompet lain.',
+    wNotAccepted:'Kontrak tidak menerima koin ini. Minta penjual membuat tagihan dalam USDT.',
+    wNoMoney:'Di dompet ada %s — tidak cukup untuk pembayaran ini.',
+    wNoGas:'Dompet tidak punya BNB, sedangkan jaringan memungut biaya dalam BNB. Isi sedikit BNB dan coba lagi.',
+    wReverted:'Jaringan menolak transaksi. Tidak ada yang ditagih — coba lagi.',
+    wWrongChain:'Dompet tidak beralih ke BNB Chain. Ganti jaringan di dompet itu sendiri dan coba lagi.',
+    wUsed:'Tagihan ini sudah dibayar. Tidak perlu membayar dua kali.',
+    wUnknown:'Tidak berhasil: %s',
+    wDone:'Pembayaran terkirim. Halaman ini akan mendeteksinya sendiri dalam beberapa detik.'
   }
 };
 Object.keys(T2).forEach(code => { T[code] = Object.assign(T[code] || {}, T2[code]); });
@@ -977,6 +1068,20 @@ const T3 = {
     wNoHash:'A carteira não devolveu o número da operação. Antes de pagar de novo, veja na carteira se ela saiu.',
     wBadAmount:'O valor da fatura está escrito errado. Peça ao vendedor que a emita de novo.',
     wNoAccount:'A carteira não deu um endereço. Abra-a, desbloqueie e tente de novo.'
+  },
+  id: {
+    wHint:'Jendela dompet tidak muncul? Buka sendiri — permintaannya menunggu di sana. Di MetaMask, itu ikon dompet di bagian atas atau bawah layar.',
+    wStuck:'Dompet tidak menjawab. Buka dan periksa apakah ada permintaan yang menunggu; jika tidak ada, tekan “Coba lagi”.',
+    wNetDown:'Tidak ada koneksi ke jaringan BNB Chain. Periksa internet Anda dan coba lagi.',
+    paidOther:'Tagihan ini sudah dibayar',
+    paidOtherNote:'Tagihan dibayar dari dompet %s. Jika itu milik Anda, semuanya beres. Jika bukan, Anda belum membayar apa pun: minta penjual mengatur jumlahnya lagi.',
+    wExpired:'Tagihan sudah habis waktunya — toko tidak akan menerimanya. Mulai pembayaran lagi.',
+    wUsed:'Nomor tagihan ini sudah dipakai pembayaran lain, dan kontrak tidak akan menerima pembayaran Anda. Tidak ada yang ditagih. Kembali ke toko dan mulai pembayaran lagi.',
+    wSlowApprove:'Jaringan belum mengonfirmasi izinnya. Tunggu semenit lalu tekan “Coba lagi” — Anda tidak perlu menandatangani izin kedua.',
+    wSlowPay:'Pembayaran sudah dikirim, tetapi jaringan masih diam. Jangan bayar dua kali: halaman ini akan melihat pembayarannya begitu jaringan mengonfirmasi.',
+    wNoHash:'Dompet tidak mengembalikan nomor transaksi. Sebelum membayar lagi, periksa di dompet apakah pembayarannya berhasil.',
+    wBadAmount:'Jumlah di tagihan ditulis dengan salah. Minta penjual membuatnya lagi.',
+    wNoAccount:'Dompet tidak memberikan alamat. Buka, buka kuncinya, lalu coba lagi.'
   }
 };
 const T4 = {
@@ -1014,7 +1119,14 @@ const T4 = {
         promoDonBtn:'Ativar doações',
         promoH:'Quer receber pagamentos assim também?',
         promoT:'Com a NoN Wallet o dinheiro cai direto na sua carteira: faturas e caixa com código QR. Grátis, 1% por pagamento.',
-        promoBtn:'Obter a NoN Wallet' }
+        promoBtn:'Obter a NoN Wallet' },
+  id: { iosHint:'iPhone tidak bisa membuka dompet dari Layar Utama lewat tautan — begitulah Apple membuatnya. Ketuk “Salin tautan”, buka NoN Wallet → Pindai → Tempel tautan yang disalin. Jika kodenya ada di layar lain, cukup arahkan kamera ke kode itu.',
+        promoDonH:'Anda juga streaming atau punya kanal?',
+        promoDonT:'Terima donasi dengan cara yang sama: USDT dan USDC langsung ke dompet Anda, notifikasi OBS, biaya 1%. Gratis di NoN Wallet.',
+        promoDonBtn:'Atur donasi',
+        promoH:'Mau dibayar dengan cara ini juga?',
+        promoT:'Dengan NoN Wallet uangnya langsung masuk ke dompet Anda: tagihan dan kasir QR. Gratis, 1% per pembayaran.',
+        promoBtn:'Dapatkan NoN Wallet' }
 };
 Object.keys(T4).forEach(code => { T3[code] = Object.assign(T3[code] || {}, T4[code]); });
 Object.keys(T3).forEach(code => {
@@ -1026,7 +1138,7 @@ Object.keys(T3).forEach(code => {
    вместе со всем остальным. Объявлено здесь, до первого applyLang, — иначе
    первая же отрисовка споткнулась бы о необъявленную переменную. */
 let stateNow = { kind:'', k:'waiting', nk:'waitNote', arg:null };
-const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT' };
+const NAMES = { ru:'RU', en:'EN', es:'ES', tr:'TR', pt:'PT', id:'ID' };
 const LANG_KEY = 'tavarov.site.lang';
 let LANG = 'ru';
 /* ===================== Solana: оплата одной операцией =====================
@@ -1506,7 +1618,8 @@ const askedLang = (location.search + ' ' + location.hash).match(/[?&#]lang=([a-z
 if (askedLang && NAMES[askedLang[1]]) startLang = askedLang[1];
 try{ if (!startLang) startLang = localStorage.getItem(LANG_KEY); } catch(e){}
 if (!startLang){
-  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  let nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (nav === 'in') nav = 'id';     // старое обозначение индонезийского
   startLang = NAMES[nav] ? nav : 'en';
 }
 applyLang(NAMES[startLang] ? startLang : 'en');
@@ -1822,7 +1935,8 @@ const RC_TXT = {
   en: { receipt: 'Receipt', total: 'Total', paid: 'Paid', net: 'Network', from: 'From', tx: 'Transaction', saved: 'The receipt is saved on this device', note: 'Not a tax document' },
   es: { receipt: 'Recibo', total: 'Total', paid: 'Pagado', net: 'Red', from: 'De', tx: 'Transacción', saved: 'El recibo se guardó en este dispositivo', note: 'No es un documento fiscal' },
   tr: { receipt: 'Fiş', total: 'Toplam', paid: 'Ödendi', net: 'Ağ', from: 'Gönderen', tx: 'İşlem', saved: 'Fiş bu cihaza kaydedildi', note: 'Mali belge değildir' },
-  pt: { receipt: 'Recibo', total: 'Total', paid: 'Pago', net: 'Rede', from: 'De', tx: 'Transação', saved: 'O recibo foi salvo neste dispositivo', note: 'Não é um documento fiscal' }
+  pt: { receipt: 'Recibo', total: 'Total', paid: 'Pago', net: 'Rede', from: 'De', tx: 'Transação', saved: 'O recibo foi salvo neste dispositivo', note: 'Não é um documento fiscal' },
+  id: { receipt: 'Struk', total: 'Total', paid: 'Dibayar', net: 'Jaringan', from: 'Dari', tx: 'Transaksi', saved: 'Struk tersimpan di perangkat ini', note: 'Bukan dokumen pajak' }
 };
 const rcT = k => (RC_TXT[LANG] || RC_TXT.en)[k] || RC_TXT.en[k];
 const rcCents = v => { const [a, b = ''] = String(v).split('.'); return BigInt(a || '0') * 100n + BigInt((b + '00').slice(0, 2)); };

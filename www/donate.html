@@ -400,9 +400,21 @@ const T = {
         f2:'Você precisa de {0} na {1} e um pouco de {2} para a taxa da rede. Pague com NoN Wallet, MetaMask, Trust Wallet e outras.',
         f1Sol:'O dinheiro vai da sua carteira direto para o criador em uma única operação na Solana: 99% para o criador, 1% de taxa. Não ficamos com ele nem por um segundo.', f2Sol:'Você precisa de {0} na Solana e um pouquinho de SOL para a taxa da rede. Pague com NoN Wallet, Phantom, Solflare ou Trust Wallet pelo QR code do Solana Pay.', netL:'Rede', or:' ou ',
         f3:'O criador vê sua mensagem só depois do pagamento. Ela não é privada: não escreva nada pessoal.',
-        f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $', netPickL:'Rede', netHint:'Escolha a rede onde você tem USDT ou USDC. Em BNB Chain, Base e Solana a taxa de rede é de frações de centavo; na Ethereum, maior.' }
+        f4:'Uma doação é um presente: só o criador pode devolvê-la.', whatIs:'O que é a Tavarov Pay?', item:'Doação', goalL:'Meta', goalOf:'Arrecadado {0} $ de {1} $', netPickL:'Rede', netHint:'Escolha a rede onde você tem USDT ou USDC. Em BNB Chain, Base e Solana a taxa de rede é de frações de centavo; na Ethereum, maior.' },
+  id: { brandSub:'Donasi langsung ke kreator', tnH:'Ini jaringan UJI', tnNote:'Uang di sini tidak asli. Jangan kirim USDT asli ke sini.',
+        loading:'Mencari kreator…', errH:'Halaman tidak ditemukan', errNote:'Nama itu tidak ada. Periksa tautannya dengan kreator.',
+        errNet:'Jaringan tidak menjawab. Muat ulang halaman dalam semenit.', support:'Dukung kreator', wallet:'Dompet kreator',
+        howMuch:'Jumlah', nickL:'Nama Anda (opsional)', msgL:'Pesan untuk kreator', go:'Kirim {0}', goEmpty:'Pilih jumlah',
+        split:'Kreator menerima {0} {1}, biaya layanan 1%', badAmt:'Jumlah harus angka di atas nol, misalnya 5 atau 2.5',
+        sending:'Menyiapkan pembayaran…', postFail:'Pesan tidak tersimpan: {0}. Anda tetap bisa mengirim donasi tanpa pesan.', goNoMsg:'Kirim tanpa pesan',
+        howH:'Cara kerjanya',
+        f1:'Uang mengalir dari dompet Anda langsung ke kreator lewat kontrak terbuka Tavarov Pay — kami tidak pernah memegangnya, bahkan sedetik pun.',
+        f2:'Anda perlu {0} di {1} dan sedikit {2} untuk biaya jaringan. Bayar dengan NoN Wallet, MetaMask, Trust Wallet, dan lainnya.',
+        f1Sol:'Uang mengalir dari dompet Anda langsung ke kreator dalam satu transaksi Solana: 99% ke kreator, 1% biaya layanan. Kami tidak pernah memegangnya, bahkan sedetik pun.', f2Sol:'Anda perlu {0} di Solana dan sedikit sekali SOL untuk biaya jaringan. Bayar dengan NoN Wallet, Phantom, Solflare, atau Trust Wallet lewat kode QR Solana Pay.', netL:'Jaringan', or:' atau ',
+        f3:'Kreator baru melihat pesan Anda setelah pembayaran. Pesan ini tidak rahasia: jangan menulis hal pribadi.',
+        f4:'Donasi adalah hadiah: hanya kreator yang bisa mengembalikannya.', whatIs:'Apa itu Tavarov Pay?', item:'Donasi', goalL:'Target', goalOf:'Terkumpul {0} $ dari {1} $', netPickL:'Jaringan', netHint:'Pilih jaringan tempat Anda menyimpan USDT atau USDC. Biaya jaringan di BNB Chain, Base, dan Solana hanya sepecahan sen, di Ethereum lebih tinggi.' }
 };
-const LANGS = ['ru', 'en', 'es', 'tr', 'pt'];
+const LANGS = ['ru', 'en', 'es', 'tr', 'pt', 'id'];
 let LANG = 'en';
 function t(k, ...args){
   const s = (T[LANG] && T[LANG][k]) || T.ru[k] || k;
@@ -513,7 +525,8 @@ function pickLang(){
   if (q && T[q]) return q;
   try{ const s = localStorage.getItem('tavarov.paylang.v1'); if (s && T[s]) return s; } catch(e){}
   for (const l of (navigator.languages || [navigator.language || ''])){
-    const c = String(l).slice(0, 2).toLowerCase();
+    let c = String(l).slice(0, 2).toLowerCase();
+    if (c === 'in') c = 'id';     // старое обозначение индонезийского
     if (T[c]) return c;
   }
   return 'en';

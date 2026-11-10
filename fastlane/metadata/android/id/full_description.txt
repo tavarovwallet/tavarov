@@ -1,0 +1,22 @@
+NoN Wallet adalah dompet non-kustodial untuk dua stablecoin dolar terbesar, USDT dan USDC, di BNB Chain, Ethereum, Base, dan Solana. Dompet ini juga berfungsi sebagai kasir: penjual menyebut jumlahnya, pembeli memindai kode dan membayar langsung ke dompet penjual.
+
+Kunci Anda tidak pernah keluar dari ponsel. Satu frasa pemulihan 12 kata memulihkan dompet di keempat jaringan. Tidak ada orang lain, termasuk kami, yang bisa memindahkan atau membekukan uang Anda.
+
+<b>Fitur</b>
+<ul>
+<li>Simpan, kirim, dan terima USDT, USDC, serta koin bawaan setiap jaringan</li>
+<li>Pindai kode QR pembayaran dengan kamera</li>
+<li>Terima pembayaran: buat tagihan dengan kode QR; pembeli membayar dari dompetnya sendiri dan uang masuk ke dompet Anda dalam transaksi yang sama (biaya 1%, ditanggung penjual)</li>
+<li>Terima donasi sebagai kreator, dengan notifikasi untuk siaran Anda</li>
+<li>Tukar token di dalam dompet lewat KyberSwap (BNB Chain, Ethereum, Base) dan Jupiter (Solana). Dompet memeriksa rutenya sebelum Anda menandatangani. Penukaran dikenai biaya 0.5%</li>
+<li>Buka dengan sidik jari. Kunci di ponsel dienkripsi dengan kata sandi Anda</li>
+</ul>
+
+<b>Perlu diketahui</b>
+<ul>
+<li>Kontrak pembayaran bersifat open source dan terverifikasi di BscScan, tetapi belum diaudit secara independen. Simpan hanya jumlah yang siap Anda relakan.</li>
+<li>Saldo, harga, penukaran, dan isi saldo kartu opsional berasal dari layanan pihak ketiga (node blockchain publik, CoinGecko, KyberSwap, Jupiter, Relay, MoonPay, Transak, Onramper). Layanan ini tidak open source.</li>
+<li>Tanpa iklan dan tanpa pelacak. Cadangan aplikasi dimatikan, jadi kunci tidak bisa keluar dari ponsel lewat cadangan: simpan frasa pemulihan Anda di kertas.</li>
+</ul>
+
+Kode sumber, alamat kontrak, dan daftar keterbatasan yang jujur: https://github.com/tavarovwallet/tavarov

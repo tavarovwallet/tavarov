@@ -205,6 +205,7 @@ input:focus, select:focus{outline:none; border-color:color-mix(in srgb, var(--ac
           <option value="es">Español</option>
           <option value="tr">Türkçe</option>
           <option value="pt">Português</option>
+          <option value="id">Bahasa Indonesia</option>
         </select>
       </div>
     </div>
@@ -320,7 +321,8 @@ const CAP = {
   en: { cap:'Point your phone camera here', till:'Till' },
   es: { cap:'Apunte aquí la cámara del teléfono', till:'Caja' },
   tr: { cap:'Telefon kameranızı buraya tutun', till:'Kasa' },
-  pt: { cap:'Aponte a câmera do telefone aqui', till:'Caixa' }
+  pt: { cap:'Aponte a câmera do telefone aqui', till:'Caixa' },
+  id: { cap:'Arahkan kamera ponsel ke sini', till:'Kasir' }
 };
 
 function b64url(obj){
@@ -373,8 +375,10 @@ function restore(){
   $('sNets').classList.toggle('hidden', net === 'bnbTestnet');
   $('lang').value = CAP[q.get('lang')] ? q.get('lang')
                   : (CAP[v.lang] ? v.lang
-                  : (CAP[(navigator.language || 'ru').slice(0,2)] ? (navigator.language||'ru').slice(0,2) : 'ru'));
+                  : (CAP[navLang()] ? navLang() : 'ru'));
 }
+/* Язык телефона; старые Android называют индонезийский «in». */
+function navLang(){ const n = (navigator.language || 'ru').slice(0, 2).toLowerCase(); return n === 'in' ? 'id' : n; }
 function remember(){
   try{ localStorage.setItem(KEY, JSON.stringify({
     m: $('m').value.trim(), n: $('n').value.trim(), k: $('k').value, lang: $('lang').value })); } catch(e){}
@@ -490,8 +494,8 @@ draw();
 /* Назад: в приложении и в той же вкладке — шаг назад; в отдельной вкладке
    (открыли по ссылке из кошелька) — закрыть её; иначе — в кошелёк. */
 (function(){
-  var L = (navigator.language || 'ru').slice(0, 2);
-  var T = { ru: 'Назад', en: 'Back', es: 'Atrás', tr: 'Geri', pt: 'Voltar' };
+  var L = (navigator.language || 'ru').slice(0, 2).toLowerCase(); if (L === 'in') L = 'id';
+  var T = { ru: 'Назад', en: 'Back', es: 'Atrás', tr: 'Geri', pt: 'Voltar', id: 'Kembali' };
   var el = document.getElementById('backTxt'); if (el) el.textContent = T[L] || T.en;
   var b = document.getElementById('backBtn'); if (b) b.setAttribute('aria-label', T[L] || T.en);
 })();

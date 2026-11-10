@@ -135,12 +135,17 @@ const L = {
   pt: { head:'Nova doação', anon:'Anônimo', link:'[link]', demoNick:['João','Kate_22','Anônimo'], demoMsg:['Valeu pela live!','Melhor live da semana 🔥',''],
         goalHelp:'Esta é a barra de meta para o <b>OBS</b>. No OBS: <b>Fontes → + → Navegador</b>, cole o endereço desta página, largura <b>800</b>, altura <b>160</b>. A meta é definida no NoN Wallet, no modo Criador.', goalNone:'Ainda não há meta. Defina no NoN Wallet: modo Criador → Página de doações.', demoGoal:'Microfone novo',
         help:'Esta é a tela de alertas para o <b>OBS</b>. No OBS: <b>Fontes → + → Navegador</b>, cole o endereço desta página, largura <b>800</b>, altura <b>400</b>. O fundo é transparente: na live só aparece o cartão da doação.',
-        listen:'Ouvindo doações para ', ok:' · conectado', bad:'Sem conexão com a rede, tentando de novo', noTo:'O link não tem endereço de carteira. Pegue o link no NoN Wallet: Pagamento → Doações → Alertas para OBS.', demo:'Mostrar um exemplo' }
+        listen:'Ouvindo doações para ', ok:' · conectado', bad:'Sem conexão com a rede, tentando de novo', noTo:'O link não tem endereço de carteira. Pegue o link no NoN Wallet: Pagamento → Doações → Alertas para OBS.', demo:'Mostrar um exemplo' },
+  id: { head:'Donasi baru', anon:'Anonim', link:'[tautan]', demoNick:['Budi','Kate_22','Anonim'], demoMsg:['Makasih untuk siarannya!','Siaran terbaik minggu ini 🔥',''],
+        goalHelp:'Ini bilah target untuk <b>OBS</b>. Di OBS: <b>Sources → + → Browser</b>, tempel alamat halaman ini, lebar <b>800</b>, tinggi <b>160</b>. Target diatur di NoN Wallet pada mode Kreator.', goalNone:'Belum ada target. Atur di NoN Wallet: mode Kreator → Halaman donasi.', demoGoal:'Mikrofon baru',
+        help:'Ini layar notifikasi untuk <b>OBS</b>. Di OBS: <b>Sources → + → Browser</b>, tempel alamat halaman ini, lebar <b>800</b>, tinggi <b>400</b>. Latarnya transparan, jadi hanya kartu donasi yang tampil di siaran.',
+        listen:'Menunggu donasi untuk ', ok:' · terhubung', bad:'Tidak ada koneksi ke jaringan, mencoba lagi', noTo:'Tautan ini tidak memuat alamat dompet. Ambil tautannya di NoN Wallet: Bayar → Donasi → Notifikasi OBS.', demo:'Tampilkan contoh' }
 };
 const LANG = (() => {
   const q = Q.get('lang');
   if (q && L[q]) return q;
-  const n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  let n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (n === 'in') n = 'id';     // старое обозначение индонезийского
   return L[n] ? n : 'en';
 })();
 const T = L[LANG];

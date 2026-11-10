@@ -1,4 +1,4 @@
-import {NETWORKS,base58,validAddress,sameAddress,profilePayload,profileText,donationLinks,obsSettings,totals} from './core.mjs?v=e7a7927ff4ae';
+import {NETWORKS,base58,validAddress,sameAddress,profilePayload,profileText,donationLinks,obsSettings,totals} from './core.mjs?v=af131599c2d5';
 const $=id=>document.getElementById(id),t=value=>window.tavarovText?.(value)||value;
 // The dashboard lives on its own origin (creator.tavarov.com); the wallet and its API stay on wallet.tavarov.com.
 // Different origins mean this page can talk to the wallet window only through messages, never reach into it.

@@ -202,13 +202,22 @@ const L = {
         mkH:'Девори зиндаи худро созед', mkT:'Барои оғози лоиҳа, стрим, вохӯрӣ ё ҷамъоварӣ. Одамон кодро скан мекунанд, бо паём ҳар маблағро пардохт мекунанд ва он дар экрани шумо пайдо мешавад. Пул бевосита ба ҳамёни шумо — 99%, дар ҳамон амалиёт.',
         mkTitle:'Сарлавҳаи девор', mkTitlePh:'Ба оғози мо салом гӯед!', mkEvm:'Суроғаи шумо дар BNB Chain, Ethereum ва Base', mkEvmH:'Бо 0x оғоз мешавад. Агар танҳо Solana истифода баред, холӣ гузоред.',
         mkSol:'Суроғаи шумо дар Solana', mkSolH:'Ихтиёрӣ. Агар танҳо BNB Chain, Ethereum ва Base истифода баред, холӣ гузоред.', mkGo:'Деворро созед', mkOpen:'Деворро кушоед', mkCopy:'Пайвандро нусха кунед', mkCopied:'Нусха шуд ✓',
-        mkErr:'Ақаллан як суроға илова кунед: 0x… барои BNB Chain, Ethereum ва Base ё суроғаи Solana.' }
+        mkErr:'Ақаллан як суроға илова кунед: 0x… барои BNB Chain, Ethereum ва Base ё суроғаи Solana.' },
+  id: { title:'Sapa peluncuran kami', sub:'Kirim berapa pun dari dompet apa pun — pesan Anda muncul di sini begitu pembayaran masuk. Setiap pesan di dinding ini adalah pembayaran nyata di blockchain.',
+        pay:'Bayar dari ponsel ini', count:'pembayaran', sum:'diterima', nets:'jaringan', anon:'Anonim', empty:'Belum ada pesan. Pindai kodenya dan jadilah yang pertama.',
+        ago:{ s:'baru saja', m:'mnt lalu', h:'jam lalu', d:'hr lalu' }, verified:'dibayar di blockchain', demo:'CONTOH — bukan pembayaran nyata',
+        foot:'Di sini hanya muncul pembayaran nyata mulai $0.10 dalam USDT atau USDC. 99% langsung masuk ke dompet pemilik.', make:'Buat dinding live Anda sendiri →',
+        mkH:'Buat dinding live Anda sendiri', mkT:'Untuk peluncuran, siaran, pertemuan, atau penggalangan dana. Orang memindai kode, membayar berapa pun dengan pesan, dan pesan itu muncul di layar Anda. Uangnya langsung masuk ke dompet Anda — 99%, dalam transaksi yang sama.',
+        mkTitle:'Judul di dinding', mkTitlePh:'Sapa peluncuran kami!', mkEvm:'Alamat Anda di BNB Chain, Ethereum, dan Base', mkEvmH:'Diawali 0x. Kosongkan jika Anda hanya memakai Solana.',
+        mkSol:'Alamat Solana Anda', mkSolH:'Opsional. Kosongkan jika Anda hanya memakai BNB Chain, Ethereum, dan Base.', mkGo:'Buat dinding', mkOpen:'Buka dinding', mkCopy:'Salin tautan', mkCopied:'Tersalin ✓',
+        mkErr:'Tambahkan setidaknya satu alamat: 0x… untuk BNB Chain, Ethereum, dan Base, atau alamat Solana.' }
 };
-const NAMES = { en:'EN', ru:'RU', es:'ES', tr:'TR', pt:'PT', tg:'TJ' };
+const NAMES = { en:'EN', ru:'RU', es:'ES', tr:'TR', pt:'PT', tg:'TJ', id:'ID' };
 let LANG = (() => {
   const q = Q.get('lang'); if (L[q]) return q;
   try { const s = localStorage.getItem('tavarov.wall.lang'); if (L[s]) return s; } catch (e) {}
-  const n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  let n = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (n === 'in') n = 'id';     // старое обозначение индонезийского
   return L[n] ? n : 'en';
 })();
 const t = k => (L[LANG] && L[LANG][k]) || L.en[k];

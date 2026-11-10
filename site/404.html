@@ -47,10 +47,12 @@ a.main{background:var(--accent);border-color:var(--accent);color:#fff}
     tg: ['Саҳифа ёфт нашуд', 'Чунин суроға дар tavarov.com нест. Шояд пайванд кӯҳна аст ё дар он хатое ҳаст.', 'Ба саҳифаи асосӣ'],
     es: ['Página no encontrada', 'Esta dirección no existe en tavarov.com. Puede que el enlace sea antiguo o tenga un error.', 'Página principal'],
     pt: ['Página não encontrada', 'Este endereço não existe em tavarov.com. Talvez o link seja antigo ou tenha um erro.', 'Página inicial'],
-    tr: ['Sayfa bulunamadı', 'Bu adres tavarov.com üzerinde yok. Bağlantı eski olabilir ya da yazım hatası içerebilir.', 'Ana sayfa']
+    tr: ['Sayfa bulunamadı', 'Bu adres tavarov.com üzerinde yok. Bağlantı eski olabilir ya da yazım hatası içerebilir.', 'Ana sayfa'],
+    id: ['Halaman tidak ditemukan', 'Alamat ini tidak ada di tavarov.com. Mungkin tautannya sudah lama atau ada salah ketik.', 'Ke beranda']
   };
   var lang = '';
   try{ lang = (new URLSearchParams(location.search).get('lang') || localStorage.getItem('tavarov-site-language') || navigator.language || '').slice(0, 2).toLowerCase(); }catch(e){}
+  if (lang === 'in') lang = 'id';     // старое обозначение индонезийского
   var x = T[lang]; if (!x) return;
   document.documentElement.lang = lang;
   document.getElementById('t').textContent = x[0];

@@ -1,4 +1,4 @@
-/* Все пять языков вживую: испанский, турецкий, португальский — экран за
+/* Языки вживую: испанский, турецкий, португальский, индонезийский — экран за
    экраном. Проверяем не «словарь заполнен», а то, что человек на этом
    языке видит слова, а не ключи и не русские остатки. */
 import { boot, reporter, answerConfirm } from './boot.mjs';
@@ -32,12 +32,15 @@ const RAWKEY = /\bk[0-9a-f]{8}\b/;
 /* Слова, которые остаются кириллицей намеренно: в переключателе языков
    каждый язык подписан на себе самом — испанец должен узнать «Русский»
    в списке, а не читать «Ruso». */
-const OK_CYR = ['Русский'];
+const OK_CYR = ['Русский', 'Тоҷикӣ'];
 
+/* must — нижние вкладки «Кошелёк» и «Рынок»; settings — подпись значка
+   настроек в шапке (надписи на экране у него нет, только aria-label). */
 const LANGS = [
-  { code: 'es', name: 'испанский', must: ['Cartera', 'Ajustes'] },
-  { code: 'tr', name: 'турецкий',  must: ['Cüzdan', 'Ayarlar'] },
-  { code: 'pt', name: 'португальский', must: ['Carteira', 'Ajustes'] }
+  { code: 'es', name: 'испанский', must: ['Cartera', 'Mercado'], settings: 'Ajustes' },
+  { code: 'tr', name: 'турецкий',  must: ['Cüzdan', 'Piyasa'], settings: 'Ayarlar' },
+  { code: 'pt', name: 'португальский', must: ['Carteira', 'Mercado'], settings: 'Ajustes' },
+  { code: 'id', name: 'индонезийский', must: ['Dompet', 'Pasar', 'Riwayat'], settings: 'Pengaturan' }
 ];
 
 const TABS = ['wallet', 'pay', 'history', 'cashback', 'settings'];
@@ -71,6 +74,8 @@ for (const L of LANGS) {
   const all = await page.evaluate(() => document.body.innerText);
   R.ok(L.name + ': нижние вкладки переведены', L.must.every(w => all.includes(w)),
     L.must.filter(w => !all.includes(w)).join(', ') || 'все на месте');
+  const gear = await page.evaluate(() => document.getElementById('tabSettings').getAttribute('aria-label'));
+  R.ok(L.name + ': значок настроек подписан', gear === L.settings, gear);
 
   // шторки: их содержимое строится в коде, а не только в разметке
   const SHEETS = [

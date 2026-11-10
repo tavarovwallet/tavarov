@@ -26,7 +26,7 @@ export function profilePayload(value,now=Math.floor(Date.now()/1000)){
 export function profileText(o){return ['Tavarov donation page','wallet: '+(o.net==='solana'?o.to:o.to.toLowerCase()),'network: '+o.net,'greeting: '+o.greeting,'goal: '+o.goal,'target: '+o.target,'restart: '+(o.restart?'yes':'no'),'time: '+o.ts].concat(o.telegram?['telegram: '+o.telegram]:[]).join('\n')}
 export function donationLinks(net,address,language='en',settings={},evm=''){
  if(!validAddress(net,address))throw new Error('invalid_address');
- const lang=['en','ru','es','pt','tr'].includes(language)?language:'en';
+ const lang=['en','ru','es','pt','tr','id'].includes(language)?language:'en';
  const tip=new URL('https://wallet.tavarov.com/d/'+encodeURIComponent(address));tip.search=new URLSearchParams({net,lang}).toString();if(net==='solana'&&validAddress('bnb',evm))tip.searchParams.set('evm',evm);
  const alert=new URL('https://wallet.tavarov.com/alert');alert.search=new URLSearchParams({to:address,net,lang}).toString();
  const o=obsSettings(settings);if(o.min>0)alert.searchParams.set('min',String(o.min));if(o.d!==8)alert.searchParams.set('d',String(o.d));if(!o.snd)alert.searchParams.set('snd','0');if(!o.msg)alert.searchParams.set('msg','0');

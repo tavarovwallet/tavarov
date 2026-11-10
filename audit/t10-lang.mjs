@@ -26,7 +26,11 @@ R.ok('по-русски вкладка называется «Кошелёк»',
 await page.evaluate(() => setLang('en'));
 await page.waitForTimeout(600);
 const en = await page.evaluate(() => document.body.innerText);
-R.ok('нижние вкладки переведены', en.includes('Wallet') && en.includes('Settings') && en.includes('Cashback'), '');
+/* Нижние вкладки с ноября: «Кошелёк · Рынок · Оплата · Партнёрам · История».
+   Настройки — значок в шапке, надписи на экране у него нет, только aria-label. */
+R.ok('нижние вкладки переведены', en.includes('Wallet') && en.includes('Market') && en.includes('History'), '');
+R.ok('значок настроек подписан по-английски',
+  (await page.evaluate(() => document.getElementById('tabSettings').getAttribute('aria-label'))) === 'Settings');
 R.ok('на экране не осталось русских слов из словаря',
   !/Кошелёк|Настройки|Кешбэк|Оплата|История/.test(en), en.slice(0, 120).replace(/\n/g, ' '));
 R.ok('язык страницы помечен как en',
@@ -38,8 +42,10 @@ const set = await page.evaluate(() => document.body.innerText);
 const setLow = set.toLowerCase();
 R.ok('настройки переведены', setLow.includes('security') && setLow.includes('mode'),
   setLow.slice(0, 90).replace(/\n/g, ' '));
-R.ok('переключатель языков показывает все пять',
-  await page.evaluate(() => document.querySelectorAll('#langPicker .seg').length) === 5);
+const langCount = await page.evaluate(() => [document.querySelectorAll('#langPicker .seg').length, Object.keys(LANGS).length]);
+R.ok('переключатель языков показывает все языки', langCount[0] === langCount[1] && langCount[1] >= 7, langCount.join(' из '));
+R.ok('в переключателе есть Bahasa Indonesia',
+  await page.evaluate(() => [...document.querySelectorAll('#langPicker .seg')].some(b => b.textContent === 'Bahasa Indonesia')));
 await page.screenshot({ path: '/home/claude/apk/audit/shots/язык-английский.png', fullPage: true });
 
 // ---------- сообщения из кода тоже переведены ----------
@@ -69,6 +75,35 @@ await p2.waitForFunction(() => typeof renderWalletState === 'function');
 await p2.waitForTimeout(500);
 R.ok('телефон на испанском — приложение выбрало испанский само',
   (await p2.evaluate(() => lang)) === 'es', await p2.evaluate(() => lang));
+
+// ---------- индонезийский телефон: и «id», и старое «in» ----------
+const cId = await b2.newContext({ locale: 'id-ID', viewport:{width:414,height:896} });
+const pId = await cId.newPage();
+pId.on('pageerror', e => err2.push('pageerror: ' + e.message));
+await pId.goto('http://localhost:8099/index.html');
+await pId.waitForFunction(() => typeof renderWalletState === 'function');
+await pId.waitForTimeout(500);
+R.ok('телефон на индонезийском — приложение выбрало индонезийский само',
+  (await pId.evaluate(() => lang)) === 'id', await pId.evaluate(() => lang));
+R.ok('индонезийский словарь полный',
+  await pId.evaluate(() => Object.keys(I18N.id || {}).length === Object.keys(I18N.ru).length),
+  await pId.evaluate(() => Object.keys(I18N.id || {}).length + ' из ' + Object.keys(I18N.ru).length));
+R.ok('язык страницы помечен как id', (await pId.evaluate(() => document.documentElement.lang)) === 'id');
+
+/* Старые Android (и Java) называют индонезийский «in». Подменяем язык
+   браузера до запуска приложения — так, как его увидит приложение. */
+const cIn = await b2.newContext({ locale: 'en-US', viewport:{width:414,height:896} });
+await cIn.addInitScript(() => {
+  Object.defineProperty(navigator, 'languages', { get: () => ['in-ID'] });
+  Object.defineProperty(navigator, 'language', { get: () => 'in-ID' });
+});
+const pIn = await cIn.newPage();
+pIn.on('pageerror', e => err2.push('pageerror: ' + e.message));
+await pIn.goto('http://localhost:8099/index.html');
+await pIn.waitForFunction(() => typeof renderWalletState === 'function');
+await pIn.waitForTimeout(500);
+R.ok('старый код «in-ID» — тоже индонезийский',
+  (await pIn.evaluate(() => lang)) === 'id', await pIn.evaluate(() => lang));
 
 // незнакомый язык — берём английский, а не русский
 const c3 = await b2.newContext({ locale: 'ja-JP', viewport:{width:414,height:896} });

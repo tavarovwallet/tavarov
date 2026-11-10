@@ -33,7 +33,7 @@ const R = (() => {
 
 const WWW = '/home/claude/apk/www';
 const PORT = 8798;
-const LANGS = ['ru','en','es','tr','pt'];
+const LANGS = ['ru','en','es','tr','pt','id'];
 
 // ---------- словари читаем прямо из файлов ----------
 /* Разбираем не регулярками по всему файлу, а вырезаем блок словаря и
@@ -53,7 +53,7 @@ for (const file of ['invoice.html', 'pay.html']){
   R.ok('СЛОВАРЬ ' + file + ' НАЙДЕН И РАЗБИРАЕТСЯ', !!d && !!d.RU && !!d.T);
   if (!d) continue;
   const keys = Object.keys(d.RU);
-  R.ok('  в нём есть все пять языков',
+  R.ok('  в нём есть все языки',
     LANGS.every(l => d.T[l] && typeof d.T[l] === 'object'),
     Object.keys(d.T).join(','));
 
@@ -157,8 +157,8 @@ for (const [loc, code, word] of [['es-ES','es','Crear una factura'],
 // ---- переключатель и память выбора ----
 {
   const { ctx, page } = await openCabinet('en-US');
-  R.ok('ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА ЕСТЬ И В НЁМ ПЯТЬ ЯЗЫКОВ',
-    (await page.locator('#langs button').count()) === 5);
+  R.ok('ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА ЕСТЬ И В НЁМ ВСЕ ЯЗЫКИ',
+    (await page.locator('#langs button').count()) === LANGS.length);
   await page.click('#langs button[data-code="tr"]');
   await page.waitForTimeout(200);
   R.ok('нажатие переключает страницу целиком',

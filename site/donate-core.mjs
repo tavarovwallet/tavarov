@@ -12,7 +12,7 @@ export function validRecipient(network,address){
 }
 export function donationLinks(network,address,language='en'){
  if(!validRecipient(network,address))throw new Error('Invalid recipient');
- const lang=['en','ru','es','pt','tr','tg'].includes(language)?language:'en';
+ const lang=['en','ru','es','pt','tr','tg','id'].includes(language)?language:'en';
  const tip=new URL('https://wallet.tavarov.com/d/'+encodeURIComponent(address));
  tip.search=new URLSearchParams({net:network,lang}).toString();
  const alert=new URL('https://wallet.tavarov.com/alert');
