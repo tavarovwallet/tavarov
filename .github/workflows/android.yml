@@ -47,7 +47,8 @@ jobs:
             echo "::error::Google Play services or Firebase classes found in the APK"; exit 1
           fi
           echo "No Google Play services or Firebase classes inside."
-      # Run by hand (workflow_dispatch): also put the unsigned APK on the
+      # Run by hand (workflow_dispatch): also put the unsigned APK and the
+      # Google Play bundle (.aab) on the
       # android-unsigned branch, so it can be fetched with plain git and signed
       # on the owner's computer (the signing key never leaves it).
       - name: Unsigned APK to the android-unsigned branch (manual runs only)
@@ -56,7 +57,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           APK=android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
-          mkdir /tmp/u && cp "$APK" /tmp/u/app-release-unsigned.apk && cd /tmp/u
+          (cd android-app/android && ./gradlew --no-daemon bundleRelease)
+          AAB=$(ls android-app/android/app/build/outputs/bundle/release/*.aab | head -1)
+          mkdir /tmp/u && cp "$APK" /tmp/u/app-release-unsigned.apk && cp "$AAB" /tmp/u/app-release-unsigned.aab && cd /tmp/u
           echo "${GITHUB_SHA}" > source.txt
           git init -q -b android-unsigned && git add . 
           git -c user.name=ci -c user.email=ci@tavarov.com commit -qm "unsigned APK from ${GITHUB_SHA}"
