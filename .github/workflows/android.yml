@@ -20,7 +20,7 @@ on:
       - "www/**"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,6 +47,20 @@ jobs:
             echo "::error::Google Play services or Firebase classes found in the APK"; exit 1
           fi
           echo "No Google Play services or Firebase classes inside."
+      # Run by hand (workflow_dispatch): also put the unsigned APK on the
+      # android-unsigned branch, so it can be fetched with plain git and signed
+      # on the owner's computer (the signing key never leaves it).
+      - name: Unsigned APK to the android-unsigned branch (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=android-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          mkdir /tmp/u && cp "$APK" /tmp/u/app-release-unsigned.apk && cd /tmp/u
+          echo "${GITHUB_SHA}" > source.txt
+          git init -q -b android-unsigned && git add . 
+          git -c user.name=ci -c user.email=ci@tavarov.com commit -qm "unsigned APK from ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" android-unsigned
       - uses: actions/upload-artifact@v4
         with:
           name: non-wallet-unsigned-apk
