@@ -20,7 +20,7 @@ const dripAddr = new E.Wallet(key).address;
 const user = E.Wallet.createRandom().address;
 const iface = new E.utils.Interface(['function claim(string)', 'function transfer(address,uint256)', 'function approve(address,uint256)']);
 const claimData = iface.encodeFunctionData('claim', ['muslih']);
-const sendData = iface.encodeFunctionData('transfer', ['0x2222222222222222222222222222222222222222', 1000000]);
+const sendData = iface.encodeFunctionData('transfer', ['0x2222222222222222222222222222222222222222', '1000000000000000000']);
 
 let userBal = '0x0', estimateFails = false, gasPrice = '0x5f5e100' /* 0.1 gwei */, sent = [];
 const fakeFetch = async (url, init) => {
@@ -72,6 +72,11 @@ r = await post({ from: user, to: drip.USDT, data: iface.encodeFunctionData('appr
 ok('approve — нет', r.status === 400 && sent.length === 0);
 r = await post({ from: user, to: '0x1111111111111111111111111111111111111111', data: sendData });
 ok('чужой контракт — нет', r.status === 400 && sent.length === 0);
+r = await post({ from: user, to: drip.USDT, data: iface.encodeFunctionData('transfer', [user, 0]) });
+ok('перевод нуля — нет', r.status === 400 && sent.length === 0);
+{ const request = new Request('https://tavarov-wallet.pages.dev/api/drip-bnb', { method: 'POST', body: JSON.stringify({ from: user, to: drip.NAMES, data: claimData }) });
+  const x = await drip.onRequestPost({ request, env }, { fetch: fakeFetch });
+  ok('запасной адрес pages.dev — отказ', x.status === 403 && sent.length === 0); }
 estimateFails = true;
 r = await post({ from: user, to: drip.NAMES, data: claimData });
 ok('операция не пройдёт — BNB не даём', r.status === 400 && sent.length === 0, JSON.stringify(r.j));

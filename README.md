@@ -221,11 +221,12 @@ the same file.
 * **Build it yourself.** `android-app/README.md`: Gradle only, no Node, no
   Google Play services. The signed file is kept on the `android-apk` branch,
   not in `main`.
-* **Free names.** When a wallet is created with a name, the name is written to
-  the names contract and we pay the network fee through MegaFuel (BNB Chain's
-  gas sponsorship). The policy pays only for `claim(string)` on the names
-  contract. `functions/api/gasless.js` relays four MegaFuel methods and keeps
-  nothing but rate-limit counters.
+* **Free names and gas.** When a wallet is created with a name, the name is
+  written to the names contract and we pay the network fee: a small service
+  wallet sends exactly the BNB that one operation costs
+  (`functions/api/drip-bnb.js`). The same covers USDT/USDC transfers for people
+  with no BNB; on Base, USDC moves by signature (`functions/api/relay-base.js`).
+  Both have per-user and daily caps and answer only on wallet.tavarov.com.
 
 ## Found a hole
 

@@ -23,10 +23,12 @@
    однажды утечёт.
 
    ГРАНИЦЫ, чтобы баланс не съели:
-     — три раза в сутки с одного адреса клиента и три на один кошелёк;
+     — десять раз в сутки с одного адреса клиента (за одним адресом у
+       мобильного оператора сидят сотни людей) и три на один кошелёк;
+     — перевод — от 0.10 USDT/USDC; только на wallet.tavarov.com;
      — не больше пятидесяти в сутки на всех;
      — у кого BNB на операцию уже хватает, тому не даём. */
-import { overLimit } from './_limit.js';
+import { overLimit, limitsWork } from './_limit.js';
 import { keccak256, toHex, fromHex } from './_crypto.js';
 import { signAsync } from './_secp256k1.js';
 import { bytesOfInt, rlp, concat, relayerAddress } from './relay-base.js';
@@ -41,6 +43,7 @@ const CLAIM = '0xf3fe12c9', TRANSFER = '0xa9059cbb';
 const MAX_GAS = 300000n;                          // claim — около 120 тысяч, перевод — около 50
 const MAX_WEI = 60000000000000n;                  // 0.00006 BNB: потолок на одного человека
 const PER_DAY_ALL = 50;
+const MIN_TOKEN = 100000000000000000n;            // 0.10 USDT/USDC
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, POST, OPTIONS',
                'access-control-allow-headers': 'content-type' };
@@ -52,7 +55,11 @@ export function allowedOp(to, data){
   if (typeof to !== 'string' || typeof data !== 'string' || !/^0x[0-9a-fA-F]*$/.test(data) || data.length > 1000) return false;
   const t = to.toLowerCase(), sel = data.slice(0, 10).toLowerCase();
   if (t === NAMES.toLowerCase()) return sel === CLAIM;
-  if (t === USDT.toLowerCase() || t === USDC.toLowerCase()) return sel === TRANSFER && data.length === 2 + 8 + 128;
+  /* Перевод — только настоящий: от 0.10 (у USDT и USDC в BNB Chain 18 знаков).
+     Перевод нуля проходит проверку сети у кого угодно, и на нём можно было
+     бы собирать наш BNB, не имея ни цента. */
+  if (t === USDT.toLowerCase() || t === USDC.toLowerCase())
+    return sel === TRANSFER && data.length === 2 + 8 + 128 && BigInt('0x' + data.slice(-64)) >= MIN_TOKEN;
   return false;
 }
 
@@ -106,6 +113,7 @@ export async function onRequestGet({ env }){
 export async function onRequestPost({ request, env }, deps){
   const key = env && env.BNB_DRIP_KEY;
   if (!key) return reply({ error: 'drip off' }, 503);
+  if (!limitsWork(request)) return reply({ error: 'use wallet.tavarov.com' }, 403);
   const F = deps && deps.fetch;
   const raw = await request.text().catch(() => '');
   if (raw.length > 2000) return reply({ error: 'request too large' }, 413);
@@ -117,7 +125,7 @@ export async function onRequestPost({ request, env }, deps){
   const me = relayerAddress(key);
   if (from.toLowerCase() === me.toLowerCase()) return reply({ error: 'bad address' }, 400);
 
-  if (await overLimit(request, env, 'drip-bnb', 3, 86400) ||
+  if (await overLimit(request, env, 'drip-bnb', 10, 86400) ||
       await overLimit(request, env, 'drip-bnb-from', 3, 86400, from.toLowerCase()))
     return reply({ error: 'too many requests' }, 429);
 

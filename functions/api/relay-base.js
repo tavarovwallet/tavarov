@@ -25,7 +25,7 @@
        кошелька, и не больше ста в сутки на всех;
      — сначала пробный вызов (eth_call): перевод, который не пройдёт, мы не
        отправляем и газ за него не платим. */
-import { overLimit } from './_limit.js';
+import { overLimit, limitsWork } from './_limit.js';
 import { keccak256, toHex, fromHex } from './_crypto.js';
 import { getPublicKey, signAsync } from './_secp256k1.js';
 
@@ -129,6 +129,7 @@ export async function onRequestGet({ env }){
 export async function onRequestPost({ request, env }, deps){
   const key = env && env.BASE_RELAYER_KEY;
   if (!key) return reply({ error: 'relay off' }, 503);
+  if (!limitsWork(request)) return reply({ error: 'use wallet.tavarov.com' }, 403);
   const F = deps && deps.fetch;
   const raw = await request.text().catch(() => '');
   if (raw.length > 2000) return reply({ error: 'request too large' }, 413);

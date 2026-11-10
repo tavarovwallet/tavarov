@@ -52,3 +52,12 @@ export async function overLimit(request, env, bucket, max, winSec, id){
 export const tooMany = () => new Response(JSON.stringify({ error: 'too many requests, try again in a few minutes' }), {
   status: 429, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'retry-after': '120' }
 });
+
+/* Ограничитель выше живёт в кэше Cloudflare, а кэш работает только на своём
+   домене: на запасном адресе *.pages.dev он молча ничего не считает (аудит
+   10.11.2026: 75 запросов подряд, ни одного отказа). Всё, что тратит наши
+   деньги, обязано отвечать только там, где лимиты действуют. */
+export function limitsWork(request){
+  let h = ''; try{ h = new URL(request.url).hostname; } catch(e){}
+  return h === 'wallet.tavarov.com' || h === 'localhost' || h === '127.0.0.1';
+}
