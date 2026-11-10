@@ -8,10 +8,10 @@ The deploy workflow on `main` copies this file to tavarov.com/tavarov.apk and
 refuses to deploy if its SHA-256 differs from `site/apk.json`. The same
 workflow publishes it once as the GitHub release named in `site/apk.json`.
 
-Current file: NoN Wallet 1.1.3 (versionCode 37), built by GitHub Actions from
-commit 7a49246dab25ccb033eeacf8d1ee57c9d59b048a and signed with the
+Current file: NoN Wallet 1.1.4 (versionCode 38), built by GitHub Actions from
+commit d35e7d9e7e9fdccff7fb85b8be46396db027aa4d and signed with the
 tavarov.com key (certificate SHA-256
 AB9F235464A5F2B47BCF38DE47439BB5751860FB86F131BC6E0C8A75D87A8AB1).
 
 SHA-256 of tavarov.apk:
-102e2b809341a0da14ff4d1c3357a069012a6b0bbc109eeffc3cd1b130d41f4d
+7f46b8a60646cd6c3b7a99d9bb8f83d098b138bb4bb00e75442cdafc6a0f8a23
