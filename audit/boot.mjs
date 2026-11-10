@@ -27,7 +27,14 @@ async function serveApp() {
     if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       res.writeHead(404); res.end('нет такого файла'); return;
     }
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
+    const head = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' };
+    /* CSP_CHECK=файл: раздаём кошелёк с тем же правилом, что на сайте (из
+       www/_headers), в режиме «только сообщать», а нарушения пишем в файл. */
+    if (process.env.CSP_CHECK && rel === 'index.html'){
+      const m = fs.readFileSync(path.join(ROOT, '_headers'), 'utf8').match(/Content-Security-Policy(?:-Report-Only)?: (default-src[^\n]+)/);
+      if (m) head['Content-Security-Policy-Report-Only'] = m[1];
+    }
+    res.writeHead(200, head);
     res.end(fs.readFileSync(file));
   });
   await new Promise((resolve, reject) => {
@@ -55,6 +62,8 @@ export async function boot(opts = {}) {
   const console_ = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   page.on('console', m => {
+    if (process.env.CSP_CHECK && /Content Security Policy|Content-Security-Policy/.test(m.text()))
+      fs.appendFileSync(process.env.CSP_CHECK, m.text().replace(/\s+/g, ' ').slice(0, 300) + '\n');
     console_.push(m.type() + ': ' + m.text());
     if (m.type() === 'error') errors.push('console: ' + m.text());
   });

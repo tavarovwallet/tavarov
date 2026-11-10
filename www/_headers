@@ -21,11 +21,21 @@
 # Само приложение и служебный работник — всегда проверять, нет ли свежего.
 # Файлы маленькие, задержки не видно. Без этого человек открывает сайт после
 # обновления и видит прошлую версию: мы на этом уже обжигались.
+# ЗАЩИТА КОШЕЛЬКА ОТ ВНЕДРЁННОГО КОДА (аудит 10.11.2026). Страница кошелька
+# может обращаться только к перечисленным узлам сетей и нашим серверам,
+# грузить скрипты только с нашего домена и не умеет выполнять код из строк
+# (eval). Если чужой код всё же попадёт на страницу, унести фразу на свой
+# сервер запросом он не сможет. Добавляете новый узел или сервис в
+# index.html — допишите его сюда, иначе браузер молча его отрежет.
+# Пока идёт проверка, правило стоит в режиме «только сообщать» (Report-Only):
+# ничего не блокирует, нарушения видны в консоли браузера.
 /
   Cache-Control: no-cache
+  Content-Security-Policy-Report-Only: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://*.tavarov.com https://tavarov.com https://api.coingecko.com https://*.publicnode.com https://*.drpc.org https://*.bnbchain.org https://*.binance.org https://1rpc.io https://mainnet.base.org https://polygon-rpc.com https://*.tatum.io https://*.trongrid.io https://*.jup.ag https://api.relay.link https://aggregator-api.kyberswap.com; frame-src 'none'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
 
 /index.html
   Cache-Control: no-cache
+  Content-Security-Policy-Report-Only: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://*.tavarov.com https://tavarov.com https://api.coingecko.com https://*.publicnode.com https://*.drpc.org https://*.bnbchain.org https://*.binance.org https://1rpc.io https://mainnet.base.org https://polygon-rpc.com https://*.tatum.io https://*.trongrid.io https://*.jup.ag https://api.relay.link https://aggregator-api.kyberswap.com; frame-src 'none'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
 
 /sw.js
   Cache-Control: no-cache
