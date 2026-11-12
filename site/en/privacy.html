@@ -131,6 +131,14 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <h2>The blockchain is an open book</h2>
   <p>Everything that happens on the network is visible to everyone and stays forever: addresses, amounts, times. That is how a blockchain is built, not a decision of ours, and nobody can delete a record from it, ourselves included.</p>
 
+  <h2 id="delete">Deleting your data (NoN Wallet and Tavarov Pay)</h2>
+  <p>What is on your device you delete yourself: remove the wallet in Settings or uninstall the app, and the keys, settings and history go with it. To delete what our servers keep about you:</p>
+  <ol>
+    <li>Write to <a href="mailto:hi@tavarov.com">hi@tavarov.com</a> with the subject “Delete my data”.</li>
+    <li>Give the wallet address the data is tied to: the payer address of a tip, the shop address in the developer dashboard, or the address that used our gas help.</li>
+    <li>We delete tip messages, API invoices, webhook settings and key fingerprints tied to that address within 30 days and reply when it is done.</li>
+  </ol>
+  <p>Some data deletes itself: unpaid tip messages after 2 hours, gas-help counters after 24 hours, till amounts after 10 minutes, API invoices after 90 days, paid tip messages after 180 days. What we cannot delete: records on the blockchain, including your payments and a name registered in the names contract (you can release the name yourself), and the hosting provider’s ordinary access logs, which Cloudflare keeps under its own policy.</p>
   <h2>Children</h2>
   <p>The app is not intended for children and is not aimed at them in content.</p>
 
