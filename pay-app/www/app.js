@@ -105,6 +105,15 @@ function firstLang(){
 let LANG = firstLang();
 function t(k){ return (DICT[LANG] && DICT[LANG][k]) || DICT.en[k] || k; }
 function fill(s, map){ return String(s).replace(/%([a-z])/g, (m, c) => (c in map ? map[c] : m)); }
+/* The API-key till (developer dashboard) is reachable from the web version
+   only; the Android app and file:// copies don't show the link. */
+function showDevKeyLink(){
+  const el = document.getElementById('devKeyLink');
+  if (!el) return;
+  const h = location.hostname;
+  el.classList.toggle('hidden', !(location.protocol === 'https:' && (h === 'till.tavarov.com' || /\.pages\.dev$/.test(h))));
+}
+document.addEventListener('DOMContentLoaded', showDevKeyLink);
 function applyLang(code){
   if (!DICT[code]) code = 'en';
   LANG = code;

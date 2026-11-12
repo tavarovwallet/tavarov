@@ -7,6 +7,7 @@
 const LANG_NAMES = { en:'English', ru:'Русский', es:'Español', tr:'Türkçe', pt:'Português', tg:'Тоҷикӣ', id:'Bahasa Indonesia' };
 const DICT = {
   en: {
+    devKey:'For developers: connect with an API key',
     setupTitle:'Where should payments arrive?',
     setupSub:'Type your NoN name or your 0x… address on BNB Chain; this app never asks for keys or passwords.',
     destPh:'NoN name or 0x… address', checking:'Checking…',
@@ -42,6 +43,7 @@ const DICT = {
     version:'Version %s', testnetOn:'TEST NETWORK — not real money', done:'Done'
   },
   ru: {
+    devKey:'Для разработчиков: вход по API-ключу',
     setupTitle:'Куда приходят деньги?',
     setupSub:'Впишите ваше имя NoN или адрес 0x… в сети BNB Chain; приложение никогда не спрашивает ключи и пароли.',
     destPh:'Имя NoN или адрес 0x…', checking:'Проверка…',
@@ -77,6 +79,7 @@ const DICT = {
     version:'Версия %s', testnetOn:'ТЕСТОВАЯ СЕТЬ — деньги ненастоящие', done:'Готово'
   },
   es: {
+    devKey:'Para desarrolladores: conectar con una clave API',
     setupTitle:'¿Adónde deben llegar los pagos?',
     setupSub:'Escriba su nombre NoN o su dirección 0x… en BNB Chain; esta aplicación nunca pide claves ni contraseñas.',
     destPh:'Nombre NoN o dirección 0x…', checking:'Comprobando…',
@@ -112,6 +115,7 @@ const DICT = {
     version:'Versión %s', testnetOn:'RED DE PRUEBA — no es dinero real', done:'Listo'
   },
   tr: {
+    devKey:'Geliştiriciler için: API anahtarıyla bağlan',
     setupTitle:'Ödemeler nereye gelsin?',
     setupSub:'NoN adınızı veya BNB Chain üzerindeki 0x… adresinizi yazın; bu uygulama asla anahtar veya parola istemez.',
     destPh:'NoN adı veya 0x… adresi', checking:'Kontrol ediliyor…',
@@ -147,6 +151,7 @@ const DICT = {
     version:'Sürüm %s', testnetOn:'TEST AĞI — gerçek para değil', done:'Tamam'
   },
   pt: {
+    devKey:'Para desenvolvedores: conectar com uma chave de API',
     setupTitle:'Para onde devem ir os pagamentos?',
     setupSub:'Digite seu nome NoN ou seu endereço 0x… na BNB Chain; este aplicativo nunca pede chaves nem senhas.',
     destPh:'Nome NoN ou endereço 0x…', checking:'Verificando…',
@@ -182,6 +187,7 @@ const DICT = {
     version:'Versão %s', testnetOn:'REDE DE TESTE — não é dinheiro de verdade', done:'Pronto'
   },
   tg: {
+    devKey:'Барои барномасозон: воридшавӣ бо калиди API',
     setupTitle:'Пардохтҳо ба куҷо ворид шаванд?',
     setupSub:'Номи NoN ё суроғаи 0x…-и худро дар шабакаи BNB Chain нависед; ин барнома ҳеҷ гоҳ калид ё паролро намепурсад.',
     destPh:'Номи NoN ё суроғаи 0x…', checking:'Санҷиш…',
@@ -217,6 +223,7 @@ const DICT = {
     version:'Версияи %s', testnetOn:'ШАБАКАИ ОЗМОИШӢ — пули воқеӣ нест', done:'Тайёр'
   },
   id: {
+    devKey:'Untuk pengembang: hubungkan dengan kunci API',
     setupTitle:'Ke mana pembayaran harus masuk?',
     setupSub:'Ketik nama NoN atau alamat 0x… Anda di BNB Chain; aplikasi ini tidak pernah meminta kunci atau kata sandi.',
     destPh:'Nama NoN atau alamat 0x…', checking:'Memeriksa…',
