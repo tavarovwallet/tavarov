@@ -56,7 +56,8 @@ body{ background:var(--bg); color:var(--label); font-family:var(--font); font-we
 
 .nav{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:52px; }
 .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:-.025em; }
-.brand-mark{ width:30px; height:30px; border-radius:9px; background:var(--accent); display:grid; place-items:center; }
+.brand-mark{ width:30px; height:30px; border-radius:9px; overflow:hidden; display:grid; place-items:center; }
+.brand-mark img{ width:30px; height:30px; display:block; }
 .brand-mark svg{ width:18px; height:18px; }
 .nav-actions{ display:flex; gap:6px; }
 .icon-btn{ border:0; background:var(--fill-2); color:var(--label); width:40px; height:40px; border-radius:12px;
@@ -167,7 +168,7 @@ select{ width:100%; padding:15px 16px; font:inherit; font-size:16px; font-weight
 
   <div class="nav">
     <button class="brand" id="brand" type="button">
-      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
+      <span class="brand-mark"><img src="icon-192.png" alt="" width="30" height="30"></span>
       <span>Tavarov Pay</span>
     </button>
     <div class="nav-actions">
