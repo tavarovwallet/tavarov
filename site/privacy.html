@@ -77,7 +77,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 
 <main class="wrap">
   <h1>Privacy policy</h1>
-  <div class="date"><span>Updated</span>: 22.10.2026 · Tavarov Pay · NoN Wallet</div>
+  <div class="date"><span>Updated</span>: 12.11.2026 · Tavarov Pay · NoN Wallet</div>
 
   <div class="box">
     <p><b>At a glance.</b> Your wallet keys are created and stored on your device. Payment pages, invoices and the API process the transaction information and hosting logs described below. The marketing website uses Cloudflare Web Analytics; the wallet and checkout do not include that analytics script.</p>
@@ -114,6 +114,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
     <li><b>Our site</b> — the app page itself, the payment and tip pages, the developer dashboard. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.</li>
     <li><b>Block explorers</b> (BscScan, Etherscan, Basescan, Solscan) — only if you press "view in the explorer" yourself.</li>
     <li><b>Wallet apps</b> (MetaMask, Trust Wallet, OKX) — only if you choose “open in an app” on the payment page yourself. Then the link to this payment — seller, amount and item — goes through their link service (metamask.app.link, link.trustwallet.com, web3.okx.com) so the page opens in their browser.</li>
+    <li><b>Our gas help</b> (wallet.tavarov.com/api/drip-bnb and /api/relay-base) — only when you have no coins for the network fee and register a name or send USDT/USDC. The wallet sends our server your address and the operation you are about to sign; on Base, the transfer you signed. Our service wallet then pays the fee for that one operation. To enforce limits we keep, for 24 hours, how many times your address and your IP used it. We never receive your keys, phrase or password, and we cannot change the recipient or the amount.</li>
     <li><b>Swap services</b> (KyberSwap, Jupiter, Relay) — only when you open a coin swap yourself. They receive your address, the coins and the amount: without that they cannot quote a rate or build the transaction. You sign the transaction yourself, on your device.</li>
     <li><b>Phantom and Solflare</b> — only if you press “pay in Phantom” or “in Solflare” on a Solana payment page. The link to that payment then passes through their link server (phantom.app, solflare.com) to open the page in the wallet’s browser.</li>
   </ul>
