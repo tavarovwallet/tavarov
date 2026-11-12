@@ -504,21 +504,26 @@ function renderWait(){
   /* The network is named only when the seller takes more than one. */
   const meta = [enabledNets().length > 1 ? fill(t('onNet'), { s: netOf(sale.net).name }) : '', testnet() ? t('testnetOn') : ''].filter(Boolean).join(' · ');
   $('waitMeta').textContent = meta; show('waitMeta', !!meta);
+  /* The one QR on screen is the payment page (13 November 2026). The plain
+     ethereum: code was the default before, and Trust Wallet read it as an
+     ordinary transfer: the money arrived, but past the contract, so the 1%
+     service fee was never taken. The page link goes through the contract from
+     any wallet, and NoN Wallet reads it too. The plain code stays in the hidden
+     #payLink box for reference only. */
   const app = buildAppCode(sale);
   $('payLink').textContent = app;
-  drawQr($('qr'), app);
+  const web = buildWebLink(sale);
+  $('webLink').textContent = web;
+  drawQr($('qr'), web);
   waitError(waitErrKey);
   show('otherBox', otherOpen);
-  clearInterval(webTimer);
   if (otherOpen){
-    const web = buildWebLink(sale);
-    $('webLink').textContent = web;
-    drawQr($('qrWeb'), web);
     $('manualLine').textContent = fill(t('manual'), { a: fmtAmount(sale.amount) + ' ' + sale.cur, n: netOf(sale.net).name });
     $('manualAddr').textContent = sale.to;
-    /* The payment page stops taking a payment 15 minutes after t; keep it fresh. */
-    webTimer = setInterval(() => { if (screen === 'scrWait' && otherOpen) renderWait(); }, 10 * 60 * 1000);
   }
+  /* The payment page stops taking a payment 15 minutes after t; keep it fresh. */
+  clearInterval(webTimer);
+  webTimer = setInterval(() => { if (screen === 'scrWait') renderWait(); }, 10 * 60 * 1000);
 }
 function drawQr(holder, text){
   if (holder.dataset.text === text && holder.children.length) return true;

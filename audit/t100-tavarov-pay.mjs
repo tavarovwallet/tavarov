@@ -236,21 +236,23 @@ R.ok('the sale has a fresh 32-byte invoice number', !!inv, appLink.slice(0, 80))
 const expected = 'ethereum:' + ADDR.usdt + '@97/transfer?address=' + SELLER + '&uint256=3500000' +
   '&tv_m=' + SELLER + '&tv_item=Latte&tv_name=' + encodeURIComponent('Corner Coffee') + '&tv_inv=' + inv + '&tv_net=bnb';
 R.ok('QR code is the NoN Wallet till format (EIP-681 + tv_*), 3.5 USDT = 3500000 units', appLink === expected, appLink);
-R.ok('the one QR on screen carries that very link', (await page.getAttribute('#qr', 'data-text')) === appLink);
+/* The QR on screen is the payment page: it goes through the contract (1% fee)
+   from any wallet. The plain code above stays hidden, for reference. */
+const webLink = (await page.textContent('#webLink')).trim();
+R.ok('THE ONE QR ON SCREEN IS THE PAYMENT PAGE (fee route), not the plain transfer code',
+  (await page.getAttribute('#qr', 'data-text')) === webLink && webLink !== appLink && !(await visible('#payLink')));
 R.ok('waiting screen shows only amount, QR, status, "Other ways" and Cancel',
-  JSON.stringify(await shownIds('scrWait')) === JSON.stringify(['waitAmount', 'waitMeta', 'qr', 'waitPill', 'otherToggle', 'cancelSale']),
+  JSON.stringify(await shownIds('scrWait')) === JSON.stringify(['waitAmount', 'waitMeta', 'qr', 'waitHint', 'waitPill', 'otherToggle', 'cancelSale']),
   JSON.stringify(await shownIds('scrWait')));
 R.ok('no long fee text on the waiting screen', !/1%/.test(await page.evaluate(() => document.getElementById('scrWait').innerText)));
 R.ok('waiting for payment', /Waiting/.test(await page.textContent('#waitPill')));
 const qrSrc = await page.evaluate(() => document.querySelector('#qr canvas').toDataURL('image/png'));
 await shot('03-waiting.png');
 await page.click('#otherToggle');
-const webLink = (await page.textContent('#webLink')).trim();
 let web = null;
 try { web = JSON.parse(Buffer.from(webLink.split('#p=')[1], 'base64url').toString('utf8')); } catch (e) {}
-R.ok('"Other ways to pay" opens the payment-page QR, Share link and the plain address',
-  (await visible('#qrWeb')) && (await visible('#shareLink')) && (await page.textContent('#manualAddr')) === SELLER &&
-  (await page.getAttribute('#qrWeb', 'data-text')) === webLink);
+R.ok('"Other ways to pay" opens Share link and the plain address, and no second QR',
+  (await visible('#shareLink')) && (await page.textContent('#manualAddr')) === SELLER && !(await page.$('#qrWeb')));
 R.ok('payment page link points to wallet.tavarov.com/pay.html', webLink.startsWith('https://wallet.tavarov.com/pay.html#p='), webLink.slice(0, 60));
 R.ok('payment page link carries seller, amount, coin, network and the same invoice',
   !!web && web.m === SELLER && web.a === '3.50' && web.c === 'USDT' && web.net === 'bnbTestnet' && web.h === inv && web.n === 'Corner Coffee' && web.i === 'Latte' && web.t > Date.now() / 1000,
@@ -264,7 +266,7 @@ const scanned = await buyer.page.evaluate(async src => {
   try { const r = await QrScanner.scanImage(img, { returnDetailedScanResult: true }); return r && r.data !== undefined ? r.data : r; }
   catch (e) { return 'ERR ' + (e && e.message || e); }
 }, qrSrc);
-R.ok('NoN Wallet scanner reads the till QR picture back exactly', scanned === appLink, String(scanned).slice(0, 90));
+R.ok('NoN Wallet scanner reads the till QR picture back exactly', scanned === webLink, String(scanned).slice(0, 90));
 const parsed = await buyer.page.evaluate(l => parsePayLink(l), appLink);
 R.ok('NoN Wallet understands it: pay 3.5 USDT to the seller, invoice kept',
   parsed && parsed.to === SELLER && parsed.m === SELLER && parsed.cur === 'USDT' && parsed.amt === '3.5' && parsed.inv === inv &&
@@ -278,7 +280,7 @@ const buyerAddr = await buyer.page.evaluate(() => wallet.evm.address);
 state.balances[buyerAddr.toLowerCase()] = { native: 1, USDT: 100, TVR: 0 };
 state.sent.length = 0;
 await buyer.page.evaluate(() => { tab = 'pay'; setPayMode('transfer'); });
-await buyer.page.evaluate(l => applyScannedPayment(l), appLink);
+await buyer.page.evaluate(l => applyScannedPayment(l), webLink);   // what the buyer really scans now
 await buyer.page.waitForTimeout(1500);
 await buyer.page.evaluate(() => reviewSend());
 await buyer.page.waitForTimeout(700);
