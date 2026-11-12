@@ -1,0 +1,47 @@
+# Builds Tavarov Pay (pay-app) for Android: unsigned APK and Google Play bundle.
+# The unsigned files go to the pay-unsigned branch; they are signed on the
+# owner's computer (the signing key never leaves it).
+name: Tavarov Pay Android build
+on:
+  push:
+    branches: [tavarov-pay]
+    paths:
+      - "pay-app/**"
+      - ".github/workflows/pay-android.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Copy the web app into the Android app
+        run: sh pay-app/sync-www.sh
+      - name: Build unsigned release APK and bundle
+        working-directory: pay-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease bundleRelease
+      - name: Check the APK
+        run: |
+          APK=pay-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          ls -l "$APK"
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT2" dump badging "$APK" | head -3
+          "$AAPT2" dump permissions "$APK"
+      - name: Unsigned files to the pay-unsigned branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=pay-app/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          AAB=$(ls pay-app/android/app/build/outputs/bundle/release/*.aab | head -1)
+          mkdir /tmp/u && cp "$APK" /tmp/u/pay-unsigned.apk && cp "$AAB" /tmp/u/pay-unsigned.aab && cd /tmp/u
+          echo "${GITHUB_SHA}" > source.txt
+          git init -q -b pay-unsigned && git add .
+          git -c user.name=ci -c user.email=ci@tavarov.com commit -qm "unsigned Tavarov Pay from ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" pay-unsigned
