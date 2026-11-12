@@ -9,7 +9,7 @@
    2. прошлый ещё не подтверждён, человек начал новый — поздний ответ сети
       о прошлом не пишет «подтвердила» на экран нового;
    3. а сам новый перевод своё «подтвердила» получает как раньше.       */
-import { boot, reporter } from './boot.mjs';
+import { boot, reporter, answerConfirm } from './boot.mjs';
 import { start, state } from './mocknode.mjs';
 
 const srv = await start(8556);
@@ -29,6 +29,8 @@ const review = async (amount) => {
   await page.evaluate(() => reviewSend());
   await page.waitForTimeout(300);
 };
+/* Перевод подтверждается паролем всегда (t44) — отвечаем на окно, не дожидаясь doSend. */
+const sendNow = async () => { const p = page.evaluate(() => doSend()); await answerConfirm(page); await p; };
 const resultText = () => page.evaluate(() => {
   const b = document.getElementById('sendResult');
   return b.classList.contains('hidden') ? '' : b.textContent.trim();
@@ -37,7 +39,7 @@ const resultText = () => page.evaluate(() => {
 // ---------- 1. прошлый подтверждён ----------
 state.receiptSilent = 0; state.txStatus = '0x1';
 await review('1');
-await page.evaluate(() => doSend());
+await sendNow();
 const confirmed = await page.waitForFunction(
   () => /подтвердила/i.test(document.getElementById('sendResult').textContent),
   null, { timeout: 30000 }).then(() => true).catch(() => false);
@@ -51,18 +53,18 @@ await page.evaluate(() => cancelSend());
 // ---------- 2. прошлый ещё в пути ----------
 state.receiptSilent = 4;          // первые опросы сеть молчит
 await review('2');
-await page.evaluate(() => doSend());
+await sendNow();
 await page.waitForTimeout(1500);
 await review('3');                // новый перевод начат, прошлый ещё не подтверждён
 await page.waitForTimeout(16000); // фоновый досмотр прошлого успевает получить ответ
 txt = await resultText();
-R.ok('ПОЗДНИЙ ОТВЕТ О ПРОШЛОМ НЕ ПИШЕТ НА ЭКРАН НОВОГО', !/подтвердила/i.test(txt), txt.slice(0, 80));
+R.ok('ПОЗДНИЙ ОТВЕТ О ПРОШЛОМ НЕ ПИШЕТ НА ЭКРАН НОВОГО', !/подтвердила|отправлен/i.test(txt), txt.slice(0, 80));
 R.ok('экран подтверждения нового на месте',
   await page.evaluate(() => !document.getElementById('sendConfirm').classList.contains('hidden')));
 
 // ---------- 3. новый получает своё ----------
 state.receiptSilent = 0;
-await page.evaluate(() => doSend());
+await sendNow();
 const own = await page.waitForFunction(
   () => /подтвердила/i.test(document.getElementById('sendResult').textContent),
   null, { timeout: 30000 }).then(() => true).catch(() => false);

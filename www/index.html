@@ -2482,7 +2482,10 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
         </div>
         <input id="swapToFind" class="hidden" type="search" autocomplete="off" style="margin-top:8px;" placeholder="Найти монету" data-i18n-placeholder="kac6af3b1" oninput="swapFind()">
         <div id="swapMemeNote" class="hidden" style="font-size:12.5px; color:var(--label-2); margin-top:6px;" data-i18n="k1f20159c">Монеты из топ-500 CoinGecko, включая мемкоины — их цена может сильно меняться. Купленная монета появится в кошельке.</div>
-        <button class="mini-btn" id="swapNetLink" style="margin-top:6px;" onclick="swapShowNet()"></button>
+        <div style="display:flex; gap:18px; margin-top:6px;">
+          <button class="mini-btn" id="swapCoinLink" onclick="swapShowFind()"></button>
+          <button class="mini-btn" id="swapNetLink" onclick="swapShowNet()"></button>
+        </div>
       </div>
     </div>
 
@@ -8407,12 +8410,12 @@ function swapFill(){
    — Под суммой одна строка «не меньше … · комиссия …», подробности по кнопке.
    — Предупреждение про каталог монет — только когда выбрана монета из него. */
 const SWAPSIMPLE_TXT = {
-  ru: { more: 'Подробнее', less: 'Свернуть', net: 'Получить в другой сети', min: 'Не меньше' },
-  en: { more: 'Details', less: 'Hide', net: 'Receive on another network', min: 'At least' },
-  es: { more: 'Detalles', less: 'Ocultar', net: 'Recibir en otra red', min: 'Al menos' },
-  tr: { more: 'Ayrıntılar', less: 'Gizle', net: 'Başka ağda al', min: 'En az' },
-  pt: { more: 'Detalhes', less: 'Ocultar', net: 'Receber em outra rede', min: 'Pelo menos' },
-  id: { more: 'Rincian', less: 'Sembunyikan', net: 'Terima di jaringan lain', min: 'Minimal' }
+  ru: { more: 'Подробнее', less: 'Свернуть', net: 'Другая сеть', coin: 'Найти монету', min: 'Не меньше', fee: 'наша комиссия 0,5%' },
+  en: { more: 'Details', less: 'Hide', net: 'Another network', coin: 'Find a coin', min: 'At least', fee: 'our fee 0.5%' },
+  es: { more: 'Detalles', less: 'Ocultar', net: 'Otra red', coin: 'Buscar moneda', min: 'Al menos', fee: 'nuestra comisión 0,5%' },
+  tr: { more: 'Ayrıntılar', less: 'Gizle', net: 'Başka ağ', coin: 'Coin ara', min: 'En az', fee: 'bizim ücretimiz %0,5' },
+  pt: { more: 'Detalhes', less: 'Ocultar', net: 'Outra rede', coin: 'Buscar moeda', min: 'Pelo menos', fee: 'nossa taxa 0,5%' },
+  id: { more: 'Rincian', less: 'Sembunyikan', net: 'Jaringan lain', coin: 'Cari koin', min: 'Minimal', fee: 'biaya kami 0,5%' }
 };
 function swapTxt(k){ const d = SWAPSIMPLE_TXT[lang] || (lang === 'tg' ? SWAPSIMPLE_TXT.ru : SWAPSIMPLE_TXT.en); return d[k]; }
 function swapPairsList(){
@@ -8435,6 +8438,12 @@ function swapUi(){
   netField.classList.toggle('hidden', !swapState.netOpen);
   link.textContent = swapTxt('net');
   link.classList.toggle('hidden', !!swapState.netOpen || !many);
+  /* Поиск по каталогу — по ссылке: обычно меняют USDT, USDC и монету сети. */
+  const find = document.getElementById('swapToFind'), coinLink = document.getElementById('swapCoinLink');
+  const bigList = document.getElementById('swapTo').options.length >= 12;
+  find.classList.toggle('hidden', !(bigList && swapState.findOpen));
+  coinLink.textContent = swapTxt('coin');
+  coinLink.classList.toggle('hidden', !bigList || !!swapState.findOpen);
   const toTk = swapTokensOf(swapState.toNet)[swapState.to];
   document.getElementById('swapMemeNote').classList.toggle('hidden', !(toTk && toTk.top));
   document.getElementById('swapQuoteRows').classList.toggle('hidden', !swapState.more);
@@ -8446,6 +8455,7 @@ function swapUsePair(from, to){
   swapFill(); swapReset(); swapShowBalance(); swapInput();
 }
 function swapShowNet(){ swapState.netOpen = true; swapUi(); }
+function swapShowFind(){ swapState.findOpen = true; swapUi(); try{ document.getElementById('swapToFind').focus(); } catch(e){} }
 function swapToggleMore(){ swapState.more = !swapState.more; swapUi(); }
 function swapPickNet(){
   swapState.toNet = document.getElementById('swapToNet').value;
@@ -8455,7 +8465,7 @@ function swapPickNet(){
 }
 function openSwap(from){
   if (!swapAvailable()) return;
-  swapState.toNet = network; swapState.netOpen = false; swapState.more = false;
+  swapState.toNet = network; swapState.netOpen = false; swapState.more = false; swapState.findOpen = false;
   const tk = swapTokens();
   const nat = NETWORKS[network].nativeSym;
   if (from && tk[from]){ swapState.from = from; if (swapState.to === from) swapState.to = from === nat ? (tk.USDT ? 'USDT' : 'USDC') : nat; }
@@ -8670,7 +8680,9 @@ function swapShowQuote(){
   {
     const gl = document.getElementById('swapGasLbl').textContent || '';
     const glow = gl ? gl.charAt(0).toLocaleLowerCase() + gl.slice(1) : '';
+    /* Нашу комиссию не прячем за «Подробнее»: человек видит её всегда. */
     document.getElementById('swapSummary').textContent = swapTxt('min') + ' ' + fmtAmount(minN) + ' ' + q.to +
+      ' · ' + swapTxt('fee') +
       (isFinite(gasUsd) ? ' · ' + glow + ' ≈ $' + fmtNum(gasUsd < 0.01 ? 0.01 : gasUsd, 2, 2) : '');
   }
   swapUi();
