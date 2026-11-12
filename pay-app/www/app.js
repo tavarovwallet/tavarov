@@ -88,102 +88,21 @@ const store = {
   json(k, dflt){ try{ const v = JSON.parse(localStorage.getItem(k)); return v === null ? dflt : v; } catch(e){ return dflt; } }
 };
 
-/* ---------- Languages ---------- */
-const DICT = {
-  en: {
-    setupTitle:'Accept payments in USDT and USDC',
-    setupSub:'Tavarov Pay shows your customer a payment code and tells you when the payment has arrived. It never holds money and never asks for a password or keys.',
-    destLabel:'Where should payments arrive?', destPh:'NoN name or 0x… address',
-    destNote:'Your NoN name (for example, kofeinya) or the 0x… address of the wallet you receive money in, on BNB Chain.',
-    check:'Check', checking:'Checking…',
-    destFound:'Payments will arrive at this address:', viaName:'Found by the name',
-    openExplorer:'Check it in the block explorer',
-    destContract:'This address is a smart contract, not an ordinary wallet. Make sure it can receive USDT and USDC before you use it.',
-    shopLabel:'Shop name (optional, the customer sees it)', shopPh:'Corner Coffee',
-    destConfirm:'I checked: this is my address and the money will reach me.',
-    save:'Save and start',
-    setupPrivacy:'This is stored only on this device. Nothing is sent to us.',
-    errEmpty:'Type a NoN name or a 0x… address.',
-    errFormat:'This is neither a NoN name nor a 0x… address. A name is 3–20 Latin letters, digits or _ and starts with a letter; an address is 0x and 40 characters.',
-    errChecksum:'This address has a typo: its capital letters do not match. Copy it again from your wallet.',
-    errNoName:'Nobody has the name “%s”. Check the spelling.',
-    errNet:'Could not reach the network: %s. Check the internet connection and try again.',
-    errZero:'This address cannot receive money.',
-    nameMoved:'Your name “%n” now points to a different address (%a). Payments still go to the saved address %s. If this is not what you expect, check it in Settings.',
-    itemPh:'What for (optional)', charge:'Show payment code',
-    onNet:'on %s',
-    qrApp:'Wallet app', qrWeb:'Payment page',
-    hintApp:'Scan with NoN Wallet, or with the scanner of another wallet app that understands payment codes.',
-    manual:'No scanner? Transfer exactly %a on %n to this address (no fee, and the amount must arrive in full):',
-    hintWeb:'Scan with the phone camera: a payment page opens in the browser, and the customer picks a wallet there.',
-    waiting:'Waiting for payment', showLink:'Show the payment link', share:'Share link', cancel:'Cancel',
-    cancelAsk:'Stop waiting for this payment? If the customer pays later, it will not be shown here.',
-    feeNote:'Paid with NoN Wallet or on the payment page: 1% service fee, taken from the amount you receive. Paid by a plain transfer from another wallet app: no fee.',
-    shareText:'Payment: %s',
-    waitNet:'No answer from the network yet. Still watching…',
-    burned:'This payment code has been used by someone else. Cancel it and make a new one.',
-    paid:'Paid', received:'You received', fee:'Service fee', how:'How it was paid', item:'What for', when:'Time',
-    viaContract:'NoN Wallet or payment page', viaTransfer:'Plain transfer', noFee:'none',
-    viewTx:'View transaction', viewAddr:'View your address in the block explorer', newSale:'New sale',
-    today:'Today', history:'Today’s sales', settings:'Settings', back:'Back to the till',
-    totalLabel:'Taken today', totalNote:'%n sales · you received %r after fees',
-    noSales:'No sales yet today.', sale1:'sale', from:'from',
-    destLabelShort:'Payments arrive at', shopLabelShort:'Shop name', change:'Change address',
-    networks:'Networks', netAlways:'always on',
-    netsNote:'Turn on Ethereum or Base only if your address is your own wallet that works on those networks too. An exchange deposit address usually works on one network only, and money sent on another network can be lost.',
-    netIsContract:'On %s this address is a smart contract, so it may belong to someone else there. Not turned on.',
-    about:'About',
-    aboutText:'Tavarov Pay is a till: it makes payment codes and watches public blockchain nodes for the payment. It cannot move, hold or spend money, and it has no account. Your settings and the sales history stay on this device.',
-    version:'Version %s', testnetOn:'TEST NETWORK — not real money'
-  },
-  ru: {
-    setupTitle:'Принимайте оплату в USDT и USDC',
-    setupSub:'Tavarov Pay показывает покупателю код для оплаты и сообщает, когда деньги пришли. Он не хранит деньги и никогда не спрашивает пароль или ключи.',
-    destLabel:'Куда приходят деньги?', destPh:'Имя NoN или адрес 0x…',
-    destNote:'Ваше имя NoN (например, kofeinya) или адрес 0x… кошелька, на который вы получаете деньги в сети BNB Chain.',
-    check:'Проверить', checking:'Проверяем…',
-    destFound:'Деньги будут приходить на этот адрес:', viaName:'Найден по имени',
-    openExplorer:'Проверить в обозревателе блоков',
-    destContract:'Этот адрес — смарт-контракт, а не обычный кошелёк. Убедитесь, что он может принимать USDT и USDC.',
-    shopLabel:'Название точки (необязательно, его видит покупатель)', shopPh:'Кофейня на углу',
-    destConfirm:'Я проверил: это мой адрес, и деньги дойдут до меня.',
-    save:'Сохранить и начать',
-    setupPrivacy:'Это хранится только на этом устройстве. Нам ничего не передаётся.',
-    errEmpty:'Впишите имя NoN или адрес 0x….',
-    errFormat:'Это не имя NoN и не адрес 0x…. Имя — от 3 до 20 латинских букв, цифр или _, начинается с буквы; адрес — 0x и 40 знаков.',
-    errChecksum:'В адресе опечатка: заглавные буквы не сходятся. Скопируйте его из кошелька заново.',
-    errNoName:'Имя «%s» никому не принадлежит. Проверьте написание.',
-    errNet:'Сеть не ответила: %s. Проверьте интернет и попробуйте ещё раз.',
-    errZero:'На этот адрес деньги принять нельзя.',
-    nameMoved:'Ваше имя «%n» теперь ведёт на другой адрес (%a). Оплата по-прежнему приходит на сохранённый адрес %s. Если вы этого не ждали, проверьте настройки.',
-    itemPh:'За что (необязательно)', charge:'Показать код для оплаты',
-    onNet:'в сети %s',
-    qrApp:'Приложение', qrWeb:'Страница оплаты',
-    hintApp:'Наведите NoN Wallet или сканер другого приложения-кошелька, которое понимает коды оплаты.',
-    manual:'Нет сканера? Переведите ровно %a в сети %n на этот адрес (без комиссии; сумма должна дойти целиком):',
-    hintWeb:'Наведите камеру телефона: в браузере откроется страница оплаты, там покупатель выберет кошелёк.',
-    waiting:'Ждём оплату', showLink:'Показать ссылку на оплату', share:'Поделиться ссылкой', cancel:'Отменить',
-    cancelAsk:'Перестать ждать эту оплату? Если покупатель заплатит позже, здесь это не появится.',
-    feeNote:'Оплата из NoN Wallet или на странице оплаты: комиссия 1%, она вычитается из суммы, которую вы получаете. Обычный перевод из другого приложения: без комиссии.',
-    shareText:'Оплата: %s',
-    waitNet:'Сеть пока не отвечает. Продолжаем следить…',
-    burned:'Этим кодом оплаты уже воспользовался кто-то другой. Отмените его и покажите новый.',
-    paid:'Оплачено', received:'Вы получили', fee:'Комиссия', how:'Как оплатили', item:'За что', when:'Время',
-    viaContract:'NoN Wallet или страница оплаты', viaTransfer:'Обычный перевод', noFee:'нет',
-    viewTx:'Посмотреть операцию', viewAddr:'Посмотреть ваш адрес в обозревателе', newSale:'Новая продажа',
-    today:'Сегодня', history:'Продажи за сегодня', settings:'Настройки', back:'Вернуться к кассе',
-    totalLabel:'Выручка за сегодня', totalNote:'Продаж: %n · вы получили %r за вычетом комиссии',
-    noSales:'Сегодня продаж ещё не было.', sale1:'продажа', from:'от',
-    destLabelShort:'Деньги приходят на', shopLabelShort:'Название точки', change:'Сменить адрес',
-    networks:'Сети', netAlways:'включена всегда',
-    netsNote:'Включайте Ethereum или Base, только если ваш адрес — ваш собственный кошелёк, который работает и в этих сетях. Адрес для пополнения на бирже обычно работает только в одной сети, и деньги, пришедшие в другой, можно потерять.',
-    netIsContract:'В сети %s этот адрес — смарт-контракт, там он может принадлежать кому-то другому. Не включено.',
-    about:'О приложении',
-    aboutText:'Tavarov Pay — это касса: она показывает коды для оплаты и следит за оплатой через открытые узлы блокчейна. Она не может переводить, хранить или тратить деньги, и учётной записи в ней нет. Настройки и история продаж остаются на этом устройстве.',
-    version:'Версия %s', testnetOn:'ТЕСТОВАЯ СЕТЬ — деньги ненастоящие'
+/* ---------- Languages ----------
+   The words live in i18n.js (DICT, LANG_NAMES). English is the default; on
+   the first run we take the device language if it is one of ours. */
+function firstLang(){
+  const saved = store.get(KEY.lang);
+  if (saved && DICT[saved]) return saved;
+  const langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']);
+  for (const l of langs){
+    let c = String(l || '').slice(0, 2).toLowerCase();
+    if (c === 'in') c = 'id';          // old code for Indonesian
+    if (DICT[c]) return c;
   }
-};
-let LANG = DICT[store.get(KEY.lang)] ? store.get(KEY.lang) : 'en';
+  return 'en';
+}
+let LANG = firstLang();
 function t(k){ return (DICT[LANG] && DICT[LANG][k]) || DICT.en[k] || k; }
 function fill(s, map){ return String(s).replace(/%([a-z])/g, (m, c) => (c in map ? map[c] : m)); }
 function applyLang(code){
@@ -194,11 +113,16 @@ function applyLang(code){
   document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
   document.querySelectorAll('[data-t-ph]').forEach(el => { el.placeholder = t(el.dataset.tPh); });
   document.querySelectorAll('[data-t-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
-  document.querySelectorAll('#langSwitch button').forEach(b => b.classList.toggle('on', b.dataset.lang === code));
+  const sel = $('langSel');
+  if (sel) sel.value = code;
   rerender();
 }
 
 /* ---------- Small helpers ---------- */
+/* Number and time format per language. Tajik is written like Russian
+   (comma decimals), and browsers rarely carry Tajik number data. */
+const LOCALES = { en:'en-US', ru:'ru-RU', es:'es-ES', tr:'tr-TR', pt:'pt-BR', tg:'ru-RU', id:'id-ID' };
+function locale(){ return LOCALES[LANG] || 'en-US'; }
 const $ = id => document.getElementById(id);
 function show(el, on){ (typeof el === 'string' ? $(el) : el).classList.toggle('hidden', !on); }
 function shortAddr(a){ return a ? a.slice(0, 6) + '…' + a.slice(-4) : ''; }
@@ -224,7 +148,7 @@ function fmtAmount(s){
   const n = Number(s);
   if (!isFinite(n)) return String(s);
   const frac = (String(s).split('.')[1] || '').length;
-  return n.toLocaleString(LANG === 'ru' ? 'ru-RU' : 'en-US', { minimumFractionDigits: Math.max(2, Math.min(frac, 6)), maximumFractionDigits: 6 });
+  return n.toLocaleString(locale(), { minimumFractionDigits: Math.max(2, Math.min(frac, 6)), maximumFractionDigits: 6 });
 }
 function hex(n){ return '0x' + Number(n).toString(16); }
 function word(data, i){ return '0x' + String(data).replace(/^0x/, '').slice(i * 64, i * 64 + 64); }
@@ -392,6 +316,16 @@ function addHistory(rec){
 function usedTx(){ return new Set(history().map(x => (x.tx || '').toLowerCase()).filter(Boolean)); }
 function isToday(ts){ const d = new Date(ts), n = new Date(); return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate(); }
 
+/* Coins the seller takes. USDT only by default, so the till screen has no
+   coin choice; USDC is one tick away in Settings. On a network that has
+   none of the chosen coins (Base has no USDT) we offer what it has. */
+const ALL_COINS = ['USDT', 'USDC'];
+function enabledCoins(netKey){
+  const n = netOf(netKey); if (!n) return [];
+  const want = (cfg && Array.isArray(cfg.coins) && cfg.coins.length ? cfg.coins : ['USDT']).filter(c => n.tokens[c]);
+  return want.length ? want : Object.keys(n.tokens);
+}
+
 /* ---------- Screens ---------- */
 const SCREENS = ['scrSetup', 'scrTill', 'scrWait', 'scrPaid', 'scrHistory', 'scrSettings'];
 let screen = null;
@@ -409,62 +343,72 @@ function rerender(){
   else if (screen === 'scrPaid') renderPaid();
   else if (screen === 'scrHistory') renderHistory();
   else if (screen === 'scrSettings') renderSettings();
-  else if (screen === 'scrSetup' && found) renderFound();
+  else if (screen === 'scrSetup') renderSetup();
 }
 
-/* ===== 1. Setup ===== */
+/* ===== 1. Setup =====
+   One field. The name or address is checked as it is typed; the seller sees
+   the address the money will go to and ticks that it is theirs. */
 let found = null;          // { address, name, contract }
-function setupError(msg){ $('destErr').textContent = msg; show('destErr', !!msg); }
-async function checkDest(){
-  const raw = $('destIn').value.trim();
-  found = null; show('destOk', false); setupError('');
-  if (!raw){ setupError(t('errEmpty')); return; }
-  const btn = $('destCheck');
-  btn.disabled = true; btn.textContent = t('checking');
-  try{
-    let address = null, name = null;
-    const asAddr = checkAddress(raw);
-    if (asAddr === false){ setupError(t('errChecksum')); return; }
-    if (asAddr){ address = asAddr; }
-    else {
-      const n = raw.toLowerCase().replace(/^@+/, '');
-      if (!NAME_RE.test(n)){ setupError(t('errFormat')); return; }
-      try{ address = await resolveName(n); }
-      catch(e){ setupError(fill(t('errNet'), { s: errText(e) })); return; }
-      if (!address){ setupError(fill(t('errNoName'), { s: n })); return; }
-      name = n;
-    }
-    if (address.toLowerCase() === ZERO){ setupError(t('errZero')); return; }
-    let contract = false;
-    try{ contract = await isContract(netOf('bnb'), address); } catch(e){ /* the warning is a courtesy; no answer is not a reason to stop */ }
-    found = { address, name, contract };
-    renderFound();
-  } finally {
-    btn.disabled = false; btn.textContent = t('check');
+let destTimer = null, destSeq = 0, destState = { status: '', err: '' };
+function renderSetup(){
+  $('destStatus').textContent = destState.status ? t(destState.status) : '';
+  $('destErr').textContent = destState.err ? fill(t(destState.err), destState.map || {}) : '';
+  show('destErr', !!destState.err);
+  show('destOk', !!found);
+  if (found){
+    const box = $('destAddr'); box.textContent = '';
+    if (found.name){ const b = document.createElement('b'); b.textContent = found.name; box.appendChild(b); box.appendChild(document.createTextNode(' → ')); }
+    box.appendChild(document.createTextNode(found.address));
+    show('destContract', found.contract);
   }
+  $('destSave').disabled = !(found && $('destConfirm').checked);
 }
-function renderFound(){
-  if (!found) return;
-  const box = $('destAddr');
-  box.textContent = '';
-  if (found.name){
-    const b = document.createElement('b'); b.textContent = found.name; box.appendChild(b);
-    box.appendChild(document.createTextNode(' → '));
+function destInput(){
+  found = null; $('destConfirm').checked = false;
+  destState = { status: '', err: '' };
+  clearTimeout(destTimer);
+  destTimer = setTimeout(checkDest, 600);
+  renderSetup();
+}
+async function checkDest(){
+  clearTimeout(destTimer);
+  const raw = $('destIn').value.trim();
+  const seq = ++destSeq;
+  found = null; destState = { status: '', err: '' };
+  if (!raw){ renderSetup(); return; }
+  const done = st => { if (seq !== destSeq) return; destState = st; renderSetup(); };
+  let address = null, name = null;
+  const asAddr = checkAddress(raw);
+  if (asAddr === false) return done({ err: 'errChecksum' });
+  if (asAddr) address = asAddr;
+  else {
+    const n = raw.toLowerCase().replace(/^@+/, '');
+    if (!NAME_RE.test(n)) return done({ err: /^0x/i.test(raw) && raw.length < 42 ? '' : 'errFormat' });
+    done({ status: 'checking' });
+    try{ address = await resolveName(n); }
+    catch(e){ return done({ err: 'errNet', map: { s: errText(e) } }); }
+    if (seq !== destSeq) return;
+    if (!address) return done({ err: 'errNoName', map: { s: n } });
+    name = n;
   }
-  box.appendChild(document.createTextNode(found.address));
-  $('destExplorer').href = netOf('bnb').explorer + '/address/' + found.address;
-  show('destContract', found.contract);
-  $('destConfirm').checked = false;
-  $('destSave').disabled = true;
-  show('destOk', true);
+  if (address.toLowerCase() === ZERO) return done({ err: 'errZero' });
+  done({ status: 'checking' });
+  let contract = false;
+  try{ contract = await isContract(netOf('bnb'), address); } catch(e){ /* a courtesy warning; no answer is no reason to stop */ }
+  if (seq !== destSeq) return;
+  found = { address, name, contract };
+  done({ status: '', err: '' });
 }
 function saveDest(){
   if (!found || !$('destConfirm').checked) return;
-  const prevNets = cfg && cfg.address && cfg.address.toLowerCase() === found.address.toLowerCase() ? cfg.nets : ['bnb'];
-  cfg = { address: found.address, name: found.name || '', shop: $('shopIn').value.trim().slice(0, 40), nets: prevNets || ['bnb'] };
+  const same = cfg && cfg.address && cfg.address.toLowerCase() === found.address.toLowerCase();
+  cfg = Object.assign({ shop: '', coins: ['USDT'], askNote: false }, cfg || {},
+                      { address: found.address, name: found.name || '', nets: same ? cfg.nets : ['bnb'] });
   saveCfg();
-  found = null;
-  $('destIn').value = '';
+  found = null; destState = { status: '', err: '' };
+  $('destIn').value = ''; $('destConfirm').checked = false;
+  show('nameMoved', false);
   go('scrTill');
 }
 
@@ -472,7 +416,6 @@ function saveDest(){
 let amountStr = '';
 let tillCur = 'USDT';
 let tillNet = 'bnb';
-function curList(){ const n = netOf(tillNet); return n ? Object.keys(n.tokens) : []; }
 function amountValid(){ return /^\d{1,7}(\.\d{1,2})?$/.test(amountStr) && Number(amountStr) > 0; }
 function keyPress(k){
   if (k === 'back') amountStr = amountStr.slice(0, -1);
@@ -486,36 +429,38 @@ function keyPress(k){
   }
   renderTill();
 }
+function segButtons(box, items, active, label, onPick){
+  box.textContent = '';
+  items.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'seg' + (v === active ? ' active' : ''); b.textContent = label(v); b.dataset.v = v;
+    b.onclick = () => onPick(v);
+    box.appendChild(b);
+  });
+}
 function renderTill(){
-  if (!enabledNets().includes(tillNet)) tillNet = 'bnb';
-  if (!curList().includes(tillCur)) tillCur = curList()[0];
+  if (!cfg) return;
+  const nets = enabledNets();
+  if (!nets.includes(tillNet)) tillNet = 'bnb';
+  const coins = enabledCoins(tillNet);
+  if (!coins.includes(tillCur)) tillCur = coins[0];
   const a = $('amountShow');
   a.firstChild.nodeValue = amountStr || '0';
   a.classList.toggle('empty', !amountStr);
   $('amountCur').textContent = tillCur;
-  $('tillMeta').textContent = (cfg.shop ? cfg.shop + ' · ' : '') + fill(t('onNet'), { s: netOf(tillNet).name }) +
-                              (testnet() ? ' · ' + t('testnetOn') : '');
-  const seg = $('curSeg'); seg.textContent = '';
-  curList().forEach(c => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'seg' + (c === tillCur ? ' active' : ''); b.textContent = c; b.dataset.cur = c;
-    b.onclick = () => { tillCur = c; renderTill(); };
-    seg.appendChild(b);
-  });
-  const nets = enabledNets(), ns = $('netSeg'); ns.textContent = '';
-  show(ns, nets.length > 1);
-  nets.forEach(k => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'seg' + (k === tillNet ? ' active' : ''); b.textContent = netOf(k).name; b.dataset.net = k;
-    b.onclick = () => { tillNet = k; renderTill(); };
-    ns.appendChild(b);
-  });
+  $('tillMeta').textContent = testnet() ? t('testnetOn') : '';
+  show('tillMeta', testnet());
+  show('curSeg', coins.length > 1);
+  segButtons($('curSeg'), coins, tillCur, c => c, c => { tillCur = c; renderTill(); });
+  show('netSeg', nets.length > 1);
+  segButtons($('netSeg'), nets, tillNet, k => netOf(k).name, k => { tillNet = k; renderTill(); });
+  show('itemIn', !!cfg.askNote);
   $('charge').disabled = !amountValid();
 }
 
 /* ===== 3. Waiting ===== */
 let sale = null;               // the sale on screen
-let pollTimer = null, polling = false, qrMode = 'app', webTimer = null;
+let pollTimer = null, polling = false, webTimer = null, otherOpen = false;
 let audioCtx = null, wakeLock = null;
 let soundCount = 0;            // read by the browser test: did the till make its sound?
 
@@ -524,13 +469,14 @@ async function startSale(){
   /* Sound needs a tap to be allowed; this tap is the one. */
   try{ if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
   const tk = netOf(tillNet).tokens[tillCur];
-  sale = { id: newInvoiceId(), net: tillNet, cur: tillCur, amount: amountStr.replace(/\.$/, ''),
-           units: toUnits(amountStr.replace(/\.$/, ''), tk.d).toString(), token: tk.a,
-           to: cfg.address, shop: cfg.shop || '', item: $('itemIn').value.trim().slice(0, 60),
+  const amount = amountStr.replace(/\.$/, '');
+  sale = { id: newInvoiceId(), net: tillNet, cur: tillCur, amount,
+           units: toUnits(amount, tk.d).toString(), token: tk.a,
+           to: cfg.address, shop: cfg.shop || '', item: cfg.askNote ? $('itemIn').value.trim().slice(0, 60) : '',
            order: 'T-' + Date.now().toString(36).toUpperCase(), createdAt: Date.now(),
            startBlock: null, baseline: null, testnet: testnet() };
   store.set(KEY.open, JSON.stringify(sale));
-  qrMode = 'app';
+  otherOpen = false;
   go('scrWait');
   beginWatching();
 }
@@ -544,33 +490,38 @@ async function beginWatching(){
       mine.startBlock = b; mine.baseline = bal === null ? null : bal.toString();
       store.set(KEY.open, JSON.stringify(mine));
     }
-  } catch(e){ waitError(t('waitNet')); }
+  } catch(e){ waitError('waitNet'); }
   clearInterval(pollTimer);
   pollTimer = setInterval(poll, 5000);
   setTimeout(poll, 1200);
   try{ if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
 }
-function waitError(msg){ $('waitErr').textContent = msg || ''; show('waitErr', !!msg); }
+let waitErrKey = '';
+function waitError(key){ waitErrKey = key || ''; $('waitErr').textContent = key ? t(key) : ''; show('waitErr', !!key); }
 function renderWait(){
   if (!sale) return;
-  $('waitAmount').innerHTML = '';
-  $('waitAmount').appendChild(document.createTextNode(fmtAmount(sale.amount)));
-  const c = document.createElement('span'); c.className = 'cur'; c.textContent = sale.cur; $('waitAmount').appendChild(c);
-  $('waitMeta').textContent = [sale.shop, sale.item, fill(t('onNet'), { s: netOf(sale.net).name })].filter(Boolean).join(' · ');
-  document.querySelectorAll('#qrSeg .seg').forEach(b => b.classList.toggle('active', b.dataset.q === qrMode));
-  const app = buildAppCode(sale), web = buildWebLink(sale);
+  amountNode($('waitAmount'), sale.amount, sale.cur);
+  /* The network is named only when the seller takes more than one. */
+  const meta = [enabledNets().length > 1 ? fill(t('onNet'), { s: netOf(sale.net).name }) : '', testnet() ? t('testnetOn') : ''].filter(Boolean).join(' · ');
+  $('waitMeta').textContent = meta; show('waitMeta', !!meta);
+  const app = buildAppCode(sale);
   $('payLink').textContent = app;
-  $('webLink').textContent = web;
-  $('qrHint').textContent = t(qrMode === 'app' ? 'hintApp' : 'hintWeb');
-  $('manualLine').textContent = fill(t('manual'), { a: fmtAmount(sale.amount) + ' ' + sale.cur, n: netOf(sale.net).name });
-  $('manualAddr').textContent = sale.to;
-  drawQr($('qr'), qrMode === 'app' ? app : web);
+  drawQr($('qr'), app);
+  waitError(waitErrKey);
+  show('otherBox', otherOpen);
   clearInterval(webTimer);
-  /* The payment page stops taking a payment 15 minutes after t. While the
-     till still waits, keep the link on screen fresh. */
-  if (qrMode === 'web') webTimer = setInterval(() => { if (screen === 'scrWait' && qrMode === 'web') renderWait(); }, 10 * 60 * 1000);
+  if (otherOpen){
+    const web = buildWebLink(sale);
+    $('webLink').textContent = web;
+    drawQr($('qrWeb'), web);
+    $('manualLine').textContent = fill(t('manual'), { a: fmtAmount(sale.amount) + ' ' + sale.cur, n: netOf(sale.net).name });
+    $('manualAddr').textContent = sale.to;
+    /* The payment page stops taking a payment 15 minutes after t; keep it fresh. */
+    webTimer = setInterval(() => { if (screen === 'scrWait' && otherOpen) renderWait(); }, 10 * 60 * 1000);
+  }
 }
 function drawQr(holder, text){
+  if (holder.dataset.text === text && holder.children.length) return true;
   holder.textContent = '';
   holder.dataset.text = text;
   const levels = (typeof QRCode !== 'undefined' && QRCode.CorrectLevel) ? [QRCode.CorrectLevel.M, QRCode.CorrectLevel.L] : [];
@@ -604,10 +555,10 @@ async function poll(){
   try{
     const res = await checkPaid(mine);
     if (sale !== mine) return;
-    waitError(res && res.burned ? t('burned') : '');
+    waitError(res && res.burned ? 'burned' : '');
     if (res && res.paid) markPaid(mine, res);
   } catch(e){
-    if (sale === mine) waitError(t('waitNet'));
+    if (sale === mine) waitError('waitNet');
   } finally { polling = false; }
 }
 async function checkPaid(s){
@@ -681,7 +632,7 @@ function markPaid(s, res){
   addHistory(rec);
   store.del(KEY.open);
   sale = null;
-  lastPaid = rec;
+  lastPaid = rec; detailsOpen = false; waitErrKey = '';
   chime();
   try{ if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch(e){}
   go('scrPaid');
@@ -690,14 +641,14 @@ function cancelSale(){
   if (!sale) return;
   if (!confirm(t('cancelAsk'))) return;
   clearInterval(pollTimer); clearInterval(webTimer);
-  sale = null; store.del(KEY.open);
+  sale = null; store.del(KEY.open); waitErrKey = '';
   try{ if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch(e){}
   go('scrTill');
 }
 async function shareLink(){
   if (!sale) return;
   const url = buildWebLink(sale);
-  const text = fill(t('shareText'), { s: fmtAmount(sale.amount) + ' ' + sale.cur }) + (sale.shop ? ' — ' + sale.shop : '');
+  const text = (sale.shop ? sale.shop + ' · ' : '') + fmtAmount(sale.amount) + ' ' + sale.cur;
   if (navigator.share){ try{ await navigator.share({ title: 'Tavarov Pay', text, url }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
   try{ await navigator.clipboard.writeText(url); } catch(e){}
   const b = $('shareLink'), was = b.textContent; b.textContent = '✓'; setTimeout(() => { b.textContent = was; }, 1500);
@@ -722,8 +673,9 @@ function chime(){
   } catch(e){}
 }
 
+
 /* ===== 4. Paid ===== */
-let lastPaid = null;
+let lastPaid = null, detailsOpen = false;
 function amountNode(el, amount, cur){
   el.textContent = '';
   el.appendChild(document.createTextNode(fmtAmount(amount)));
@@ -733,38 +685,35 @@ function txUrl(rec){
   const net = (rec.testnet ? TESTNET : NETS)[rec.net] || NETS.bnb;
   return rec.tx ? net.explorer + '/tx/' + rec.tx : net.explorer + '/address/' + rec.to;
 }
+function timeOf(ts){ return new Date(ts).toLocaleTimeString(locale(), { hour:'2-digit', minute:'2-digit' }); }
 function renderPaid(){
   const r = lastPaid; if (!r) return;
   amountNode($('paidAmount'), r.amount, r.cur);
   $('paidReceived').textContent = fmtAmount(r.received) + ' ' + r.cur;
+  show('detailsToggle', !detailsOpen);
+  show('detailsBox', detailsOpen);
   $('paidFee').textContent = Number(r.fee) > 0 ? fmtAmount(r.fee) + ' ' + r.cur : t('noFee');
   $('paidHow').textContent = t(r.via === 'contract' ? 'viaContract' : 'viaTransfer') + (r.from ? ' · ' + t('from') + ' ' + shortAddr(r.from) : '');
   $('paidItem').textContent = r.item || ''; show('paidItemRow', !!r.item);
-  $('paidTime').textContent = new Date(r.at).toLocaleTimeString(LANG === 'ru' ? 'ru-RU' : 'en-US', { hour:'2-digit', minute:'2-digit' });
+  $('paidTime').textContent = timeOf(r.at);
   $('paidTx').href = txUrl(r);
   $('paidTx').textContent = t(r.tx ? 'viewTx' : 'viewAddr');
 }
 
-/* ===== 5. History ===== */
+/* ===== 5. Today: the total and the list ===== */
 function renderHistory(){
   const today = history().filter(r => isToday(r.at) && !!r.testnet === testnet());
-  const tot = $('histTotal'); tot.textContent = '';
   const byCur = {}, recv = {};
   today.forEach(r => {
-    const d = 18;   // sums in 18 places; enough for any of our coins
-    byCur[r.cur] = (byCur[r.cur] || 0n) + (toUnits(r.amount, d) || 0n);
-    recv[r.cur] = (recv[r.cur] || 0n) + (toUnits(r.received, d) || 0n);
+    byCur[r.cur] = (byCur[r.cur] || 0n) + (toUnits(r.amount, 18) || 0n);   // 18 places fit all our coins
+    recv[r.cur] = (recv[r.cur] || 0n) + (toUnits(r.received, 18) || 0n);
   });
-  const lab = document.createElement('div'); lab.className = 'total-label'; lab.textContent = t('totalLabel'); tot.appendChild(lab);
+  const tot = $('histTotal'); tot.textContent = '';
   const curs = Object.keys(byCur).length ? Object.keys(byCur) : [tillCur];
-  curs.forEach(c => {
-    const s = document.createElement('div'); s.className = 'total-sum';
-    amountNode(s, fromUnits(byCur[c] || 0n, 18, 6), c);
-    tot.appendChild(s);
-  });
+  curs.forEach(c => { const s = document.createElement('div'); s.className = 'total-sum'; amountNode(s, fromUnits(byCur[c] || 0n, 18, 6), c); tot.appendChild(s); });
   const note = document.createElement('div'); note.className = 'total-note';
   note.textContent = fill(t('totalNote'), { n: String(today.length),
-    r: Object.keys(recv).map(c => fmtAmount(fromUnits(recv[c], 18, 6)) + ' ' + c).join(', ') || '0' });
+    r: Object.keys(recv).map(c => fmtAmount(fromUnits(recv[c], 18, 6)) + ' ' + c).join(', ') || fmtAmount('0') + ' ' + tillCur });
   tot.appendChild(note);
 
   const list = $('histList'); list.textContent = '';
@@ -775,9 +724,9 @@ function renderHistory(){
     row.style.color = 'inherit'; row.style.textDecoration = 'none';
     const main = document.createElement('div'); main.className = 'row-main';
     const ti = document.createElement('div'); ti.className = 'row-title';
-    ti.textContent = new Date(r.at).toLocaleTimeString(LANG === 'ru' ? 'ru-RU' : 'en-US', { hour:'2-digit', minute:'2-digit' }) + (r.item ? ' · ' + r.item : '');
+    ti.textContent = timeOf(r.at) + (r.item ? ' · ' + r.item : '');
     const sub = document.createElement('div'); sub.className = 'row-sub';
-    sub.textContent = t(r.via === 'contract' ? 'viaContract' : 'viaTransfer') + ' · ' + t('received').toLowerCase() + ' ' + fmtAmount(r.received) + ' ' + r.cur;
+    sub.textContent = t('received') + ' ' + fmtAmount(r.received) + ' ' + r.cur;
     main.appendChild(ti); main.appendChild(sub);
     const amt = document.createElement('div'); amt.className = 'row-amt'; amt.textContent = '+' + fmtAmount(r.amount) + ' ' + r.cur;
     row.appendChild(main); row.appendChild(amt);
@@ -786,26 +735,39 @@ function renderHistory(){
 }
 
 /* ===== 6. Settings ===== */
+function checkRow(box, title, sub, checked, disabled, onChange){
+  const row = document.createElement('div'); row.className = 'netrow';
+  const name = document.createElement('div');
+  const nm = document.createElement('div'); nm.className = 'row-title'; nm.textContent = title;
+  name.appendChild(nm);
+  if (sub){ const sm = document.createElement('div'); sm.className = 'small'; sm.textContent = sub; name.appendChild(sm); }
+  const lab = document.createElement('label'); lab.className = 'check';
+  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = checked; cb.disabled = disabled;
+  cb.onchange = () => onChange(cb);
+  lab.appendChild(cb);
+  row.appendChild(name); row.appendChild(lab);
+  box.appendChild(row);
+  return cb;
+}
 function renderSettings(){
   if (!cfg) return;
+  const sel = $('langSel');
+  if (!sel.options.length) Object.keys(LANG_NAMES).forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = LANG_NAMES[c]; sel.appendChild(o); });
+  sel.value = LANG;
   const a = $('setAddr'); a.textContent = '';
   if (cfg.name){ const b = document.createElement('b'); b.textContent = cfg.name; a.appendChild(b); a.appendChild(document.createTextNode(' → ')); }
   a.appendChild(document.createTextNode(cfg.address));
   if (document.activeElement !== $('setShop')) $('setShop').value = cfg.shop || '';
+  $('setAskNote').checked = !!cfg.askNote;
+  const coinsBox = $('setCoins'); coinsBox.textContent = '';
+  const coinsOn = Array.isArray(cfg.coins) && cfg.coins.length ? cfg.coins : ['USDT'];
+  ALL_COINS.forEach(c => checkRow(coinsBox, c, '', coinsOn.includes(c), coinsOn.length === 1 && coinsOn.includes(c), cb => {
+    const now = coinsOn.filter(x => x !== c); if (cb.checked) now.push(c);
+    cfg.coins = ALL_COINS.filter(x => now.includes(x)); saveCfg(); renderSettings();
+  }));
   const box = $('setNets'); box.textContent = '';
   Object.keys(netTable()).forEach(k => {
-    const row = document.createElement('div'); row.className = 'netrow';
-    const name = document.createElement('div');
-    name.innerHTML = '';
-    const nm = document.createElement('div'); nm.className = 'row-title'; nm.textContent = netTable()[k].name;
-    const sm = document.createElement('div'); sm.className = 'small'; sm.textContent = Object.keys(netTable()[k].tokens).join(' · ') + (k === 'bnb' ? ' · ' + t('netAlways') : '');
-    name.appendChild(nm); name.appendChild(sm);
-    const lab = document.createElement('label'); lab.className = 'check';
-    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = enabledNets().includes(k); cb.disabled = k === 'bnb'; cb.dataset.net = k;
-    cb.onchange = () => toggleNet(k, cb);
-    lab.appendChild(cb);
-    row.appendChild(name); row.appendChild(lab);
-    box.appendChild(row);
+    checkRow(box, netTable()[k].name, k === 'bnb' ? t('netAlways') : '', enabledNets().includes(k), k === 'bnb', cb => toggleNet(k, cb));
   });
   show('netsNote', Object.keys(netTable()).length > 1);
   $('versionLine').textContent = fill(t('version'), { s: APP_VERSION }) + (testnet() ? ' · ' + t('testnetOn') : '');
@@ -828,30 +790,32 @@ async function toggleNet(k, cb){
 
 /* A NoN name can change hands. The till keeps paying to the address the
    seller confirmed; if the name now points elsewhere, we say so. */
+let movedTo = null;
 async function recheckName(){
   if (!cfg || !cfg.name) return;
   try{
     const now = await resolveName(cfg.name);
-    const moved = !!now && now.toLowerCase() !== cfg.address.toLowerCase();
-    $('nameMoved').textContent = moved ? fill(t('nameMoved'), { n: cfg.name, a: shortAddr(now), s: shortAddr(cfg.address) }) : '';
-    show('nameMoved', moved);
+    movedTo = now && now.toLowerCase() !== cfg.address.toLowerCase() ? now : null;
+    renderMoved();
   } catch(e){}
+}
+function renderMoved(){
+  $('nameMoved').textContent = movedTo && cfg ? fill(t('nameMoved'), { n: cfg.name, a: shortAddr(movedTo), s: shortAddr(cfg.address) }) : '';
+  show('nameMoved', !!movedTo);
 }
 
 /* Android back button (MainActivity asks this). true = handled here. */
 window.payGoBack = function(){
-  if (screen === 'scrHistory' || screen === 'scrSettings'){ go('scrTill'); return true; }
-  if (screen === 'scrPaid'){ go('scrTill'); return true; }
+  if (screen === 'scrHistory' || screen === 'scrSettings' || screen === 'scrPaid'){ go('scrTill'); return true; }
   if (screen === 'scrSetup' && cfg){ go('scrSettings'); return true; }
   return false;
 };
 
 /* ---------- Wiring ---------- */
-document.querySelectorAll('#langSwitch button').forEach(b => { b.onclick = () => applyLang(b.dataset.lang); });
-$('destCheck').onclick = checkDest;
+$('brand').onclick = () => { if (cfg && screen !== 'scrWait' && screen !== 'scrSetup') go('scrTill'); };
+$('destIn').addEventListener('input', destInput);
 $('destIn').addEventListener('keydown', e => { if (e.key === 'Enter') checkDest(); });
-$('destIn').addEventListener('input', () => { if (found){ found = null; show('destOk', false); } });
-$('destConfirm').onchange = () => { $('destSave').disabled = !$('destConfirm').checked; };
+$('destConfirm').onchange = renderSetup;
 $('destSave').onclick = saveDest;
 document.querySelectorAll('#keypad .key').forEach(b => { b.onclick = () => keyPress(b.dataset.k); });
 document.addEventListener('keydown', e => {
@@ -861,16 +825,18 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Enter' && amountValid()) startSale();
 });
 $('charge').onclick = startSale;
-document.querySelectorAll('#qrSeg .seg').forEach(b => { b.onclick = () => { qrMode = b.dataset.q; renderWait(); }; });
+$('otherToggle').onclick = () => { otherOpen = !otherOpen; renderWait(); };
 $('cancelSale').onclick = cancelSale;
 $('shareLink').onclick = shareLink;
+$('detailsToggle').onclick = () => { detailsOpen = true; renderPaid(); };
 $('newSale').onclick = () => { amountStr = ''; $('itemIn').value = ''; go('scrTill'); };
-$('navHistory').onclick = () => { if (screen !== 'scrWait') go('scrHistory'); };
-$('navSettings').onclick = () => { if (screen !== 'scrWait') go('scrSettings'); };
-$('histBack').onclick = () => go('scrTill');
+$('navHistory').onclick = () => { if (screen === 'scrWait') return; go(screen === 'scrHistory' ? 'scrTill' : 'scrHistory'); };
+$('navSettings').onclick = () => { if (screen === 'scrWait') return; go(screen === 'scrSettings' ? 'scrTill' : 'scrSettings'); };
 $('setBack').onclick = () => go('scrTill');
-$('setChange').onclick = () => { $('shopIn').value = cfg ? cfg.shop || '' : ''; go('scrSetup'); };
+$('setChange').onclick = () => go('scrSetup');
 $('setShop').addEventListener('input', () => { cfg.shop = $('setShop').value.trim().slice(0, 40); saveCfg(); });
+$('setAskNote').onchange = () => { cfg.askNote = $('setAskNote').checked; saveCfg(); };
+$('langSel').onchange = () => { applyLang($('langSel').value); renderMoved(); };
 
 /* ---------- Start ---------- */
 (function start(){

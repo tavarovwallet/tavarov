@@ -62,9 +62,6 @@ body{ background:var(--bg); color:var(--label); font-family:var(--font); font-we
 .icon-btn{ border:0; background:var(--fill-2); color:var(--label); width:40px; height:40px; border-radius:12px;
   display:grid; place-items:center; cursor:pointer; }
 .icon-btn svg{ width:20px; height:20px; }
-.lang{ display:flex; background:var(--fill-2); border-radius:11px; padding:3px; }
-.lang button{ border:0; background:none; color:var(--label-2); font:inherit; font-size:13px; font-weight:700; padding:6px 10px; border-radius:8px; cursor:pointer; }
-.lang button.on{ background:var(--bg-elev); color:var(--label); box-shadow:0 1px 2px rgba(0,0,0,.06); }
 
 .large-title{ font-size:30px; font-weight:800; letter-spacing:-.045em; line-height:1.08; margin:18px 0 8px; }
 .subtitle{ font-size:15px; line-height:1.5; color:var(--label-2); margin:0 0 18px; }
@@ -155,151 +152,149 @@ a.link{ color:var(--accent); font-weight:650; text-decoration:none; }
 .netrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--sep); }
 .netrow:first-child{ border-top:0; }
 .small{ font-size:12.5px; color:var(--label-2); }
+/* Minimal layout additions */
+.brand{ cursor:pointer; border:0; background:none; color:inherit; font:inherit; font-weight:800; font-size:17px; letter-spacing:-.025em; padding:0; }
+.small-link{ display:block; margin:16px auto 0; border:0; background:none; font:inherit; font-size:14.5px; font-weight:650; color:var(--accent); cursor:pointer; text-align:center; }
+.status{ font-size:13.5px; color:var(--label-2); margin:10px 2px 0; min-height:1em; }
+select{ width:100%; padding:15px 16px; font:inherit; font-size:16px; font-weight:500; border-radius:14px; color:var(--label);
+  background:var(--fill-2); border:1px solid transparent; -webkit-appearance:none; appearance:none; }
+.received{ font-size:16px; color:var(--label-2); font-weight:600; margin-top:8px; }
+.received b{ color:var(--label); }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <div class="nav">
-    <div class="brand">
+    <button class="brand" id="brand" type="button">
       <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
       <span>Tavarov Pay</span>
-    </div>
+    </button>
     <div class="nav-actions">
-      <div class="lang" id="langSwitch">
-        <button type="button" data-lang="en">EN</button>
-        <button type="button" data-lang="ru">RU</button>
-      </div>
-      <button class="icon-btn hidden" id="navHistory" type="button" aria-label="History" data-t-aria="history">
+      <button class="icon-btn hidden" id="navHistory" type="button" data-t-aria="today">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
-      <button class="icon-btn hidden" id="navSettings" type="button" aria-label="Settings" data-t-aria="settings">
+      <button class="icon-btn hidden" id="navSettings" type="button" data-t-aria="settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     </div>
   </div>
 
-  <!-- ============ 1. Setup: where the money arrives ============ -->
+  <!-- 1. Setup: one field, the address it resolves to, a tick, one button. -->
   <section id="scrSetup" class="hidden">
-    <h1 class="large-title" data-t="setupTitle">Accept payments in USDT and USDC</h1>
-    <p class="subtitle" data-t="setupSub">Tavarov Pay shows your customer a payment code and tells you when the payment has arrived. It never holds money and never asks for a password or keys.</p>
-    <div class="group group-pad">
-      <label class="field-label" for="destIn" data-t="destLabel">Where should payments arrive?</label>
-      <input type="text" id="destIn" autocomplete="off" autocapitalize="off" spellcheck="false" data-t-ph="destPh" placeholder="NoN name or 0x… address">
-      <p class="note" data-t="destNote">Your NoN name (for example, kofeinya) or the 0x… address of the wallet you receive money in, on BNB Chain.</p>
-      <button class="btn btn-tinted mt" id="destCheck" type="button" data-t="check">Check</button>
-      <div id="destErr" class="err mt hidden"></div>
-      <div id="destOk" class="hidden">
-        <div class="field-label mt" data-t="destFound">Payments will arrive at this address:</div>
-        <div class="addr" id="destAddr"></div>
-        <p class="note"><a class="link" id="destExplorer" href="#" target="_blank" rel="noopener" data-t="openExplorer">Check it in the block explorer</a></p>
-        <div id="destContract" class="warn mt hidden" data-t="destContract">This address is a smart contract, not an ordinary wallet. Make sure it can receive USDT and USDC before you use it.</div>
-        <label class="field-label mt" for="shopIn" data-t="shopLabel">Shop name (optional, the customer sees it)</label>
-        <input type="text" id="shopIn" maxlength="40" autocomplete="off" data-t-ph="shopPh" placeholder="Corner Coffee">
-        <label class="check mt"><input type="checkbox" id="destConfirm"><span data-t="destConfirm">I checked: this is my address and the money will reach me.</span></label>
-        <button class="btn mt" id="destSave" type="button" disabled data-t="save">Save and start</button>
-      </div>
+    <h1 class="large-title" data-t="setupTitle"></h1>
+    <p class="subtitle" data-t="setupSub"></p>
+    <input type="text" id="destIn" autocomplete="off" autocapitalize="off" spellcheck="false" data-t-ph="destPh">
+    <div class="status" id="destStatus"></div>
+    <div id="destErr" class="err mt hidden"></div>
+    <div id="destOk" class="hidden">
+      <div class="field-label mt" data-t="destFound"></div>
+      <div class="addr" id="destAddr"></div>
+      <div id="destContract" class="warn mt hidden" data-t="destContract"></div>
+      <label class="check mt"><input type="checkbox" id="destConfirm"><span data-t="destConfirm"></span></label>
     </div>
-    <p class="note" data-t="setupPrivacy">This is stored only on this device. Nothing is sent to us.</p>
+    <button class="btn mt" id="destSave" type="button" disabled data-t="save"></button>
   </section>
 
-  <!-- ============ 2. Till: type the amount ============ -->
+  <!-- 2. Till: the amount, the keypad, one button. -->
   <section id="scrTill" class="hidden">
     <div id="nameMoved" class="warn hidden"></div>
     <div class="amount-box">
       <div class="amount empty" id="amountShow">0<span class="cur" id="amountCur">USDT</span></div>
-      <div class="amount-meta" id="tillMeta"></div>
+      <div class="amount-meta hidden" id="tillMeta"></div>
     </div>
-    <div class="segmented mt" id="curSeg"></div>
+    <div class="segmented mt hidden" id="curSeg"></div>
     <div class="segmented mt hidden" id="netSeg"></div>
     <div class="keypad" id="keypad">
       <button class="key" type="button" data-k="1">1</button><button class="key" type="button" data-k="2">2</button><button class="key" type="button" data-k="3">3</button>
       <button class="key" type="button" data-k="4">4</button><button class="key" type="button" data-k="5">5</button><button class="key" type="button" data-k="6">6</button>
       <button class="key" type="button" data-k="7">7</button><button class="key" type="button" data-k="8">8</button><button class="key" type="button" data-k="9">9</button>
       <button class="key" type="button" data-k=".">.</button><button class="key" type="button" data-k="0">0</button>
-      <button class="key" type="button" data-k="back" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg></button>
+      <button class="key" type="button" data-k="back" data-t-aria="erase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg></button>
     </div>
-    <input type="text" id="itemIn" maxlength="60" autocomplete="off" data-t-ph="itemPh" placeholder="What for (optional)">
-    <button class="btn mt" id="charge" type="button" disabled data-t="charge">Show payment code</button>
+    <input type="text" id="itemIn" class="hidden" maxlength="60" autocomplete="off" data-t-ph="notePh" style="margin-bottom:14px">
+    <button class="btn" id="charge" type="button" disabled data-t="charge"></button>
   </section>
 
-  <!-- ============ 3. Waiting for the buyer ============ -->
+  <!-- 3. Waiting: the amount, one QR, the status, Cancel. -->
   <section id="scrWait" class="hidden">
     <div class="group ticket">
       <div class="amount" id="waitAmount"></div>
-      <div class="amount-meta" id="waitMeta"></div>
-      <div class="segmented mt" id="qrSeg">
-        <button class="seg active" type="button" data-q="app" data-t="qrApp">Wallet app</button>
-        <button class="seg" type="button" data-q="web" data-t="qrWeb">Payment page</button>
-      </div>
+      <div class="amount-meta hidden" id="waitMeta"></div>
       <div class="qr-box"><div id="qr"></div></div>
-      <p class="qr-hint" id="qrHint"></p>
-      <div><span class="pill pill-wait" id="waitPill" data-t="waiting">Waiting for payment</span></div>
+      <div><span class="pill pill-wait" id="waitPill" data-t="waiting"></span></div>
       <div id="waitErr" class="err mt hidden"></div>
-      <details>
-        <summary data-t="showLink">Show the payment link</summary>
-        <div class="link-box" id="payLink"></div>
-        <div class="link-box" id="webLink"></div>
-        <p class="note" id="manualLine" style="text-align:left"></p>
-        <div class="addr" id="manualAddr" style="text-align:left"></div>
-      </details>
+      <button class="small-link" id="otherToggle" type="button" data-t="otherWays"></button>
+      <div id="otherBox" class="hidden" style="text-align:left">
+        <p class="note" data-t="hintWeb"></p>
+        <div class="qr-box" style="display:block; width:max-content; margin:10px auto"><div id="qrWeb"></div></div>
+        <button class="btn btn-tinted" id="shareLink" type="button" data-t="share"></button>
+        <p class="note" id="manualLine"></p>
+        <div class="addr" id="manualAddr"></div>
+        <div class="link-box hidden" id="payLink"></div>
+        <div class="link-box hidden" id="webLink"></div>
+      </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-tinted" id="shareLink" type="button" data-t="share">Share link</button>
-      <button class="btn btn-tinted" id="cancelSale" type="button" data-t="cancel">Cancel</button>
-    </div>
-    <p class="note" id="feeNote" data-t="feeNote">Paid with NoN Wallet or on the payment page: 1% service fee, taken from the amount you receive. Paid by a plain transfer from another wallet app: no fee.</p>
+    <button class="btn btn-tinted" id="cancelSale" type="button" data-t="cancel"></button>
   </section>
 
-  <!-- ============ 4. Paid ============ -->
+  <!-- 4. Paid: check, amount, what arrived, New sale. The rest behind Details. -->
   <section id="scrPaid" class="hidden">
     <div class="group paid">
       <div class="paid-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-      <div class="paid-word" data-t="paid">Paid</div>
+      <div class="paid-word" data-t="paid"></div>
       <div class="amount" id="paidAmount"></div>
-      <div class="group-pad" style="padding:14px 0 0">
-        <div class="kv"><span data-t="received">You received</span><span id="paidReceived"></span></div>
-        <div class="kv"><span data-t="fee">Service fee</span><span id="paidFee"></span></div>
-        <div class="kv"><span data-t="how">How it was paid</span><span id="paidHow"></span></div>
-        <div class="kv hidden" id="paidItemRow"><span data-t="item">What for</span><span id="paidItem"></span></div>
-        <div class="kv"><span data-t="when">Time</span><span id="paidTime"></span></div>
+      <div class="received"><span data-t="received"></span> <b id="paidReceived"></b></div>
+      <button class="small-link" id="detailsToggle" type="button" data-t="details"></button>
+      <div id="detailsBox" class="hidden" style="padding-top:10px">
+        <div class="kv"><span data-t="fee"></span><span id="paidFee"></span></div>
+        <div class="kv"><span data-t="how"></span><span id="paidHow"></span></div>
+        <div class="kv hidden" id="paidItemRow"><span data-t="item"></span><span id="paidItem"></span></div>
+        <div class="kv"><span data-t="when"></span><span id="paidTime"></span></div>
+        <a class="btn btn-tinted mt" id="paidTx" href="#" target="_blank" rel="noopener"></a>
       </div>
-      <a class="btn btn-tinted mt" id="paidTx" href="#" target="_blank" rel="noopener" data-t="viewTx">View transaction</a>
     </div>
-    <button class="btn" id="newSale" type="button" data-t="newSale">New sale</button>
+    <button class="btn" id="newSale" type="button" data-t="newSale"></button>
   </section>
 
-  <!-- ============ 5. Today ============ -->
+  <!-- 5. Today: the total and the list. -->
   <section id="scrHistory" class="hidden">
-    <h1 class="large-title" data-t="today">Today</h1>
+    <h1 class="large-title" data-t="today"></h1>
     <div class="group total" id="histTotal"></div>
     <div class="group" id="histList"></div>
-    <button class="btn btn-tinted" id="histBack" type="button" data-t="back">Back to the till</button>
   </section>
 
-  <!-- ============ 6. Settings ============ -->
+  <!-- 6. Settings: everything that is not needed at the counter. -->
   <section id="scrSettings" class="hidden">
-    <h1 class="large-title" data-t="settings">Settings</h1>
-    <div class="group-title" data-t="destLabelShort">Payments arrive at</div>
+    <h1 class="large-title" data-t="settings"></h1>
+    <div class="group-title" data-t="language"></div>
+    <select id="langSel"></select>
+    <div class="group-title" data-t="destLabelShort"></div>
     <div class="group group-pad">
       <div class="addr" id="setAddr"></div>
-      <button class="btn btn-tinted mt" id="setChange" type="button" data-t="change">Change address</button>
+      <button class="btn btn-tinted mt" id="setChange" type="button" data-t="change"></button>
     </div>
-    <div class="group-title" data-t="shopLabelShort">Shop name</div>
+    <div class="group-title" data-t="shopLabel"></div>
+    <input type="text" id="setShop" maxlength="40" autocomplete="off" data-t-ph="shopPh">
+    <div class="group-title" data-t="options"></div>
     <div class="group group-pad">
-      <input type="text" id="setShop" maxlength="40" autocomplete="off" data-t-ph="shopPh" placeholder="Corner Coffee">
+      <label class="check"><input type="checkbox" id="setAskNote"><span data-t="askNote"></span></label>
     </div>
-    <div class="group-title" data-t="networks">Networks</div>
+    <div class="group-title" data-t="coins"></div>
+    <div class="group group-pad" id="setCoins"></div>
+    <div class="group-title" data-t="networks"></div>
     <div class="group group-pad" id="setNets"></div>
-    <p class="note" id="netsNote" data-t="netsNote">Turn on Ethereum or Base only if your address is your own wallet that works on those networks too. An exchange deposit address usually works on one network only, and money sent on another network can be lost.</p>
-    <div class="group-title" data-t="about">About</div>
+    <p class="note" id="netsNote" data-t="netsNote"></p>
+    <div class="group-title" data-t="about"></div>
     <div class="group group-pad">
-      <p class="note" style="margin-top:0" data-t="aboutText">Tavarov Pay is a till: it makes payment codes and watches public blockchain nodes for the payment. It cannot move, hold or spend money, and it has no account. Your settings and the sales history stay on this device.</p>
+      <p class="note" style="margin-top:0" data-t="aboutText"></p>
+      <p class="note" data-t="feeNote"></p>
       <p class="note small" id="versionLine"></p>
     </div>
-    <button class="btn btn-tinted" id="setBack" type="button" data-t="back">Back to the till</button>
+    <button class="btn btn-tinted" id="setBack" type="button" data-t="done"></button>
   </section>
 
 </div>
 <script src="lib/qrcode.min.js"></script>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

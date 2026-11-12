@@ -10,7 +10,8 @@ The only things it stores, on the device, are the seller's public payout
 address (typed in, or found by NoN name) and the local sales history.
 
 * Application ID: `com.tavarov.pay`
-* Web app: [`www/`](www) — `index.html`, `app.js`, the QR library and the
+* Web app: [`www/`](www) — `index.html`, `app.js`, `i18n.js` (the wallet's seven
+  languages: en, ru, es, tr, pt, tg, id), the QR library and the
   Manrope font copied from the wallet. No blockchain library.
 * Android: [`android/`](android) — Capacitor, like `android-app/`, using the
   same vendored Capacitor source (`../android-app/vendor`), without plugins.
