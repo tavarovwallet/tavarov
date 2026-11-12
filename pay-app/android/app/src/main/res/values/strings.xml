@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tavarov Pay</string>
+    <string name="title_activity_main">Tavarov Pay</string>
+    <string name="package_name">com.tavarov.pay</string>
+    <string name="custom_url_scheme">com.tavarov.pay</string>
+</resources>

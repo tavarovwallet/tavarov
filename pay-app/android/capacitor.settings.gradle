@@ -1,0 +1,5 @@
+// Capacitor, as source, shared with NoN Wallet: android-app/vendor
+// (see android-app/vendor/README.md). Tavarov Pay uses no Capacitor plugins:
+// no biometrics, no camera, no file sharing.
+include ':capacitor-android'
+project(':capacitor-android').projectDir = new File('../../android-app/vendor/capacitor-android/capacitor')

@@ -1,0 +1,15 @@
+// Same as android-app/android/app/capacitor.build.gradle, minus the
+// biometric plugin: Tavarov Pay has nothing to unlock.
+
+android {
+  compileOptions {
+      sourceCompatibility JavaVersion.VERSION_17
+      targetCompatibility JavaVersion.VERSION_17
+  }
+}
+
+apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
+
+if (hasProperty('postBuildExtras')) {
+  postBuildExtras()
+}

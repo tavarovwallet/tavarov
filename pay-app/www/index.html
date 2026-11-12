@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Everything the page loads comes from this folder. The only outside
+     addresses are public blockchain nodes, and only for reading. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src https://bsc-dataseed.binance.org https://bsc-dataseed1.bnbchain.org https://bsc-dataseed2.bnbchain.org https://bsc-rpc.publicnode.com https://bsc-testnet-rpc.publicnode.com https://data-seed-prebsc-1-s1.bnbchain.org:8545 https://ethereum-rpc.publicnode.com https://eth.drpc.org https://base-rpc.publicnode.com https://mainnet.base.org; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="theme-color" content="#F4F4F6">
+<title>Tavarov Pay</title>
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-cyrillic.woff2) format('woff2'); unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin-ext.woff2) format('woff2'); unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Manrope'; font-style:normal; font-display:swap; font-weight:200 800;
+  src:url(./fonts/manrope-latin.woff2) format('woff2'); unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* Same tokens as NoN Wallet (www/index.html, the "monochrome" theme), so the
+   two apps look like one family. */
+:root{
+  --bg:#F4F4F6; --bg-grouped:#FFFFFF; --bg-elev:#FFFFFF;
+  --label:#0B0B10; --label-2:rgba(14,14,22,.56); --label-3:rgba(14,14,22,.30);
+  --sep:rgba(14,14,22,.07); --fill:rgba(14,14,22,.06); --fill-2:rgba(14,14,22,.035);
+  --accent:#5B3DF5; --green:#11994D; --red:#E03A3A; --orange:#B26A00;
+  --btn-bg:#0B0B10; --btn-fg:#FFFFFF;
+  --shadow:0 1px 2px rgba(14,14,22,.04), 0 10px 28px -16px rgba(14,14,22,.10);
+  --r:20px;
+  --font:'Manrope',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',system-ui,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#08080A; --bg-grouped:#131316; --bg-elev:#1B1B1F;
+  --label:#F5F5F7; --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.30);
+  --sep:rgba(255,255,255,.065); --fill:rgba(255,255,255,.075); --fill-2:rgba(255,255,255,.04);
+  --accent:#A495FF; --green:#3DD68C; --red:#FF6B6B; --orange:#F5B451;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D;
+  --shadow:none; } }
+:root[data-theme="dark"]{
+  --bg:#08080A; --bg-grouped:#131316; --bg-elev:#1B1B1F;
+  --label:#F5F5F7; --label-2:rgba(245,245,247,.56); --label-3:rgba(245,245,247,.30);
+  --sep:rgba(255,255,255,.065); --fill:rgba(255,255,255,.075); --fill-2:rgba(255,255,255,.04);
+  --accent:#A495FF; --green:#3DD68C; --red:#FF6B6B; --orange:#F5B451;
+  --btn-bg:#F5F5F7; --btn-fg:#0A0A0D;
+  --shadow:none; }
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+body{ background:var(--bg); color:var(--label); font-family:var(--font); font-weight:500;
+  letter-spacing:-.006em; -webkit-font-smoothing:antialiased; min-height:100vh; }
+.hidden{ display:none !important; }
+.wrap{ max-width:480px; margin:0 auto; padding:calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 24px); }
+
+.nav{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:52px; }
+.brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:-.025em; }
+.brand-mark{ width:30px; height:30px; border-radius:9px; background:var(--accent); display:grid; place-items:center; }
+.brand-mark svg{ width:18px; height:18px; }
+.nav-actions{ display:flex; gap:6px; }
+.icon-btn{ border:0; background:var(--fill-2); color:var(--label); width:40px; height:40px; border-radius:12px;
+  display:grid; place-items:center; cursor:pointer; }
+.icon-btn svg{ width:20px; height:20px; }
+.lang{ display:flex; background:var(--fill-2); border-radius:11px; padding:3px; }
+.lang button{ border:0; background:none; color:var(--label-2); font:inherit; font-size:13px; font-weight:700; padding:6px 10px; border-radius:8px; cursor:pointer; }
+.lang button.on{ background:var(--bg-elev); color:var(--label); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+
+.large-title{ font-size:30px; font-weight:800; letter-spacing:-.045em; line-height:1.08; margin:18px 0 8px; }
+.subtitle{ font-size:15px; line-height:1.5; color:var(--label-2); margin:0 0 18px; }
+.group{ background:var(--bg-grouped); border-radius:var(--r); box-shadow:var(--shadow); margin-bottom:16px; }
+.group-pad{ padding:18px; }
+.group-title{ font-size:13px; font-weight:600; color:var(--label-2); margin:24px 0 10px 4px; }
+.field-label{ display:block; font-size:13px; font-weight:600; color:var(--label-2); margin:0 0 8px 2px; }
+input[type=text]{ width:100%; padding:15px 16px; font:inherit; font-size:16px; font-weight:500; border-radius:14px; color:var(--label);
+  background:var(--fill-2); border:1px solid transparent; outline:none; }
+input[type=text]:focus{ border-color:var(--accent); background:var(--bg-grouped); }
+.mt{ margin-top:14px; }
+.note{ font-size:13px; line-height:1.5; color:var(--label-2); margin:10px 2px 0; }
+.warn{ background:rgba(201,116,0,.10); color:var(--orange); border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; font-weight:600; }
+.err{ background:rgba(224,58,58,.09); color:var(--red); border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; font-weight:600; }
+
+.btn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border:0; cursor:pointer;
+  padding:16px 18px; border-radius:16px; font:inherit; font-size:16px; font-weight:650; letter-spacing:-.018em;
+  background:var(--btn-bg); color:var(--btn-fg); transition:opacity .15s ease, transform .12s var(--ease); text-decoration:none; }
+.btn:active{ opacity:.82; transform:scale(.985); }
+.btn:disabled{ background:var(--fill); color:var(--label-3); cursor:default; }
+.btn-tinted{ background:var(--fill); color:var(--label); }
+.btn-plain{ background:none; color:var(--accent); font-weight:600; }
+.btn-row{ display:flex; gap:10px; }
+
+.addr{ font-family:var(--mono); font-size:13.5px; word-break:break-all; line-height:1.5; background:var(--fill-2); border-radius:12px; padding:12px 13px; }
+.addr b{ color:var(--accent); font-weight:700; }
+label.check{ display:flex; align-items:flex-start; gap:12px; font-size:15px; line-height:1.4; cursor:pointer; }
+label.check input{ -webkit-appearance:none; appearance:none; flex:0 0 22px; width:22px; height:22px; margin:1px 0 0;
+  border-radius:7px; border:1.5px solid var(--label-3); background:transparent; cursor:pointer; }
+label.check input:checked{ background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/15px no-repeat; border-color:var(--accent); }
+
+.segmented{ display:flex; background:var(--fill-2); border-radius:13px; padding:3px; gap:2px; }
+.seg{ flex:1; border:0; background:none; font:inherit; padding:9px 6px; font-size:14px; font-weight:650; border-radius:10px; color:var(--label-2); cursor:pointer; }
+.seg.active{ background:var(--bg-elev); color:var(--label); box-shadow:0 1px 2px rgba(0,0,0,.06), 0 2px 8px -2px rgba(0,0,0,.08); }
+
+/* Amount entry */
+.amount-box{ text-align:center; padding:22px 8px 6px; }
+.amount{ font-size:56px; font-weight:750; letter-spacing:-.055em; line-height:1.02; word-break:break-all; }
+.amount .cur{ font-size:.36em; font-weight:650; color:var(--label-2); letter-spacing:-.01em; margin-left:.3em; }
+.amount.empty{ color:var(--label-3); }
+.amount-meta{ font-size:13px; font-weight:600; color:var(--label-2); margin-top:8px; }
+.keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+.key{ border:0; background:var(--bg-grouped); box-shadow:var(--shadow); color:var(--label); font:inherit; font-size:26px; font-weight:650;
+  padding:15px 0; border-radius:16px; cursor:pointer; letter-spacing:-.02em; }
+.key:active{ background:var(--fill); }
+.key svg{ width:24px; height:24px; vertical-align:middle; }
+
+/* Waiting for the buyer */
+.ticket{ text-align:center; padding:20px 18px 18px; }
+.ticket .amount{ font-size:44px; }
+.qr-box{ display:inline-block; background:#fff; padding:14px; border-radius:18px; margin:16px auto 8px; box-shadow:0 0 0 1px var(--sep); }
+.qr-box img, .qr-box canvas{ display:block; width:236px; height:236px; image-rendering:pixelated; }
+.qr-hint{ font-size:13.5px; color:var(--label-2); line-height:1.45; margin:6px 6px 0; }
+.pill{ display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; font-size:14px; font-weight:700; margin-top:14px; }
+.pill-wait{ background:var(--fill); color:var(--label-2); }
+.pill-wait::before{ content:''; width:9px; height:9px; border-radius:50%; background:var(--orange); animation:pulse 1.2s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{ opacity:.25 } 50%{ opacity:1 } }
+.link-box{ font-family:var(--mono); font-size:11.5px; word-break:break-all; color:var(--label-2); background:var(--fill-2); border-radius:12px; padding:10px 12px; text-align:left; margin-top:10px; }
+details summary{ cursor:pointer; font-size:13.5px; font-weight:600; color:var(--accent); margin-top:12px; }
+
+/* Paid */
+.paid{ text-align:center; padding:30px 18px 22px; }
+.paid-mark{ width:84px; height:84px; border-radius:50%; background:var(--green); margin:0 auto 14px; display:grid; place-items:center; animation:pop .35s var(--ease); }
+.paid-mark svg{ width:44px; height:44px; }
+@keyframes pop{ from{ transform:scale(.6); opacity:0 } to{ transform:scale(1); opacity:1 } }
+.paid-word{ font-size:30px; font-weight:800; letter-spacing:-.04em; color:var(--green); }
+.paid .amount{ font-size:44px; margin-top:6px; }
+.kv{ display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--sep); font-size:14.5px; text-align:left; }
+.kv:first-child{ border-top:0; }
+.kv span:first-child{ color:var(--label-2); }
+.kv span:last-child{ font-weight:650; text-align:right; overflow-wrap:anywhere; }
+a.link{ color:var(--accent); font-weight:650; text-decoration:none; }
+
+/* History */
+.total{ padding:18px; }
+.total-label{ font-size:13px; font-weight:600; color:var(--label-2); }
+.total-sum{ font-size:38px; font-weight:750; letter-spacing:-.05em; margin-top:4px; }
+.total-sum .cur{ font-size:.42em; color:var(--label-2); font-weight:650; margin-left:.3em; letter-spacing:-.01em; }
+.total-note{ font-size:13px; color:var(--label-2); margin-top:6px; }
+.row{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-top:1px solid var(--sep); }
+.row:first-child{ border-top:0; }
+.row-main{ flex:1; min-width:0; }
+.row-title{ font-size:16px; font-weight:650; letter-spacing:-.018em; }
+.row-sub{ font-size:12.5px; color:var(--label-2); margin-top:2px; }
+.row-amt{ font-size:16px; font-weight:700; color:var(--green); white-space:nowrap; }
+.empty{ padding:22px 16px; text-align:center; color:var(--label-2); font-size:14.5px; }
+
+.netrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--sep); }
+.netrow:first-child{ border-top:0; }
+.small{ font-size:12.5px; color:var(--label-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
+      <span>Tavarov Pay</span>
+    </div>
+    <div class="nav-actions">
+      <div class="lang" id="langSwitch">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="ru">RU</button>
+      </div>
+      <button class="icon-btn hidden" id="navHistory" type="button" aria-label="History" data-t-aria="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+      <button class="icon-btn hidden" id="navSettings" type="button" aria-label="Settings" data-t-aria="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ 1. Setup: where the money arrives ============ -->
+  <section id="scrSetup" class="hidden">
+    <h1 class="large-title" data-t="setupTitle">Accept payments in USDT and USDC</h1>
+    <p class="subtitle" data-t="setupSub">Tavarov Pay shows your customer a payment code and tells you when the payment has arrived. It never holds money and never asks for a password or keys.</p>
+    <div class="group group-pad">
+      <label class="field-label" for="destIn" data-t="destLabel">Where should payments arrive?</label>
+      <input type="text" id="destIn" autocomplete="off" autocapitalize="off" spellcheck="false" data-t-ph="destPh" placeholder="NoN name or 0x… address">
+      <p class="note" data-t="destNote">Your NoN name (for example, kofeinya) or the 0x… address of the wallet you receive money in, on BNB Chain.</p>
+      <button class="btn btn-tinted mt" id="destCheck" type="button" data-t="check">Check</button>
+      <div id="destErr" class="err mt hidden"></div>
+      <div id="destOk" class="hidden">
+        <div class="field-label mt" data-t="destFound">Payments will arrive at this address:</div>
+        <div class="addr" id="destAddr"></div>
+        <p class="note"><a class="link" id="destExplorer" href="#" target="_blank" rel="noopener" data-t="openExplorer">Check it in the block explorer</a></p>
+        <div id="destContract" class="warn mt hidden" data-t="destContract">This address is a smart contract, not an ordinary wallet. Make sure it can receive USDT and USDC before you use it.</div>
+        <label class="field-label mt" for="shopIn" data-t="shopLabel">Shop name (optional, the customer sees it)</label>
+        <input type="text" id="shopIn" maxlength="40" autocomplete="off" data-t-ph="shopPh" placeholder="Corner Coffee">
+        <label class="check mt"><input type="checkbox" id="destConfirm"><span data-t="destConfirm">I checked: this is my address and the money will reach me.</span></label>
+        <button class="btn mt" id="destSave" type="button" disabled data-t="save">Save and start</button>
+      </div>
+    </div>
+    <p class="note" data-t="setupPrivacy">This is stored only on this device. Nothing is sent to us.</p>
+  </section>
+
+  <!-- ============ 2. Till: type the amount ============ -->
+  <section id="scrTill" class="hidden">
+    <div id="nameMoved" class="warn hidden"></div>
+    <div class="amount-box">
+      <div class="amount empty" id="amountShow">0<span class="cur" id="amountCur">USDT</span></div>
+      <div class="amount-meta" id="tillMeta"></div>
+    </div>
+    <div class="segmented mt" id="curSeg"></div>
+    <div class="segmented mt hidden" id="netSeg"></div>
+    <div class="keypad" id="keypad">
+      <button class="key" type="button" data-k="1">1</button><button class="key" type="button" data-k="2">2</button><button class="key" type="button" data-k="3">3</button>
+      <button class="key" type="button" data-k="4">4</button><button class="key" type="button" data-k="5">5</button><button class="key" type="button" data-k="6">6</button>
+      <button class="key" type="button" data-k="7">7</button><button class="key" type="button" data-k="8">8</button><button class="key" type="button" data-k="9">9</button>
+      <button class="key" type="button" data-k=".">.</button><button class="key" type="button" data-k="0">0</button>
+      <button class="key" type="button" data-k="back" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg></button>
+    </div>
+    <input type="text" id="itemIn" maxlength="60" autocomplete="off" data-t-ph="itemPh" placeholder="What for (optional)">
+    <button class="btn mt" id="charge" type="button" disabled data-t="charge">Show payment code</button>
+  </section>
+
+  <!-- ============ 3. Waiting for the buyer ============ -->
+  <section id="scrWait" class="hidden">
+    <div class="group ticket">
+      <div class="amount" id="waitAmount"></div>
+      <div class="amount-meta" id="waitMeta"></div>
+      <div class="segmented mt" id="qrSeg">
+        <button class="seg active" type="button" data-q="app" data-t="qrApp">Wallet app</button>
+        <button class="seg" type="button" data-q="web" data-t="qrWeb">Payment page</button>
+      </div>
+      <div class="qr-box"><div id="qr"></div></div>
+      <p class="qr-hint" id="qrHint"></p>
+      <div><span class="pill pill-wait" id="waitPill" data-t="waiting">Waiting for payment</span></div>
+      <div id="waitErr" class="err mt hidden"></div>
+      <details>
+        <summary data-t="showLink">Show the payment link</summary>
+        <div class="link-box" id="payLink"></div>
+        <div class="link-box" id="webLink"></div>
+        <p class="note" id="manualLine" style="text-align:left"></p>
+        <div class="addr" id="manualAddr" style="text-align:left"></div>
+      </details>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-tinted" id="shareLink" type="button" data-t="share">Share link</button>
+      <button class="btn btn-tinted" id="cancelSale" type="button" data-t="cancel">Cancel</button>
+    </div>
+    <p class="note" id="feeNote" data-t="feeNote">Paid with NoN Wallet or on the payment page: 1% service fee, taken from the amount you receive. Paid by a plain transfer from another wallet app: no fee.</p>
+  </section>
+
+  <!-- ============ 4. Paid ============ -->
+  <section id="scrPaid" class="hidden">
+    <div class="group paid">
+      <div class="paid-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <div class="paid-word" data-t="paid">Paid</div>
+      <div class="amount" id="paidAmount"></div>
+      <div class="group-pad" style="padding:14px 0 0">
+        <div class="kv"><span data-t="received">You received</span><span id="paidReceived"></span></div>
+        <div class="kv"><span data-t="fee">Service fee</span><span id="paidFee"></span></div>
+        <div class="kv"><span data-t="how">How it was paid</span><span id="paidHow"></span></div>
+        <div class="kv hidden" id="paidItemRow"><span data-t="item">What for</span><span id="paidItem"></span></div>
+        <div class="kv"><span data-t="when">Time</span><span id="paidTime"></span></div>
+      </div>
+      <a class="btn btn-tinted mt" id="paidTx" href="#" target="_blank" rel="noopener" data-t="viewTx">View transaction</a>
+    </div>
+    <button class="btn" id="newSale" type="button" data-t="newSale">New sale</button>
+  </section>
+
+  <!-- ============ 5. Today ============ -->
+  <section id="scrHistory" class="hidden">
+    <h1 class="large-title" data-t="today">Today</h1>
+    <div class="group total" id="histTotal"></div>
+    <div class="group" id="histList"></div>
+    <button class="btn btn-tinted" id="histBack" type="button" data-t="back">Back to the till</button>
+  </section>
+
+  <!-- ============ 6. Settings ============ -->
+  <section id="scrSettings" class="hidden">
+    <h1 class="large-title" data-t="settings">Settings</h1>
+    <div class="group-title" data-t="destLabelShort">Payments arrive at</div>
+    <div class="group group-pad">
+      <div class="addr" id="setAddr"></div>
+      <button class="btn btn-tinted mt" id="setChange" type="button" data-t="change">Change address</button>
+    </div>
+    <div class="group-title" data-t="shopLabelShort">Shop name</div>
+    <div class="group group-pad">
+      <input type="text" id="setShop" maxlength="40" autocomplete="off" data-t-ph="shopPh" placeholder="Corner Coffee">
+    </div>
+    <div class="group-title" data-t="networks">Networks</div>
+    <div class="group group-pad" id="setNets"></div>
+    <p class="note" id="netsNote" data-t="netsNote">Turn on Ethereum or Base only if your address is your own wallet that works on those networks too. An exchange deposit address usually works on one network only, and money sent on another network can be lost.</p>
+    <div class="group-title" data-t="about">About</div>
+    <div class="group group-pad">
+      <p class="note" style="margin-top:0" data-t="aboutText">Tavarov Pay is a till: it makes payment codes and watches public blockchain nodes for the payment. It cannot move, hold or spend money, and it has no account. Your settings and the sales history stay on this device.</p>
+      <p class="note small" id="versionLine"></p>
+    </div>
+    <button class="btn btn-tinted" id="setBack" type="button" data-t="back">Back to the till</button>
+  </section>
+
+</div>
+<script src="lib/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+	"appId": "com.tavarov.pay",
+	"appName": "Tavarov Pay",
+	"webDir": "www",
+	"backgroundColor": "#F4F4F6",
+	"android": {
+		"allowMixedContent": false
+	}
+}
