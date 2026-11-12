@@ -36,23 +36,24 @@ try{
   if (!ok) problems.push(`tavarov.com/tavarov.apk is not the ${want.version} APK from site/apk.json (got ${b.length} bytes, ${have.slice(0, 12)})`);
 } catch(e){ problems.push('could not check the Android download: ' + String(e.message).slice(0, 80)); }
 
-/* Free names: MegaFuel pays the fee for claim(string) on TavarovNames v3 while
-   the sponsor policy has a balance. When it runs out, new users only see
-   "the name was not registered yet", so this is the reminder to top it up. */
-lines.push('', '## Free names (MegaFuel)');
+/* Gas help (since 10 November 2026): our own service wallet sends a user just
+   enough BNB for a free name or a USDT/USDC transfer (functions/api/drip-bnb.js).
+   MegaFuel is no longer used. When the service wallet runs dry, people without
+   BNB are stuck again — so this is the reminder to top it up. Worst case it
+   spends 50 × 0.00006 = 0.003 BNB a day. */
+lines.push('', '## Gas help (our BNB service wallet)');
 try{
-  const name = 'dailycheck' + Math.floor(Math.random() * 1e6);
-  const hexName = Buffer.from(name).toString('hex');
-  const data = '0xf3fe12c9' + '20'.padStart(64, '0') + name.length.toString(16).padStart(64, '0') + hexName.padEnd(64, '0');
-  const from = '0x' + [...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-  const r = await fetch('https://wallet.tavarov.com/api/gasless', { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'pm_isSponsorable',
-      params: [{ from, to: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', value: '0x0', gas: '0x30d40', data }] }) });
+  const r = await fetch('https://wallet.tavarov.com/api/drip-bnb', { cache: 'no-store' });
   const j = await r.json();
-  const ok = !!(j && j.result && j.result.sponsorable);
-  lines.push(`- ${ok ? '✅ name registration is sponsored' : '❌ name registration is NOT sponsored'}`);
-  if (!ok) problems.push('free names: MegaFuel does not sponsor claim() any more (policy balance empty or policy off) — top up at dashboard.nodereal.io/megafuel');
-} catch(e){ problems.push('could not ask MegaFuel about free names: ' + String(e.message).slice(0, 80)); }
+  if (!j || !j.on){
+    lines.push('- ❌ gas help is switched off (no BNB_DRIP_KEY)');
+    problems.push('gas help is off: /api/drip-bnb says on=false');
+  } else {
+    const bnb = j.balanceWei == null ? null : Number(BigInt(j.balanceWei)) / 1e18;
+    lines.push(`- service wallet ${j.address}: ${bnb == null ? 'balance unknown (' + (j.rpcError || 'no answer') + ')' : bnb.toFixed(5) + ' BNB'}`);
+    if (bnb != null && bnb < 0.0015) problems.push(`gas help: service wallet ${j.address} has only ${bnb.toFixed(5)} BNB — top it up`);
+  }
+} catch(e){ problems.push('could not ask the gas help service: ' + String(e.message).slice(0, 80)); }
 
 lines.push('', '## Fees received in the last 24 hours (treasury ' + TREASURY + ')');
 let bnbHead = 0;
