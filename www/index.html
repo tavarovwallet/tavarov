@@ -1143,6 +1143,12 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
 .status-pill{ font-weight:600; }
 /* Обмен: прежний курс бледнеет, пока считается новый (SWAP-FIX-V1). */
 #swapQuoteBox, #swapOut { transition: opacity .15s ease; }
+/* SWAP-SIMPLE-V1: готовые пары одной кнопкой */
+.swap-pairs{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
+.swap-pair{ font-family:var(--font); font-size:14px; font-weight:600; color:var(--accent);
+  background:var(--fill); border:none; border-radius:999px; padding:8px 14px; cursor:pointer; }
+.swap-pair.on{ background:var(--accent); color:#fff; }
+.swap-pair:active{ opacity:.6; }
 .swap-stale { opacity: .45; }
 </style>
 </head>
@@ -2450,6 +2456,7 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
     <div class="sheet-grab"></div>
     <h2 data-i18n="k66c372ac">Обмен</h2>
     <p class="sheet-sub" data-i18n="kfa95ca60">Лучший курс по биржам — прямо с вашего кошелька, в своей сети или в другую</p>
+    <div class="swap-pairs" id="swapPairs"></div>
 
     <div class="group group-pad">
       <div class="field">
@@ -2463,7 +2470,7 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
       <div style="text-align:center; margin:-4px 0 6px;">
         <button class="flip-btn" onclick="swapFlip()" aria-label="⇅"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v15M4.5 15.5L8 19l3.5-3.5"></path><path d="M16 20V5M12.5 8.5L16 5l3.5 3.5"></path></svg></button>
       </div>
-      <div class="field" style="margin-bottom:10px;">
+      <div class="field hidden" id="swapNetField" style="margin-bottom:10px;">
         <label class="field-label" data-i18n="k825458c4">В какую сеть</label>
         <select id="swapToNet" onchange="swapPickNet()"></select>
       </div>
@@ -2474,15 +2481,22 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
           <select id="swapTo" style="width:auto; max-width:55%;" onchange="swapPick('to')"></select>
         </div>
         <input id="swapToFind" class="hidden" type="search" autocomplete="off" style="margin-top:8px;" placeholder="Найти монету" data-i18n-placeholder="kac6af3b1" oninput="swapFind()">
-        <div style="font-size:12.5px; color:var(--label-2); margin-top:6px;" data-i18n="k1f20159c">Монеты из топ-500 CoinGecko, включая мемкоины — их цена может сильно меняться. Купленная монета появится в кошельке.</div>
+        <div id="swapMemeNote" class="hidden" style="font-size:12.5px; color:var(--label-2); margin-top:6px;" data-i18n="k1f20159c">Монеты из топ-500 CoinGecko, включая мемкоины — их цена может сильно меняться. Купленная монета появится в кошельке.</div>
+        <button class="mini-btn" id="swapNetLink" style="margin-top:6px;" onclick="swapShowNet()"></button>
       </div>
     </div>
 
     <div class="group group-pad hidden" id="swapQuoteBox">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div id="swapSummary" style="flex:1; font-size:14px; color:var(--label-2);"></div>
+        <button class="mini-btn" id="swapMoreBtn" onclick="swapToggleMore()"></button>
+      </div>
+      <div id="swapQuoteRows" class="hidden" style="margin-top:6px;">
       <div class="kv"><span data-i18n="kd2b74163">Курс</span><b id="swapRate">—</b></div>
       <div class="kv"><span data-i18n="k87d78e22">Не меньше (проскальзывание 1%)</span><b id="swapMin">—</b></div>
       <div class="kv"><span data-i18n="k1eb3cbf8">Комиссия NoN Wallet</span><b>0,5%</b></div>
       <div class="kv"><span id="swapGasLbl" data-i18n="k432906cf">Комиссия сети</span><b id="swapGas">—</b></div>
+      </div>
     </div>
     <div class="notice notice-warn hidden" id="swapWarn" style="text-align:left;"></div>
     <div class="notice notice-info hidden" id="swapInfo" style="text-align:left;"></div>
@@ -7529,6 +7543,15 @@ let lastTxHash = null;           // номер последней отправл
 
    Отдельно: если сеть операцию отвергла, сказать об этом надо обязательно —
    молчание тут читалось бы как «всё хорошо». */
+/* Строка под формой отправки принадлежит одному переводу: его хеш лежит в
+   data-tx. Новый перевод её очищает, и поздний ответ сети о прошлом уже
+   ничего в ней не перепишет (SEND-STALE-V1). */
+function clearSendResult(){
+  const rb = document.getElementById('sendResult');
+  if (!rb) return;
+  rb.classList.add('hidden'); rb.innerHTML = ''; delete rb.dataset.tx;
+}
+
 async function watchTxLater(hash, txUrl, box){
   const cfg = NETWORKS[network];
   const urls = (cfg.rpcs && cfg.rpcs.length) ? cfg.rpcs : [cfg.rpc];
@@ -7545,7 +7568,7 @@ async function watchTxLater(hash, txUrl, box){
         const ok = BigInt(j.result.status || '0x1') !== 0n;
         /* Экран мог смениться, пока мы ждали. Трогаем только ту надпись, что
            поставили сами, — иначе рискуем переписать чужой текст. */
-        if (box && box.isConnected){
+        if (box && box.isConnected && box.dataset.tx === hash){
           box.innerHTML = ok ? (t('k422738f6') + txUrl + t('k9e48721e'))
                              : ('<div class="notice notice-err">' + t('k878eff2f') + '</div>');
         }
@@ -8376,7 +8399,54 @@ function swapFill(){
   document.getElementById('swapFrom').value = swapState.from;
   document.getElementById('swapTo').value = swapState.to;
   document.getElementById('swapGasLbl').textContent = cross ? t('kf35abc11') : t('k432906cf');
+  swapUi();
 }
+/* SWAP-SIMPLE-V1 (12 ноября 2026): обмен проще.
+   — Сверху готовые пары одной кнопкой: USDT → BNB, BNB → USDT, USDT → USDC.
+   — Выбор другой сети спрятан за ссылкой: почти всегда меняют в своей.
+   — Под суммой одна строка «не меньше … · комиссия …», подробности по кнопке.
+   — Предупреждение про каталог монет — только когда выбрана монета из него. */
+const SWAPSIMPLE_TXT = {
+  ru: { more: 'Подробнее', less: 'Свернуть', net: 'Получить в другой сети', min: 'Не меньше' },
+  en: { more: 'Details', less: 'Hide', net: 'Receive on another network', min: 'At least' },
+  es: { more: 'Detalles', less: 'Ocultar', net: 'Recibir en otra red', min: 'Al menos' },
+  tr: { more: 'Ayrıntılar', less: 'Gizle', net: 'Başka ağda al', min: 'En az' },
+  pt: { more: 'Detalhes', less: 'Ocultar', net: 'Receber em outra rede', min: 'Pelo menos' },
+  id: { more: 'Rincian', less: 'Sembunyikan', net: 'Terima di jaringan lain', min: 'Minimal' }
+};
+function swapTxt(k){ const d = SWAPSIMPLE_TXT[lang] || (lang === 'tg' ? SWAPSIMPLE_TXT.ru : SWAPSIMPLE_TXT.en); return d[k]; }
+function swapPairsList(){
+  const tk = swapTokens(), nat = NETWORKS[network].nativeSym;
+  const own = s => tk[s] && !tk[s].top;
+  return [['USDT', nat], [nat, 'USDT'], ['USDT', 'USDC']].filter(p => own(p[0]) && tk[p[1]] && p[0] !== p[1]);
+}
+function swapUi(){
+  const cross = swapState.toNet !== network;
+  const pairs = document.getElementById('swapPairs');
+  if (pairs){
+    pairs.innerHTML = swapPairsList().map(p =>
+      '<button class="swap-pair' + (!cross && swapState.from === p[0] && swapState.to === p[1] ? ' on' : '') +
+      '" onclick="swapUsePair(\'' + escapeHtml(p[0]) + '\',\'' + escapeHtml(p[1]) + '\')">' +
+      escapeHtml(p[0]) + ' → ' + escapeHtml(p[1]) + '</button>').join('');
+  }
+  const netField = document.getElementById('swapNetField'), link = document.getElementById('swapNetLink');
+  const many = document.getElementById('swapToNet').options.length > 1;
+  if (cross) swapState.netOpen = true;
+  netField.classList.toggle('hidden', !swapState.netOpen);
+  link.textContent = swapTxt('net');
+  link.classList.toggle('hidden', !!swapState.netOpen || !many);
+  const toTk = swapTokensOf(swapState.toNet)[swapState.to];
+  document.getElementById('swapMemeNote').classList.toggle('hidden', !(toTk && toTk.top));
+  document.getElementById('swapQuoteRows').classList.toggle('hidden', !swapState.more);
+  document.getElementById('swapMoreBtn').textContent = swapState.more ? swapTxt('less') : swapTxt('more');
+}
+function swapUsePair(from, to){
+  swapState.toNet = network; swapState.netOpen = false;
+  swapState.from = from; swapState.to = to;
+  swapFill(); swapReset(); swapShowBalance(); swapInput();
+}
+function swapShowNet(){ swapState.netOpen = true; swapUi(); }
+function swapToggleMore(){ swapState.more = !swapState.more; swapUi(); }
 function swapPickNet(){
   swapState.toNet = document.getElementById('swapToNet').value;
   swapFill();
@@ -8385,7 +8455,7 @@ function swapPickNet(){
 }
 function openSwap(from){
   if (!swapAvailable()) return;
-  swapState.toNet = network;
+  swapState.toNet = network; swapState.netOpen = false; swapState.more = false;
   const tk = swapTokens();
   const nat = NETWORKS[network].nativeSym;
   if (from && tk[from]){ swapState.from = from; if (swapState.to === from) swapState.to = from === nat ? (tk.USDT ? 'USDT' : 'USDC') : nat; }
@@ -8453,6 +8523,7 @@ function swapPick(side){
   }
   swapState.from = document.getElementById('swapFrom').value;
   swapState.to = document.getElementById('swapTo').value;
+  swapUi();
   swapShowBalance();
   swapInput();
 }
@@ -8596,6 +8667,13 @@ function swapShowQuote(){
   document.getElementById('swapMin').textContent = fmtAmount(minN) + ' ' + q.to;
   const gasUsd = q.rs.gasUsd === undefined ? NaN : Number(q.rs.gasUsd);
   document.getElementById('swapGas').textContent = isFinite(gasUsd) ? '≈ $' + fmtNum(gasUsd < 0.01 ? 0.01 : gasUsd, 2, 2) : '—';
+  {
+    const gl = document.getElementById('swapGasLbl').textContent || '';
+    const glow = gl ? gl.charAt(0).toLocaleLowerCase() + gl.slice(1) : '';
+    document.getElementById('swapSummary').textContent = swapTxt('min') + ' ' + fmtAmount(minN) + ' ' + q.to +
+      (isFinite(gasUsd) ? ' · ' + glow + ' ≈ $' + fmtNum(gasUsd < 0.01 ? 0.01 : gasUsd, 2, 2) : '');
+  }
+  swapUi();
   document.getElementById('swapQuoteBox').classList.remove('hidden');
   /* Потери на курсе сверх нашей комиссии. Больше 3% — предупреждаем,
      больше 10% — не даём: так бывает у монет, которых почти нет на биржах. */
@@ -11478,7 +11556,7 @@ async function applyScannedPayment(text){
   const box = document.getElementById('scanIntentBox');
   if (!d){ return; }
   /* Новый код — новая покупка: ошибка от прошлой попытки к ней не относится (SCAN-FIX-V1). */
-  try{ const rb = document.getElementById('sendResult'); if (rb){ rb.classList.add('hidden'); rb.innerHTML = ''; } } catch(e){}
+  try{ clearSendResult(); } catch(e){}
   scannedFix = null;
   scannedMerchant = null; scannedName = ''; scannedInvoice = ''; scannedChainId = null;
   scannedSolRef = (d.solRef && d.to) ? { to: d.to, ref: d.solRef } : null;
@@ -12739,6 +12817,10 @@ function reviewSend(){
     : (fromScan && scannedName) ? (scannedName + ' — ' + to)
     : to;
   document.getElementById('confirmAmount').textContent = amount + ' ' + symLabel + ' · ' + NETWORKS[network].name;
+  /* Надпись о прошлом переводе («сеть подтвердила») к новому не относится.
+     На записи экрана 12 ноября она висела под кнопкой «Подтвердить» нового
+     перевода, и выглядело так, будто он уже ушёл (SEND-STALE-V1). */
+  clearSendResult();
   document.getElementById('sendForm').classList.add('hidden');
   document.getElementById('sendConfirm').classList.remove('hidden');
   animate('sendConfirm', 'fade-up');
@@ -12835,7 +12917,7 @@ async function doSend(){
   }
 
   btn.disabled = true; btn.textContent = t('ka2aa4caf');
-  resultBox.classList.add('hidden'); resultBox.innerHTML = '';
+  clearSendResult();
   try{
     /* Имя могло переехать на другой кошелёк, пока человек смотрел на экран
        подтверждения. Спрашиваем ещё раз прямо перед отправкой — деньги
@@ -12876,6 +12958,7 @@ async function doSend(){
     resultBox.innerHTML = (evmKind
         ? '<div class="notice notice-ok">' + escapeHtml(t('kba2e5d30')) + '<a class="link" href="'
         : t('k8c01d8ac')) + escapeHtml(txUrl) + t('k9e48721e');
+    if (lastTxHash) resultBox.dataset.tx = lastTxHash; else delete resultBox.dataset.tx;
     if (evmKind && lastTxHash) watchTxLater(lastTxHash, txUrl, resultBox);
 
     /* Записываем операцию в свой журнал сразу. Сеть о ней забудет через час,
