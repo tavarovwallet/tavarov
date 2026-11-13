@@ -12,12 +12,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A0C" media="(prefers-color-scheme: dark)">
-<script>/* /@имя — личная ссылка для оплаты (www/u.html, её отдаёт functions/@[name].js).
-   Если такой адрес всё же попал в кошелёк (хостинг отдаёт index.html на
-   незнакомые адреса), ведём на ту же страницу: присланная ссылка не должна
-   открывать чужому человеку пустой кошелёк. */
-(function(){ var m = location.pathname.match(/^\/@([A-Za-z0-9_]{1,40})\/?$/);
-  if (m) location.replace('/u?to=' + m[1] + (location.search ? '&' + location.search.slice(1) : '')); })();</script>
 <script>/* тема и фон — до первой отрисовки, чтобы экран не мигал */
 try{ var __lk = JSON.parse(localStorage.getItem('tavarov.look.v1') || '{}') || {};
   if (__lk.theme === 'light' || __lk.theme === 'dark') document.documentElement.setAttribute('data-theme', __lk.theme);
@@ -1703,22 +1697,6 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
             </div>
             <button class="btn btn-tinted" id="recvRampBtn" onclick="openRamp()" style="margin-bottom:12px;" data-i18n="kc943f60a">Купить картой</button>
             <div class="notice notice-info" id="recvNote" style="text-align:left;" data-i18n="ke07682ab">Покажите этот код или адрес отправителю. Сеть у него должна быть та же — иначе перевод не дойдёт.</div>
-          </div>
-
-          <!-- Личная ссылка для оплаты: wallet.tavarov.com/@имя (www/u.html).
-               Тексты — в PAYLINK_TXT рядом с renderPayLink. -->
-          <div class="group-title hidden" id="payLinkTitle">Моя ссылка для оплаты</div>
-          <div class="group group-pad hidden" id="payLinkGroup">
-            <div id="payLinkHave">
-              <div class="don-link-row"><div id="payLinkText" class="don-link" style="white-space:normal; word-break:break-all;"></div><button class="mini-btn" id="payLinkCopyBtn" onclick="copyText('payLinkText', this)" data-i18n="k112b141b">Копировать</button></div>
-              <div class="btn-row">
-                <button class="btn" onclick="sharePayLink()" data-i18n="k87bc9c65">Поделиться</button>
-                <button class="btn btn-tinted" onclick="togglePayLinkQr()" data-i18n="k70191560">Показать QR</button>
-              </div>
-              <div id="payLinkQrWrap" class="hidden" style="text-align:center; margin-top:14px;"><div class="qr-wrap"><div id="payLinkQr"></div></div></div>
-              <div class="don-tip" id="payLinkNote" style="margin:12px 2px 0;"></div>
-            </div>
-            <div class="don-tip hidden" id="payLinkNone" style="margin:0 2px;"><span id="payLinkNoneText"></span><button class="link-btn" onclick="setTab('settings')" data-i18n="ke01467b2">Занять имя</button></div>
           </div>
         </div>
 
@@ -12057,61 +12035,8 @@ function renderMyName(){
   if (elsewhere) elsewhere.classList.toggle('hidden', !on || here);
   const rel = document.getElementById('releaseNameBtn');
   if (rel) rel.classList.toggle('hidden', !here);
-  renderPayLink();
   if (!on) return;
   if (has) document.getElementById('myNameText').textContent = myName;
-}
-
-/* PAY-LINK-V1 (13 ноября 2026): личная ссылка для оплаты — wallet.tavarov.com/@имя.
-   Открывший её платит любым кошельком: страница www/u.html находит имя в
-   реестре и отдаёт обычный счёт странице оплаты /pay (контракт Tavarov Pay,
-   как у кассы и донатов). Ссылка есть только у того, у кого есть имя;
-   без имени — подсказка занять его. */
-const PAYLINK_TXT = {
-  ru: { title: 'Моя ссылка для оплаты', note: 'Открывший ссылку платит USDT или USDC с любого кошелька — MetaMask, Trust, Binance Web3. Вам приходит 99%, комиссия сервиса 1%.', none: 'Займите имя — и получите свою ссылку для оплаты вида wallet.tavarov.com/@ваше_имя.', share: 'Оплатить мне в USDT:' },
-  en: { title: 'My pay link', note: 'Whoever opens the link pays in USDT or USDC from any wallet — MetaMask, Trust, Binance Web3. You receive 99%, service fee 1%.', none: 'Claim a name to get your own pay link like wallet.tavarov.com/@your_name.', share: 'Pay me in USDT:' },
-  es: { title: 'Mi enlace de pago', note: 'Quien abre el enlace paga en USDT o USDC desde cualquier billetera: MetaMask, Trust, Binance Web3. Recibes el 99 %, comisión del servicio 1 %.', none: 'Reserva un nombre y obtén tu enlace de pago, como wallet.tavarov.com/@tu_nombre.', share: 'Págame en USDT:' },
-  tr: { title: 'Ödeme bağlantım', note: 'Bağlantıyı açan kişi herhangi bir cüzdandan USDT veya USDC ile öder — MetaMask, Trust, Binance Web3. Size %99 gelir, hizmet komisyonu %1.', none: 'Bir ad alın, wallet.tavarov.com/@adiniz gibi kendi ödeme bağlantınız olsun.', share: 'Bana USDT ile öde:' },
-  pt: { title: 'Meu link de pagamento', note: 'Quem abre o link paga em USDT ou USDC com qualquer carteira — MetaMask, Trust, Binance Web3. Você recebe 99%, taxa do serviço 1%.', none: 'Registre um nome e ganhe seu link de pagamento, como wallet.tavarov.com/@seu_nome.', share: 'Me pague em USDT:' },
-  id: { title: 'Tautan pembayaran saya', note: 'Siapa pun yang membuka tautan membayar USDT atau USDC dari dompet apa pun — MetaMask, Trust, Binance Web3. Anda menerima 99%, biaya layanan 1%.', none: 'Klaim nama untuk mendapatkan tautan pembayaran sendiri seperti wallet.tavarov.com/@nama_anda.', share: 'Bayar saya dalam USDT:' }
-};
-function payLinkTxt(k){ const d = PAYLINK_TXT[lang] || (lang === 'tg' ? PAYLINK_TXT.ru : PAYLINK_TXT.en); return d[k]; }
-function myPayLink(){
-  const me = wallet && wallet.evm ? wallet.evm.address.toLowerCase() : '';
-  if (!me || !myName || !myNameFor || myNameFor.toLowerCase() !== me) return '';
-  return SITE_DEFAULT + '/@' + myName + (testnetOn() ? '?net=bnbTestnet' : '');
-}
-function renderPayLink(){
-  const group = document.getElementById('payLinkGroup');
-  if (!group) return;
-  /* Где имён нет вовсе (сеть без реестра), не обещаем и ссылку. */
-  const on = !!namesAddress() && !!wallet && !!wallet.evm;
-  group.classList.toggle('hidden', !on);
-  document.getElementById('payLinkTitle').classList.toggle('hidden', !on);
-  if (!on) return;
-  const url = myPayLink();
-  document.getElementById('payLinkTitle').textContent = payLinkTxt('title');
-  document.getElementById('payLinkHave').classList.toggle('hidden', !url);
-  document.getElementById('payLinkNone').classList.toggle('hidden', !!url);
-  document.getElementById('payLinkNoneText').textContent = payLinkTxt('none') + ' ';
-  document.getElementById('payLinkNote').textContent = payLinkTxt('note');
-  const box = document.getElementById('payLinkText');
-  if (box.textContent !== url){
-    box.textContent = url;
-    document.getElementById('payLinkQrWrap').classList.add('hidden');
-  }
-}
-function sharePayLink(){
-  const url = myPayLink();
-  if (!url) return;
-  if (navigator.share) navigator.share({ title: 'NoN Wallet', text: payLinkTxt('share'), url: url }).catch(()=>{});
-  else copyText('payLinkText', document.getElementById('payLinkCopyBtn'));
-}
-function togglePayLinkQr(){
-  const w = document.getElementById('payLinkQrWrap');
-  const show = w.classList.contains('hidden');
-  w.classList.toggle('hidden', !show);
-  if (show) drawQr(document.getElementById('payLinkQr'), myPayLink(), 220);
 }
 
 /* Пока человек печатает, говорим правду о том, что он набрал: годится ли

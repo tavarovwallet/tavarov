@@ -19,7 +19,6 @@ android/app/build/
 
 # Снимки экрана, которые проверки audit/ пишут при каждом прогоне
 audit/shots/
-audit/out/
 
 # Сборка расширения Chrome (python3 tools/build_extension.py)
 /extension/
