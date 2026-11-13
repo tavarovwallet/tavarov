@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pay · Tavarov Pay</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 120%22 aria-hidden=%22true%22%3E%3Cpath d=%22M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76%22 fill=%22none%22 stroke=%22%239875F5%22 stroke-width=%2216%22 stroke-linecap=%22round%22/%3E%3Ccircle cx=%2260%22 cy=%2260%22 r=%2219%22 fill=%22%239875F5%22/%3E%3C/svg%3E">
+<style>
+/* Личная ссылка для оплаты: wallet.tavarov.com/@имя.
+   Вид тот же, что у страницы донатов (donate.html) в нынешнем оформлении:
+   Inter, белый фон, светлые карточки, фиолетовые кнопки-пилюли. Здесь
+   только то, что этой странице нужно. */
+@font-face{font-family:Inter;src:url('/fonts/dev-inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--bg:#fff;--glow-1:rgba(119,80,228,.045);
+  --card:#fafafc;--card-edge:#eeecf2;--shadow:0 8px 30px rgba(38,32,51,.035);
+  --label:#1d1d1f;--label-2:#6e6e73;--label-3:#8e8e96;--sep:#e7e4ec;--accent:#7750e4;--accent-2:#6840d3;
+  --green:#15935A;--orange:#C27400;--red:#E0342A;
+  --fill:#f1eff5;--ghost-bg:#fff;--ghost-edge:#dedce5;--seg-on:#fff;--seg-on-text:#1d1d1f;
+  --font:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#0f0e12;--glow-1:rgba(152,117,245,.10);--card:#18171c;--card-edge:#2a2830;
+  --shadow:none;--label:#f5f5f7;--label-2:#a1a1aa;--label-3:#7c7c85;--sep:#2c2a32;--accent:#8b66f0;--accent-2:#7750e4;
+  --green:#4ED08A;--orange:#F0AE4A;--red:#FF6B61;
+  --fill:#232129;--ghost-bg:#1d1c22;--ghost-edge:#34313b;--seg-on:#2e2b36;--seg-on-text:#fff}}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0; min-height:100vh; color:var(--label); font-family:var(--font); font-size:15px; line-height:1.55;
+     letter-spacing:-.01em; -webkit-font-smoothing:antialiased; display:flex; justify-content:center; padding:28px 16px 60px;
+     background:radial-gradient(900px 520px at -10% -12%, var(--glow-1), transparent 62%), var(--bg); background-attachment:fixed}
+.box{width:100%; max-width:460px}
+.card{background:var(--card); border:1px solid var(--card-edge); border-radius:22px; padding:26px; margin-bottom:14px; box-shadow:var(--shadow)}
+.center-card{text-align:center}
+h1{font-size:25px; font-weight:600; letter-spacing:-.045em; margin:0 0 4px; line-height:1.25; word-break:break-word}
+.muted{color:var(--label-2); font-size:14px}
+.tiny{color:var(--label-3); font-size:12.5px}
+.addr{font-family:var(--mono); font-size:13px; color:var(--label)}
+.brand{display:flex; align-items:center; gap:10px; justify-content:center; margin:4px 0 18px;
+       font-size:17px; font-weight:650; letter-spacing:-.04em}
+.brand svg{width:26px; height:26px}
+.brand small{display:block; font-size:11.5px; font-weight:500; color:var(--label-3); letter-spacing:0}
+.langs{display:flex; gap:2px; background:var(--fill); border-radius:100px; padding:3px; margin:0 auto 16px; width:max-content}
+.langs button{border:0; background:transparent; cursor:pointer; font:inherit; font-size:11.5px; font-weight:600;
+              color:var(--label-2); padding:5px 10px; border-radius:100px; line-height:1.2}
+.langs button[aria-pressed="true"], .seg button[aria-pressed="true"]{background:var(--seg-on); color:var(--seg-on-text); box-shadow:0 1px 3px rgba(40,20,80,.16)}
+.state{display:flex; align-items:center; gap:10px; font-weight:650; font-size:16px}
+.dot{width:10px; height:10px; border-radius:50%; background:var(--label-3); flex:0 0 auto}
+.bad .dot{background:var(--red)}
+.note{background:var(--fill); border-radius:14px; padding:13px 15px; font-size:13.5px; color:var(--label-2); margin-top:14px}
+.avatar{width:72px; height:72px; border-radius:50%; margin:0 auto 12px; display:grid; place-items:center;
+        font-size:32px; font-weight:600; color:#fff; background:var(--accent); box-shadow:0 12px 26px -14px rgba(119,80,228,.8)}
+.lbl{font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--label-3); margin-bottom:8px}
+.field{display:flex; gap:8px; align-items:stretch}
+input{width:100%; font:inherit; font-size:15px; color:var(--label); background:var(--ghost-bg);
+      border:1px solid var(--ghost-edge); border-radius:12px; padding:12px 14px; outline:none}
+input:focus{outline:2px solid #9c80e4; outline-offset:2px}
+#amount{font-size:21px; font-weight:600; font-variant-numeric:tabular-nums}
+.seg{display:flex; gap:2px; background:var(--fill); border-radius:100px; padding:3px; flex:0 0 auto}
+.seg button{border:0; background:transparent; font:inherit; font-size:13px; font-weight:600; color:var(--label-2);
+            padding:0 14px; border-radius:100px; cursor:pointer}
+.net-seg{flex-wrap:wrap; width:100%; margin-bottom:16px}
+.net-seg button{flex:1 1 auto; padding:9px 10px; min-height:38px}
+.btn{display:flex; align-items:center; justify-content:center; width:100%; padding:14px 22px; border-radius:100px;
+     font:inherit; font-size:14.5px; font-weight:550; border:1px solid transparent; cursor:pointer; text-decoration:none; margin-bottom:10px}
+.btn[disabled]{opacity:.55; cursor:default}
+.btn-main{color:#fff; background:var(--accent); box-shadow:0 10px 24px -14px rgba(119,80,228,.75)}
+.btn-main:hover{background:var(--accent-2)}
+.own{display:block; text-align:center; margin:18px auto 0; color:var(--label-2); font-size:13.5px; font-weight:550;
+     text-decoration:none; border:1px solid var(--ghost-edge); border-radius:100px; padding:9px 16px; width:max-content; max-width:100%}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="box">
+
+  <div class="brand">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="#9875F5"/></svg>
+    <span>Tavarov Pay<small data-t="brandSub">Personal pay link</small></span>
+  </div>
+  <div class="langs" id="langs"></div>
+
+  <div class="card hidden" id="tnCard">
+    <div class="state bad"><span class="dot"></span><span data-t="tnH">This is the TEST network</span></div>
+    <div class="note" data-t="tnNote">Money here is not real. Do not send real USDT here.</div>
+  </div>
+
+  <div class="card" id="loading"><div class="state"><span class="dot"></span><span data-t="loading">Looking up the name…</span></div></div>
+
+  <div class="card hidden" id="err">
+    <div class="state bad"><span class="dot"></span><span id="errH" data-t="errH">This name isn’t registered</span></div>
+    <div class="note" id="errText" data-t="errNote">Check the link with the person who sent it.</div>
+  </div>
+
+  <div class="hidden" id="main">
+    <div class="card center-card">
+      <div class="avatar" id="avatar">?</div>
+      <h1 id="title">—</h1>
+      <div class="muted"><span data-t="goesTo">Money goes to</span> <b class="addr" id="addr">—</b></div>
+      <div class="tiny" style="margin-top:4px" id="netName">—</div>
+    </div>
+
+    <div class="card">
+      <div class="hidden" id="netPick">
+        <div class="lbl" data-t="netL">Network</div>
+        <div class="seg net-seg" id="netSeg"></div>
+      </div>
+      <div class="lbl" data-t="amountL">Amount</div>
+      <div class="field">
+        <input id="amount" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="amount">
+        <div class="seg" id="curSeg"></div>
+      </div>
+
+      <div class="lbl" style="margin-top:16px" data-t="noteL">Note (optional)</div>
+      <input id="note" maxlength="120" autocomplete="off">
+      <div class="tiny" style="margin-top:6px" data-t="noteHint">Shown to you on the payment page. It is not sent to the recipient.</div>
+
+      <button class="btn btn-main" id="go" style="margin-top:18px" disabled>—</button>
+      <div class="tiny" id="split"></div>
+    </div>
+
+    <div class="note" id="fact" style="margin-top:0">—</div>
+  </div>
+
+  <a class="own" href="/" data-t="own">Get your own link — free</a>
+</div>
+
+<script>
+/* Личная ссылка для оплаты: wallet.tavarov.com/@имя.
+
+   Страница находит имя в реестре имён (BNB Chain, только чтение), показывает,
+   на какой адрес уйдут деньги, и спрашивает сумму. Своей оплаты здесь нет:
+   страница собирает обычный счёт и отдаёт его странице оплаты /pay — той же,
+   что у кассы, счетов и донатов: выбор кошелька, контракт Tavarov Pay,
+   проверка «оплачено». Так же устроена страница донатов (donate.html).
+
+   Адрес /@имя отдаёт функция functions/@[name].js; запасные пути — /u?to=имя
+   и переадресация из index.html, если /@имя всё же попадёт в кошелёк. */
+const NETS = {
+  bnb:        { rpcs: ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
+                names: '0xd6E8A78634bE366bDbD041227D1E94F5b374338e', curs: ['USDT', 'USDC'], label: 'BNB Chain' },
+  bnbTestnet: { rpcs: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com'],
+                names: '0x718E52F81F0Ed871bF8aa834faF82D0b257aE27A', curs: ['USDT'], label: 'BNB Chain testnet', test: true },
+  eth:        { curs: ['USDT', 'USDC'], label: 'Ethereum' },
+  base:       { curs: ['USDC'], label: 'Base' },
+  solana:     { sol: true, curs: ['USDC', 'USDT'], label: 'Solana' }
+};
+const SOL_ADDR = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const SEL = { addressOf: '0xccf1454a' };
+const NAME_RE = /^[a-z][a-z0-9_]{2,19}$/;     // те же правила, что в контракте имён
+const $ = id => document.getElementById(id);
+
+const T = {
+  ru: { brandSub:'Личная ссылка для оплаты', tnH:'Это ТЕСТОВАЯ сеть', tnNote:'Деньги в ней ненастоящие. Настоящие USDT сюда не отправляйте.',
+        loading:'Ищем имя…', errH:'Такое имя не зарегистрировано', errNote:'Проверьте ссылку у того, кто её прислал.',
+        errNetH:'Не удалось проверить имя', errNet:'Сеть не ответила. Обновите страницу через минуту.',
+        title:'Оплатить {0} в {1}', goesTo:'Деньги уйдут на', netL:'Сеть', amountL:'Сумма', noteL:'Комментарий (можно пусто)',
+        noteHint:'Виден вам на странице оплаты. Получателю он не отправляется.',
+        go:'Оплатить {0}', goEmpty:'Введите сумму', split:'{0} получит {1} {2}, комиссия сервиса 1%',
+        fact:'Платите со своего кошелька: NoN Wallet, MetaMask, Trust Wallet, Binance Web3 и другие. Деньги идут прямо получателю через открытый контракт Tavarov Pay — мы их не держим ни секунды.',
+        own:'Своя ссылка — бесплатно' },
+  en: { brandSub:'Personal pay link', tnH:'This is the TEST network', tnNote:'Money here is not real. Do not send real USDT here.',
+        loading:'Looking up the name…', errH:'This name isn’t registered', errNote:'Check the link with the person who sent it.',
+        errNetH:'Could not check the name', errNet:'The network did not answer. Refresh the page in a minute.',
+        title:'Pay {0} in {1}', goesTo:'Money goes to', netL:'Network', amountL:'Amount', noteL:'Note (optional)',
+        noteHint:'Shown to you on the payment page. It is not sent to the recipient.',
+        go:'Pay {0}', goEmpty:'Enter an amount', split:'{0} receives {1} {2}, service fee 1%',
+        fact:'Pay from your own wallet: NoN Wallet, MetaMask, Trust Wallet, Binance Web3 and others. The money goes straight to the recipient through the open Tavarov Pay contract — we never hold it.',
+        own:'Get your own link — free' },
+  es: { brandSub:'Enlace de pago personal', tnH:'Esta es la red de PRUEBA', tnNote:'Aquí el dinero no es real. No envíes USDT reales.',
+        loading:'Buscando el nombre…', errH:'Este nombre no está registrado', errNote:'Revisa el enlace con quien te lo envió.',
+        errNetH:'No se pudo comprobar el nombre', errNet:'La red no respondió. Recarga la página en un minuto.',
+        title:'Pagar a {0} en {1}', goesTo:'El dinero va a', netL:'Red', amountL:'Cantidad', noteL:'Nota (opcional)',
+        noteHint:'La ves tú en la página de pago. No se envía al destinatario.',
+        go:'Pagar {0}', goEmpty:'Introduce una cantidad', split:'{0} recibe {1} {2}, comisión del servicio 1 %',
+        fact:'Paga desde tu propia billetera: NoN Wallet, MetaMask, Trust Wallet, Binance Web3 y otras. El dinero va directo al destinatario por el contrato abierto Tavarov Pay; no lo retenemos nunca.',
+        own:'Tu propio enlace, gratis' },
+  tr: { brandSub:'Kişisel ödeme bağlantısı', tnH:'Bu TEST ağı', tnNote:'Buradaki para gerçek değil. Gerçek USDT göndermeyin.',
+        loading:'Ad aranıyor…', errH:'Bu ad kayıtlı değil', errNote:'Bağlantıyı gönderen kişiyle kontrol edin.',
+        errNetH:'Ad kontrol edilemedi', errNet:'Ağ yanıt vermedi. Bir dakika sonra sayfayı yenileyin.',
+        title:'{0} kişisine {1} öde', goesTo:'Para buraya gider:', netL:'Ağ', amountL:'Tutar', noteL:'Not (isteğe bağlı)',
+        noteHint:'Ödeme sayfasında size gösterilir. Alıcıya gönderilmez.',
+        go:'{0} öde', goEmpty:'Bir tutar girin', split:'{0} {1} {2} alır, hizmet komisyonu %1',
+        fact:'Kendi cüzdanınızla ödeyin: NoN Wallet, MetaMask, Trust Wallet, Binance Web3 ve diğerleri. Para açık Tavarov Pay sözleşmesi üzerinden doğrudan alıcıya gider — bizde hiç durmaz.',
+        own:'Kendi bağlantınızı alın — ücretsiz' },
+  pt: { brandSub:'Link de pagamento pessoal', tnH:'Esta é a rede de TESTE', tnNote:'O dinheiro aqui não é real. Não envie USDT de verdade.',
+        loading:'Procurando o nome…', errH:'Este nome não está registrado', errNote:'Confira o link com quem o enviou.',
+        errNetH:'Não foi possível verificar o nome', errNet:'A rede não respondeu. Atualize a página em um minuto.',
+        title:'Pagar {0} em {1}', goesTo:'O dinheiro vai para', netL:'Rede', amountL:'Valor', noteL:'Observação (opcional)',
+        noteHint:'Aparece para você na página de pagamento. Não é enviada ao destinatário.',
+        go:'Pagar {0}', goEmpty:'Digite um valor', split:'{0} recebe {1} {2}, taxa do serviço 1%',
+        fact:'Pague com a sua própria carteira: NoN Wallet, MetaMask, Trust Wallet, Binance Web3 e outras. O dinheiro vai direto ao destinatário pelo contrato aberto Tavarov Pay — não ficamos com ele.',
+        own:'Tenha seu próprio link — grátis' },
+  id: { brandSub:'Tautan pembayaran pribadi', tnH:'Ini jaringan UJI', tnNote:'Uang di sini tidak asli. Jangan kirim USDT asli ke sini.',
+        loading:'Mencari nama…', errH:'Nama ini belum terdaftar', errNote:'Periksa tautannya dengan orang yang mengirimnya.',
+        errNetH:'Nama tidak dapat diperiksa', errNet:'Jaringan tidak menjawab. Muat ulang halaman dalam semenit.',
+        title:'Bayar {0} dalam {1}', goesTo:'Uang dikirim ke', netL:'Jaringan', amountL:'Jumlah', noteL:'Catatan (opsional)',
+        noteHint:'Ditampilkan untuk Anda di halaman pembayaran. Tidak dikirim ke penerima.',
+        go:'Bayar {0}', goEmpty:'Masukkan jumlah', split:'{0} menerima {1} {2}, biaya layanan 1%',
+        fact:'Bayar dari dompet Anda sendiri: NoN Wallet, MetaMask, Trust Wallet, Binance Web3, dan lainnya. Uang langsung ke penerima lewat kontrak terbuka Tavarov Pay — kami tidak pernah memegangnya.',
+        own:'Dapatkan tautan Anda sendiri — gratis' }
+};
+const LANGS = ['ru', 'en', 'es', 'tr', 'pt', 'id'];
+let LANG = 'en';
+function t(k, ...args){
+  const s = (T[LANG] && T[LANG][k]) || T.en[k] || k;
+  return s.replace(/\{(\d)\}/g, (m, i) => args[i] === undefined ? '' : String(args[i]));
+}
+function pickLang(){
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q && T[q]) return q;
+  try{ const s = localStorage.getItem('tavarov.paylang.v1'); if (s && T[s]) return s; } catch(e){}
+  for (const l of (navigator.languages || [navigator.language || ''])){
+    let c = String(l).slice(0, 2).toLowerCase();
+    if (c === 'in') c = 'id';     // старое обозначение индонезийского
+    if (T[c]) return c;
+  }
+  return 'en';
+}
+let errKey = null;     // какую ошибку показываем — чтобы перевести её при смене языка
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  if (errKey === 'net'){ $('errH').textContent = t('errNetH'); $('errText').textContent = t('errNet'); }
+  $('langs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === LANG)));
+  render();
+}
+LANGS.forEach(l => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.l = l; b.textContent = l.toUpperCase();
+  b.onclick = () => { LANG = l; try{ localStorage.setItem('tavarov.paylang.v1', l); } catch(e){} applyLang(); };
+  $('langs').appendChild(b);
+});
+
+/* ---------- чтение сети (только чтение) ---------- */
+async function rpc(net, method, params){
+  for (const url of NETS[net].rpcs){
+    try{
+      const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 9000);
+      const r = await fetch(url, { method:'POST', headers:{ 'content-type':'application/json' }, signal: ctl.signal,
+        body: JSON.stringify({ jsonrpc:'2.0', id:1, method, params }) });
+      clearTimeout(tm);
+      const j = await r.json();
+      if (j && typeof j.result === 'string') return j.result;
+    } catch(e){}
+  }
+  throw new Error('net');
+}
+const hex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+function encString(s){
+  const h = hex(s);
+  return '0'.repeat(62) + '20' + (h.length / 2).toString(16).padStart(64, '0') + h.padEnd(Math.ceil(h.length / 64) * 64 || 64, '0');
+}
+
+/* ---------- чьё имя ----------
+   Имя пишут как угодно: с собачкой, заглавными, с пробелами. Приводим к
+   виду, который понимает контракт, — так же, как кошелёк (normName). */
+function target(){
+  const p = location.pathname;
+  let v = '';
+  const m = p.match(/^\/@([^/]+)\/?$/) || p.match(/^\/u\/([^/]+)\/?$/);
+  if (m){ try{ v = decodeURIComponent(m[1]); } catch(e){ v = ''; } }
+  if (!v) v = new URLSearchParams(location.search).get('to') || '';
+  return v.trim().toLowerCase().replace(/^@+/, '');
+}
+const NET0 = new URLSearchParams(location.search).get('net') === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
+let NET = NET0;
+let who = null;            // { name, evm, sol, list }
+let cur = 'USDT';
+let amount = '';
+
+/* null — имени нет; бросает — сеть не ответила (это не «нет имени»). */
+async function resolve(){
+  const n = target();
+  if (!NAME_RE.test(n)) return null;
+  const raw = await rpc(NET0, 'eth_call', [{ to: NETS[NET0].names, data: SEL.addressOf + encString(n) }, 'latest']);
+  const d = String(raw).replace(/^0x/, '');
+  const a = '0x' + d.slice(24, 64);
+  if (d.length < 64 || !/^0x[0-9a-f]{40}$/i.test(a) || /^0x0{40}$/.test(a)) return null;
+  return { name: n, evm: a, sol: '', list: [NET0] };
+}
+/* В каких сетях можно заплатить. Ethereum и Base — тот же адрес, но только
+   если за именем обычный кошелёк: у контракта (общего кошелька) адрес в
+   другой сети может принадлежать кому угодно — так же решает и кошелёк.
+   Solana — только по связке, которую кошелёк получателя подписал обоими
+   ключами (/api/solname, как у донатов). */
+async function findNetworks(){
+  if (NETS[NET0].test) return;
+  try{
+    const code = await rpc('bnb', 'eth_getCode', [who.evm, 'latest']);
+    if (code === '0x' || /^0xef0100/i.test(code)) who.list = ['bnb', 'eth', 'base'];
+  } catch(e){}
+  try{
+    const r = await fetch('/api/solname?evm=' + encodeURIComponent(who.evm), { cache: 'no-store' });
+    const d = await r.json();
+    if (d && typeof d.sol === 'string' && SOL_ADDR.test(d.sol)){ who.sol = d.sol; who.list.push('solana'); }
+  } catch(e){}
+}
+const payee = () => NETS[NET].sol ? who.sol : who.evm;
+const short = a => a.slice(0, 6) + '…' + a.slice(-4);
+
+/* ---------- отрисовка ---------- */
+const okAmount = v => /^\d{1,9}(\.\d{1,6})?$/.test(v) && parseFloat(v) > 0;
+/* 99% от суммы — строкой, без плавающей точки: это деньги. */
+function net99(v){
+  const [w, f = ''] = String(v).split('.');
+  const units = BigInt(w + f.padEnd(6, '0'));
+  const s = (units - units / 100n).toString().padStart(7, '0');
+  return (s.slice(0, -6) + '.' + s.slice(-6)).replace(/\.?0+$/, '');
+}
+function segButtons(box, items, on, label, pick){
+  box.innerHTML = '';
+  items.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label(v); b.setAttribute('aria-pressed', String(v === on));
+    b.onclick = () => pick(v);
+    box.appendChild(b);
+  });
+}
+function render(){
+  if (!who) return;
+  const at = '@' + who.name;
+  if (!NETS[NET].curs.includes(cur)) cur = NETS[NET].curs.includes('USDT') ? 'USDT' : NETS[NET].curs[0];
+  document.title = t('title', at, cur);
+  $('title').textContent = t('title', at, cur);
+  $('avatar').textContent = who.name.slice(0, 1).toUpperCase();
+  $('addr').textContent = short(payee());
+  $('addr').title = payee();
+  $('netName').textContent = NETS[NET].label;
+  $('netPick').classList.toggle('hidden', who.list.length < 2);
+  segButtons($('netSeg'), who.list, NET, n => NETS[n].label, n => { NET = n; render(); });
+  segButtons($('curSeg'), NETS[NET].curs, cur, c => c, c => { cur = c; render(); });
+  const good = okAmount(amount);
+  $('go').disabled = !good;
+  $('go').textContent = good ? t('go', amount + ' ' + cur) : t('goEmpty');
+  $('split').textContent = good ? t('split', at, net99(amount), cur) : '';
+  $('fact').textContent = t('fact');
+}
+$('amount').addEventListener('input', () => {
+  const v = $('amount').value.replace(',', '.').replace(/[^\d.]/g, '');
+  if (v !== $('amount').value) $('amount').value = v;
+  amount = v; render();
+});
+/* Комментарий уйдёт в адрес страницы оплаты и на ней покажется текстом.
+   Управляющие и невидимые символы, разворот текста — убираем сразу. */
+function clean(s, max){
+  let out = '';
+  for (const ch of String(s || '')){
+    const c = ch.codePointAt(0);
+    if (c < 32 || (c >= 0x7f && c <= 0x9f) || c === 0x2028 || c === 0x2029 ||
+        (c >= 0x200b && c <= 0x200f) || (c >= 0x202a && c <= 0x202e) ||
+        (c >= 0x2066 && c <= 0x2069) || c === 0xfeff) continue;
+    out += ch;
+  }
+  return Array.from(out).slice(0, max).join('');
+}
+$('note').addEventListener('input', () => { const c = clean($('note').value, 120); if (c !== $('note').value) $('note').value = c; });
+
+function randomHash(){
+  const b = new Uint8Array(32); crypto.getRandomValues(b);
+  return '0x' + Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+}
+function b64url(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ''; bytes.forEach(x => { bin += String.fromCharCode(x); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+/* Счёт — того же вида, что собирает кошелёк (buildWebInvoice) и страница
+   донатов. Номер счёта — случайные 32 байта: два плательщика в одну
+   секунду должны быть двумя оплатами, а не одной. */
+$('go').onclick = () => {
+  if (!who || !okAmount(amount)) return;
+  const h = randomHash();
+  const inv = { m: payee(), a: amount, c: cur, h, net: NET, n: '@' + who.name,
+                i: clean($('note').value, 120).trim(), o: 'L-' + h.slice(2, 8).toUpperCase(),
+                t: Math.floor(Date.now() / 1000) + 3600 };
+  location.href = '/pay?lang=' + LANG + '#p=' + b64url(JSON.stringify(inv));
+};
+
+/* ---------- старт ---------- */
+LANG = pickLang();
+if (NETS[NET0].test) $('tnCard').classList.remove('hidden');
+applyLang();
+(async () => {
+  try{ who = await resolve(); }
+  catch(e){
+    errKey = 'net';
+    $('loading').classList.add('hidden'); $('err').classList.remove('hidden'); applyLang(); return;
+  }
+  $('loading').classList.add('hidden');
+  if (!who){ $('err').classList.remove('hidden'); return; }
+  $('main').classList.remove('hidden');
+  render();
+  await findNetworks();
+  render();
+})();
+</script>
+</body>
+</html>

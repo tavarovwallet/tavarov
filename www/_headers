@@ -122,6 +122,23 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
 
+# Личная ссылка для оплаты: wallet.tavarov.com/@имя. Адрес /@имя отдаёт
+# функция functions/@[name].js — она берёт страницу /u вместе с этими
+# заголовками. Правила те же, что у страницы оплаты.
+/u
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+/u.html
+  Cache-Control: no-cache
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
 # Рисовалку кодов держим рядом с наклейкой: без неё страница печати
 # показывает пустое место там, где должен быть код.
 /qrcode.min.js
