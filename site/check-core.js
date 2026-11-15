@@ -291,7 +291,7 @@
   async function rpc(ctx, url, method, params) {
     const j = await fetchJson(ctx, url, { jsonrpc: '2.0', id: 1, method, params });
     if (!j || typeof j !== 'object' || Array.isArray(j)) throw bad('bad rpc answer');
-    if (j.error) throw new Error('rpc error ' + (j.error && j.error.message));
+    if (j.error) { const e = new Error('rpc error ' + (j.error && j.error.message)); e.rpc = true; throw e; }
     if (!('result' in j)) throw bad('no result');
     return j.result;
   }
@@ -335,7 +335,8 @@
     });
   }
   async function tokenMetaEvm(ctx, url, token) {
-    const call = sel => rpc(ctx, url, 'eth_call', [{ to: '0x' + token, data: '0x' + sel }, 'latest']).then(r => r, e => { if (e.bad) throw e; return null; });
+    // a contract that reverts has no symbol (null); a node that fails fails the whole read
+    const call = sel => rpc(ctx, url, 'eth_call', [{ to: '0x' + token, data: '0x' + sel }, 'latest']).then(r => r, e => { if (e.rpc && /revert|execution|vm exec|invalid opcode/i.test(e.message)) return null; throw e; });
     const [s, n, d] = await Promise.all([call(SEL.symbol), call(SEL.name), call(SEL.decimals)]);
     return { symbol: s ? decodeString(s) : null, name: n ? decodeString(n) : null, decimals: d ? decodeUint8(d) : null };
   }
@@ -344,7 +345,7 @@
   async function tronPost(ctx, url, path, body) {
     const j = await fetchJson(ctx, url + path, body);
     if (!j || typeof j !== 'object' || Array.isArray(j)) throw bad('bad tron answer');
-    if (j.Error || j.error) throw new Error('tron error');
+    if (j.Error || j.error) throw new Error('tron error ' + String(j.Error || j.error).slice(0, 60));
     return j;
   }
   async function tronHead(ctx, url) {
@@ -409,7 +410,11 @@
     const call = fn => tronPost(ctx, url, '/wallet/triggerconstantcontract', {
       owner_address: '410000000000000000000000000000000000000000', contract_address: '41' + token,
       function_selector: fn, parameter: '', visible: false
-    }).then(j => (j.result && j.result.result && Array.isArray(j.constant_result)) ? j.constant_result[0] : null, e => { if (e.bad) throw e; return null; });
+    }).then(j => {
+      if (j.result && j.result.result === true && Array.isArray(j.constant_result)) return j.constant_result[0];
+      if (j.result && j.result.code) return null;              // the contract refused: no such function
+      throw bad('tron constant call shape');
+    });
     const s = await call('symbol()'), n = await call('name()'), d = await call('decimals()');
     return { symbol: s ? decodeString(s) : null, name: n ? decodeString(n) : null, decimals: d ? decodeUint8(d) : null };
   }
@@ -437,7 +442,7 @@
     await Promise.all([next(), next()]);
     if (got.length < 2) return { state: 'error' };
     const [a, b] = got;
-    if (fingerprint(a) !== fingerprint(b)) return { state: 'disagree' };
+    if (fingerprint(a) !== fingerprint(b)) { ctx.log && ctx.log(net, 'disagree', fingerprint(a), fingerprint(b)); return { state: 'disagree' }; }
     if (!a.found) return { state: 'notfound' };
     const head = a.head < b.head ? a.head : b.head;   // the more cautious node
     return { state: 'ok', read: a, head, solid: net === 'tron' ? (a.solid && b.solid) : undefined };
