@@ -1026,5 +1026,7 @@
  "k24656e45": "Décima terceira palavra",
  "k61ea0113": "Esta carteira não tem frase de 12 palavras: foi adicionada com uma chave privada. Guarde-a com uma cópia de segurança.",
  "k3e8679c3": "Escolha um nome: de 6 a 20 caracteres, letras latinas, números e _, começando com uma letra.",
- "kf0a946b1": "NoN Wallet · versão"
+ "kf0a946b1": "NoN Wallet · versão",
+ "kfd9a8a48": "Isto não é um endereço nem um nome. Confira se o endereço é desta rede e cole-o por inteiro.",
+ "kb1905097": "Este é um link de página de doações. O dinheiro vai direto para o criador: sem mensagem, e não aparecerá na lista de doações nem nos alertas da live."
 }

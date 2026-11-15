@@ -1026,5 +1026,7 @@
  "k24656e45": "Thirteenth word",
  "k61ea0113": "This wallet has no 12-word phrase: it was added with a private key. Keep it safe with a backup.",
  "k3e8679c3": "Choose a name: 6 to 20 characters, Latin letters, digits and _, starting with a letter.",
- "kf0a946b1": "NoN Wallet · version"
+ "kf0a946b1": "NoN Wallet · version",
+ "kfd9a8a48": "This is not an address or a name. Check that the address is for this network and paste it in full.",
+ "kb1905097": "This is a donation page link. The money goes straight to the creator: no message is attached, and it won’t show in their donation list or stream alerts."
 }
