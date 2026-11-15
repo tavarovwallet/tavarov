@@ -269,7 +269,8 @@
     try { return await fetchOnce(ctx, url, body); }
     catch (e) {
       // public nodes rate-limit bursts: one polite retry, then give up
-      if (!retried && e && e.status === 429) { await new Promise(r => setTimeout(r, 900)); return fetchJson(ctx, url, body, true); }
+      const busy = e && (e.status === 429 || (e.name === 'TypeError' && !e.bad));   // a 429 without CORS headers looks like TypeError
+      if (!retried && busy) { await new Promise(r => setTimeout(r, 900)); return fetchJson(ctx, url, body, true); }
       throw e;
     }
   }
@@ -357,11 +358,10 @@
     return BigInt(n);
   }
   async function readTron(ctx, net, url, hash) {
-    const [tx, info, head] = await Promise.all([
-      tronPost(ctx, url, '/wallet/gettransactionbyid', { value: hash }),
-      tronPost(ctx, url, '/wallet/gettransactioninfobyid', { value: hash }),
-      tronHead(ctx, url)
-    ]);
+    // one request at a time: TRON public nodes rate-limit bursts hard
+    const tx = await tronPost(ctx, url, '/wallet/gettransactionbyid', { value: hash });
+    const info = await tronPost(ctx, url, '/wallet/gettransactioninfobyid', { value: hash });
+    const head = await tronHead(ctx, url);
     if (!Object.keys(tx).length) {
       if (Object.keys(info).length) throw bad('info without tx');
       return { found: false, head };
@@ -410,7 +410,7 @@
       owner_address: '410000000000000000000000000000000000000000', contract_address: '41' + token,
       function_selector: fn, parameter: '', visible: false
     }).then(j => (j.result && j.result.result && Array.isArray(j.constant_result)) ? j.constant_result[0] : null, e => { if (e.bad) throw e; return null; });
-    const [s, n, d] = await Promise.all([call('symbol()'), call('name()'), call('decimals()')]);
+    const s = await call('symbol()'), n = await call('name()'), d = await call('decimals()');
     return { symbol: s ? decodeString(s) : null, name: n ? decodeString(n) : null, decimals: d ? decodeUint8(d) : null };
   }
 
