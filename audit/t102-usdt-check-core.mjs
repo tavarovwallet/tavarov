@@ -17,7 +17,7 @@ const R = reporter();
 const EP = {
   bsc: ['http://bsc-a', 'http://bsc-b', 'http://bsc-c', 'http://bsc-d'],
   eth: ['http://eth-a', 'http://eth-b', 'http://eth-c'],
-  tron: ['http://tron-a', 'http://tron-b']
+  tron: ['http://tron-a', 'http://tron-b', 'http://tron-c']
 };
 const H = n => '0x' + n.toString(16).padStart(2, '0').repeat(32);            // 0x-hash
 const T = n => n.toString(16).padStart(2, '0').repeat(32);                  // tron hash
@@ -181,9 +181,9 @@ R.ok('TRON not solidified -> amber wait', r.verdict === 'amber' && r.kind === 'w
 world();
 r = await run(H(18));
 R.ok('not anywhere -> "Not found on BNB Chain, Ethereum or TRON"', r.verdict === 'notfound' && /Not found on BNB Chain, Ethereum or TRON/.test(r.title) && /Do not hand over the goods/.test(r.text));
-world(); w.faults['http://tron-a'] = 'timeout';
+world(); w.faults['http://tron-a'] = 'timeout'; w.faults['http://tron-c'] = 'http500';
 r = await run(H(18));
-R.ok('not found but TRON node timed out -> could not check (not "not found")', r.verdict === 'error' && r.title === 'Could not check right now');
+R.ok('not found but two TRON nodes failed -> could not check (not "not found")', r.verdict === 'error' && r.title === 'Could not check right now');
 world(); addEvmTx(w, 'bsc', H(19), [], { value: 5n * e18 / 10n });
 r = await run(H(19));
 R.ok('native BNB only -> amber "only BNB", 0.5', r.verdict === 'amber' && r.kind === 'native' && r.native.amount === '0.5' && /BNB/.test(r.title));
@@ -266,13 +266,22 @@ r = await run(H(30));
 R.ok('official contract reports odd decimals -> could not check', r.verdict === 'error');
 world(); addTronTx(w, T(31), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-b'] = 'timeout';
 r = await run(T(31));
-R.ok('TRON: one of two nodes times out -> could not check', r.verdict === 'error');
+R.ok('TRON: one of three nodes times out -> the other two decide', r.verdict === 'green');
 world(); addTronTx(w, T(32), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = 'lie';
 r = await run(T(32));
 R.ok('TRON: one node lies about the recipient -> could not check', r.verdict === 'error');
-world(); addTronTx(w, T(33), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = 'garbage';
+world(); addTronTx(w, T(33), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = 'garbage'; w.faults['http://tron-b'] = 'garbage';
 r = await run(T(33));
-R.ok('TRON: garbage from a node -> could not check', r.verdict === 'error');
+R.ok('TRON: garbage from two of three nodes -> could not check', r.verdict === 'error');
+world(); addTronTx(w, T(34), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = '429once';
+r = await run(T(34), { timeoutMs: 2000 });
+R.ok('TRON: a 429 once is retried -> green', r.verdict === 'green', r.title);
+world(); addTronTx(w, T(35), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = '429';
+r = await run(T(35), { timeoutMs: 2000 });
+R.ok('TRON: first node always 429 -> the other two decide (green)', r.verdict === 'green', r.title);
+world(); addTronTx(w, T(36), [{ token: USDT.tron, from: '55'.repeat(20), to: TSELLER_HEX, raw: e6 }]); w.faults['http://tron-a'] = '429'; w.faults['http://tron-c'] = 'timeout';
+r = await run(T(36), { timeoutMs: 500 });
+R.ok('TRON: only one node left -> could not check', r.verdict === 'error');
 // a fetch that throws synchronously, and one that returns nonsense objects
 real();
 r = await C.check(H(30), { fetch: () => { throw new Error('boom'); }, endpoints: EP, timeoutMs: 200 });

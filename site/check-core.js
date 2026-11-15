@@ -62,9 +62,10 @@
      site/_headers. Order matters a little: the first two are asked at once,
      the rest only if one of those fails. */
   const ENDPOINTS = {
-    bsc:  ['https://bsc-dataseed.binance.org', 'https://bsc-rpc.publicnode.com', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc.drpc.org'],
+    bsc:  ['https://bsc-dataseed.binance.org', 'https://bsc-rpc.publicnode.com', 'https://1rpc.io/bnb', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc.drpc.org'],
     eth:  ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'],
-    tron: ['https://api.trongrid.io', 'https://tron-rpc.publicnode.com']
+    // TronGrid without a key answers 429 under load: three TRON nodes, not two
+    tron: ['https://api.trongrid.io', 'https://tron-rpc.publicnode.com', 'https://api.tronstack.io']
   };
 
   // ---------- explorers ----------
@@ -264,7 +265,15 @@
   }
 
   // ---------- transport ----------
-  async function fetchJson(ctx, url, body) {
+  async function fetchJson(ctx, url, body, retried) {
+    try { return await fetchOnce(ctx, url, body); }
+    catch (e) {
+      // public nodes rate-limit bursts: one polite retry, then give up
+      if (!retried && e && e.status === 429) { await new Promise(r => setTimeout(r, 900)); return fetchJson(ctx, url, body, true); }
+      throw e;
+    }
+  }
+  async function fetchOnce(ctx, url, body) {
     const ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const t = setTimeout(() => ac && ac.abort(), ctx.timeoutMs);
     try {
@@ -272,7 +281,7 @@
         method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
         signal: ac ? ac.signal : undefined, credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store'
       });
-      if (!r || !r.ok) throw new Error('http ' + (r && r.status));
+      if (!r || !r.ok) { const e = new Error('http ' + (r && r.status)); e.status = r && r.status; throw e; }
       const text = await r.text();
       if (text.length > 2000000) throw bad('answer too big');
       try { return JSON.parse(text); } catch (e) { throw bad('not json'); }

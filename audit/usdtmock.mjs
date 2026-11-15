@@ -171,6 +171,8 @@ export function handle(w, net, base, path, rawBody) {
   const f = w.faults[url];
   if (f === 'timeout') return { hang: true };
   if (f === 'http500') return { status: 500, body: 'Internal Server Error' };
+  if (f === '429') return { status: 429, body: '{"Error":"rate limit"}' };
+  if (f === '429once') { delete w.faults[url]; return { status: 429, body: '{"Error":"rate limit"}' }; }
   if (f === 'html') return { status: 200, body: '<html><body>Cloudflare: checking your browser</body></html>' };
   if (f === 'garbage') return { status: 200, body: '{"jsonrpc":"2.0","id":1,"result":{"weird":true},"x":' };
   let body; try { body = JSON.parse(rawBody || '{}'); } catch (e) { return { status: 400, body: '{}' }; }
