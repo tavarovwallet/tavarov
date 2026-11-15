@@ -1026,5 +1026,7 @@
  "k24656e45": "Decimotercera palabra",
  "k61ea0113": "Este monedero no tiene frase de 12 palabras: se añadió con una clave privada. Guárdalo con una copia de seguridad.",
  "k3e8679c3": "Elige un nombre: de 6 a 20 caracteres, letras latinas, cifras y _, empezando por una letra.",
- "kf0a946b1": "NoN Wallet · versión"
+ "kf0a946b1": "NoN Wallet · versión",
+ "kfd9a8a48": "Esto no es una dirección ni un nombre. Comprueba que la dirección sea de esta red y pégala completa.",
+ "kb1905097": "Es un enlace a una página de donaciones. El dinero va directo al autor: sin mensaje, y no aparecerá en su lista de donaciones ni en las alertas del directo."
 }

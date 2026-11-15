@@ -7,13 +7,16 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const URL = 'http://localhost:8099/index.html';
+/* AUDIT_WWW / AUDIT_PORT — проверить копию из другой рабочей папки (git
+   worktree), не мешая тем, кто в это время гоняет проверки основной. */
+const PORT = Number(process.env.AUDIT_PORT || 8099);
+export const URL = 'http://localhost:' + PORT + '/index.html';
 
 /* Приложение раздаём сами. Раньше сервер поднимался руками, и стоило про
    него забыть — все проверки падали с «соединение отклонено», как будто
    сломалось приложение. Проверка не должна зависеть от того, что кто-то
    помнит лишний шаг. */
-const ROOT = '/home/claude/apk/www';
+const ROOT = process.env.AUDIT_WWW || '/home/claude/apk/www';
 const TYPES = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8',
                 '.json':'application/json; charset=utf-8', '.css':'text/css; charset=utf-8',
                 '.png':'image/png', '.svg':'image/svg+xml', '.webp':'image/webp' };
@@ -41,7 +44,7 @@ async function serveApp() {
     s.once('error', e => (e.code === 'EADDRINUSE' ? resolve() : reject(e)));   // уже кто-то раздаёт — и хорошо
     /* unref — чтобы сервер не держал процесс: проверке положено
        закончиться и выйти, а не висеть до утра. */
-    s.listen(8099, () => { siteSrv = s; s.unref(); resolve(); });
+    s.listen(PORT, () => { siteSrv = s; s.unref(); resolve(); });
   });
 }
 
@@ -70,7 +73,7 @@ export async function boot(opts = {}) {
   page.on('requestfailed', r => {
     const u = r.url();
     // Внешние узлы сети в тестах недоступны — это ожидаемо и не ошибка стенда.
-    if (/^http:\/\/localhost:8099/.test(u)) errors.push('requestfailed: ' + u);
+    if (u.startsWith('http://localhost:' + PORT)) errors.push('requestfailed: ' + u);
   });
 
   if (opts.testnet) {
