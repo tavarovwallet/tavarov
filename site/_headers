@@ -56,7 +56,7 @@
 
 # Marketing pages only. Wallet and cashier are separate deployments/origins.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self'; connect-src 'self' https://cloudflareinsights.com https://bsc-rpc.publicnode.com https://bsc-dataseed.binance.org; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self'; connect-src 'self' https://cloudflareinsights.com https://bsc-rpc.publicnode.com https://bsc-dataseed.binance.org https://bsc-dataseed1.bnbchain.org https://bsc.drpc.org https://ethereum-rpc.publicnode.com https://eth.drpc.org https://1rpc.io https://api.trongrid.io https://tron-rpc.publicnode.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: DENY
 /social/*
@@ -97,4 +97,9 @@
   Cache-Control: no-cache
 
 /audience-translations.js
+  Cache-Control: no-cache
+
+# USDT payment checker (/en/check): its logic, revalidated like the pages.
+# Its public blockchain nodes are listed in connect-src above.
+/check-core.js
   Cache-Control: no-cache
