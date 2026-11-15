@@ -545,7 +545,8 @@
         mine = { ok: toMe.length > 0, invalid: false, count: toMe.length, address: await addrOut(net, a.key) };
       }
     }
-    if (opts.expected && String(opts.expected).trim() && real.length) {
+    // paid to someone else: the amount says nothing, so no amount line
+    if (opts.expected && String(opts.expected).trim() && real.length && !(myKey && !mine.ok)) {
       // compare with the real transfers to the seller if we know the address, else with each real transfer
       const pool = myKey && mine.ok ? real.filter(x => x.toKey === myKey) : real;
       const fam = pool[0].family, dec = pool[0].decimals;
