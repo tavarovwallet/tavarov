@@ -232,7 +232,10 @@
     // the symbol decides; the name only when there is no readable symbol
     if (exactT.includes(a) || (!a && exactT.includes(b))) return { family: 'USDT', copy: true };
     if (exactC.includes(a) || (!a && exactC.includes(b))) return { family: 'USDC', copy: true };
-    if (a.includes('usdt') || a.includes('tether') || b.includes('tether') || b.includes('usdt') || a.includes('bscusd') || b.includes('bscusd')) return { family: 'USDT', copy: false };
+    /* "Tether" alone is not enough: Tether Gold (XAUt) is a real Tether token,
+       just not a dollar. A name counts only when it is about a dollar. */
+    if (a.includes('usdt') || a.includes('bscusd') || b.includes('usdt') || b.includes('bscusd') ||
+        ((a.includes('tether') || b.includes('tether')) && (a.includes('usd') || b.includes('usd')))) return { family: 'USDT', copy: false };
     if (a.includes('usdc') || b.includes('usdc') || b.includes('usdcoin')) return { family: 'USDC', copy: false };
     return null;
   }

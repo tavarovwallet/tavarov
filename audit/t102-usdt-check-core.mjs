@@ -75,7 +75,7 @@ R.ok('65 hex chars is not a hash', C.parseInput('a'.repeat(65)).kind !== 'hash')
 // ---------- look-alike names ----------
 const names = [['USDT', 'Tether USD', 'copy'], ['USD₮', 'Tether', 'copy'], ['U5DT', '', 'copy'], ['ＵＳＤＴ', '', 'copy'], ['UЅDТ', '', 'copy'],
   ['usdt ', ' tether usd', 'copy'], ['U S D T', '', 'copy'], ['USDT.e', 'Tether USD', 'other'], ['anyUSDT', '', 'other'], ['USDC', 'USD Coin', 'copy'],
-  ['BSC-USD', 'Binance-Peg BSC-USD', 'copy'], ['PEPE', 'Pepe', null], ['USD', 'Dollar', null], ['TUSD', 'TrueUSD', null]];
+  ['BSC-USD', 'Binance-Peg BSC-USD', 'copy'], ['XAUt', 'Tether Gold', null], ['vUSDT', 'Venus USDT', 'other'], ['aBnbUSDT', 'Aave BNB Smart Chain USDT', 'other'], ['USDT', 'Tether USD', 'copy'], ['PEPE', 'Pepe', null], ['USD', 'Dollar', null], ['TUSD', 'TrueUSD', null]];
 for (const [s, n, want] of names) {
   const r = C.stableLike(s, n);
   R.ok('name "' + s + '" / "' + n + '" -> ' + want, want === null ? r === null : (r && (r.copy ? 'copy' : 'other') === want), JSON.stringify(r));
@@ -132,6 +132,17 @@ world(); w.tron.tokens.set('fa'.repeat(20), { symbol: 'USDT', name: 'Tether USD'
 addTronTx(w, T(8), [{ token: 'fa'.repeat(20), from: '55'.repeat(20), to: TSELLER_HEX, raw: 1000n * e6 }]);
 r = await run(T(8));
 R.ok('TRON fake USDT -> RED, real contract TR7NH… shown', r.verdict === 'red' && r.transfers[0].realContract === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', r.title);
+// seen live on BNB Chain on 15 Nov 2026: a token named USDT / Tether USD whose
+// contract mimics the real one's first and last characters (0x55…7955)
+world(); const LOOK = '0x5591a8e9a5001f6052d9d749518ae1e6287b7955';
+w.bsc.tokens.set(LOOK, { symbol: 'USDT', name: 'Tether USD', decimals: 18 });
+addEvmTx(w, 'bsc', H(40), [{ token: LOOK, from: BUYER, to: SELLER, raw: 300n * e18 }]);
+r = await run(H(40));
+R.ok('look-alike contract 0x5591…7955 named USDT -> RED fake', r.verdict === 'red' && r.kind === 'fake' && r.transfers[0].token === LOOK);
+world(); w.bsc.tokens.set(FAKE, { symbol: 'XAUt', name: 'Tether Gold', decimals: 6 });
+addEvmTx(w, 'bsc', H(41), [{ token: FAKE, from: BUYER, to: SELLER, raw: e6 }]);
+r = await run(H(41));
+R.ok('Tether Gold -> amber "No USDT or USDC", not red', r.verdict === 'amber' && r.kind === 'other-token' && /XAUt/.test(r.text));
 // bytes32 symbol (old-style token)
 world(); w.bsc.tokens.set(FAKE, { symbol: 'USDT', symbolRaw: Buffer.from('USDT').toString('hex').padEnd(64, '0'), name: 'Tether', decimals: 18 });
 addEvmTx(w, 'bsc', H(9), [{ token: FAKE, from: BUYER, to: SELLER, raw: e18 }]);
