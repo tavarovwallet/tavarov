@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Is this USDT payment real? Free USDT payment checker — Tavarov Pay</title>
+<meta name="description" content="Paste the transaction hash or explorer link a buyer sent you. We read it from BNB Chain, Ethereum or TRON and tell you if it is real USDT, a fake token, or not there at all. Free, no signup.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tavarov.com/en/check">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Is this USDT payment real? Free USDT payment checker — Tavarov Pay">
+<meta property="og:description" content="Paste the transaction hash or explorer link a buyer sent you. We read it from BNB Chain, Ethereum or TRON and tell you if it is real USDT, a fake token, or not there at all. Free, no signup.">
+<meta property="og:url" content="https://tavarov.com/en/check">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--label-3:rgba(48,33,79,.46);
+--sep:rgba(90,60,150,.16);--accent:#7C3AED;--accent-2:#4B1FE8;--r:16px;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+--mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+--ok:#0b6b34;--ok-bg:#e7f6ec;--ok-line:#7fcf9c;--bad:#b3261e;--bad-bg:#fdeceb;--bad-line:#f0a19a;--warn:#7a4f00;--warn-bg:#fdf3dc;--warn-line:#e8c26a;--input:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#140B2B;--card:#20153D;--label:#FFFFFF;
+--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6;
+--ok:#6ee39a;--ok-bg:#10291b;--ok-line:#2f7a4c;--bad:#ff9a90;--bad-bg:#3a1414;--bad-line:#8a3a33;--warn:#f6c75e;--warn-bg:#33270b;--warn-line:#7d6224;--input:#19191c}}
+:root[data-theme="dark"]{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);
+--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6;
+--ok:#6ee39a;--ok-bg:#10291b;--ok-line:#2f7a4c;--bad:#ff9a90;--bad-bg:#3a1414;--bad-line:#8a3a33;--warn:#f6c75e;--warn-bg:#33270b;--warn-line:#7d6224;--input:#19191c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex;align-items:center;gap:14px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--label);font-size:17px}
+.brand:hover{text-decoration:none}.brand svg{width:30px;height:30px;border-radius:8px;display:block}
+.bar nav{margin-left:auto;display:flex;gap:6px}
+.bar nav a{font-size:13.5px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--label-2)}
+.bar nav a[aria-current="true"]{background:var(--card);color:var(--label);box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:40px 0 12px;overflow-wrap:anywhere}
+.lead{font-size:19px;color:var(--label-2);margin:0 0 22px}
+h2{font-size:22px;font-weight:760;letter-spacing:-.01em;margin:38px 0 10px}
+h3{font-size:18px;font-weight:720;margin:22px 0 6px}
+p{margin:0 0 13px;color:var(--label-2)}p b,li b{color:var(--label)}
+ul,ol{margin:0 0 13px;padding-left:22px;color:var(--label-2)}li{margin-bottom:7px}
+.box{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px 24px;margin:22px 0}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.btn{display:inline-block;padding:13px 20px;border-radius:13px;font-weight:700;font-size:16px}
+.btn:hover{text-decoration:none}
+code{font-family:var(--mono);font-size:14px;background:rgba(124,58,237,.10);padding:1px 6px;border-radius:6px}
+.note{font-size:14.5px;color:var(--label-3);margin:0 0 13px}
+details{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--label)}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--sep);margin-top:48px;padding:26px 0 52px;color:var(--label-3);font-size:14.5px}
+footer a{color:var(--label-2);font-size:15px;margin-right:18px;display:inline-block;margin-bottom:6px}
+@media (max-width:430px){.wrap{padding:0 16px}.brand{font-size:15px}.bar nav a{padding:5px 7px}}
+
+/* the tool */
+.tool{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px;margin:6px 0 18px}
+.tool label.big{display:block;font-weight:720;color:var(--label);font-size:17px;margin:0 0 8px}
+.field-in{display:block;width:100%;min-height:56px;padding:14px 16px;font:16px/1.4 var(--mono);color:var(--label);background:var(--input);
+ border:1.5px solid var(--sep);border-radius:12px;resize:vertical;overflow-wrap:anywhere}
+.field-in:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent)}
+.field-in::placeholder{font-family:var(--font);color:var(--label-3)}
+.small-in{min-height:50px;font-size:15.5px;resize:none}
+.go{display:block;width:100%;min-height:54px;margin:12px 0 0;border:0;border-radius:12px;background:var(--btn-bg,#19191c);color:var(--btn-fg,#fff);
+ font:700 17px/1 var(--font);cursor:pointer}
+.go[disabled]{opacity:.6;cursor:progress}
+.tool details{background:transparent!important;border:0!important;padding:12px 0 0!important;margin:0!important}
+.tool summary{display:flex;align-items:center;min-height:44px;color:var(--accent);font-weight:650;font-size:15.5px}
+.tool .sub{margin:10px 0 0}
+.tool .sub label{display:block;font-weight:650;color:var(--label);font-size:15px;margin:10px 0 6px}
+.hint{font-size:14px;color:var(--label-3);margin:8px 0 0}
+#result:empty{display:none}
+.verdict{border-radius:var(--r);padding:20px;margin:16px 0 0;border:1.5px solid var(--sep);background:var(--card)}
+.verdict.green{background:var(--ok-bg);border-color:var(--ok-line)}
+.verdict.red{background:var(--bad-bg);border-color:var(--bad-line)}
+.verdict.amber,.verdict.notfound,.verdict.error,.verdict.input{background:var(--warn-bg);border-color:var(--warn-line)}
+.verdict.notfound{background:var(--bad-bg);border-color:var(--bad-line)}
+.v-title{display:flex;gap:12px;align-items:flex-start;font-size:clamp(24px,6.4vw,32px);font-weight:820;line-height:1.15;letter-spacing:-.02em;margin:0 0 8px}
+.v-title svg{flex:0 0 auto;width:32px;height:32px;margin-top:1px}
+.green .v-title{color:var(--ok)}.red .v-title,.notfound .v-title{color:var(--bad)}.amber .v-title,.error .v-title,.input .v-title{color:var(--warn)}
+.verdict p{color:var(--label);margin:0 0 10px}
+.rows{margin:12px 0 4px;display:grid;gap:10px}
+.row{display:grid;gap:2px}
+.row .k{font-size:13.5px;font-weight:650;color:var(--label-2);text-transform:uppercase;letter-spacing:.04em}
+.row .v{color:var(--label);font-size:16.5px;overflow-wrap:anywhere}
+.amt{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.mono{font-family:var(--mono);font-size:15px;word-break:break-all;line-height:1.5}
+.mono b{color:var(--accent);font-weight:800}
+.grp,.xfer{display:grid;gap:10px}.xfer{border-top:1px solid color-mix(in srgb,var(--label) 14%,transparent);padding-top:12px;margin-top:12px}
+.tag{display:inline-block;font-size:13px;font-weight:750;padding:2px 9px;border-radius:999px;margin-right:6px;vertical-align:2px}
+.tag.real{background:var(--ok);color:var(--bg)}.tag.fake{background:var(--bad);color:var(--bg)}.tag.other{background:var(--label-3);color:var(--bg)}
+.match{display:flex;gap:10px;align-items:flex-start;font-weight:700;margin:8px 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.match.yes{color:var(--ok)}.match.no{color:var(--bad)}.match.q{color:var(--label)}
+.match svg{flex:0 0 auto;width:22px;height:22px;margin-top:1px}
+.match span{overflow-wrap:anywhere}
+.linkwarn{border-radius:12px;padding:14px 16px;margin:16px 0 0;background:var(--bad-bg);border:1.5px solid var(--bad-line);color:var(--bad);font-weight:700}
+.linkwarn.test{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
+.linkwarn .h{display:block;font-family:var(--mono);font-weight:800;word-break:break-all;color:var(--label);margin-top:4px}
+.linkwarn small{display:block;font-weight:500;color:var(--label);font-size:15px;margin-top:6px}
+.busy{display:flex;gap:12px;align-items:center;margin:16px 0 0;padding:16px 18px;border-radius:var(--r);background:var(--card);border:1px solid var(--sep);color:var(--label-2)}
+.spin{width:20px;height:20px;border-radius:50%;border:3px solid var(--sep);border-top-color:var(--accent);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.limits{font-size:15px;margin:16px 0 0;padding:16px 18px;border-radius:14px;border:1px solid var(--sep);background:var(--card)}
+.limits p,.limits li{font-size:15px}.limits ul{margin:6px 0 0}
+.quiet{font-size:15px;color:var(--label-2);margin:14px 0 0}
+.privacy{font-size:14.5px;color:var(--label-3);margin:10px 0 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebApplication", "name": "Is this USDT payment real? — USDT payment checker", "description": "Paste the transaction hash or explorer link a buyer sent you. We read it from BNB Chain, Ethereum or TRON and tell you if it is real USDT, a fake token, or not there at all.", "url": "https://tavarov.com/en/check", "applicationCategory": "FinanceApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "inLanguage": "en", "dateModified": "2026-11-15", "publisher": {"@type": "Organization", "name": "Tavarov", "url": "https://tavarov.com"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What does this checker check?", "acceptedAnswer": {"@type": "Answer", "text": "It finds the transaction on the blockchain and reads it: whether it succeeded, when, how many confirmations it has, and every token transfer in it. Then it compares each token's contract address with the official USDT and USDC contracts for that network."}}, {"@type": "Question", "name": "Which networks does it support?", "acceptedAnswer": {"@type": "Answer", "text": "BNB Chain (BEP20), Ethereum (ERC20) and TRON (TRC20). It checks USDT on all three and USDC on BNB Chain and Ethereum."}}, {"@type": "Question", "name": "Do you see or store what I paste?", "acceptedAnswer": {"@type": "Answer", "text": "No. The check runs in your browser. It sends the transaction hash only to public blockchain nodes, read-only, and nothing to us."}}, {"@type": "Question", "name": "Why check the contract and not the token name?", "acceptedAnswer": {"@type": "Answer", "text": "Anyone can create a token and call it USDT. Only the contract address can't be copied. A token named USDT with a different contract is not USDT."}}]}]</script>
+<link rel="stylesheet" href="/min.css">
+<meta property="og:site_name" content="Tavarov Pay"><meta property="og:locale" content="en_US"><meta property="og:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@TavarovWallet"><meta name="twitter:title" content="Is this USDT payment real? Free USDT payment checker — Tavarov Pay"><meta name="twitter:description" content="Paste the transaction hash or explorer link a buyer sent you. We read it from BNB Chain, Ethereum or TRON and tell you if it is real USDT, a fake token, or not there at all."><meta name="twitter:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta name="twitter:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."></head>
+<body>
+<header><div class="wrap bar"><a class="brand" href="/"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg> Tavarov Pay</a><nav><a href="/en/check" aria-current="true">EN</a></nav></div></header>
+<main class="wrap">
+
+<h1>Is this USDT payment real?</h1>
+<p class="lead">Paste what the buyer sent you. We read it straight from the blockchain and check the token itself, not its name. BNB Chain, Ethereum and TRON.</p>
+
+<form class="tool" id="form" novalidate autocomplete="off">
+<label class="big" for="q">Paste what the buyer sent you</label>
+<textarea class="field-in" id="q" name="q" rows="2" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Transaction hash or explorer link" aria-describedby="qhint"></textarea>
+<p class="hint" id="qhint">A transaction hash (TxID) like <code>0x5c50…e3a1</code>, or a link to bscscan.com, etherscan.io or tronscan.org.</p>
+<details id="more"><summary>Check against my address and amount</summary>
+<div class="sub">
+<label for="mine">Your address (where you get paid)</label>
+<input class="field-in small-in" id="mine" name="mine" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="0x… or T…">
+<label for="amount">Expected amount</label>
+<input class="field-in small-in" id="amount" name="amount" type="text" inputmode="decimal" placeholder="e.g. 120.50">
+<p class="hint">Optional. Used only on this page, to compare.</p>
+</div></details>
+<button class="go" id="go" type="submit">Check payment</button>
+<p class="privacy">Nothing is stored or sent to us. Your browser asks public blockchain nodes directly, read-only.</p>
+</form>
+
+<div id="live" class="sr" aria-live="assertive" aria-atomic="true"></div>
+<div id="result" aria-live="polite"></div>
+
+<div class="limits" id="limits">
+<p><b>What this check does not cover</b></p>
+<ul>
+<li>It can’t know your address or your price unless you enter them above. A real payment to someone else, or for less, is still not your money.</li>
+<li>A very recent transaction can still be reorganised out of the chain. Wait for the confirmations it asks for.</li>
+<li>It reads public blockchain nodes. When they don’t answer, or give different answers, it says “Could not check”. It never guesses.</li>
+</ul>
+</div>
+
+<p class="quiet">Want this checked automatically at the counter? The free Tavarov Pay till shows <b>Paid</b> only when real USDT arrives (BNB Chain). <a href="https://till.tavarov.com/">Open the till</a> · <a href="/en/fake-usdt-payment">How fake USDT payments work</a></p>
+
+<h2>Questions</h2><details><summary>What does this checker check?</summary><p>It finds the transaction on the blockchain and reads it: whether it succeeded, when, how many confirmations it has, and every token transfer in it. Then it compares each token’s contract address with the official USDT and USDC contracts for that network. If the buyer sent a link, it also checks that the link is to a real explorer.</p></details><details><summary>Which networks does it support?</summary><p>BNB Chain (BEP20), Ethereum (ERC20) and TRON (TRC20). It checks USDT on all three and USDC on BNB Chain and Ethereum. Circle no longer supports USDC on TRON, so it is not counted as USDC. On BNB Chain, USDT and USDC are the Binance-Peg tokens that wallets and exchanges use there.</p></details><details><summary>Do you see or store what I paste?</summary><p>No. The check runs in your browser. It sends the transaction hash only to public blockchain nodes (Binance, BNB Chain, PublicNode, dRPC, 1RPC, TronGrid, TronStack), read-only, and nothing to us. Your address and amount never leave the page. No cookies, no trackers.</p></details><details><summary>Why check the contract and not the token name?</summary><p>Anyone can create a token and call it USDT, with the same logo. Only the contract address can’t be copied. A token named “USDT” with a different contract is not USDT, whatever the wallet or the explorer shows as its name.</p></details><details><summary>What are the official contracts?</summary><p>USDT: BNB Chain <span class="mono" translate="no">0x55d398326f99059fF775485246999027B3197955</span>, Ethereum <span class="mono" translate="no">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>, TRON <span class="mono" translate="no">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</span>. USDC: BNB Chain <span class="mono" translate="no">0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d</span>, Ethereum <span class="mono" translate="no">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>. Sources: <a href="https://tether.to/en/supported-protocols/">Tether</a>, <a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">Circle</a>, CoinGecko.</p></details>
+
+</main>
+<footer><div class="wrap"><a href="/">Home</a><a href="https://wallet.tavarov.com/">Open the wallet</a><a href="https://wallet.tavarov.com/dev">API for websites</a><a href="/en/woocommerce">WooCommerce plugin</a><a href="/en/accept-usdt">Accept USDT</a><a href="/en/fake-usdt-payment">Fake USDT check</a><a href="/en/check">Check a payment</a><a href="/en/crypto-donations">Tips for streamers</a><a href="/en/partners">Partners</a><a href="/en/terms">Terms</a><a href="/en/privacy">Privacy</a><p style="margin:14px 0 0">NoN Wallet and Tavarov Pay are non-custodial: we never hold keys or money. Some countries restrict crypto payments — check the rules where you live.</p><p style="margin:6px 0 0">© 2026 Tavarov</p></div></footer>
+
+<script src="/check-core.js"></script>
+<script>
+(function(){
+'use strict';
+var C = window.UsdtCheck;
+var $ = function(id){ return document.getElementById(id); };
+var form = $('form'), q = $('q'), go = $('go'), out = $('result'), live = $('live');
+var ICON = {
+  green:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.5 12.5l3.6 3.6 7.4-8" fill="none" stroke="var(--ok-bg)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  red:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7.8 7.8l8.4 8.4M16.2 7.8l-8.4 8.4" stroke="var(--bad-bg)" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  amber:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8L23 21.5H1z" fill="currentColor"/><path d="M12 9v5.5M12 17.6v.4" stroke="var(--warn-bg)" stroke-width="2.6" stroke-linecap="round"/></svg>'
+};
+ICON.notfound = ICON.red; ICON.error = ICON.amber; ICON.input = ICON.amber;
+var SMALL = {
+  yes:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  no:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+  q:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>'
+};
+
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function addrNode(a){
+  var s = el('span', 'mono'); s.setAttribute('translate','no');
+  if (!a) { s.textContent = '—'; return s; }
+  var head = a.slice(0, a.indexOf('0x') === 0 ? 8 : 6), tail = a.slice(-6), mid = a.slice(head.length, a.length - 6);
+  s.appendChild(el('b', null, head)); s.appendChild(document.createTextNode(mid)); s.appendChild(el('b', null, tail));
+  return s;
+}
+function row(parent, k, v){
+  var r = el('div','row'); r.appendChild(el('span','k',k));
+  var vv = el('span','v'); if (typeof v === 'string') vv.textContent = v; else vv.appendChild(v);
+  r.appendChild(vv); parent.appendChild(r); return vv;
+}
+function line(parent, kind, text){
+  var m = el('div', 'match ' + kind); m.innerHTML = SMALL[kind]; m.appendChild(el('span', null, text)); parent.appendChild(m);
+}
+function when(t){
+  var d = new Date(t * 1000), ago = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+  var rel = ago < 1 ? 'less than a minute ago' : ago < 60 ? ago + ' min ago' : ago < 2880 ? Math.round(ago / 60) + ' h ago' : Math.round(ago / 1440) + ' days ago';
+  return d.toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' }) + ' (' + rel + ')';
+}
+function linkWarning(link){
+  if (!link) return null;
+  if (!link.official) {
+    var w = el('div', 'linkwarn'); w.setAttribute('data-test','link-bad');
+    w.appendChild(document.createTextNode('This link is not an official explorer'));
+    w.appendChild(el('span', 'h', link.host));
+    w.appendChild(el('small', null, 'Official explorers are bscscan.com, etherscan.io and tronscan.org. Whatever that page showed, we checked the transaction on the blockchain ourselves, below.'));
+    return w;
+  }
+  if (link.testnet) {
+    var t = el('div', 'linkwarn test'); t.setAttribute('data-test','link-test');
+    t.appendChild(document.createTextNode('This is a test-network explorer'));
+    t.appendChild(el('span', 'h', link.host));
+    t.appendChild(el('small', null, 'Test-network coins have no value. Below we check the real networks.'));
+    return t;
+  }
+  return null;
+}
+function render(res){
+  out.textContent = '';
+  var lw = linkWarning(res.link); if (lw) out.appendChild(lw);
+  var v = res.verdict, box = el('section', 'verdict ' + v);
+  box.setAttribute('data-verdict', v); if (res.kind) box.setAttribute('data-kind', res.kind);
+  box.setAttribute('aria-label', 'Result');
+  var h = el('h2', 'v-title'); h.innerHTML = ICON[v] || ''; h.appendChild(el('span', null, res.title)); h.setAttribute('tabindex','-1');
+  box.appendChild(h);
+  if (res.text) box.appendChild(el('p', null, res.text));
+  var rows = el('div', 'rows');
+  var main = (res.transfers || []).filter(function(x){ return x.cls === 'real'; });
+  var fakes = (res.transfers || []).filter(function(x){ return x.cls === 'fake' || x.cls === 'other-stable'; });
+  if (res.networkName) row(rows, 'Network', res.networkName);
+  if (v === 'green' || res.kind === 'wait' || res.kind === 'not-mine') {
+    main.forEach(function(t, i){
+      var wrap = i ? el('div','xfer') : rows;
+      var a = el('span','amt', t.amount + ' ' + t.family); row(wrap, main.length > 1 ? 'Amount (transfer ' + (i+1) + ')' : 'Amount', a);
+      row(wrap, 'To', addrNode(t.to));
+      row(wrap, 'From', addrNode(t.from));
+      var tc = row(wrap, 'Token contract', addrNode(t.token)); var nt = el('span', 'hint', t.note); nt.style.display = 'block'; nt.style.margin = '2px 0 0'; tc.appendChild(nt);
+      if (i) rows.appendChild(wrap);
+    });
+  }
+  if (fakes.length) {
+    fakes.forEach(function(t, i){
+      var wrap = el('div', i || rows.childNodes.length > 1 ? 'xfer' : 'grp');
+      var tag = el('span','tag fake', t.cls === 'fake' ? 'FAKE' : 'NOT ' + t.family);
+      var nm = el('span'); nm.appendChild(tag); nm.appendChild(document.createTextNode((t.amount || '?') + ' “' + (t.symbol || t.name || '?') + '”' + (t.name && t.symbol && t.name !== t.symbol ? ' (' + t.name + ')' : '')));
+      row(wrap, 'Token sent', nm);
+      row(wrap, 'Its contract', addrNode(t.token));
+      row(wrap, 'Real ' + t.family + ' contract on ' + res.networkName, addrNode(t.realContract));
+      row(wrap, 'To', addrNode(t.to));
+      rows.appendChild(wrap);
+    });
+    if (main.length) {
+      var w2 = el('div','xfer');
+      main.forEach(function(t){ var s = el('span'); s.appendChild(el('span','tag real','REAL')); s.appendChild(document.createTextNode(t.amount + ' ' + t.family + ' to ')); s.appendChild(addrNode(t.to)); row(w2, 'Also in this transaction', s); });
+      rows.appendChild(w2);
+    }
+  }
+  if (res.kind === 'native' && res.native) {
+    row(rows, 'Amount', el('span','amt', res.native.amount + ' ' + res.native.sym));
+    if (res.native.to) row(rows, 'To', addrNode(res.native.to));
+  }
+  if (res.kind === 'other-token' || res.kind === 'discontinued') {
+    (res.transfers || []).slice(0, 6).forEach(function(t){
+      var s = el('span'); s.appendChild(el('span','tag other', t.symbol || t.name || 'unknown'));
+      s.appendChild(document.createTextNode(t.amount + ' — contract ')); s.appendChild(addrNode(t.token)); row(rows, 'Token sent', s);
+    });
+  }
+  if (res.time) row(rows, 'Time', when(res.time));
+  if (res.confirmations != null && res.network) row(rows, 'Confirmations', res.network === 'tron'
+      ? res.confirmations + (res.solid ? ' (final on TRON)' : ' (not final yet)') : String(res.confirmations));
+  if (rows.childNodes.length) box.appendChild(rows);
+
+  if (v === 'green' || res.kind === 'wait' || res.kind === 'not-mine') {
+    var chk = el('div'); chk.setAttribute('data-test','checks');
+    if (res.mine) {
+      if (res.mine.invalid) line(chk, 'no', res.mine.why);
+      else if (res.mine.ok) line(chk, 'yes', 'Sent to your address');
+      else line(chk, 'no', 'NOT sent to your address. It went to a different one.');
+    } else line(chk, 'q', 'Check that the recipient (“To”) is YOUR address: compare the first and last characters.');
+    if (res.amountCheck) {
+      var a = res.amountCheck;
+      if (a.invalid) line(chk, 'no', a.why);
+      else if (a.ok) line(chk, 'yes', 'Amount matches: ' + a.want + ' ' + a.family);
+      else if (a.more) line(chk, 'no', 'More than expected: ' + a.got + ' instead of ' + a.want + ' ' + a.family + '. Be careful if you are asked to send the difference back.');
+      else line(chk, 'no', 'Amount does not match: expected ' + a.want + ' ' + a.family + (a.got ? ', got ' + a.got : '') + '.');
+    } else line(chk, 'q', 'Check the amount: it must be what you asked for.');
+    box.appendChild(chk);
+  }
+  if (res.explorer) {
+    var p = el('p', 'hint'); p.appendChild(document.createTextNode('See it yourself: '));
+    var a2 = el('a', null, res.explorer.replace(/^https:\/\//, '').replace(/(.{38}).+/, '$1…')); a2.href = res.explorer; a2.rel = 'noopener noreferrer'; a2.target = '_blank';
+    p.appendChild(a2); box.appendChild(p);
+  }
+  out.appendChild(box);
+  live.textContent = '';
+  setTimeout(function(){ live.textContent = (lw ? lw.firstChild.textContent + '. ' : '') + res.title + (res.text ? '. ' + res.text : ''); }, 60);
+}
+var running = 0;
+function run(){
+  var text = q.value;
+  if (!text.trim()) { q.focus(); render({ verdict:'input', title:'Paste the transaction hash or link first' }); return; }
+  var id = ++running;
+  go.disabled = true; go.textContent = 'Checking…';
+  out.textContent = '';
+  var b = el('div','busy'); b.appendChild(el('span','spin')); b.appendChild(el('span', null, 'Reading BNB Chain, Ethereum and TRON…')); out.appendChild(b);
+  live.textContent = 'Checking';
+  C.check(text, { myAddress: $('mine').value, expected: $('amount').value }).then(function(res){
+    if (id === running) render(res);
+  }, function(){
+    if (id === running) render({ verdict:'error', title:'Could not check right now', text:'Something went wrong while reading the blockchain. Try again in a minute. Until then, treat the payment as not confirmed.' });
+  }).then(function(){ if (id === running) { go.disabled = false; go.textContent = 'Check payment'; } });
+}
+form.addEventListener('submit', function(e){ e.preventDefault(); run(); });
+q.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); run(); } });
+q.addEventListener('paste', function(){ var was = q.value.trim(); setTimeout(function(){ if (!was && q.value.trim()) run(); }, 0); });
+})();
+</script>
+</body></html>
