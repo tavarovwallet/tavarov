@@ -428,15 +428,25 @@ label, .lbl, .sec, .sum-row .k{ text-transform:none !important; letter-spacing:-
    счёта считается из них же, и подделанный магазин просто не узнает. */
 
 const $ = id => document.getElementById(id);
-const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet', eth:'Ethereum', base:'Base', solana:'Solana' };
+const NET_NAMES = { bnb:'BNB Chain', bnbTestnet:'BNB testnet', eth:'Ethereum', base:'Base', solana:'Solana', xlayer:'X Layer' };
+/* X Layer (сеть OKX, chainId 196, комиссия в OKB). ВЫКЛЮЧЕНА, пока адрес
+   контракта оплаты там null: ссылка со счётом в X Layer отклоняется, как
+   любая незнакомая сеть, и страница работает ровно как раньше. Включается
+   адресом из tools/xlayer/deploy-xlayer.mjs — здесь И в functions/api/status.js
+   (tools/xlayer/README.md, «Включить X Layer»). */
+const XLAYER_PAY = null;
 /* Сети, в которых работает страница. Незнакомая сеть в ссылке — ошибка или
    подлог: такой счёт не показываем. */
 /* Тестовые Sepolia, Base Sepolia и Solana devnet убраны 1 октября 2026.
    Тестовый BNB остался для тестовых ключей API (tp_test_…). */
-const KNOWN_NETS = ['bnb', 'bnbTestnet', 'eth', 'base', 'solana'];
+const KNOWN_NETS = ['bnb', 'bnbTestnet', 'eth', 'base', 'solana'].concat(XLAYER_PAY ? ['xlayer'] : []);
+/* NoN Wallet X Layer пока не знает: такой счёт платят только чужим кошельком
+   (OKX Wallet, MetaMask…) через контракт, а код на экране — ссылка на эту же
+   страницу, её открывает обычная камера телефона. */
+const WEB_ONLY_NETS = ['xlayer'];
 const isSolNet = n => n === 'solana';
 /* Монета, которой сеть берёт комиссию. */
-const NATIVE_SYM = { bnb:'BNB', bnbTestnet:'tBNB', eth:'ETH', base:'ETH', solana:'SOL' };
+const NATIVE_SYM = { bnb:'BNB', bnbTestnet:'tBNB', eth:'ETH', base:'ETH', solana:'SOL', xlayer:'OKB' };
 
 /* ================= ЯЗЫКИ =================
    Счёт выставляют в одной стране, открывают в другой. Язык берём из браузера
@@ -1559,7 +1569,7 @@ function readInvoice(){
     if (!/^\d{1,12}(\.\d{1,18})?$/.test(String(o.a)) || !(parseFloat(o.a) > 0)) return null;
     /* В Ethereum, Base и Solana у долларов шесть знаков — седьмой заплатить
        нечем, и оплата падала бы с «bad amount» (аудит 7.10.2026). */
-    if (['eth', 'base', 'solana'].includes(o.net) && (String(o.a).split('.')[1] || '').replace(/0+$/, '').length > 6) return null;
+    if (['eth', 'base', 'solana', 'xlayer'].includes(o.net) && (String(o.a).split('.')[1] || '').replace(/0+$/, '').length > 6) return null;
     if (o.c !== undefined && !/^[A-Z]{2,8}$/.test(String(o.c))) return null;
     if (!/^0x[0-9a-fA-F]{64}$/.test(o.h || '')) return null;
     /* Всё, что уедет в href или в переход, чистим сразу на входе, а не в
@@ -1639,7 +1649,7 @@ applyLang(NAMES[startLang] ? startLang : 'en');
    имеют восемнадцать знаков после точки — не шесть, как привыкли те, кто
    имел дело с Ethereum. Ошибка здесь не «показалось не то число», а
    платёж в миллион раз меньше нужного. */
-const CHAIN_IDS = { bnb: 56, bnbTestnet: 97, eth: 1, base: 8453 };
+const CHAIN_IDS = { bnb: 56, bnbTestnet: 97, eth: 1, base: 8453, xlayer: 196 };
 /* В Ethereum и Base у USDT и USDC шесть знаков — не восемнадцать, как в BNB. */
 const TOKENS = {
   bnb:        { USDT:{ a:'0x55d398326f99059fF775485246999027B3197955', d:18 },
@@ -1649,7 +1659,11 @@ const TOKENS = {
                 TVR: { a:'0x74536e79b374CCFa0123035B28f7a3b7333f323a', d:18 } },
   eth:        { USDT:{ a:'0xdAC17F958D2ee523a2206206994597C13D831ec7', d:6 },
                 USDC:{ a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d:6 } },
-  base:       { USDC:{ a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } }
+  base:       { USDC:{ a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } },
+  /* X Layer: USDT — это USDT0 (Tether/OKX), USDC — родной от Circle (с 7.08.2026).
+     Мостовые USDT/USDC.e не берём. Шесть знаков. */
+  xlayer:     { USDT:{ a:'0x779Ded0c9e1022225f8E0630b35a9b54bE713736', d:6 },
+                USDC:{ a:'0xB6CEceAB302E2E4948951eE7843FC24E92933061', d:6 } }
 };
 
 /* «12.5» в целые единицы — строкой, без дробных чисел. В них 0.1 + 0.2 не
@@ -1854,10 +1868,16 @@ function render(){
      обновляем. */
   const walletUrl = (inv.w || 'https://wallet.tavarov.com') + '/?pay=' + encodeURIComponent(link);
   $('openWallet').href = walletUrl;
+  const webOnly = WEB_ONLY_NETS.includes(inv.net);
+  if (webOnly){
+    qrText = paymentUrl();
+    ['openWallet', 'qrHint'].forEach(id => $(id).classList.add('hidden'));
+    $('openOther').classList.replace('btn-ghost', 'btn-main');
+  }
   /* iPhone и не приложение с экрана «Домой», не встроенный браузер кошелька. */
   const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') && !navigator.standalone
               && !/MetaMask|Trust|OKApp|TokenPocket|BitKeep|Bitget/i.test(navigator.userAgent || '');
-  const ih = $('iosHint'); if (ih) ih.classList.toggle('hidden', !ios || !!expiredNow());
+  const ih = $('iosHint'); if (ih) ih.classList.toggle('hidden', !ios || !!expiredNow() || webOnly);
 
   /* Чужой кошелёк — только если монета есть в таблице этой сети: иначе
      контракту нечего отдать в оплату, и шторка открылась бы впустую. */
@@ -1865,10 +1885,11 @@ function render(){
   const canOther = !expired && !!(tokenOf(inv.net || 'bnb', inv.c || 'USDT') && PAY_CONTRACT[inv.net || 'bnb']);
   $('openOther').classList.toggle('hidden', !canOther);
   $('openOther').onclick = () => openWalletSheet();
+  const shareLink = webOnly ? paymentUrl() : link;
   $('copyLink').onclick = () => {
-    navigator.clipboard.writeText(link).then(
+    navigator.clipboard.writeText(shareLink).then(
       () => { $('copyLink').textContent = t('copied'); setTimeout(()=>{ $('copyLink').textContent = t('copy'); }, 1600); },
-      () => { prompt(t('copyManual'), link); });
+      () => { prompt(t('copyManual'), shareLink); });
   };
 
   /* Уровень исправления ошибок берём пониже: русское название магазина
@@ -2120,7 +2141,8 @@ function paidNow(){
    Пока null — оплата чужим кошельком в этой сети не предлагается. */
 const PAY_CONTRACT = { bnb:'0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35',
                        bnbTestnet:'0x3A3Ba9776ea9c48AE6C69Ae6153d9bBc892ed6e6',
-                       eth: '0x5046399643c387d93e1467bad3fd7edf3fb459da', base: '0x5046399643c387d93e1467bad3fd7edf3fb459da' };
+                       eth: '0x5046399643c387d93e1467bad3fd7edf3fb459da', base: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
+                       xlayer: XLAYER_PAY };
 const CHAIN_PARAMS = {
   bnb: { chainId:'0x38', chainName:'BNB Smart Chain',
          nativeCurrency:{ name:'BNB', symbol:'BNB', decimals:18 },
@@ -2134,7 +2156,10 @@ const CHAIN_PARAMS = {
          rpcUrls:['https://ethereum-rpc.publicnode.com'], blockExplorerUrls:['https://etherscan.io'] },
   base: { chainId:'0x2105', chainName:'Base',
          nativeCurrency:{ name:'Ether', symbol:'ETH', decimals:18 },
-         rpcUrls:['https://mainnet.base.org'], blockExplorerUrls:['https://basescan.org'] }
+         rpcUrls:['https://mainnet.base.org'], blockExplorerUrls:['https://basescan.org'] },
+  xlayer: { chainId:'0xc4', chainName:'X Layer Mainnet',
+         nativeCurrency:{ name:'OKB', symbol:'OKB', decimals:18 },
+         rpcUrls:['https://rpc.xlayer.tech'], blockExplorerUrls:['https://web3.okx.com/explorer/x-layer'] }
 };
 /* Первые четыре байта keccak256 от подписи функции. */
 const SEL = { balanceOf:'0x70a08231', allowance:'0xdd62ed3e', approve:'0x095ea7b3',
@@ -2164,7 +2189,8 @@ const READ_RPCS = {
   bnb:        ['https://bsc-dataseed.binance.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-rpc.publicnode.com'],
   bnbTestnet: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545', 'https://bsc-testnet-rpc.publicnode.com'],
   eth:        ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'],
-  base:       ['https://base-rpc.publicnode.com', 'https://mainnet.base.org', 'https://base.drpc.org']
+  base:       ['https://base-rpc.publicnode.com', 'https://mainnet.base.org', 'https://base.drpc.org'],
+  xlayer:     ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org', 'https://xlayerrpc.okx.com']
 };
 async function readRpc(net, method, params, opts){
   let last = null;
@@ -2271,7 +2297,7 @@ function walletApps(){
   return [
     { name:'MetaMask',     color:'#F6851B', letter:'M', href:'https://metamask.app.link/dapp/' + bare },
     { name:'Trust Wallet', color:'#0500FF', letter:'T',
-      href:'https://link.trustwallet.com/open_url?coin_id=' + ({ eth:60, base:8453 }[inv.net] || 20000714) + '&url=' + encodeURIComponent(url) },
+      href:'https://link.trustwallet.com/open_url?coin_id=' + ({ eth:60, base:8453, xlayer:60 }[inv.net] || 20000714) + '&url=' + encodeURIComponent(url) },
     { name:'OKX Wallet',   color:'#111111', letter:'O',
       href:'https://web3.okx.com/download?deeplink=' +
            encodeURIComponent('okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(url)) }

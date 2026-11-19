@@ -60,7 +60,16 @@ const NETS = {
                           USDC: { a:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', d:6 } } },
   base:       { rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
                 pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da', payOld: null, conf: 6, blockSeconds: 2, transferLookback: 1800, lookback: 1800,
-                tokens: { USDC: { a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } } }
+                tokens: { USDC: { a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } } },
+  /* X Layer (chain 196, one block a second). Not deployed yet: pay is null,
+     so this network answers 503, exactly like Ethereum and Base did before
+     their deploy. The address comes from tools/xlayer/deploy-xlayer.mjs and
+     goes here AND into XLAYER_PAY in www/pay.html. USDT here is USDT0;
+     USDC is Circle's native one. 20 blocks deep = 20 seconds. */
+  xlayer:     { rpcs: ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org'],
+                pay: null, payOld: null, conf: 20, blockSeconds: 1, transferLookback: 1800, lookback: 1800,
+                tokens: { USDT: { a:'0x779Ded0c9e1022225f8E0630b35a9b54bE713736', d:6 },
+                          USDC: { a:'0xB6CEceAB302E2E4948951eE7843FC24E92933061', d:6 } } }
 };
 const NET_KEYS = Object.keys(NETS);
 
