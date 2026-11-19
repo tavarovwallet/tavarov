@@ -1,9 +1,10 @@
 /* t109: X Layer in the Tavarov Pay till (pay-app/www), against the fake node.
 
-   1. As committed (XLAYER_PAY = null): no X Layer anywhere in the till —
+   1. With XLAYER_PAY = null (served that way, as before the deploy; turning
+      X Layer off again is one line): no X Layer anywhere in the till —
       Settings lists BNB Chain, Ethereum and Base only.
-   2. With the address filled in (the test serves app.js with XLAYER_PAY set
-      and the fake node's token in place of USDT0, as the deploy will make it):
+   2. As committed (XLAYER_PAY = the mainnet contract deployed 19 Nov 2026;
+      the test serves the fake node's contract and token in its place):
       Settings offers "X Layer"; turning it on checks the seller's address is
       not a contract there; the till offers the network; a 2.5 USDT sale on X
       Layer makes a payment-page link with net "xlayer" and the same invoice,
@@ -41,16 +42,18 @@ const appSrv = http.createServer((req, res) => {
   const file = path.join(ROOT, rel);
   if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()){ res.writeHead(404); res.end(); return; }
   let body = fs.readFileSync(file);
-  if (patched && rel === 'app.js'){
+  if (rel === 'app.js'){
     let s = body.toString('utf8');
-    if (!s.includes('const XLAYER_PAY = null;') || s.split(USDT0).length !== 2) throw new Error('app.js X Layer block not as expected');
-    s = s.replace('const XLAYER_PAY = null;', "const XLAYER_PAY = '" + ADDR.pay + "';").replace(USDT0, ADDR.usdt);
+    const line = /^const XLAYER_PAY = [^\n]*$/m;
+    if (!line.test(s) || s.split(USDT0).length !== 2) throw new Error('app.js X Layer block not as expected');
+    s = patched ? s.replace(line, "const XLAYER_PAY = '" + ADDR.pay + "';").replace(USDT0, ADDR.usdt) : s.replace(line, 'const XLAYER_PAY = null;');
     body = Buffer.from(s, 'utf8');
   }
   res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
   res.end(body);
 });
 await new Promise(r => appSrv.listen(APP_PORT, r));
+R.ok('as committed: XLAYER_PAY = the X Layer mainnet contract deployed 19 Nov 2026', /^const XLAYER_PAY = '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4';/m.test(fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8')));
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
 const hosts = [], errors = [];

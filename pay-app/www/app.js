@@ -60,7 +60,7 @@ const NETS = {
    Two node operators, OKX and dRPC (TapeOut's TapeKit list, Sep 2026).
    NoN Wallet does not know X Layer yet, which costs nothing here: the code
    on screen is the payment page, paid from OKX Wallet, MetaMask and others. */
-const XLAYER_PAY = null;
+const XLAYER_PAY = '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4';   // X Layer mainnet, deployed 19 Nov 2026
 if (XLAYER_PAY) NETS.xlayer = { code:'xlayer', key:'xlayer', name:'X Layer', chainId:196, blockSec:1,
   rpcs:['https://rpc.xlayer.tech','https://xlayer.drpc.org','https://xlayerrpc.okx.com'],
   logRpcs:['https://rpc.xlayer.tech','https://xlayer.drpc.org'],
