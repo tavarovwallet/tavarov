@@ -6,7 +6,8 @@
  *  1. Checkout → we create an invoice with the Tavarov Pay API and send the
  *     customer to its payment page.
  *  2. The customer pays from any wallet. The money goes straight to the shop's
- *     wallet through the Tavarov Pay contract on BNB Chain.
+ *     wallet through the Tavarov Pay contract (BNB Chain, Ethereum, Base or
+ *     X Layer) or in one Solana transaction.
  *  3. We learn about the payment from the webhook, from the customer coming
  *     back to the "order received" page, or from background re-checks — and in
  *     every case we ask the API ourselves before marking the order paid.
@@ -35,6 +36,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		'bnb'      => 'bnb',
 		'ethereum' => 'eth',
 		'base'     => 'base',
+		'xlayer'   => 'xlayer',
 		'solana'   => 'solana',
 	);
 
@@ -48,7 +50,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$this->id                 = 'tavarov_pay';
 		$this->has_fields         = false;
 		$this->method_title       = __( 'Tavarov Pay (USDT / USDC)', 'tavarov-pay' );
-		$this->method_description = __( 'Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment.', 'tavarov-pay' );
+		$this->method_description = __( 'Accept USDT and USDC on BNB Chain, Ethereum, Base, X Layer or Solana. The customer pays from any wallet and the money goes straight to your wallet — Tavarov Pay never holds it. Fee: 1% per payment.', 'tavarov-pay' );
 		$this->icon               = apply_filters( 'tavarov_pay_icon', TAVAROV_PAY_URL . 'assets/icon.svg' );
 		$this->supports           = array( 'products' );
 
@@ -117,11 +119,12 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			'network'        => array(
 				'title'       => __( 'Network', 'tavarov-pay' ),
 				'type'        => 'select',
-				'description' => __( 'Where the customer pays. BNB Chain, Base and Solana cost a fraction of a cent per payment; Ethereum network fees are noticeably higher. Base has USDC only. Test keys (tp_test_) always use the BNB test network.', 'tavarov-pay' ),
+				'description' => __( 'Where the customer pays. BNB Chain, Base, X Layer and Solana cost a fraction of a cent per payment; Ethereum network fees are noticeably higher. Base has USDC only. On X Layer USDT is USDT0 and the customer pays gas in OKB from MetaMask, OKX Wallet or another EVM wallet. Test keys (tp_test_) always use the BNB test network.', 'tavarov-pay' ),
 				'options'     => array(
 					'bnb'      => 'BNB Chain',
 					'ethereum' => 'Ethereum',
 					'base'     => 'Base',
+					'xlayer'   => 'X Layer',
 					'solana'   => 'Solana',
 				),
 				'default'     => 'bnb',
@@ -390,7 +393,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @param string   $amount   Amount.
 	 * @param string   $currency USDT|USDC.
 	 * @param int      $attempt  Attempt number.
-	 * @param string   $network  Network key (bnb, ethereum, base, solana).
+	 * @param string   $network  Network key (bnb, ethereum, base, xlayer, solana).
 	 * @return array
 	 */
 	private function invoice_request( $order, $amount, $currency, $attempt, $network = 'bnb' ) {
@@ -766,7 +769,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * Explorer link for a payment transaction, by the order's network.
 	 * Returns an empty string when the id does not look like a transaction of that network.
 	 *
-	 * @param string $network Network key saved on the order (bnb, ethereum, base, solana).
+	 * @param string $network Network key saved on the order (bnb, ethereum, base, xlayer, solana).
 	 * @param string $tx      Transaction id from the API.
 	 * @param bool   $test    Test mode (BNB test network).
 	 * @return string
@@ -785,6 +788,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		$hosts = array(
 			'ethereum' => 'https://etherscan.io/tx/',
 			'base'     => 'https://basescan.org/tx/',
+			'xlayer'   => 'https://web3.okx.com/explorer/x-layer/tx/',
 		);
 		return ( isset( $hosts[ $network ] ) ? $hosts[ $network ] : 'https://bscscan.com/tx/' ) . $tx;
 	}

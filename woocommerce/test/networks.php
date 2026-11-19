@@ -1,5 +1,6 @@
 <?php
-/* Сети в плагине (2 октября 2026): BNB Chain, Ethereum, Base, Solana.
+/* Сети в плагине (2 октября 2026): BNB Chain, Ethereum, Base, Solana;
+   X Layer — с 20 ноября 2026 (1.2.0).
    php test/networks.php — без сервера: проверяет, что уходит в API и что
    принимается из ответа. */
 namespace Automattic\WooCommerce\Blocks\Payments\Integrations { abstract class AbstractPaymentMethodType { protected $name; protected $settings = array(); public function get_setting( $k, $d = '' ) { return $this->settings[ $k ] ?? $d; } } }
@@ -45,6 +46,48 @@ $inv3 = $inv; unset( $inv3['network'] );
 check( 'ответ без сети при заказе в Solana — не принят', false === call( $g, 'invoice_is_sane', $inv3, '19.99', 'USDT', 'solana' ) );
 $inv4 = $inv; $inv4['network'] = 'eth';
 check( 'Ethereum: API пишет eth — принят', true === call( $g, 'invoice_is_sane', $inv4, '19.99', 'USDT', 'ethereum' ) );
+
+/* X Layer (1.2.0): USDT остаётся USDT (там USDT0), в запросе network=xlayer,
+   API отвечает network "xlayer", ссылка на транзакцию — в обозреватель OKX. */
+$g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE, 'network' => 'xlayer', 'currency' => 'USDT' ) );
+check( 'X Layer: USDT как выбрано (USDT0 есть)', call( $g, 'payment_route' ) === array( 'xlayer', 'USDT' ) );
+$g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE, 'network' => 'xlayer', 'currency' => 'USDC' ) );
+check( 'X Layer: USDC как выбрано', call( $g, 'payment_route' ) === array( 'xlayer', 'USDC' ) );
+$b = call( $g, 'invoice_request', $o, '19.99', 'USDC', 0, 'xlayer' );
+check( 'X Layer: в запросе network=xlayer, без solana_address', 'xlayer' === ( $b['network'] ?? '' ) && ! isset( $b['solana_address'] ) );
+$inv5 = $inv; $inv5['network'] = 'xlayer';
+check( 'X Layer: ответ API в сети xlayer — принят', true === call( $g, 'invoice_is_sane', $inv5, '19.99', 'USDT', 'xlayer' ) );
+$inv6 = $inv; $inv6['network'] = 'bnb';
+check( 'X Layer: ответ API в BNB — не принят', false === call( $g, 'invoice_is_sane', $inv6, '19.99', 'USDT', 'xlayer' ) );
+$inv7 = $inv; unset( $inv7['network'] );
+check( 'X Layer: ответ без сети — не принят', false === call( $g, 'invoice_is_sane', $inv7, '19.99', 'USDT', 'xlayer' ) );
+$TX = '0x' . str_repeat( 'Ab', 32 );
+check( 'X Layer: ссылка на транзакцию — обозреватель OKX', 'https://web3.okx.com/explorer/x-layer/tx/' . strtolower( $TX ) === Tavarov_Pay_Gateway::explorer_link( 'xlayer', $TX, false ) );
+check( 'X Layer: не транзакция — без ссылки', '' === Tavarov_Pay_Gateway::explorer_link( 'xlayer', 'abc', false ) );
+check( 'Base по-прежнему BaseScan, BNB — BscScan', 'https://basescan.org/tx/' . strtolower( $TX ) === Tavarov_Pay_Gateway::explorer_link( 'base', $TX, false ) && 'https://bscscan.com/tx/' . strtolower( $TX ) === Tavarov_Pay_Gateway::explorer_link( 'bnb', $TX, false ) );
+$g = gw( array( 'enabled' => 'yes', 'api_key' => $TEST, 'network' => 'xlayer' ) );
+check( 'X Layer и тестовый ключ — тестовая сеть BNB', call( $g, 'payment_route' ) === array( 'bnb', 'USDT' ) );
+/* Оплата по счёту X Layer: заказ закрывается только по ответу API о ТОМ ЖЕ
+   счёте, сумме и валюте; в заметке — ссылка в обозреватель X Layer. */
+$IDX = '0x' . str_repeat( 'cd', 32 );
+$ox = new WC_Order( 8, '19.99' );
+$ox->update_meta_data( '_tavarov_pay_invoice', $IDX ); $ox->update_meta_data( '_tavarov_pay_amount', '19.99' );
+$ox->update_meta_data( '_tavarov_pay_currency', 'USDT' ); $ox->update_meta_data( '_tavarov_pay_network', 'xlayer' ); $ox->update_meta_data( '_tavarov_pay_test', 'no' );
+$g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE, 'network' => 'xlayer' ) );
+$paid = array( 'id' => $IDX, 'status' => 'paid', 'amount' => '19.99', 'currency' => 'USDC', 'network' => 'xlayer', 'payment' => array( 'amount' => '19.99', 'payer' => '0x' . str_repeat( '11', 20 ), 'tx' => $TX ) );
+check( 'X Layer: «оплачено» в другой валюте — заказ НЕ оплачен', false === $g->apply_invoice( $ox, $paid ) && ! $ox->is_paid() );
+$paid['currency'] = 'USDT'; $paid['amount'] = '19.98';
+check( 'X Layer: «оплачено» на другую сумму — заказ НЕ оплачен', false === $g->apply_invoice( $ox, $paid ) && ! $ox->is_paid() );
+$paid['amount'] = '19.99'; $paid['id'] = '0x' . str_repeat( 'ef', 32 );
+check( 'X Layer: чужой счёт — заказ НЕ оплачен', false === $g->apply_invoice( $ox, $paid ) && ! $ox->is_paid() );
+$paid['id'] = $IDX;
+check( 'X Layer: тот же счёт, сумма и валюта — оплачен', true === $g->apply_invoice( $ox, $paid ) && $ox->is_paid() );
+check( 'X Layer: в заметке ссылка в обозреватель OKX', false !== strpos( implode( "\n", $ox->notes ), 'https://web3.okx.com/explorer/x-layer/tx/' . strtolower( $TX ) ) );
+
+$g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE ) );
+$ff = $g->get_form_fields();
+check( 'в настройках сеть X Layer есть', isset( $ff['network']['options']['xlayer'] ) && 'X Layer' === $ff['network']['options']['xlayer'] );
+check( 'версия 1.2.0 в заголовке и в readme (Stable tag)', '1.2.0' === TAVAROV_PAY_VERSION && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/tavarov-pay.php' ), 'Version:           1.2.0' ) && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/readme.txt' ), 'Stable tag: 1.2.0' ) && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/readme.txt' ), '= 1.2.0 =' ) );
 
 $g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE, 'network' => 'solana', 'solana_address' => '', 'debug' => 'yes' ) );
 $r = $g->process_payment( 7 );

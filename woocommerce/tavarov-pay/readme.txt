@@ -4,17 +4,17 @@ Tags: crypto, usdt, usdc, cryptocurrency, payment gateway
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept USDT and USDC on BNB Chain, Ethereum, Base or Solana. Customers pay from any wallet, money goes straight to yours. 1% fee.
+Accept USDT and USDC on BNB Chain, Ethereum, Base, X Layer or Solana. Customers pay from any wallet, money goes straight to yours. 1% fee.
 
 == Description ==
 
 Tavarov Pay adds a "USDT or USDC" payment method to WooCommerce checkout.
 
-At checkout the customer is sent to a Tavarov Pay payment page with a QR code and "pay with wallet" buttons. They pay from any wallet — MetaMask, Trust Wallet, OKX, Phantom, NoN Wallet and others. You choose the network in the settings: BNB Chain, Ethereum, Base or Solana. On BNB Chain, Ethereum and Base the payment goes through a small public contract; on Solana it is one transaction the customer signs. Either way **99% lands in your wallet in the same transaction, 1% is the Tavarov Pay fee.** Nobody holds your money, there are no payouts to wait for and no chargebacks.
+At checkout the customer is sent to a Tavarov Pay payment page with a QR code and "pay with wallet" buttons. They pay from any wallet — MetaMask, Trust Wallet, OKX, Phantom, NoN Wallet and others. You choose the network in the settings: BNB Chain, Ethereum, Base, X Layer or Solana. On BNB Chain, Ethereum, Base and X Layer the payment goes through a small public contract; on Solana it is one transaction the customer signs. Either way **99% lands in your wallet in the same transaction, 1% is the Tavarov Pay fee.** Nobody holds your money, there are no payouts to wait for and no chargebacks.
 
 Your order is marked paid automatically:
 
@@ -26,7 +26,8 @@ In every case the plugin asks the Tavarov Pay API itself before marking an order
 
 **Features**
 
-* USDT or USDC on BNB Chain, Ethereum or Solana; USDC on Base. Network fees are a fraction of a cent on BNB Chain, Base and Solana and noticeably higher on Ethereum.
+* USDT or USDC on BNB Chain, Ethereum, X Layer or Solana; USDC on Base. Network fees are a fraction of a cent on BNB Chain, Base, X Layer and Solana and noticeably higher on Ethereum.
+* X Layer (OKX's network): USDT is USDT0, USDC is Circle's; the customer pays gas in OKB from MetaMask, OKX Wallet or another EVM wallet.
 * Classic checkout and the Checkout block.
 * High-Performance Order Storage (HPOS) compatible.
 * Underpaid or wrong-currency payments put the order on hold with a note instead of completing it.
@@ -36,7 +37,7 @@ In every case the plugin asks the Tavarov Pay API itself before marking an order
 **Requirements**
 
 * Store currency: US dollar (USD). Prices are charged 1:1 in USD stablecoins.
-* A wallet that will receive the money: any EVM wallet for BNB Chain, Ethereum and Base; for Solana, also a Solana wallet address (set in the plugin settings).
+* A wallet that will receive the money: any EVM wallet for BNB Chain, Ethereum, Base and X Layer; for Solana, also a Solana wallet address (set in the plugin settings).
 * A free API key from the developer cabinet: https://wallet.tavarov.com/dev
 
 The payment contracts are open source and verified on BscScan: https://bscscan.com/address/0x1Fc681FA250A17e66B57B7150F2EeD4e71D1Ca35#code
@@ -55,7 +56,7 @@ What is sent, and when:
 Tavarov Pay terms of use: https://tavarov.com/terms.html
 Tavarov Pay privacy policy: https://tavarov.com/privacy.html
 
-Payments themselves happen on the chosen network between the customer's wallet and your wallet (through the Tavarov Pay contract on BNB Chain, Ethereum and Base); they are public, like every blockchain transaction.
+Payments themselves happen on the chosen network between the customer's wallet and your wallet (through the Tavarov Pay contract on BNB Chain, Ethereum, Base and X Layer); they are public, like every blockchain transaction.
 
 == Installation ==
 
@@ -93,6 +94,9 @@ No. Payments are in USDT and USDC only.
 2. On Solana the customer scans a Solana Pay code or pays in Phantom or Solflare.
 
 == Changelog ==
+
+= 1.2.0 =
+* New network: X Layer (OKX, chain 196). USDT (USDT0) or USDC, paid through the Tavarov Pay contract; gas in OKB. The order note links the payment to the OKX X Layer explorer.
 
 = 1.1.1 =
 * The order note links the payment to the right explorer: Etherscan, BaseScan or Solscan (it always pointed to BscScan before), and Solana transaction ids are now recorded.
