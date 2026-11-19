@@ -11,14 +11,19 @@
    - t103-usdt-check-page.mjs routes the real endpoint hosts to handle()
      inside Chromium (page.route), with the site's real CSP. */
 
+import { evalNetlist } from '../tools/xlayer/tapeout/circuit.mjs';
+
 export const TRANSFER = 'ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 export const USDT = {
   bsc: '0x55d398326f99059ff775485246999027b3197955',
   eth: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  tron: 'a614f803b6fd780986a42c78ec9c7f77e6ded13c'           // TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+  tron: 'a614f803b6fd780986a42c78ec9c7f77e6ded13c',          // TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+  xlayer: '0x779ded0c9e1022225f8e0630b35a9b54be713736',       // USDT0
+  xlayerOld: '0x1e4a5963abfd975d8c9021ce480b42188849d41d'     // old bridged USDT
 };
 export const USDC = { bsc: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', eth: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-  tronOld: '3487b63d30b5b2c87fb7ffa8bcfade38eaac1abe' };
+  tronOld: '3487b63d30b5b2c87fb7ffa8bcfade38eaac1abe',
+  xlayer: '0xb6ceceab302e2e4948951ee7843fc24e92933061', xlayerE: '0xa8ce8aee21bc2a48a5ef670afcc9274c7bbbc035' };
 
 const pad = (h, n = 64) => h.replace(/^0x/, '').padStart(n, '0');
 const hx = n => '0x' + BigInt(n).toString(16);
@@ -34,7 +39,8 @@ export function makeWorld() {
   const evmChain = () => ({ head: 50000000n, txs: new Map(), tokens: new Map() });
   const w = {
     now,
-    bsc: evmChain(), eth: evmChain(),
+    bsc: evmChain(), eth: evmChain(), xlayer: evmChain(),
+    circuit: null,       // { address, id, netlist, nIn, nOut, lie } — the TapeOut rule circuit on X Layer
     tron: { head: 70000000, txs: new Map(), tokens: new Map() },
     faults: {},          // endpoint url -> 'timeout' | 'garbage' | 'http500' | 'html' | 'lie' | 'null' | 'shape'
     calls: []
@@ -45,6 +51,10 @@ export function makeWorld() {
   w.eth.tokens.set(USDC.eth, { symbol: 'USDC', name: 'USD Coin', decimals: 6 });
   w.tron.tokens.set(USDT.tron, { symbol: 'USDT', name: 'Tether USD', decimals: 6 });
   w.tron.tokens.set(USDC.tronOld, { symbol: 'USDC', name: 'USD Coin', decimals: 6 });
+  w.xlayer.tokens.set(USDT.xlayer, { symbol: 'USDT0', name: 'USDT0', decimals: 6 });
+  w.xlayer.tokens.set(USDC.xlayer, { symbol: 'USDC', name: 'USD Coin', decimals: 6 });
+  w.xlayer.tokens.set(USDT.xlayerOld, { symbol: 'USDT', name: 'Tether USD', decimals: 6 });
+  w.xlayer.tokens.set(USDC.xlayerE, { symbol: 'USDC.e', name: 'Bridged USDC', decimals: 6 });
   return w;
 }
 
@@ -60,7 +70,7 @@ export function addEvmTx(w, net, hash, transfers = [], opts = {}) {
     blockHash: opts.pending ? null : blockHash, blockNumber: opts.pending ? null : hx(block), from,
     gas: '0x186a0', gasPrice: '0x3b9aca00', hash, input: '0xa9059cbb', nonce: '0x7',
     to: transfers[0] ? transfers[0].token : (opts.to || '0x2222222222222222222222222222222222222222'),
-    transactionIndex: opts.pending ? null : '0x3', value: hx(opts.value || 0), type: '0x0', chainId: net === 'bsc' ? '0x38' : '0x1',
+    transactionIndex: opts.pending ? null : '0x3', value: hx(opts.value || 0), type: '0x0', chainId: net === 'bsc' ? '0x38' : net === 'xlayer' ? '0xc4' : '0x1',
     v: '0x93', r: '0x' + pad('1'), s: '0x' + pad('2')
   };
   const logs = transfers.map((t, i) => ({
@@ -129,6 +139,17 @@ function evmAnswer(w, net, url, body) {
     }
     case 'eth_call': {
       const to = String(p[0].to).toLowerCase(), sel = String(p[0].data).slice(2, 10);
+      const cc = w.circuit;
+      if (net === 'xlayer' && cc && to === cc.address.toLowerCase() && sel === '934d06ea') {
+        const d = String(p[0].data).slice(10);
+        const id = BigInt('0x' + d.slice(0, 64)), off = Number(BigInt('0x' + d.slice(64, 128))) * 2, len = Number(BigInt('0x' + d.slice(off, off + 64)));
+        if (id !== BigInt(cc.id)) return { jsonrpc: '2.0', id: body.id, error: { code: 3, message: 'execution reverted: no circuit' } };
+        const inBytes = Buffer.from(d.slice(off + 64, off + 64 + len * 2), 'hex');
+        let o = evalNetlist(cc.netlist, cc.nIn, cc.nOut, inBytes);
+        if (cc.lie || w.faults[url] === 'lie') o = Uint8Array.from([o[0] ^ 3]);
+        w.evals = (w.evals || 0) + 1;
+        return r('0x' + abiUint(32) + abiUint(o.length) + Buffer.from(o).toString('hex').padEnd(64, '0'));
+      }
       const m = c.tokens.get(to);
       if (!m) return { jsonrpc: '2.0', id: body.id, error: { code: -32000, message: 'execution reverted' } };
       if (sel === '95d89b41') return r('0x' + (m.symbolRaw || abiString(m.symbol)));

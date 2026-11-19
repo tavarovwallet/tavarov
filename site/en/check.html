@@ -263,6 +263,9 @@ function render(res){
   if (res.time) row(rows, 'Time', when(res.time));
   if (res.confirmations != null && res.network) row(rows, 'Confirmations', res.network === 'tron'
       ? res.confirmations + (res.solid ? ' (final on TRON)' : ' (not final yet)') : String(res.confirmations));
+  /* Only when RULE_CIRCUIT is set in check-core.js (X Layer, TapeOut). */
+  if (res.circuit && res.circuit.state === 'agrees') row(rows, 'Rule check', 'Matches our published rule: TapeOut circuit #' + res.circuit.id + ' on X Layer');
+  else if (res.circuit && res.circuit.state === 'unavailable') row(rows, 'Rule check', 'Our published rule on X Layer could not be read just now');
   if (rows.childNodes.length) box.appendChild(rows);
 
   if (v === 'green' || res.kind === 'wait' || res.kind === 'not-mine') {

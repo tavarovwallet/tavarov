@@ -43,19 +43,51 @@
       'a614f803b6fd780986a42c78ec9c7f77e6ded13c': { sym: 'USDT', decimals: 6, note: 'Tether USDT on TRON' }
     }
   };
+  /* X Layer (chain 196). OFF until XLAYER_ON is true: with it off, nothing
+     here is asked or shown, and the checker behaves exactly as before.
+     Verified 19 Nov 2026:
+       USDT0 0x779D…3736 — OKX USDT0 FAQ (okx.com/help/usdt0-faq) and the
+         X Layer contracts page (web3.okx.com/onchainos/dev-docs/xlayer/…/contracts).
+       USDC 0xB6CE…3061 — Circle, developers.circle.com/stablecoins/usdc-contract-addresses
+         (native USDC on X Layer since 7 Aug 2026). */
+  OFFICIAL.xlayer = {
+    '0x779ded0c9e1022225f8e0630b35a9b54be713736': { sym: 'USDT', decimals: 6, note: 'USDT0, the USDT on X Layer (Tether / OKX)' },
+    '0xb6ceceab302e2e4948951ee7843fc24e92933061': { sym: 'USDC', decimals: 6, note: 'Circle USDC on X Layer' }
+  };
   // keys as stored by the readers: 40 hex, lowercase, no 0x
   for (const n of Object.keys(OFFICIAL)) for (const k of Object.keys(OFFICIAL[n])) {
     const v = OFFICIAL[n][k]; delete OFFICIAL[n][k]; OFFICIAL[n][k.replace(/^0x/, '').toLowerCase()] = v;
   }
   // Real token, but the issuer has withdrawn it: never green.
   const DISCONTINUED = {
-    tron: { '3487b63d30b5b2c87fb7ffa8bcfade38eaac1abe': { sym: 'USDC', note: 'Circle stopped issuing and supporting USDC on TRON in 2024' } }
+    tron: { '3487b63d30b5b2c87fb7ffa8bcfade38eaac1abe': { sym: 'USDC', note: 'Circle stopped issuing and supporting USDC on TRON in 2024' } },
+    /* Real bridged tokens on X Layer, but not the issuer's own: amber, never
+       green, and not "fake" either (they are OKX's bridge tokens). */
+    xlayer: {
+      '1e4a5963abfd975d8c9021ce480b42188849d41d': { sym: 'USDT', note: 'the old bridged USDT on X Layer, which OKX is replacing with USDT0',
+        title: 'Old bridged USDT on X Layer, not USDT0',
+        text: 'This is the old bridged USDT contract on X Layer, which OKX is phasing out in favour of USDT0. It is not counted as a USDT payment here; ask the buyer to pay in USDT0 or check with your exchange first.' },
+      '74b7f16337b8972027f6196a17a631ac6de26d22': { sym: 'USDC', note: 'an older bridged USDC on X Layer, not issued by Circle',
+        title: 'Bridged USDC on X Layer, not Circle’s USDC',
+        text: 'This is an older bridged USDC contract on X Layer, not the USDC Circle issues there. It is not counted as a USDC payment here.' },
+      'a8ce8aee21bc2a48a5ef670afcc9274c7bbbc035': { sym: 'USDC', note: 'USDC.e, bridged from Ethereum, not issued by Circle',
+        title: 'USDC.e on X Layer, not Circle’s USDC',
+        text: 'This is USDC.e, a bridged token on X Layer, not the USDC Circle issues there. It is not counted as a USDC payment here.' }
+    }
   };
+  const XLAYER_ON = false;
+  /* The payment rule, taped out with TapeOut on X Layer (tools/xlayer/tapeout).
+     null = not taped out yet: verdicts are not cross-checked. When set, every
+     verdict is compared with what the published circuit says for the same
+     facts (a free read-only call); if the circuit says otherwise, no verdict. */
+  const RULE_CIRCUIT = null;          // { circuits: '0x…', id: 1 }
 
   const NETWORKS = {
     bsc:  { name: 'BNB Chain', native: 'BNB', nativeDecimals: 18, minConf: 15, explorerTx: h => 'https://bscscan.com/tx/' + h },
     eth:  { name: 'Ethereum',  native: 'ETH', nativeDecimals: 18, minConf: 12, explorerTx: h => 'https://etherscan.io/tx/' + h },
-    tron: { name: 'TRON',      native: 'TRX', nativeDecimals: 6,  minConf: 19, explorerTx: h => 'https://tronscan.org/#/transaction/' + h }
+    tron: { name: 'TRON',      native: 'TRX', nativeDecimals: 6,  minConf: 19, explorerTx: h => 'https://tronscan.org/#/transaction/' + h },
+    // one block a second; 20 blocks is the same safety margin in time as BNB Chain's 15
+    xlayer: { name: 'X Layer', native: 'OKB', nativeDecimals: 18, minConf: 20, explorerTx: h => 'https://web3.okx.com/explorer/x-layer/tx/' + h }
   };
 
   /* Public endpoints, no keys. Each one must also be in connect-src of
@@ -65,7 +97,11 @@
     bsc:  ['https://bsc-dataseed.binance.org', 'https://bsc-rpc.publicnode.com', 'https://1rpc.io/bnb', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc.drpc.org'],
     eth:  ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'],
     // TronGrid without a key answers 429 under load: three TRON nodes, not two
-    tron: ['https://api.trongrid.io', 'https://tron-rpc.publicnode.com', 'https://api.tronstack.io']
+    tron: ['https://api.trongrid.io', 'https://tron-rpc.publicnode.com', 'https://api.tronstack.io'],
+    /* Two independent operators: OKX (the sequencer, two domains) and dRPC —
+       TapeOutProtocol/TapeKit kernel/src/config.js, checked 19 Sep 2026.
+       Enabling X Layer also needs these hosts in connect-src of site/_headers. */
+    xlayer: ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org', 'https://xlayerrpc.okx.com']
   };
 
   // ---------- explorers ----------
@@ -76,9 +112,20 @@
   const EXPLORERS = { 'bscscan.com': 'bsc', 'etherscan.io': 'eth', 'tronscan.org': 'tron' };
   const TESTNET_SUB = /^(testnet|sepolia|holesky|hoodi|goerli|rinkeby|ropsten|kovan|nile|shasta|opbnb-testnet)\./;
 
-  function checkHost(rawHost) {
+  /* X Layer's explorers live on OKX's general domains, so the PATH says which
+     network it is: web3.okx.com/explorer/x-layer, okx.com/web3/explorer/xlayer
+     (the older address) and oklink.com/x-layer (OKLink, OKX's explorer), each
+     with an optional language segment. Only X Layer paths count as official. */
+  const XL_HOSTS = ['web3.okx.com', 'www.okx.com', 'okx.com', 'www.oklink.com', 'oklink.com'];
+  const XL_PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2,4})?\/)?(?:web3\/explorer\/|explorer\/)?(x-?layer)(-test(?:net)?)?(?:\/|$)/i;
+  function checkHost(rawHost, pathname, xlayer) {
     let host = String(rawHost || '').toLowerCase();
     if (host.endsWith('.')) host = host.slice(0, -1);
+    if (xlayer && XL_HOSTS.includes(host)) {
+      const m = String(pathname || '').match(XL_PATH);
+      const viaOkx = host.endsWith('okx.com');
+      if (m && (!viaOkx || /\/explorer\//i.test(pathname))) return { host, official: true, network: 'xlayer', testnet: !!m[2] };
+    }
     for (const d of Object.keys(EXPLORERS)) {
       if (host === d || host === 'www.' + d) return { host, official: true, network: EXPLORERS[d], testnet: false };
       if (host.endsWith('.' + d)) {
@@ -95,7 +142,8 @@
   const RE_HASH = /(?<![0-9a-fA-Fx])[0-9a-fA-F]{64}(?![0-9a-fA-F])/;
   const RE_URL = /(?:https?:\/\/)?(?:[^\s\/?#@]+@)?[^\s\/?#:@]+\.[a-z¡-￿0-9-]{2,}(?::\d+)?(?:[\/?#][^\s]*)?/i;
 
-  function parseInput(text) {
+  function parseInput(text, opts) {
+    const xlayer = !!(opts && opts.xlayer);
     const s = String(text || '').trim();
     if (!s) return { kind: 'empty' };
     let link = null, scan = s;
@@ -107,7 +155,7 @@
         if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
         try {
           const url = new URL(u);           // the URL parser turns IDN into xn-- and drops user@
-          link = checkHost(url.hostname);
+          link = checkHost(url.hostname, url.pathname, xlayer);
           link.href = url.href;
           scan = decodeURIComponent(url.pathname + ' ' + url.search + ' ' + url.hash);
         } catch (e) {
@@ -461,7 +509,8 @@
       now: opts.now || (() => Date.now()),
       log: opts.log
     };
-    const p = parseInput(input);
+    const xlayer = opts.xlayer != null ? !!opts.xlayer : XLAYER_ON;
+    const p = parseInput(input, { xlayer });
     const out = { input: p, link: p.link || null };
     if (p.kind === 'empty') return Object.assign(out, { verdict: 'input', title: 'Paste the transaction hash or link first' });
     if (p.kind === 'address') return Object.assign(out, { verdict: 'input', title: 'This is a wallet address, not a payment',
@@ -469,7 +518,7 @@
     if (p.kind !== 'hash') return Object.assign(out, { verdict: 'input', title: 'No transaction hash found',
       text: 'Paste a transaction hash (64 characters, usually starting with 0x on BNB Chain and Ethereum) or an explorer link that contains one.' });
 
-    const nets = ['bsc', 'eth', 'tron'];
+    const nets = xlayer ? ['bsc', 'eth', 'tron', 'xlayer'] : ['bsc', 'eth', 'tron'];
     let results;
     try {
       results = await Promise.all(nets.map(n => readNetwork(ctx, n, p.hash).catch(() => ({ state: 'error' }))));
@@ -478,7 +527,7 @@
     if (found.length > 1) return Object.assign(out, couldNot('The same hash answered on two networks, which should not happen.'));
     if (!found.length) {
       if (results.every(r => r.state === 'notfound'))
-        return Object.assign(out, { verdict: 'notfound', title: 'Not found on BNB Chain, Ethereum or TRON',
+        return Object.assign(out, { verdict: 'notfound', title: xlayer ? 'Not found on BNB Chain, Ethereum, TRON or X Layer' : 'Not found on BNB Chain, Ethereum or TRON',
           text: 'A real payment always exists on the blockchain. Do not hand over the goods.' });
       const dis = results.some(r => r.state === 'disagree');
       return Object.assign(out, couldNot(dis
@@ -486,7 +535,51 @@
         : 'Some blockchain nodes did not answer.'));
     }
     const { net, r } = found[0];
-    return Object.assign(out, await judge(net, p.hash, r.read, r.head, r.solid, ctx, opts));
+    const res = Object.assign(out, await judge(net, p.hash, r.read, r.head, r.solid, ctx, opts));
+    const circuit = opts.ruleCircuit !== undefined ? opts.ruleCircuit : RULE_CIRCUIT;
+    if (circuit && res.facts) return crossCheck(ctx, circuit, res);
+    return res;
+  }
+
+  /* ---------- the published rule (TapeOut circuit on X Layer) ----------
+     The facts judge() found are packed into one byte (bit 0 mined, 1 success,
+     2 real, 3 fake, 4 seller's address given, 5 real money to it, 6 enough
+     confirmations) and run through the taped-out circuit with eval(), a free
+     read-only call, on two X Layer node operators. Its two output bits are
+     ACCEPT (green) and REJECT (red); neither is amber.
+     - both nodes answer the same and it matches the verdict: the verdict stands,
+       marked as confirmed by the circuit;
+     - the circuit says something else: no verdict ("could not check");
+     - X Layer nodes do not answer: the verdict stands, marked unconfirmed.
+     tools/xlayer/tapeout/circuit.mjs builds the netlist; audit/t106 and t108
+     prove it equals this mapping for every input. */
+  const EVAL_SEL = '934d06ea';        // eval(uint256,bytes)
+  const FACT_BITS = ['mined', 'success', 'real', 'fake', 'addr', 'toSeller', 'enough'];
+  function factsByte(f) { let v = 0; FACT_BITS.forEach((k, i) => { if (f[k]) v |= 1 << i; }); return v; }
+  function expectedOut(verdict) { return verdict === 'green' ? 1 : verdict === 'red' ? 2 : 0; }
+  async function evalCircuit(ctx, url, circuit, byte) {
+    const word = v => BigInt(v).toString(16).padStart(64, '0');
+    const data = '0x' + EVAL_SEL + word(circuit.id) + word(64) + word(1) + byte.toString(16).padStart(2, '0') + '0'.repeat(62);
+    const r = await rpc(ctx, url, 'eth_call', [{ to: circuit.circuits, data }, 'latest']);
+    const h = String(r || '').replace(/^0x/, '');
+    if (!/^[0-9a-f]*$/i.test(h) || h.length < 128 || parseInt(h.slice(0, 64), 16) !== 32) throw bad('eval shape');
+    const len = parseInt(h.slice(64, 128), 16);
+    if (!(len >= 1 && len <= 32) || h.length < 128 + len * 2) throw bad('eval length');
+    return parseInt(h.slice(128, 130), 16) & 3;
+  }
+  async function crossCheck(ctx, circuit, res) {
+    const byte = factsByte(res.facts), want = expectedOut(res.verdict);
+    const list = (ctx.endpoints.xlayer || ENDPOINTS.xlayer).slice(0, 2);
+    const got = await Promise.all(list.map(u => evalCircuit(ctx, u, circuit, byte).catch(e => { ctx.log && ctx.log('xlayer', u, e && e.message); return null; })));
+    const info = { circuits: circuit.circuits, id: circuit.id, input: byte, expected: want };
+    if (got.length < 2 || got.some(g => g === null) || got[0] !== got[1]) { res.circuit = Object.assign(info, { state: 'unavailable' }); return res; }
+    if (got[0] !== want) {
+      const keep = { input: res.input, link: res.link, network: res.network, networkName: res.networkName, hash: res.hash, explorer: res.explorer };
+      return Object.assign(keep, couldNot('Our published payment rule (TapeOut circuit #' + circuit.id + ' on X Layer) does not agree with this verdict.'),
+        { circuit: Object.assign(info, { state: 'mismatch', output: got[0] }) });
+    }
+    res.circuit = Object.assign(info, { state: 'agrees', output: got[0] });
+    return res;
   }
   function couldNot(why) {
     return { verdict: 'error', title: 'Could not check right now', text: why + ' Try again in a minute. Until then, treat the payment as not confirmed.' };
@@ -495,13 +588,15 @@
   async function judge(net, hash, rd, head, solid, ctx, opts) {
     const N = NETWORKS[net];
     const base = { network: net, networkName: N.name, hash, explorer: N.explorerTx(net === 'tron' ? hash : '0x' + hash) };
-    if (rd.pending) return Object.assign(base, { verdict: 'amber', kind: 'pending', title: 'Pending: not money yet',
+    const facts = { mined: false, success: false, real: false, fake: false, addr: false, toSeller: false, enough: false };
+    if (rd.pending) return Object.assign(base, { facts, verdict: 'amber', kind: 'pending', title: 'Pending: not money yet',
       text: 'The transaction is waiting to be included in a block. It may still fail or never happen. Wait, then check again.' });
     const conf = head >= rd.block ? Number(head - rd.block + 1n) : 0;
     const nowS = Math.floor(ctx.now() / 1000);
     if (rd.time > nowS + 600) return Object.assign(base, couldNot('The block time is in the future.'));
     Object.assign(base, { time: rd.time, confirmations: conf, block: rd.block.toString() });
-    if (!rd.success) return Object.assign(base, { verdict: 'amber', kind: 'failed', title: 'Failed transaction: no money moved',
+    facts.mined = true;
+    if (!rd.success) return Object.assign(base, { facts, verdict: 'amber', kind: 'failed', title: 'Failed transaction: no money moved',
       text: 'The transaction is on the blockchain but it failed' + (rd.contractRet && rd.contractRet !== 'SUCCESS' ? ' (' + rd.contractRet + ')' : '') + '. Nothing was paid. Do not hand over the goods.' });
 
     const off = OFFICIAL[net], disc = DISCONTINUED[net] || {};
@@ -516,7 +611,7 @@
         if (meta.decimals !== o.decimals) return Object.assign(base, couldNot('Could not read the token details.'));
         Object.assign(it, { cls: 'real', family: o.sym, decimals: o.decimals, amount: formatUnits(t.raw, o.decimals), note: o.note });
       } else if (disc[t.token]) {
-        Object.assign(it, { cls: 'discontinued', family: disc[t.token].sym, decimals: meta.decimals,
+        Object.assign(it, { cls: 'discontinued', tokenKey: t.token, family: disc[t.token].sym, decimals: meta.decimals,
           amount: meta.decimals != null ? formatUnits(t.raw, meta.decimals) : t.raw.toString(), note: disc[t.token].note });
       } else {
         const like = stableLike(meta.symbol, meta.name);
@@ -565,6 +660,10 @@
     Object.assign(base, { mine, amountCheck, solid });
 
     const enough = net === 'tron' ? !!solid : conf >= N.minConf;
+    /* What the verdict below rests on, for the published rule (crossCheck). */
+    Object.assign(facts, { success: true, real: real.length > 0, fake: fakes.length > 0, addr: !!(mine && !mine.invalid),
+      toSeller: !!(mine && !mine.invalid && mine.ok), enough });
+    base.facts = facts;
     if (fakes.length) {
       const f = fakes[0];
       const copy = fakes.some(x => x.cls === 'fake');
@@ -585,8 +684,9 @@
       const fams = [...new Set(real.map(x => x.family))];
       return Object.assign(base, { verdict: 'green', kind: 'real', title: 'Real ' + fams.join(' and ') });
     }
-    if (discs.length) return Object.assign(base, { verdict: 'amber', kind: 'discontinued', title: 'Old USDC on TRON, no longer supported by Circle',
-      text: 'This is the USDC contract Circle stopped supporting on TRON in 2024. Many wallets and exchanges no longer accept it. Do not count it as a USDC payment.' });
+    if (discs.length) return Object.assign(base, { verdict: 'amber', kind: 'discontinued',
+      title: disc[discs[0].tokenKey].title || 'Old USDC on TRON, no longer supported by Circle',
+      text: disc[discs[0].tokenKey].text || 'This is the USDC contract Circle stopped supporting on TRON in 2024. Many wallets and exchanges no longer accept it. Do not count it as a USDC payment.' });
     const other = items.filter(x => x.cls === 'other');
     if (other.length) {
       const names = [...new Set(other.map(x => x.symbol || x.name || 'an unknown token'))].slice(0, 3).join(', ');
@@ -603,6 +703,7 @@
 
   root.UsdtCheck = {
     check, parseInput, checkHost, normName, stableLike, normalizeAddress, parseAmount, formatUnits,
-    tronHexToBase58, tronBase58ToHex, decodeString, OFFICIAL, DISCONTINUED, ENDPOINTS, NETWORKS, EXPLORERS
+    tronHexToBase58, tronBase58ToHex, decodeString, OFFICIAL, DISCONTINUED, ENDPOINTS, NETWORKS, EXPLORERS,
+    XLAYER_ON, RULE_CIRCUIT, factsByte
   };
 })(typeof window !== 'undefined' ? window : globalThis);
