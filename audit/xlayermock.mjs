@@ -47,9 +47,9 @@ function creationKind(n, data){
 
 function revert(msg){ const e = new Error('execution reverted: ' + msg); e.revert = true; return e; }
 
-function viewCall(n, to, data, from){
+function viewCall(n, to, data, from, value){
   to = lc(to); data = lc(data);
-  if (n.tapeout && n.tapeout.owns(to)) return n.tapeout.call(to, data, from);
+  if (n.tapeout && n.tapeout.owns(to)) return n.tapeout.call(to, data, from, value);
   const s = data.slice(0, 10), arg = i => '0x' + data.slice(10 + i * 64 + 24, 10 + i * 64 + 64);
   if (n.tokens[to] !== undefined){
     if (s === sel('decimals()')) return W(n.tokens[to]);
@@ -81,9 +81,9 @@ function viewCall(n, to, data, from){
 }
 
 /* State change of a call to an existing contract. */
-function applyCall(n, from, to, data){
+function applyCall(n, from, to, data, rec){
   to = lc(to); data = lc(data); from = lc(from);
-  if (n.tapeout && n.tapeout.owns(to)) return n.tapeout.tx(to, data, from);
+  if (n.tapeout && n.tapeout.owns(to)){ rec.logs = n.tapeout.tx(to, data, from, rec.value) || []; return; }
   const p = n.pays[to];
   const s = data.slice(0, 10), arg = i => '0x' + data.slice(10 + i * 64 + 24, 10 + i * 64 + 64), word = i => BigInt('0x' + data.slice(10 + i * 64, 10 + i * 64 + 64));
   if (p && s === sel('configureToken(address,bool,uint256)')){
@@ -130,7 +130,7 @@ export function handle(n, method, params){
     case 'eth_call': {
       const t = params[0];
       if (!t.to) return create(n, lc(t.from), t.data, null);
-      return viewCall(n, t.to, t.data, t.from);
+      return viewCall(n, t.to, t.data, t.from, t.value ? BigInt(t.value) : 0n);
     }
     case 'eth_sendRawTransaction': {
       const tx = E.utils.parseTransaction(params[0]);
@@ -148,7 +148,7 @@ export function handle(n, method, params){
         contractAddress = lc(E.utils.getContractAddress({ from, nonce: tx.nonce }));
         n.code[contractAddress] = create(n, from, tx.data, contractAddress);
       } else {
-        try{ applyCall(n, from, tx.to, tx.data, rec); } catch(e){ status = 0; }
+        try{ applyCall(n, from, tx.to, tx.data, rec); } catch(e){ status = 0; rec.error = e.message; }
       }
       n.receipts[tx.hash] = { transactionHash: tx.hash, blockNumber: '0x' + n.block.toString(16), status: '0x' + status.toString(16),
                               contractAddress, logs: rec.logs || [] };
