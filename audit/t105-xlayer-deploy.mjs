@@ -185,7 +185,7 @@ R.ok('names: a file without bytecode is refused', /does not hold creation byteco
 // ---------- the command line ----------
 import { execFileSync } from 'node:child_process';
 let out = '';
-try{ execFileSync('node', [path.resolve('../tools/xlayer/deploy-xlayer.mjs'), 'plan'], { env: { PATH: process.env.PATH, HOME: TMP }, stdio: 'pipe' }); }
+try{ execFileSync('node', [new URL('../tools/xlayer/deploy-xlayer.mjs', import.meta.url).pathname, 'plan'], { env: { PATH: process.env.PATH, HOME: TMP }, stdio: 'pipe' }); }
 catch(e){ out = String(e.stderr || '') + String(e.stdout || ''); }
 R.ok('CLI without XLAYER_NET: clear message, exit 1', /STOPPED: Set XLAYER_NET/.test(out), out.trim());
 
