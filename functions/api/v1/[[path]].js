@@ -68,6 +68,21 @@ const NETS = {
     rpcs: ['https://base-rpc.publicnode.com', 'https://mainnet.base.org'],
     pay: '0x5046399643c387d93e1467bad3fd7edf3fb459da',
     tokens: { USDC: { a: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d: 6 } }
+  },
+  /* X Layer (OKX, chain 196, газ в OKB; 20 ноября 2026). Контракт оплаты —
+     тот же TavarovPay v3, что в BNB Chain (выпущен 19.11.2026, тот же адрес в
+     www/pay.html и functions/api/status.js). USDT здесь — USDT0, USDC —
+     родной от Circle; у обоих шесть знаков. Блок раз в секунду: 20 блоков
+     глубины — 20 секунд, как у Base (6 × 2 с) и BNB (12 × 0,75 с) по порядку.
+     logRange: узлы OKX отдают eth_getLogs не шире 100 блоков за раз — шире
+     они отвечают ошибкой, поэтому журнал здесь читается кусками (getLogsRange).
+     Донатов, кассы и партнёрского кабинета в X Layer нет — только счета. */
+  xlayer: {
+    mode: 'live', conf: 20, txLookback: 600, logRange: 100, noDonations: true,
+    rpcs: ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org', 'https://xlayerrpc.okx.com'],
+    pay: '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4',
+    tokens: { USDT: { a: '0x779Ded0c9e1022225f8E0630b35a9b54bE713736', d: 6 },
+              USDC: { a: '0xB6CEceAB302E2E4948951eE7843FC24E92933061', d: 6 } }
   }
 };
 const MODE_NET = { live: 'bnb', test: 'bnbTestnet' };
@@ -81,8 +96,11 @@ const NETWORK_PARAM = {
   ethereum: { live: 'eth',  test: null },
   eth:      { live: 'eth',  test: null },
   base:     { live: 'base', test: null },
+  xlayer:   { live: 'xlayer', test: null },
   solana:   { live: 'solana', test: null }
 };
+/* Список сетей для сообщений об ошибке — в том порядке, что в документации. */
+const NETWORK_NAMES = 'bnb, ethereum, base, xlayer, solana';
 const isSolNet = n => n === 'solana';
 /* Очередь неоплаченных счетов в Solana. В Solana нет журнала контракта,
    который таймер мог бы пролистать: оплату ищут по метке каждого счёта.
@@ -91,7 +109,8 @@ const K_SOLQ = 'v1:solq';
 /* Сети этого режима, где контракт уже выпущен, — с их валютами. */
 function liveNetworks(mode){
   const out = {};
-  for (const [name, m] of Object.entries({ bnb: NETWORK_PARAM.bnb, ethereum: NETWORK_PARAM.ethereum, base: NETWORK_PARAM.base })){
+  for (const [name, m] of Object.entries({ bnb: NETWORK_PARAM.bnb, ethereum: NETWORK_PARAM.ethereum, base: NETWORK_PARAM.base,
+                                           xlayer: NETWORK_PARAM.xlayer })){
     const n = NETS[m[mode]];
     if (n && n.pay) out[name] = Object.keys(n.tokens);
   }
@@ -202,7 +221,8 @@ function netConfig(net, env){
            pay: e.TAVAROV_PAY || base.pay,
            tokens: base.tokens,
            conf: base.conf || CONFIRMATIONS,
-           txLookback: base.txLookback || TX_LOOKBACK };
+           txLookback: base.txLookback || TX_LOOKBACK,
+           logRange: base.logRange || 0 };
 }
 
 async function rpc(urls, method, params){
@@ -219,6 +239,28 @@ async function rpc(urls, method, params){
     } catch(e){ errs.push(host + ': ' + String(e && e.message || e)); }
   }
   throw new Error(errs.join(' | ') || 'no node answered');
+}
+
+/* Журнал контракта за блоки from…to. В сети без logRange — одним запросом,
+   как всегда. Где узлы режут промежуток (X Layer: не шире 100 блоков) —
+   кусками не шире logRange, от новых блоков к старым; stop(кусок) === true
+   прекращает поиск, когда нужное уже нашлось. Кусок, на который не ответил
+   ни один узел, — ошибка всего поиска: молча пропущенные блоки значили бы
+   пропущенную оплату. Результат — по возрастанию блоков, как от узла. */
+async function getLogsRange(cfg, filter, from, to, stop){
+  from = Math.max(0, from);
+  if (to < from) return [];
+  const span = cfg.logRange || 0;
+  if (!span)
+    return (await rpc(cfg.rpcs, 'eth_getLogs', [Object.assign({}, filter, { fromBlock: hex(from), toBlock: hex(to) })])) || [];
+  let out = [];
+  for (let hi = to; hi >= from; hi -= span){
+    const lo = Math.max(from, hi - span + 1);
+    const part = (await rpc(cfg.rpcs, 'eth_getLogs', [Object.assign({}, filter, { fromBlock: hex(lo), toBlock: hex(hi) })])) || [];
+    out = part.concat(out);
+    if (stop && part.length && stop(part)) break;
+  }
+  return out;
 }
 
 /* ===================== хранилище ===================== */
@@ -469,6 +511,10 @@ async function readChain(env, rec, knownLog){
        отказывает. Тогда оплату ищем в его журнале — событие Paid несёт
        и номер счёта, и продавца, и сумму. Возвратов та версия не знает. */
     if (!/revert/i.test(String(e && e.message))) throw e;
+    /* В сетях, где журнал читается кусками (X Layer), контракт — третьей
+       версии, и saleOf у него есть. Отказ там — не «старый контракт», а
+       что-то не так с узлом или адресом: молчим, а не ищем по журналу. */
+    if (cfg.logRange) throw e;
     const log = knownLog || await findPaidLog(cfg, rec, safe);
     if (!log) return { st: null };
     sale = { merchant: ('0x' + log.topics[1].slice(-40)).toLowerCase(),
@@ -513,8 +559,9 @@ async function readChain(env, rec, knownLog){
                  pay.got = fmtUnits(BigInt(word(knownLog.data, 0)), dec); }
   if (!pay.tx){
     try{
-      const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pay,
-        fromBlock: hex(safe - cfg.txLookback), toBlock: hex(safe), topics: [PAID_TOPIC, pad(rec.w)] }]);
+      const mine = l => word(l.data, 3).toLowerCase() === rec.h;
+      const logs = await getLogsRange(cfg, { address: cfg.pay, topics: [PAID_TOPIC, pad(rec.w)] },
+        safe - cfg.txLookback, safe, part => part.some(mine));
       for (const l of (logs || [])){
         if (word(l.data, 3).toLowerCase() !== rec.h) continue;
         pay.tx = l.transactionHash; pay.block = parseInt(l.blockNumber, 16);
@@ -667,7 +714,7 @@ async function createInvoice(request, env, who, origin){
   if (b.network !== undefined && b.network !== null && b.network !== ''){
     const m = Object.prototype.hasOwnProperty.call(NETWORK_PARAM, String(b.network).toLowerCase())
       ? NETWORK_PARAM[String(b.network).toLowerCase()] : null;
-    if (!m) return fail(400, 'bad_network', 'network: one of bnb, ethereum, base, solana.');
+    if (!m) return fail(400, 'bad_network', 'network: one of ' + NETWORK_NAMES + '.');
     net = m[who.mode];
     if (!net) return fail(400, 'network_unavailable', 'Test keys work on the BNB testnet only. Use a live key for ' + b.network + '.');
     if (!isSolNet(net) && (!NETS[net] || (!NETS[net].pay && !(env && env.TAVAROV_PAY))))   // TAVAROV_PAY — только для проверок
@@ -786,8 +833,14 @@ async function checkInvoice(env, id, origin, waitUntil){
    «Workers CPU limit exceeded», 100+ раз в сутки). Теперь таймер зовёт
    каждую часть отдельным запросом, и у каждой свои 10 мс. Без phase
    работает всё сразу, как раньше: так старый таймер не ломается, пока
-   новый не выложен, и так же зовут проверки. */
-export const CRON_PHASES = ['bnb', 'bnbTestnet', 'eth', 'base', 'sol', 'retry', 'don', 'ref', 'ref2'];
+   новый не выложен, и так же зовут проверки.
+
+   20.11.2026: часть 'xlayer'. Воркер таймера сам её не знает — её надо
+   дописать в его список частей, иначе X Layer обходится только при вызове
+   без phase. Обход X Layer — шесть запросов к узлу (номер блока и пять
+   кусков журнала: окно в 401 блок по 100), плюс по два на каждую найденную
+   оплату. */
+export const CRON_PHASES = ['bnb', 'bnbTestnet', 'eth', 'base', 'xlayer', 'sol', 'retry', 'don', 'ref', 'ref2'];
 async function runCron(env, origin, phase){
   if (phase && !CRON_PHASES.includes(phase)) return fail(400, 'bad_phase', 'Unknown phase.');
   const want = p => !phase || phase === p;
@@ -811,8 +864,7 @@ async function runCron(env, origin, phase){
       const cfg = netConfig(net, env);
       const latest = parseInt(await rpc(cfg.rpcs, 'eth_blockNumber', []), 16);
       const safe = Math.max(0, latest - cfg.conf);
-      const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{ address: cfg.pay,
-        fromBlock: hex(safe - SCAN_BLOCKS), toBlock: hex(safe), topics: [PAID_TOPIC] }]);
+      const logs = await getLogsRange(cfg, { address: cfg.pay, topics: [PAID_TOPIC] }, safe - SCAN_BLOCKS, safe);
       out.scanned[net] = (logs || []).length;
       const seen = new Set();
       for (const l of (logs || [])){
@@ -822,7 +874,7 @@ async function runCron(env, origin, phase){
         /* Донат, который ещё ждёт подтверждения, — подтверждаем здесь же:
            иначе, не открой автор приложение или экран OBS за два часа,
            сообщение зрителя пропало бы. */
-        try{
+        if (!NETS[net].noDonations) try{
           if ((await env.TILL.get('donh:' + h)) === '1'){
             if (await promoteByHash(env, net, '0x' + String(l.topics[1]).slice(-40), h)) out.donations = (out.donations || 0) + 1;
           }
@@ -909,6 +961,10 @@ function refTokens(net){
   for (const sym of Object.keys(t)) out[t[sym].a.toLowerCase()] = { sym, d: t[sym].d };
   return out;
 }
+/* X Layer в кабинете партнёра пока нет (20.11.2026). Правило партнёрки в
+   контракте там то же, но журнал партнёрки читается кусками по
+   5000 блоков (_ref.js), а узлы X Layer отдают не шире 100, и блок, с
+   которого читать, для X Layer не выверен. Добавлять — вместе с _ref.js. */
 export async function partnerInfo(env, w){
   const __nets = {};
   for (const net of ['bnb', 'eth', 'base']) __nets[net] = { rec: await readPartner(env, w, net), tokens: refTokens(net) };
@@ -930,7 +986,9 @@ export async function partnerInfo(env, w){
 export const TG_TTL = 24 * 3600;
 /* Счёт из Telegram-бота. Сеть — та, что продавец выбрал в боте (/network):
    BNB, Ethereum, Base или Solana. В Base нет USDT — счёт будет в USDC
-   (доллар есть доллар); в Solana деньги приходят на его адрес Solana. */
+   (доллар есть доллар); в Solana деньги приходят на его адрес Solana.
+   X Layer в боте нет: у бота нет ни выбора этой сети, ни её обозревателя —
+   счета в X Layer выставляются через API и плагин WooCommerce. */
 const TG_NETS = ['bnb', 'eth', 'base', 'solana'];
 export async function createTgInvoice(env, o){
   const net = TG_NETS.includes(o.net) ? o.net : 'bnb';
