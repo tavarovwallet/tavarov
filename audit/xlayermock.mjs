@@ -47,9 +47,9 @@ function creationKind(n, data){
 
 function revert(msg){ const e = new Error('execution reverted: ' + msg); e.revert = true; return e; }
 
-function viewCall(n, to, data, from, value){
+function viewCall(n, to, data, from, value, ov){
   to = lc(to); data = lc(data);
-  if (n.tapeout && n.tapeout.owns(to)) return n.tapeout.call(to, data, from, value);
+  if (n.tapeout && n.tapeout.owns(to)) return n.tapeout.call(to, data, lc(from), value, ov || null);
   const s = data.slice(0, 10), arg = i => '0x' + data.slice(10 + i * 64 + 24, 10 + i * 64 + 64);
   if (n.tokens[to] !== undefined){
     if (s === sel('decimals()')) return W(n.tokens[to]);
@@ -130,7 +130,8 @@ export function handle(n, method, params){
     case 'eth_call': {
       const t = params[0];
       if (!t.to) return create(n, lc(t.from), t.data, null);
-      return viewCall(n, t.to, t.data, t.from, t.value ? BigInt(t.value) : 0n);
+      n.overrides = params[2] || null;
+      return viewCall(n, t.to, t.data, t.from, t.value ? BigInt(t.value) : 0n, params[2]);
     }
     case 'eth_sendRawTransaction': {
       const tx = E.utils.parseTransaction(params[0]);

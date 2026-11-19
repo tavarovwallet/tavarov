@@ -12,6 +12,9 @@
       mints exactly 18 NANDs paying exactly the fees, tapes out the netlist
       with 7 inputs / 2 outputs, then checks all 128 inputs on chain; a
       second run sends nothing; a circuit that answers differently is caught.
+      Fees as on chain since November: createCPU and mint in BEM (ERC-20,
+      approved exactly, to exactly the contract that pulls it), tapeout in
+      OKB; too little BEM stops before anything is sent.
 
    Run: cd audit && node t108-xlayer-tapeout.mjs */
 import fs from 'node:fs';
@@ -20,7 +23,7 @@ import path from 'node:path';
 import { reporter } from './boot.mjs';
 import { makeNode, mockFetch, E } from './xlayermock.mjs';
 import { build, rule, evalNetlist, byteToFacts, factsToByte, IN, N_IN, N_OUT } from '../tools/xlayer/tapeout/circuit.mjs';
-import { ABI, TAPEOUT, config, plan, run, check } from '../tools/xlayer/tapeout/tapeout-xlayer.mjs';
+import { ABI, ERC20, TAPEOUT, config, plan, run, check } from '../tools/xlayer/tapeout/tapeout-xlayer.mjs';
 
 const R = reporter();
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 't108-'));
@@ -69,41 +72,67 @@ const cases = [
 for (const [name, f, want] of cases) R.ok('rule: ' + name + ' → ' + want, colour(f) === want, colour(f));
 
 // ---------- 4. the tool against a fake TapeOut ----------
-const F_DEPLOY = 6600000000000000n, F_PROTO = 660000000000000n, F_TAPE = 1300000000000000n;
+const F_DEPLOY = 10000000n, F_PROTO = 1000000n, F_TAPE = 1300000000000000n;   // 0.1 BEM, 0.01 BEM (8 decimals), 0.0013 OKB
+const BEM = TAPEOUT.bem;
+const slotKey = (a, slot) => E.utils.keccak256(E.utils.defaultAbiCoder.encode(['address', 'bytes32'], [a, slot]));
+const P32 = x => E.utils.hexZeroPad(E.utils.hexlify(x), 32);
 function fakeTapeout(n, opts = {}){
   const factory = TAPEOUT.factory;
   const cpus = [];                         // circuits addresses
   const T = {};                            // transistors addr -> { circuits, bal:{}, mintPrice }
   const C = {};                            // circuits addr -> { transistors, items: {id:{nl,nIn,nOut,owner}}, next }
-  n.code[factory] = '0x6080factory';
+  const B = { bal: Object.assign({}, opts.bem || {}), allow: {} };   // the BEM ERC-20: balances, allowances "owner spender"
+  n.code[factory] = '0x6080factory'; n.code[BEM] = '0x6080bem';
   for (let i = 0; i < 300; i++) cpus.push('0x' + (0xc0000 + i).toString(16).padStart(40, '0'));
   const enc = (fn, vals) => ABI.encodeFunctionResult(fn, vals);
   const log = (name, vals, address) => { const l = ABI.encodeEventLog(ABI.getEvent(name), vals); return { address, topics: l.topics, data: l.data }; };
+  const rv = m => Object.assign(new Error('execution reverted: ' + m), { revert: true });
+  /* "plan" may simulate as if `from` held BEM and had approved `spender`: only the real storage keys count. */
+  const overridden = (ov, from, spender) => {
+    const d = ov && ov[BEM] && ov[BEM].stateDiff; if (!d) return 0n;
+    const b = d[slotKey(from, P32(5))], a = d[slotKey(spender, slotKey(from, P32(6)))];
+    return b && a ? (BigInt(b) < BigInt(a) ? BigInt(b) : BigInt(a)) : 0n;
+  };
+  const pull = (from, spender, amount, ov, write) => {          // transferFrom(from → spender's treasury)
+    const k = from + ' ' + spender;
+    const can = overridden(ov, from, spender) || ((B.allow[k] || 0n) < (B.bal[from] || 0n) ? (B.allow[k] || 0n) : (B.bal[from] || 0n));
+    if (can < amount) throw rv('ERC20InsufficientAllowance');
+    if (write){ B.allow[k] -= amount; B.bal[from] -= amount; t.pulled.push({ spender, amount }); }
+  };
   const t = {
-    owns: a => a === factory || !!T[a] || !!C[a],
-    call(to, data, from, value){
+    B, pulled: [],
+    owns: a => a === factory || a === BEM || !!T[a] || !!C[a],
+    call(to, data, from, value, ov, write){
+      if (to === BEM){
+        const p = ERC20.parseTransaction({ data }), e = v => ERC20.encodeFunctionResult(p.name, v);
+        if (p.name === 'balanceOf') return e([B.bal[p.args[0].toLowerCase()] || 0n]);
+        if (p.name === 'allowance') return e([B.allow[p.args[0].toLowerCase() + ' ' + p.args[1].toLowerCase()] || 0n]);
+        if (p.name === 'approve'){ if (value) throw rv('not payable'); if (write){ B.allow[from + ' ' + p.args[0].toLowerCase()] = p.args[1].toBigInt(); t.approved.push({ spender: p.args[0].toLowerCase(), amount: p.args[1].toBigInt() }); } return e([true]); }
+        throw rv('bem: ' + p.name);
+      }
       const p = ABI.parseTransaction({ data });
       if (to === factory){
         if (p.name === 'deployFee') return enc(p.name, [F_DEPLOY]);
         if (p.name === 'protocolFee') return enc(p.name, [F_PROTO]);
+        if (p.name === 'bem') return enc(p.name, [BEM]);
         if (p.name === 'cpuCount') return enc(p.name, [cpus.length]);
         if (p.name === 'cpuAt') return enc(p.name, [cpus[p.args[0].toNumber()]]);
-        if (p.name === 'createCPU'){ if (value < F_DEPLOY) throw Object.assign(new Error('execution reverted: fee'), { revert: true }); return enc(p.name, [cpus[0], cpus[0]]); }
+        if (p.name === 'createCPU'){ if (value) throw rv('not payable'); pull(from, factory, F_DEPLOY, ov, write); return enc(p.name, [cpus[0], cpus[0]]); }
       }
       if (T[to]){
         const x = T[to];
         if (p.name === 'mintPrice') return enc(p.name, [x.mintPrice]);
         if (p.name === 'protocolFee') return enc(p.name, [F_PROTO]);
         if (p.name === 'balanceOf') return enc(p.name, [x.bal[p.args[0].toLowerCase()] || 0]);
-        if (p.name === 'mint'){ if (value < p.args[1].toBigInt() * x.mintPrice + F_PROTO) throw Object.assign(new Error('execution reverted: insufficient'), { revert: true }); return '0x'; }
+        if (p.name === 'mint'){ if (value) throw rv('not payable'); pull(from, to, p.args[1].toBigInt() * x.mintPrice + F_PROTO, ov, write); return '0x'; }
       }
       if (C[to]){
         const x = C[to];
         if (p.name === 'TAPEOUT_FEE') return enc(p.name, [F_TAPE]);
         if (p.name === 'nextId') return enc(p.name, [x.next]);
-        if (p.name === 'tapeout'){ if (value !== F_TAPE) throw Object.assign(new Error('execution reverted: tapeout fee'), { revert: true }); return enc(p.name, [x.next + 1]); }
+        if (p.name === 'tapeout'){ if (value !== F_TAPE) throw rv('tapeout fee'); return enc(p.name, [x.next + 1]); }
         const it = x.items[p.args[0] && p.args[0].toNumber()];
-        if (!it) throw Object.assign(new Error('execution reverted: no circuit'), { revert: true });
+        if (!it) throw rv('no circuit');
         if (p.name === 'netlist') return enc(p.name, [it.nl]);
         if (p.name === 'circuitInfo') return enc(p.name, [it.nIn, it.nOut, 0, (it.nl.length - 2) / 14]);
         if (p.name === 'eval'){
@@ -112,10 +141,12 @@ function fakeTapeout(n, opts = {}){
           return enc(p.name, [o]);
         }
       }
-      throw Object.assign(new Error('execution reverted: unknown ' + p.name), { revert: true });
+      throw rv('unknown ' + p.name);
     },
+    approved: [],
     tx(to, data, from, value){
-      t.call(to, data, from, value);       // same checks first
+      t.call(to, data, from, value, null, true);       // same checks, and the BEM moves
+      if (to === BEM) return [];
       const p = ABI.parseTransaction({ data });
       if (to === factory && p.name === 'createCPU'){
         const circuits = '0x' + (0xc1000 + cpus.length).toString(16).padStart(40, '0');
@@ -127,7 +158,7 @@ function fakeTapeout(n, opts = {}){
         t.created = { circuits, transistors, args: p.args, value };
         return [log('CPUCreated', [circuits, transistors, from, p.args[0], p.args[3], p.args[4]], factory)];
       }
-      if (T[to] && p.name === 'mint'){ const x = T[to]; x.bal[from] = (x.bal[from] || 0n) + p.args[1].toBigInt(); t.minted = { n: p.args[1].toBigInt(), value }; return []; }
+      if (T[to] && p.name === 'mint'){ const x = T[to]; x.bal[from] = (x.bal[from] || 0n) + p.args[1].toBigInt(); t.minted = { n: p.args[1].toBigInt(), value, to }; return []; }
       if (C[to] && p.name === 'tapeout'){
         const x = C[to], gates = (p.args[0].length - 2) / 14, tr = T[x.transistors];
         if ((tr.bal[from] || 0n) < BigInt(gates)) throw new Error('ERC1155InsufficientBalance');
@@ -147,27 +178,40 @@ const ME = wallet.address.toLowerCase();
 const quiet = []; const logq = s => quiet.push(s);
 const cfg = config({ XLAYER_TAPEOUT_STATE: path.join(TMP, 'st.json'), HOME: TMP });
 R.ok('TapeOut factory = TapeKit config for X Layer, 2 independent RPC operators', TAPEOUT.factory === '0x1f09daefa827f02cbb40967cc91b259763760761' && cfg.rpcs.join() === 'https://rpc.xlayer.tech,https://xlayer.drpc.org');
+const ENOUGH = { [ME]: 15000000n };                       // 0.15 BEM
 let n = makeNode({ chainId: 196, build: {}, balances: { [ME]: 10n ** 17n } });
-n.tapeout = fakeTapeout(n);
+n.tapeout = fakeTapeout(n, { bem: ENOUGH });
 const O = extra => Object.assign({ fetch: mockFetch(n), log: logq, from: wallet.address, wallet, yes: true, pollMs: 1 }, extra || {});
 
 let p = await plan(cfg, O());
-R.ok('plan: OK, nothing sent, fees summed', p.ok && n.sent.length === 0 && p.total === F_DEPLOY + F_PROTO + F_TAPE);
-R.ok('plan: says 18 gates and ≈0.00856 OKB', quiet.some(s => /18 NAND gates/.test(s)) && quiet.some(s => /= 0\.00856 OKB/.test(s)), quiet.join(' | '));
+R.ok('plan: OK, nothing sent, BEM and OKB fees summed', p.ok && n.sent.length === 0 && p.total.bem === F_DEPLOY + F_PROTO && p.total.okb === F_TAPE);
+R.ok('plan: says 18 gates, 0.11 BEM, 0.0013 OKB, the X Layer BEM contract', quiet.some(s => /18 NAND gates/.test(s)) && quiet.some(s => /= 0\.11 BEM; tapeout ≈0\.0013 OKB/.test(s)) && quiet.some(s => s.includes('BEM ' + BEM + ' (X Layer)')), quiet.join(' | '));
+R.ok('plan: simulated createCPU with no value and BEM put in by state override at the real storage slots', n.overrides && n.overrides[BEM] && Object.keys(n.overrides[BEM].stateDiff).length === 2);
 p = await plan(cfg, O({ fetch: mockFetch(makeNode({ chainId: 1952, build: {} })) })).catch(e => ({ err: e.message }));
 R.ok('plan on testnet: refuses (TapeOut is mainnet only)', /mainnet only/.test(p.err || ''));
-const poor = makeNode({ chainId: 196, build: {}, balances: { [ME]: 1000n } }); poor.tapeout = fakeTapeout(poor);
+const poor = makeNode({ chainId: 196, build: {}, balances: { [ME]: 1000n } }); poor.tapeout = fakeTapeout(poor, { bem: ENOUGH });
 p = await plan(cfg, O({ fetch: mockFetch(poor) }));
 R.ok('plan: too little OKB is a problem', !p.ok);
+const noBem = makeNode({ chainId: 196, build: {}, balances: { [ME]: 10n ** 17n } }); noBem.tapeout = fakeTapeout(noBem, { bem: { [ME]: 10000000n } });
+quiet.length = 0;
+p = await plan(cfg, O({ fetch: mockFetch(noBem) }));
+R.ok('plan: 0.1 BEM (less than 0.11) is a problem, and it says how much and which token', !p.ok && quiet.some(s => /need 0\.11 BEM .* \(has 0\.1\): BEM on X Layer, contract 0x60e6/.test(s)), quiet.join(' | '));
+const cfg0 = config({ XLAYER_TAPEOUT_STATE: path.join(TMP, 'st0.json'), HOME: TMP });
+const r0 = await run(cfg0, O({ fetch: mockFetch(noBem) })).catch(e => ({ err: e.message }));
+R.ok('run with too little BEM: createCPU goes, mint stops with a clear message before sending', /mint: needs 0\.01 BEM/.test(r0.err || '') && noBem.sent.length === 2, (r0.err || '') + ' sent ' + noBem.sent.length);
 
 quiet.length = 0;
 const r = await run(cfg, O());
 const tp = n.tapeout;
 R.ok('createCPU: our name, supply 10000, mint price 0, paid deployFee exactly',
-  tp.created.args[0] === 'Tavarov Pay rules' && tp.created.args[1] === 'TVPAY' && tp.created.args[3].toString() === '10000' && tp.created.args[4].isZero() && tp.created.value === F_DEPLOY);
-R.ok('mint: exactly 18 NAND, paid the protocol fee only', tp.minted.n === 18n && tp.minted.value === F_PROTO);
+  tp.created.args[0] === 'Tavarov Pay rules' && tp.created.args[1] === 'TVPAY' && tp.created.args[3].toString() === '10000' && tp.created.args[4].isZero() && tp.created.value === 0n);
+R.ok('BEM: approved exactly 0.1 to the factory, then exactly 0.01 to our transistors contract',
+  tp.approved.length === 2 && tp.approved[0].spender === TAPEOUT.factory && tp.approved[0].amount === F_DEPLOY
+  && tp.approved[1].spender === tp.created.transistors && tp.approved[1].amount === F_PROTO);
+R.ok('BEM: 0.11 left the wallet, nothing left approved', tp.B.bal[ME] === 15000000n - F_DEPLOY - F_PROTO && Object.values(tp.B.allow).every(v => v === 0n));
+R.ok('mint: exactly 18 NAND, no OKB value', tp.minted.n === 18n && tp.minted.value === 0n);
 R.ok('tapeout: our netlist, 7 in, 2 out, exact TAPEOUT_FEE', tp.taped.nl.toLowerCase() === nl.hex && tp.taped.nIn === 7 && tp.taped.nOut === 2 && tp.taped.value === F_TAPE);
-R.ok('3 transactions, all chain 196 from the deployer', n.sent.length === 3 && n.sent.every(t => t.chainId === 196 && t.from === ME));
+R.ok('5 transactions (approve, createCPU, approve, mint, tapeout), all chain 196 from the deployer', n.sent.length === 5 && n.sent.every(t => t.chainId === 196 && t.from === ME));
 R.ok('checked on chain: all 128 inputs', r.check.ok, (r.check.problems || []).join('; '));
 R.ok('state: processor, CPU number, circuit #1', r.state.circuits === E.utils.getAddress(tp.created.circuits) && r.state.circuitId === 1 && r.state.cpuIndex === 300);
 R.ok('prints the line for check-core.js', quiet.some(s => s.includes("RULE_CIRCUIT = { circuits: '" + E.utils.getAddress(tp.created.circuits) + "', id: 1 }")));
@@ -178,7 +222,7 @@ R.ok('second run sends nothing', n.sent.length === before);
 
 // a circuit that lies for one input
 const n2 = makeNode({ chainId: 196, build: {}, balances: { [ME]: 10n ** 17n } });
-n2.tapeout = fakeTapeout(n2, { liar: true });
+n2.tapeout = fakeTapeout(n2, { liar: true, bem: ENOUGH });
 const cfg2 = config({ XLAYER_TAPEOUT_STATE: path.join(TMP, 'st2.json'), HOME: TMP });
 const r2 = await run(cfg2, O({ fetch: mockFetch(n2) }));
 R.ok('a circuit that answers differently for one input is caught', !r2.check.ok && r2.check.problems.some(x => /1 of 128/.test(x)));

@@ -18,9 +18,15 @@
    Prints the processor (circuits contract) address and circuit id: those go
    into site/check-core.js (RULE_CIRCUIT) and into the hackathon form.
 
-   Fees are TapeOut's, read live and paid exactly: on 27 Oct 2026 deployFee
-   0.0066 OKB, protocolFee 0.00066 OKB per mint call, TAPEOUT_FEE 0.0013 OKB
-   (TapeOut can change them; "plan" prints the current ones).
+   Fees (checked on chain 19 Nov 2026; "plan" prints the current ones):
+     createCPU  deployFee 0.1 BEM, pulled by the factory with transferFrom
+     mint       protocolFee 0.01 BEM (+ mint price, 0 for our processor),
+                pulled by the processor's transistors contract
+     tapeout    TAPEOUT_FEE 0.0013 OKB, sent as value
+   BEM is TapeOut's ERC-20 on X Layer (factory.bem(), 0x60e6…3952, 8
+   decimals; NOT the BEM on BNB Chain). Before each BEM step the tool
+   approves exactly that step's fee to exactly that contract, nothing more.
+   On 27 Oct all three were in OKB; TapeOut moved the first two to BEM since.
 
    Addresses: TapeOutProtocol/TapeKit kernel/src/config.js (XLAYER_MAINNET,
    "read-only checked on mainnet 2026-09-19"). The script checks that code
@@ -35,6 +41,11 @@ import { build, rule, byteToFacts, N_IN, N_OUT } from './circuit.mjs';
 export const TAPEOUT = {
   chainId: 196,
   factory: '0x1f09daefa827f02cbb40967cc91b259763760761',
+  bem: '0x60e62efa9405d6873c5deabd4e6cc91c25363952',   // factory.bem() on 19 Nov 2026
+  /* Storage of that BEM contract, read on chain 19 Nov 2026 (balance of the
+     BEM/WOKB pool at mapping slot 5): balances slot 5, allowances slot 6.
+     Only used by "plan" to simulate createCPU as if the BEM were there. */
+  bemSlots: { balances: 5, allowances: 6 },
   rpcs: ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org']
 };
 const NAND = 0n;
@@ -59,8 +70,17 @@ export const ABI = new E.utils.Interface([
   'function circuitInfo(uint256 id) view returns (uint32 nIn, uint32 nOut, uint32 nState, uint32 gateCount)',
   'function netlist(uint256 id) view returns (bytes)',
   'function eval(uint256 id, bytes inputs) view returns (bytes)',
-  'function ownerOf(uint256 id) view returns (address)'
+  'function ownerOf(uint256 id) view returns (address)',
+  'function bem() view returns (address)'
 ]);
+export const ERC20 = new E.utils.Interface([
+  'function balanceOf(address) view returns (uint256)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)'
+]);
+const fmtBem = v => fmt(v, 8);
 
 export function config(env = process.env){
   return {
@@ -78,10 +98,24 @@ async function read(c, to, fn, args = []){
   return ABI.decodeFunctionResult(fn, r);
 }
 
+async function erc(c, to, fn, args = []){
+  return ERC20.decodeFunctionResult(fn, await c.call(to, ERC20.encodeFunctionData(fn, args)))[0];
+}
+
 async function fees(c){
   const deployFee = (await read(c, TAPEOUT.factory, 'deployFee'))[0].toBigInt();
   const protocolFee = (await read(c, TAPEOUT.factory, 'protocolFee'))[0].toBigInt();
-  return { deployFee, protocolFee };
+  const bem = (await read(c, TAPEOUT.factory, 'bem'))[0].toLowerCase();
+  return { deployFee, protocolFee, bem };
+}
+
+/* eth_call state override: `from` holds `amount` BEM and has allowed `spender` to take it. */
+function bemOverride(from, spender, amount){
+  const k = (a, slot) => E.utils.keccak256(E.utils.defaultAbiCoder.encode(['address', 'bytes32'], [a, slot]));
+  const pad = n => E.utils.hexZeroPad(E.utils.hexlify(n), 32);
+  const v = E.utils.hexZeroPad(E.utils.hexlify(E.BigNumber.from(amount.toString())), 32);
+  const S = TAPEOUT.bemSlots;
+  return { [TAPEOUT.bem]: { stateDiff: { [k(from, pad(S.balances))]: v, [k(spender, k(from, pad(S.allowances)))]: v } } };
 }
 
 export async function plan(cfg, opts = {}){
@@ -95,28 +129,34 @@ export async function plan(cfg, opts = {}){
   const nl = build();
   const f = await fees(c);
   const tapeoutFee = 1300000000000000n;          // TAPEOUT_FEE lives on the circuits contract, which does not exist yet; read for real in run
-  const total = f.deployFee + f.protocolFee + tapeoutFee;
+  const bemNeed = f.deployFee + f.protocolFee;   // our mint price is 0
+  const okbNeed = tapeoutFee + 2n * 10n ** 15n;  // + gas for 5 transactions, generously
   log('deployer     ' + from);
   log('circuit      ' + nl.gates + ' NAND gates, ' + N_IN + ' inputs, ' + N_OUT + ' outputs, ' + (nl.hex.length - 2) / 2 + ' bytes');
-  log('fees         createCPU ' + fmt(f.deployFee) + ' + mint ' + fmt(f.protocolFee) + ' + tapeout ≈' + fmt(tapeoutFee) + ' = ' + fmt(total) + ' OKB, plus gas');
+  log('fee token    BEM ' + f.bem + ' (X Layer)' + (f.bem === TAPEOUT.bem ? '' : '  ← NOT the one checked on 19 Nov (' + TAPEOUT.bem + ')'));
+  log('fees         createCPU ' + fmtBem(f.deployFee) + ' BEM + mint ' + fmtBem(f.protocolFee) + ' BEM = ' + fmtBem(bemNeed) + ' BEM; tapeout ≈' + fmt(tapeoutFee) + ' OKB; plus gas');
+  const bemBal = (await erc(c, f.bem, 'balanceOf', [from])).toBigInt();
+  const okbBal = BigInt(await c.rpc('eth_getBalance', [from, 'latest']));
+  log('balance      ' + fmtBem(bemBal) + ' BEM, ' + fmt(okbBal) + ' OKB');
   /* createCPU is the only step that can be simulated before the processor
-     exists; it runs with a state override (1 OKB) so no balance is needed. */
+     exists. Without BEM approved yet it reverts on the allowance, so it runs
+     as if 1 BEM were there and approved (state override) and 1 OKB for gas. */
   let simOk = true;
+  const ov = f.bem === TAPEOUT.bem ? bemOverride(from, TAPEOUT.factory, 10n ** 8n) : {};
+  ov[from] = { balance: '0x' + (10n ** 18n).toString(16) };
   try{
-    await c.rpc('eth_call', [{ from, to: TAPEOUT.factory, value: '0x' + f.deployFee.toString(16),
-      data: ABI.encodeFunctionData('createCPU', [CPU.name, CPU.symbol, CPU.story, CPU.supply, CPU.mintPrice]) }, 'latest',
-      { [from]: { balance: '0x' + (10n ** 18n).toString(16) } }]);
+    await c.rpc('eth_call', [{ from, to: TAPEOUT.factory, value: '0x0',
+      data: ABI.encodeFunctionData('createCPU', [CPU.name, CPU.symbol, CPU.story, CPU.supply, CPU.mintPrice]) }, 'latest', ov]);
   } catch(e){
     simOk = false;
     log('PROBLEM      createCPU simulation failed: ' + e.message);
-    log('             (if the node does not accept a balance override, this check can fail by itself; "run" simulates again with your real balance)');
   }
-  if (simOk) log('simulation   createCPU runs');
-  const bal = BigInt(await c.rpc('eth_getBalance', [from, 'latest']));
-  log('balance      ' + fmt(bal) + ' OKB');
-  const okBal = bal >= total + 10n ** 15n;
-  if (!okBal) log('PROBLEM      need about ' + fmt(total + 10n ** 15n) + ' OKB on ' + from);
-  return { ok: simOk && okBal, fees: f, total, netlist: nl };
+  if (simOk) log('simulation   createCPU runs (paid in BEM, no OKB value)');
+  const okBem = bemBal >= bemNeed, okOkb = okbBal >= okbNeed;
+  if (!okBem) log('PROBLEM      need ' + fmtBem(bemNeed) + ' BEM on ' + from + ' (has ' + fmtBem(bemBal) + '): BEM on X Layer, contract ' + f.bem);
+  if (!okOkb) log('PROBLEM      need about ' + fmt(okbNeed) + ' OKB on ' + from);
+  const total = { bem: bemNeed, okb: tapeoutFee };
+  return { ok: simOk && okBem && okOkb, fees: f, total, netlist: nl };
 }
 
 export async function run(cfg, opts = {}){
@@ -156,9 +196,19 @@ export async function run(cfg, opts = {}){
     throw new Error(label + ': not confirmed in 6 minutes: ' + hash);
   }
 
+  /* Let `spender` take exactly `amount` BEM from us (only if it may not already). */
+  async function payBem(bem, spender, amount, label){
+    const bal = (await erc(c, bem, 'balanceOf', [from])).toBigInt();
+    if (bal < amount) throw new Error(label + ': needs ' + fmtBem(amount) + ' BEM on ' + from + ', it has ' + fmtBem(bal) + ' (BEM on X Layer, contract ' + bem + '). Nothing more was sent.');
+    const have = (await erc(c, bem, 'allowance', [from, spender])).toBigInt();
+    if (have >= amount) return;
+    await send(bem, ERC20.encodeFunctionData('approve', [spender, amount]), 0n, 'approve ' + fmtBem(amount) + ' BEM for ' + label);
+  }
+
   if (!st.circuits){
     const f = await fees(c);
-    const r = await send(TAPEOUT.factory, ABI.encodeFunctionData('createCPU', [CPU.name, CPU.symbol, CPU.story, CPU.supply, CPU.mintPrice]), f.deployFee, 'createCPU');
+    await payBem(f.bem, TAPEOUT.factory, f.deployFee, 'createCPU');
+    const r = await send(TAPEOUT.factory, ABI.encodeFunctionData('createCPU', [CPU.name, CPU.symbol, CPU.story, CPU.supply, CPU.mintPrice]), 0n, 'createCPU');
     const ev = r.logs.map(l => { try{ return ABI.parseLog(l); } catch(e){ return null; } }).find(x => x && x.name === 'CPUCreated');
     if (!ev || ev.args.creator.toLowerCase() !== from.toLowerCase()) throw new Error('createCPU: no CPUCreated event for us in ' + r.transactionHash);
     st.circuits = ev.args.circuits; st.transistors = ev.args.transistors; st.createTx = r.transactionHash;
@@ -175,7 +225,9 @@ export async function run(cfg, opts = {}){
       const price = (await read(c, st.transistors, 'mintPrice'))[0].toBigInt();
       const pf = (await read(c, st.transistors, 'protocolFee'))[0].toBigInt();
       const n = BigInt(nl.gates) - have;
-      await send(st.transistors, ABI.encodeFunctionData('mint', [NAND, n]), n * price + pf, 'mint ' + n + ' NAND');
+      const bem = (await fees(c)).bem;
+      await payBem(bem, st.transistors, n * price + pf, 'mint');
+      await send(st.transistors, ABI.encodeFunctionData('mint', [NAND, n]), 0n, 'mint ' + n + ' NAND');
     }
     const fee = (await read(c, st.circuits, 'TAPEOUT_FEE'))[0].toBigInt();
     const r = await send(st.circuits, ABI.encodeFunctionData('tapeout', [nl.hex, N_IN, N_OUT]), fee, 'tapeout');
