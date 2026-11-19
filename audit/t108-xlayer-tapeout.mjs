@@ -183,5 +183,47 @@ const cfg2 = config({ XLAYER_TAPEOUT_STATE: path.join(TMP, 'st2.json'), HOME: TM
 const r2 = await run(cfg2, O({ fetch: mockFetch(n2) }));
 R.ok('a circuit that answers differently for one input is caught', !r2.check.ok && r2.check.problems.some(x => /1 of 128/.test(x)));
 
+// ---------- 5. optional DeWEB publishing into the rule circuit's container ----------
+const DW = await import('../tools/xlayer/tapeout/deweb-xlayer.mjs');
+const SITE = path.join(TMP, 'site'); fs.mkdirSync(path.join(SITE, 'lib'), { recursive: true });
+fs.writeFileSync(path.join(SITE, 'index.html'), '<!doctype html><title>till</title>');
+fs.writeFileSync(path.join(SITE, 'lib', 'big.js'), Buffer.alloc(50000, 0x61));
+const files = DW.siteFiles(SITE);
+R.ok('deweb: index.html first, 50 kB file in 3 chunks of 24,000 bytes, SHA-256 of the bytes', files[0].path === 'index.html' && files[1].path === 'lib/big.js' && files[1].chunks.length === 3
+  && (files[1].chunks[0].length - 2) / 2 === 24000 && files[1].sha256 === '0x' + (await import('node:crypto')).createHash('sha256').update(Buffer.alloc(50000, 0x61)).digest('hex'));
+R.ok('deweb: name and gateway for circuit 1 of CPU 300', DW.siteName(1, 300) === '1.2.300.tape' && DW.gatewayUrl(1, 300) === 'https://1-2-300.tapekit.org');
+const dw = { opened: false, files: {}, bound: null, sent: [] };
+const CONTAINER = '0x00000000000000000000000000000000000c0a7a';
+const tpPrev = n.tapeout;
+const dwOwns = a => [DW.DEWEB.opener, DW.DEWEB.registry, DW.DEWEB.binding].includes(a);
+const dwCall = (to, data, from, value, write) => {
+  const p = DW.ABI.parseTransaction({ data }), enc = v => DW.ABI.encodeFunctionResult(p.name, v);
+  const rv = m => Object.assign(new Error('execution reverted: ' + m), { revert: true });
+  if (p.name === 'FEE') return enc([80000000000000000n]);
+  if (p.name === 'accountOf') return enc([CONTAINER]);
+  if (p.name === 'isOpened') return enc([dw.opened]);
+  if (p.name === 'monthlyFee') return enc([0]);
+  if (p.name === 'isLive') return enc([dw.bound === p.args[0]]);
+  if (p.name === 'fileInfo'){ const f = dw.files[p.args[1]]; if (!f) throw rv('no file'); return enc([f.size, f.ct, f.sha, 0, f.chunks]); }
+  if (p.name === 'open'){ if (value < 80000000000000000n) throw rv('FeeTooLow'); if (write){ dw.opened = true; dw.sent.push('open'); } return '0x'; }
+  if (p.name === 'putFile'){ if (!dw.opened) throw rv('not opened'); if (write){ dw.files[p.args[1]] = { size: (p.args[4].length - 2) / 2, ct: p.args[2], sha: p.args[3], chunks: 1 }; dw.sent.push('put ' + p.args[1]); } return '0x'; }
+  if (p.name === 'appendChunk'){ const f = dw.files[p.args[1]]; if (!f || f.chunks !== p.args[2].toNumber()) throw rv('bad index'); if (write){ f.chunks++; f.size += (p.args[3].length - 2) / 2; dw.sent.push('append ' + p.args[1] + ' ' + p.args[2]); } return '0x'; }
+  if (p.name === 'bind'){ if (write){ dw.bound = p.args[0]; dw.months = p.args[2].toNumber(); dw.sent.push('bind'); } return '0x'; }
+  throw rv('?');
+};
+n.tapeout = { owns: a => dwOwns(a) || tpPrev.owns(a),
+  call: (to, d, f, v) => dwOwns(to) ? dwCall(to, d, f, v, false) : tpPrev.call(to, d, f, v),
+  tx: (to, d, f, v) => { if (dwOwns(to)){ dwCall(to, d, f, v, true); return []; } return tpPrev.tx(to, d, f, v); } };
+const dcfg = DW.config({ XLAYER_DEWEB_DIR: SITE, XLAYER_TAPEOUT_STATE: path.join(TMP, 'st.json'), HOME: TMP });
+quiet.length = 0;
+await DW.plan(dcfg, O());
+R.ok('deweb plan: sends nothing, shows the container fee and the gateway', dw.sent.length === 0 && quiet.some(s => /to open: 0\.08 OKB/.test(s)) && quiet.some(s => s.includes('https://1-2-300.tapekit.org')), quiet.join(' | '));
+const dres = await DW.run(dcfg, O());
+R.ok('deweb run: open, putFile ×2, appendChunk #1 #2, bind — in that order', dw.sent.join(',') === 'open,put index.html,put lib/big.js,append lib/big.js 1,append lib/big.js 2,bind', dw.sent.join(','));
+R.ok('deweb: stored sizes and hashes are the files\'', dw.files['lib/big.js'].size === 50000 && dw.files['lib/big.js'].sha === files[1].sha256 && dw.files['index.html'].ct === 'text/html; charset=utf-8');
+R.ok('deweb: name bound for 120 months while free', dw.bound === '1.2.300.tape' && dw.months === 120 && dres.url === 'https://1-2-300.tapekit.org');
+await DW.run(dcfg, O());
+R.ok('deweb second run: nothing sent again', dw.sent.length === 6);
+
 fs.rmSync(TMP, { recursive: true, force: true });
 process.exit(R.done() ? 0 : 1);
