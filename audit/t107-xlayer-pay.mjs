@@ -6,8 +6,12 @@
       network — switching it off again is one line.
    2. As committed (XLAYER_PAY = the mainnet contract deployed 19 Nov 2026,
       the test serves it with a fake address so the fake node answers): the invoice shows "X Layer";
-      NoN Wallet's button is hidden (the wallet does not know X Layer yet);
-      the QR code and the copied link are the page's own https link; another
+      NoN Wallet's button (20 Nov 2026: the web wallet knows X Layer) is
+      shown only when it leads to the web wallet deployed with this page
+      (wallet.tavarov.com / tavarov-wallet.pages.dev), never to the old
+      Netlify copy; the QR code and the copied link stay the page's own https
+      link, so the store apps (older bundled wallet) never get a tavarov:
+      code for X Layer; another
       wallet pays through the contract: the wallet is asked to switch to
       0xc4, adds X Layer with OKB when it does not know it, approves exactly
       42 USDT0 (six decimals) and calls pay() byte for byte; reads go to the
@@ -137,8 +141,13 @@ await ctx.close();
 ({ ctx, page } = await fresh());
 await page.goto(ON); await page.waitForTimeout(500);
 R.ok('on: invoice shown, network "X Layer", 42 USDT', await seen(page, '#main') && (await page.textContent('#net')) === 'X Layer' && /42 USDT/.test(await page.textContent('#amount')));
-R.ok('on: NoN Wallet button hidden (wallet does not know X Layer)', !(await seen(page, '#openWallet')));
-R.ok('on: "pay with another wallet" is the main button', await seen(page, '#openOther') && await page.evaluate(() => document.getElementById('openOther').classList.contains('btn-main')));
+const owHref = await page.evaluate(() => document.getElementById('openWallet').href);
+R.ok('on: NoN Wallet button shown, leads to the web wallet wallet.tavarov.com with net=xlayer', await seen(page, '#openWallet')
+  && owHref.startsWith('https://wallet.tavarov.com/?pay=tavarov%3Apay%3F') && /net%3Dxlayer/.test(owHref), owHref.slice(0, 80));
+R.ok('on: QR is the page link, not tavarov: (store apps do not know X Layer); camera hint hidden',
+  /^https?:\/\//.test(await page.evaluate(() => document.getElementById('qr').title || ''))
+  && !(await seen(page, '#qrHint')) && !(await seen(page, '#iosHint')));
+R.ok('on: "pay with another wallet" still offered', await seen(page, '#openOther'));
 R.ok('on: table: chain 196, USDT0 and Circle USDC with 6 decimals', await page.evaluate(() => CHAIN_IDS.xlayer === 196 && TOKENS.xlayer.USDT.a === '0x779Ded0c9e1022225f8E0630b35a9b54bE713736'
   && TOKENS.xlayer.USDC.a === '0xB6CEceAB302E2E4948951eE7843FC24E92933061' && TOKENS.xlayer.USDT.d === 6 && TOKENS.xlayer.USDC.d === 6));
 await page.click('#copyLink');
@@ -171,6 +180,13 @@ R.ok('pay() byte for byte to the X Layer contract', sends[1] && sends[1].to.toLo
   && sends[1].data.toLowerCase() === payI.encodeFunctionData('pay', [MERCHANT.toLowerCase(), USDT0, u42, INVOICE]).toLowerCase());
 const hs = [...new Set(hosts)];
 R.ok('reads went to X Layer nodes only', hs.length > 0 && hs.every(h => /xlayer|okx/.test(h)), hs.join(','));
+await ctx.close();
+
+({ ctx, page } = await fresh());
+await page.goto('http://localhost:' + PORT + '/pay-on#p=' + b64(Object.assign({}, inv, { w: 'https://tavarov-wallet.netlify.app' })));
+await page.waitForTimeout(400);
+R.ok('on: invoice pointing at the old Netlify wallet: NoN Wallet button hidden, other wallet is the main button',
+  await seen(page, '#main') && !(await seen(page, '#openWallet')) && await page.evaluate(() => document.getElementById('openOther').classList.contains('btn-main')));
 await ctx.close();
 
 ({ ctx, page } = await fresh());

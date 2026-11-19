@@ -436,10 +436,22 @@ const XLAYER_PAY = '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4';   // X Layer ma
 /* Тестовые Sepolia, Base Sepolia и Solana devnet убраны 1 октября 2026.
    Тестовый BNB остался для тестовых ключей API (tp_test_…). */
 const KNOWN_NETS = ['bnb', 'bnbTestnet', 'eth', 'base', 'solana'].concat(XLAYER_PAY ? ['xlayer'] : []);
-/* NoN Wallet X Layer пока не знает: такой счёт платят только чужим кошельком
-   (OKX Wallet, MetaMask…) через контракт, а код на экране — ссылка на эту же
-   страницу, её открывает обычная камера телефона. */
+/* Сети, которых не знают приложения NoN Wallet в магазинах: Android и iPhone
+   носят в себе копию кошелька от своей сборки и узнают X Layer только после
+   пересборки. Код tavarov:pay из такой сети старое приложение не отвергло бы,
+   а заплатило бы в той сети, где открыто (в BNB), — мимо счёта. Поэтому для
+   этих сетей код на экране — ссылка на эту же страницу (её открывает обычная
+   камера телефона), «скопировать ссылку» даёт её же, подсказки «наведите
+   камеру из приложения» и про iPhone не показываем. */
 const WEB_ONLY_NETS = ['xlayer'];
+/* А кнопку «Оплатить в NoN Wallet» в X Layer — показываем (20.11.2026), но
+   только если она ведёт в веб-кошелёк, который выкладывается вместе с этой
+   страницей (тот же проект Cloudflare Pages, www/): он X Layer знает. Кнопка —
+   обычная https-ссылка, приложений она не открывает (своих ссылок-перехватов
+   у приложений нет). Старый адрес на Netlify больше не обновляется — туда не
+   ведём. */
+const WEB_WALLET_NETS = ['xlayer'];
+const FRESH_WALLET_ORIGINS = ['https://wallet.tavarov.com', 'https://tavarov-wallet.pages.dev'];
 const isSolNet = n => n === 'solana';
 /* Монета, которой сеть берёт комиссию. */
 const NATIVE_SYM = { bnb:'BNB', bnbTestnet:'tBNB', eth:'ETH', base:'ETH', solana:'SOL', xlayer:'OKB' };
@@ -1867,8 +1879,12 @@ function render(){
   const webOnly = WEB_ONLY_NETS.includes(inv.net);
   if (webOnly){
     qrText = paymentUrl();
-    ['openWallet', 'qrHint'].forEach(id => $(id).classList.add('hidden'));
-    $('openOther').classList.replace('btn-ghost', 'btn-main');
+    $('qrHint').classList.add('hidden');
+    const webWallet = WEB_WALLET_NETS.includes(inv.net) && FRESH_WALLET_ORIGINS.includes(inv.w || 'https://wallet.tavarov.com');
+    if (!webWallet){
+      $('openWallet').classList.add('hidden');
+      $('openOther').classList.replace('btn-ghost', 'btn-main');
+    }
   }
   /* iPhone и не приложение с экрана «Домой», не встроенный браузер кошелька. */
   const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') && !navigator.standalone
