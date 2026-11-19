@@ -52,6 +52,22 @@ const NETS = {
     pay:'0x5046399643c387d93e1467bad3fd7edf3fb459da',
     tokens:{ USDC:{ a:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', d:6 } } }
 };
+/* X Layer (OKX's network, chain 196, fees in OKB). OFF until TavarovPay is
+   deployed there (tools/xlayer/deploy-xlayer.mjs on the xlayer branch): while
+   XLAYER_PAY is null the network does not exist for the till, and nothing
+   changes. With the address it appears in Settings like Ethereum and Base.
+   USDT here is USDT0 (Tether/OKX), USDC is Circle's native one; six decimals.
+   Two node operators, OKX and dRPC (TapeOut's TapeKit list, Sep 2026).
+   NoN Wallet does not know X Layer yet, which costs nothing here: the code
+   on screen is the payment page, paid from OKX Wallet, MetaMask and others. */
+const XLAYER_PAY = null;
+if (XLAYER_PAY) NETS.xlayer = { code:'xlayer', key:'xlayer', name:'X Layer', chainId:196, blockSec:1,
+  rpcs:['https://rpc.xlayer.tech','https://xlayer.drpc.org','https://xlayerrpc.okx.com'],
+  logRpcs:['https://rpc.xlayer.tech','https://xlayer.drpc.org'],
+  explorer:'https://web3.okx.com/explorer/x-layer',
+  pay: XLAYER_PAY,
+  tokens:{ USDT:{ a:'0x779Ded0c9e1022225f8E0630b35a9b54bE713736', d:6 },
+           USDC:{ a:'0xB6CEceAB302E2E4948951eE7843FC24E92933061', d:6 } } };
 /* BNB testnet, as in the wallet's TESTNET + CONTRACTS.bnbTestnet. The wallet
    writes the network key "bnb" into tv_net and the chain id 97 into the code;
    the payment page gets "bnbTestnet". We do exactly the same. */
