@@ -162,7 +162,7 @@ R.ok('pill "X Layer" with the OKB mark', info.pills.includes('xlayer:X Layer') &
 R.ok('chain 196, OKB, 18 decimals, logSpan 100', info.x && info.x.chainId === 196 && info.x.sym === 'OKB' && info.x.dec === 18 && info.x.span === 100);
 R.ok('tokens: USDT = USDT0, USDC = Circle, both 6 decimals, nothing else', info.x && Object.keys(info.x.toks).join() === 'USDT,USDC'
   && info.x.toks.USDT.contract === USDT0 && info.x.toks.USDT.decimals === 6 && info.x.toks.USDC.contract === USDC && info.x.toks.USDC.decimals === 6);
-R.ok('pay contract 0x29a3…a1D4 wired like Ethereum and Base, no charges contract', info.contracts && info.contracts.pay === PAY && !info.contracts.charges && info.keys[0] === 'xlayerMainnet');
+R.ok('pay 0x29a3…a1D4 and charges 0xff4d…eB41 (both deployed 19 Nov 2026) wired like Ethereum and Base', info.contracts && info.contracts.pay === PAY && info.contracts.charges === '0xff4deb3aef0aeb958526f1c6ee827a774c0aeb41' && info.keys[0] === 'xlayerMainnet');
 R.ok('real node list: rpc.xlayer.tech, xlayerrpc.okx.com, xlayer.drpc.org', /'https:\/\/rpc\.xlayer\.tech','https:\/\/xlayerrpc\.okx\.com','https:\/\/xlayer\.drpc\.org'/.test(src));
 
 /* ---------- 2. balances ---------- */
@@ -279,7 +279,7 @@ const hid = await page.evaluate(() => ({
 R.ok('swap hidden: not available, quick button hidden, no KyberSwap chain', hid.swap === false && hid.quick && !hid.swapNet, JSON.stringify(hid));
 R.ok('cross-chain swap: X Layer is neither source nor target', !hid.relay && !/xlayer/.test(hid.bridgeTargetsFromBnb));
 R.ok('no gas-free sends (Base relayer, BNB help)', hid.baseGasless === false && hid.bnbGasless === false);
-R.ok('no partners, donations, card top-up, TVR bonuses, on-chain charges', hid.partners === false && hid.don === null && hid.ramp === false && hid.bonus === false && hid.charges === null);
+R.ok('no partners, donations, card top-up, TVR bonuses; on-chain charges = the X Layer TavarovCharges', hid.partners === false && hid.don === null && hid.ramp === false && hid.bonus === false && String(hid.charges).toLowerCase() === '0xff4deb3aef0aeb958526f1c6ee827a774c0aeb41');
 R.ok('names work (read from BNB Chain), claimed only on BNB', hid.names === true && hid.namesHere === false);
 await page.evaluate(() => { tab = 'cashback'; renderWalletState(); try{ renderCashback(); }catch(e){} });
 const cb = await page.evaluate(() => ({ off: !document.getElementById('cbOff').classList.contains('hidden'), live: !document.getElementById('cbLive').classList.contains('hidden'), text: document.getElementById('cbOffText').textContent }));

@@ -2881,11 +2881,11 @@ const CONTRACTS = {
   /* X Layer (20 ноября 2026). TavarovPay v3 выпущен 19 ноября
      tools/xlayer/deploy-xlayer.mjs, код байт в байт как в BNB Chain; тот же
      адрес — XLAYER_PAY в www/pay.html и xlayer.pay в functions/api/status.js.
-     Счёта в сети (charges) здесь пока нет: его адреса в сборке нет, и код
-     без суммы честно говорит «приём таких счетов в этой сети не подключён».
+     TavarovCharges (счёт в сети для кассы) выпущен тем же скриптом 19 ноября,
+     владелец — 0x1840…7891, как в BNB Chain.
      Бонусов TVR нет (token нет), партнёрская программа и донаты в X Layer
      не включены (см. partnersHere и DON_NETS). */
-  xlayerMainnet: { pay: '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4', charges: null }
+  xlayerMainnet: { pay: '0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4', charges: '0xff4deb3aef0aeb958526f1c6ee827a774c0aeb41' }
 };
 const CONTRACT_KEYS = { bnb:['bnbMainnet','bnbTestnet'], eth:['ethMainnet',null], base:['baseMainnet',null], xlayer:['xlayerMainnet',null] };
 /* Настройки контрактов для текущей сети, либо null, если ещё не заданы. */
