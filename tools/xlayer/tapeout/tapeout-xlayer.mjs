@@ -106,7 +106,11 @@ export async function plan(cfg, opts = {}){
     await c.rpc('eth_call', [{ from, to: TAPEOUT.factory, value: '0x' + f.deployFee.toString(16),
       data: ABI.encodeFunctionData('createCPU', [CPU.name, CPU.symbol, CPU.story, CPU.supply, CPU.mintPrice]) }, 'latest',
       { [from]: { balance: '0x' + (10n ** 18n).toString(16) } }]);
-  } catch(e){ simOk = false; log('PROBLEM      createCPU simulation failed: ' + e.message); }
+  } catch(e){
+    simOk = false;
+    log('PROBLEM      createCPU simulation failed: ' + e.message);
+    log('             (if the node does not accept a balance override, this check can fail by itself; "run" simulates again with your real balance)');
+  }
   if (simOk) log('simulation   createCPU runs');
   const bal = BigInt(await c.rpc('eth_getBalance', [from, 'latest']));
   log('balance      ' + fmt(bal) + ' OKB');
