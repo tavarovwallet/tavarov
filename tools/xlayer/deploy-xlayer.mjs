@@ -212,7 +212,15 @@ export async function deploy(cfg, opts = {}){
     st.pay = E.utils.getAddress(r.contractAddress); save();
   }
   log('pay          ' + st.pay);
-  if (Number(await c.num(st.pay, S.VERSION)) !== 3) throw new Error('The contract at ' + st.pay + ' is not version 3. Stopped.');
+  /* A node can answer a call before it has caught up with the block that
+     created the contract; ask again for a few seconds before giving up. */
+  let ver = 0;
+  for (let i = 0; i < 8; i++){
+    try { ver = Number(await c.num(st.pay, S.VERSION)); } catch(e){ ver = 0; }
+    if (ver === 3) break;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  if (ver !== 3) throw new Error('The contract at ' + st.pay + ' is not version 3. Stopped.');
   for (const [sym, a] of Object.entries(cfg.tokens)){
     const acc = (await c.num(st.pay, S.acceptedToken + A(a))) !== 0n;
     const rate = await c.num(st.pay, S.rewardPerUnit + A(a));
