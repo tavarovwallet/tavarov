@@ -198,7 +198,8 @@ globalThis.fetch = async (url, init) => {
 };
 const q = 'h=' + INVOICE + '&m=' + MERCHANT + '&net=xlayer&a=42&c=USDT';
 let res = await STATUS.onRequestGet({ request: new Request('https://wallet.tavarov.com/api/status?' + q), env: {} });
-const LIVE = '0x29a318431053127e2fbf3c0ae9cbaf84cb6aa1d4';   // X Layer mainnet, deployed 19 Nov 2026
+const LIVE = '0x29a318431053127e2fbf3c0ae9cbaf84cb6aa1d4';
+   // X Layer mainnet, deployed 19 Nov 2026
 R.ok('/api/status as committed: X Layer deployed -> 200, asks the mainnet contract', res.status === 200
   && asked.some(a => a.method === 'eth_call' && String(a.params[0].to).toLowerCase() === LIVE) && asked.every(a => /xlayer/.test(a.url)), res.status);
 asked.length = 0;
@@ -207,6 +208,14 @@ const body = await res.json();
 R.ok('/api/status: deployed -> 200, unpaid', res.status === 200 && body.paid === false, JSON.stringify(body));
 R.ok('/api/status: asks the X Layer nodes', asked.length > 0 && asked.every(a => /xlayer/.test(a.url)), [...new Set(asked.map(a => a.url))].join(','));
 R.ok('/api/status: about the X Layer contract', asked.some(a => a.method === 'eth_call' && String(a.params[0].to).toLowerCase() === PAY.toLowerCase()));
+/* A direct transfer to the shop is searched in the logs (s = invoice time,
+   here 10 minutes ago = ~660 blocks): OKX nodes refuse eth_getLogs over 100
+   blocks, so the read must come in pieces that cover the window with no gap. */
+asked.length = 0;
+res = await STATUS.onRequestGet({ request: new Request('https://wallet.tavarov.com/api/status?' + q + '&s=' + (Math.floor(Date.now() / 1000) - 600)), env: {} });
+const lg = asked.filter(a => a.method === 'eth_getLogs').map(a => [parseInt(a.params[0].fromBlock, 16), parseInt(a.params[0].toBlock, 16)]).sort((x, y) => x[0] - y[0]);
+const okSpans = lg.length > 1 && lg.every(([a, b]) => b >= a && b - a + 1 <= 100) && lg.every((r, i) => i === 0 || r[0] === lg[i - 1][1] + 1);
+R.ok('/api/status: X Layer logs read in pieces of at most 100 blocks, no gaps', okSpans, JSON.stringify(lg.map(([a, b]) => b - a + 1)));
 globalThis.fetch = realFetch;
 
 process.exit(R.done(errors) ? 0 : 1);
