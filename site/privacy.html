@@ -109,7 +109,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <h2>Where requests go</h2>
   <p>A wallet cannot work without asking the blockchain. These requests go straight from your device, bypassing us, and their recipients can see your IP address and what you asked about:</p>
   <ul>
-    <li><b>BNB Chain, Ethereum, Base and Solana nodes</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, solana-rpc.publicnode.com and similar) — balances, fees, sending operations. Some Solana requests go through our server (wallet.tavarov.com/api/solrpc), which passes them to a Solana node and does not store them.</li>
+    <li><b>BNB Chain, Ethereum, Base, X Layer and Solana nodes</b> (bsc-dataseed.binance.org, ethereum-rpc.publicnode.com, base-rpc.publicnode.com, rpc.xlayer.tech and xlayerrpc.okx.com run by OKX, solana-rpc.publicnode.com and similar) — balances, fees, sending operations. Some Solana requests go through our server (wallet.tavarov.com/api/solrpc), which passes them to a Solana node and does not store them.</li>
     <li><b>CoinGecko</b> — coin rates, to show an approximate amount in dollars. Only coin names are requested; your address never goes there.</li>
     <li><b>Our site</b> — the app page itself, the payment and tip pages, the developer dashboard. The web host’s logs (Cloudflare) then see what any site sees: IP, time, page address.</li>
     <li><b>Block explorers</b> (BscScan, Etherscan, Basescan, Solscan) — only if you press "view in the explorer" yourself.</li>
