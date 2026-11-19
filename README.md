@@ -1,6 +1,6 @@
 # Tavarov Pay
 
-Take payments in USDT and USDC on BNB Chain, Ethereum, Base and Solana, with no bank in the middle.
+Take payments in USDT and USDC on BNB Chain, Ethereum, Base and Solana — and, through the payment page, the merchant API and the WooCommerce plugin, on X Layer — with no bank in the middle.
 
 A seller fills in an amount and gets a payment link with a QR code. The buyer
 pays, and the money goes **from their wallet straight to the seller's wallet**.
@@ -87,6 +87,27 @@ minutes — better to hear it from us.
 
 Payments and the partner program work here exactly as on BNB Chain; names
 resolve through the BNB Chain names contract.
+
+## X Layer
+
+OKX's network (chainId 196, gas in OKB). Deployed 19 November 2026 with
+`tools/xlayer/deploy-xlayer.mjs`, the same bytes as on BNB Chain.
+
+| What | Address |
+|---|---|
+| TavarovPay v3 — payments | `0x29a318431053127E2fBf3C0Ae9cbaF84Cb6Aa1D4` |
+| MerchantVault v2 — vault template | `0x91523C01280C7286202eC7140AEa9a042F1b8330` |
+| TavarovCharges — invoices | `0xff4dEb3aEF0aeb958526f1c6EE827A774c0aeB41` |
+
+Accepted: USDT (USDT0, `0x779Ded0c9e1022225f8E0630b35a9b54bE713736`) and
+USDC (`0xB6CEceAB302E2E4948951eE7843FC24E92933061`), six decimals each. X
+Layer works on the payment page (`www/pay.html`), in `/api/status`, in the
+merchant API (`"network": "xlayer"`, paid at 20 blocks ≈ 20 seconds) and in
+the WooCommerce plugin from 1.2.0. Not on X Layer yet: donations, the Telegram
+bot and the partner cabinet (the contract carries the same partner rule on X
+Layer; the cabinet just does not read X Layer yet). OKX's nodes return
+`eth_getLogs` for at most 100 blocks at a time, so the API reads the log in
+100-block chunks.
 
 ## Solana
 

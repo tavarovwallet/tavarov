@@ -44,7 +44,8 @@ ok('и сказано почему: тестовый ключ — только B
 r = await call(env, 'POST', '/invoices', { amount: '1', network: 'polygon' });
 ok('незнакомая сеть — bad_network', r.status === 400 && r.body.error.code === 'bad_network');
 r = await call(env, 'GET', '/me');
-ok('/me: bnb, ethereum, base и solana', JSON.stringify(r.body.networks) === JSON.stringify({ bnb: ['USDT', 'USDC'], ethereum: ['USDT', 'USDC'], base: ['USDC'], solana: ['USDC', 'USDT'] }), JSON.stringify(r.body.networks));
+/* 20.11.2026: и X Layer (USDT0 и USDC), см. t111. */
+ok('/me: bnb, ethereum, base, xlayer и solana', JSON.stringify(r.body.networks) === JSON.stringify({ bnb: ['USDT', 'USDC'], ethereum: ['USDT', 'USDC'], base: ['USDC'], xlayer: ['USDT', 'USDC'], solana: ['USDC', 'USDT'] }), JSON.stringify(r.body.networks));
 
 // «после выпуска»: адрес контракта подставлен проверочной переменной
 env = mkEnv({ TAVAROV_PAY: '0x' + '42'.repeat(20) });

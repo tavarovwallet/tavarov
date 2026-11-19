@@ -67,6 +67,7 @@ const NETS = {
      USDC is Circle's native one. 20 blocks deep = 20 seconds. */
   xlayer:     { rpcs: ['https://rpc.xlayer.tech', 'https://xlayer.drpc.org'],
                 pay: '0x29a318431053127e2fbf3c0ae9cbaf84cb6aa1d4', payOld: null, conf: 20, blockSeconds: 1, transferLookback: 1800, lookback: 1800,
+                logSpan: 100,   // OKX nodes refuse eth_getLogs over 100 blocks: read in pieces
                 tokens: { USDT: { a:'0x779Ded0c9e1022225f8E0630b35a9b54bE713736', d:6 },
                           USDC: { a:'0xB6CEceAB302E2E4948951eE7843FC24E92933061', d:6 } } }
 };
@@ -114,6 +115,22 @@ function toUnits(amount, decimals){
 
 /* Ask every known node in turn: one node refusing must not turn into "not
    paid" for someone who has just paid. */
+/* eth_getLogs over [from, to]. Networks whose nodes cap the range (X Layer:
+   100 blocks on OKX's nodes) are read in pieces, newest first; `stop(logs)`
+   may end the walk early once what we look for is found. A piece no node
+   answers fails the whole read — never a silent gap. */
+async function getLogs(cfg, filter, from, to, stop){
+  if (!cfg.logSpan) return rpc(cfg.rpcs, 'eth_getLogs', [Object.assign({}, filter, { fromBlock: hex(from), toBlock: hex(to) })]);
+  const all = [];
+  for (let hi = to; hi >= from; hi -= cfg.logSpan){
+    const lo = Math.max(from, hi - cfg.logSpan + 1);
+    const part = await rpc(cfg.rpcs, 'eth_getLogs', [Object.assign({}, filter, { fromBlock: hex(lo), toBlock: hex(hi) })]);
+    for (const l of (part || [])) all.push(l);
+    if (stop && stop(all)) break;
+  }
+  return all;
+}
+
 async function rpc(urls, method, params){
   let last = null;
   for (const url of urls){
@@ -165,10 +182,7 @@ async function findDirectTransfer(cfg, merchant, want, since, safeBlock){
 
   let logs;
   try{
-    logs = await rpc(cfg.rpcs, 'eth_getLogs', [{
-      address: want.token, fromBlock: hex(from), toBlock: hex(safeBlock),
-      topics: [TRANSFER_TOPIC, null, pad(merchant)]
-    }]);
+    logs = await getLogs(cfg, { address: want.token, topics: [TRANSFER_TOPIC, null, pad(merchant)] }, from, safeBlock);
   } catch(e){ return null; }        // logs refused — stay silent rather than lie
 
   const candidates = [];
@@ -228,7 +242,8 @@ function netConfig(net, env){
     conf: base.conf || CONFIRMATIONS,
     lookback: base.lookback || LOOKBACK,
     transferLookback: base.transferLookback || TRANSFER_LOOKBACK,
-    blockSeconds: base.blockSeconds || BLOCK_SECONDS
+    blockSeconds: base.blockSeconds || BLOCK_SECONDS,
+    logSpan: base.logSpan || 0
   };
 }
 
@@ -398,10 +413,9 @@ export async function onRequestGet({ request, env }){
          finding it is no tragedy — it does not affect the "paid" answer. */
       let tx = null, block = null;
       try{
-        const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{
-          address: saleHub, fromBlock: hex(Math.max(0, safe - cfg.lookback)), toBlock: hex(safe),
-          topics: [PAID_TOPIC, pad(m)]
-        }]);
+        const logs = await getLogs(cfg, { address: saleHub, topics: [PAID_TOPIC, pad(m)] },
+          Math.max(0, safe - cfg.lookback), safe,
+          got => got.some(l => word(l.data, 3).toLowerCase() === h));
         for (const l of (logs || [])){
           if (word(l.data, 3).toLowerCase() !== h) continue;
           tx = l.transactionHash; block = parseInt(l.blockNumber, 16); break;
@@ -418,9 +432,7 @@ export async function onRequestGet({ request, env }){
        answer says so honestly. */
     const to = safe;
     const from = Math.max(0, to - cfg.lookback);
-    const logs = await rpc(cfg.rpcs, 'eth_getLogs', [{
-      address: cfg.pay, fromBlock: hex(from), toBlock: hex(to), topics: [PAID_TOPIC, pad(m)]
-    }]);
+    const logs = await getLogs(cfg, { address: cfg.pay, topics: [PAID_TOPIC, pad(m)] }, from, to);
 
     for (const l of (logs || [])){
       if (word(l.data, 3).toLowerCase() !== h) continue;
