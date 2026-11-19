@@ -48,7 +48,8 @@ await page.route(RPC, async route => {
 
 // ---- сети ----
 const pills = await page.evaluate(() => { renderNetPills(); return [...document.querySelectorAll('#netPills .netpill')].map(e => e.textContent); });
-R.ok('четыре сети: BNB, Ethereum, Base, Solana', JSON.stringify(pills) === JSON.stringify(['BNB Chain','Ethereum','Base','Solana']), pills.join(', '));
+/* С 20 ноября 2026 — пять: X Layer между Base и Solana (t110). */
+R.ok('пять сетей: BNB, Ethereum, Base, X Layer, Solana', JSON.stringify(pills) === JSON.stringify(['BNB Chain','Ethereum','Base','X Layer','Solana']), pills.join(', '));
 const where = await page.evaluate(() => ({ inDash: !!document.querySelector('#dashCard #netPills'), inSettings: !!document.querySelector('#settingsCard #netPills') }));
 R.ok('выбор сети — на главном экране, а не в настройках', where.inDash && !where.inSettings, JSON.stringify(where));
 const tn = await page.evaluate(() => ({ eth: !!TESTNET.eth, base: !!TESTNET.base, sol: !!TESTNET.solana, ck: JSON.stringify(CONTRACT_KEYS) }));

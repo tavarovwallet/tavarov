@@ -20,7 +20,7 @@ const dialogs = []; let promptAnswer = '';
 
 const first = await page.evaluate(() => wallet.evm.address);
 R.ok('НА ГЛАВНОМ ВИДНО, КАКОЙ КОШЕЛЁК ОТКРЫТ', await vis('#walletChip') && (await page.textContent('#walletChipName')) === 'Кошелёк 1', await page.textContent('#walletChipName'));
-R.ok('и выбор сети тут же, сверху', await vis('#dashCard #netPills') && (await page.$$eval('#dashCard #netPills .netpill', e => e.length)) === 4);
+R.ok('и выбор сети тут же, сверху', await vis('#dashCard #netPills') && (await page.$$eval('#dashCard #netPills .netpill', e => e.length)) === 5);   // с 20.11.2026 и X Layer
 await page.click('#dashCard #netPills .netpill[data-net="eth"]'); await wait(200);
 R.ok('нажал Ethereum на главном — сеть сменилась', await page.evaluate(() => network) === 'eth');
 await page.click('#dashCard #netPills .netpill[data-net="bnb"]'); await wait(200);
