@@ -254,6 +254,9 @@ export async function verify(cfg, opts = {}){
   if (!st.pay) throw new Error('Nothing deployed yet (no pay address in ' + cfg.stateFile + ')');
   const owner = String(opts.owner || cfg.newOwner || st.deployer).toLowerCase();
   const P = st.pay, problems = [];
+  /* Right after a deploy a node may still return empty code; give it a few seconds. */
+  const code0 = c.code.bind(c);
+  c.code = async a => { let x = ''; for (let i = 0; i < 8; i++){ try { x = await code0(a); } catch(e){ x = ''; } if (x && x !== '0x') return x; await new Promise(r => setTimeout(r, 1500)); } return x; };
   if (!sameCode(await c.code(P), B.TavarovPayV3)) problems.push('payment contract code differs from the build');
   if (!sameCode(await c.code(st.vault), B.MerchantVaultV2)) problems.push('vault template code differs');
   if (st.charges && !sameCode(await c.code(st.charges), B.TavarovCharges)) problems.push('charges code differs');
