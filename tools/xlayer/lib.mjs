@@ -141,7 +141,11 @@ export function askHidden(question){
     process.stdout.write(question);
     stdin.setRawMode(true); stdin.resume(); stdin.setEncoding('utf8');
     let s = '';
-    const on = ch => {
+    const on = raw => {
+      /* A pasted password arrives wrapped in bracketed-paste markers
+         (ESC[200~ … ESC[201~) on macOS Terminal; drop them and any other
+         escape sequence so typing and pasting give the same password. */
+      const ch = String(raw).replace(/\x1b\[20[01]~/g, '').replace(/\x1b\[[0-9;]*[A-Za-z~]/g, '');
       for (const c of ch){
         if (c === '\r' || c === '\n'){ stdin.setRawMode(false); stdin.pause(); stdin.off('data', on); process.stdout.write('\n'); return resolve(s); }
         if (c === '\u0003'){ stdin.setRawMode(false); process.stdout.write('\n'); process.exit(130); }
