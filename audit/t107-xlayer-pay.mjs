@@ -1,11 +1,11 @@
 /* t107: X Layer on the payment page (www/pay.html) and in /api/status
    (functions/api/status.js). Built on t83 (Ethereum/Base).
 
-   1. As committed (XLAYER_PAY = null): an X Layer invoice is refused like
-      any unknown network, /api/status answers 503 for X Layer — the live
-      site behaves exactly as before.
-   2. With the address filled in (the test serves the page with XLAYER_PAY
-      set, as it will be after the deploy): the invoice shows "X Layer";
+   1. With XLAYER_PAY = null (the test serves the page that way, as it was
+      before the deploy): an X Layer invoice is refused like any unknown
+      network — switching it off again is one line.
+   2. As committed (XLAYER_PAY = the mainnet contract deployed 19 Nov 2026,
+      the test serves it with a fake address so the fake node answers): the invoice shows "X Layer";
       NoN Wallet's button is hidden (the wallet does not know X Layer yet);
       the QR code and the copied link are the page's own https link; another
       wallet pays through the contract: the wallet is asked to switch to
@@ -40,16 +40,16 @@ const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   if (u.pathname === '/api/status'){ res.writeHead(200, { 'content-type': 'application/json' }); return res.end('{"paid":false}'); }
   let rel = decodeURIComponent(u.pathname).replace(/^\/+/, '') || 'index.html';
-  const on = rel === 'pay-on';
+  const on = rel === 'pay-on', off = rel === 'pay';
   if (on) rel = 'pay';
   if (!path.extname(rel)) rel += '.html';
   const f = path.join(WWW, rel);
   if (!f.startsWith(WWW) || !fs.existsSync(f)){ res.writeHead(404); return res.end(); }
   let body = fs.readFileSync(f);
-  if (on){
-    const s = body.toString('utf8');
-    if (!s.includes('const XLAYER_PAY = null;')) throw new Error('XLAYER_PAY line not found in pay.html');
-    body = Buffer.from(s.replace('const XLAYER_PAY = null;', "const XLAYER_PAY = '" + PAY + "';"), 'utf8');
+  if (on || off){
+    const s = body.toString('utf8'), line = /^const XLAYER_PAY = [^\n]*$/m;
+    if (!line.test(s)) throw new Error('XLAYER_PAY line not found in pay.html');
+    body = Buffer.from(s.replace(line, on ? "const XLAYER_PAY = '" + PAY + "';" : 'const XLAYER_PAY = null;'), 'utf8');
   }
   res.writeHead(200, { 'content-type': rel.endsWith('.js') ? 'text/javascript' : 'text/html; charset=utf-8' });
   res.end(body);
@@ -198,7 +198,10 @@ globalThis.fetch = async (url, init) => {
 };
 const q = 'h=' + INVOICE + '&m=' + MERCHANT + '&net=xlayer&a=42&c=USDT';
 let res = await STATUS.onRequestGet({ request: new Request('https://wallet.tavarov.com/api/status?' + q), env: {} });
-R.ok('/api/status: X Layer not deployed -> 503, not "unpaid"', res.status === 503 && asked.length === 0, res.status);
+const LIVE = '0x29a318431053127e2fbf3c0ae9cbaf84cb6aa1d4';   // X Layer mainnet, deployed 19 Nov 2026
+R.ok('/api/status as committed: X Layer deployed -> 200, asks the mainnet contract', res.status === 200
+  && asked.some(a => a.method === 'eth_call' && String(a.params[0].to).toLowerCase() === LIVE) && asked.every(a => /xlayer/.test(a.url)), res.status);
+asked.length = 0;
 res = await STATUS.onRequestGet({ request: new Request('https://wallet.tavarov.com/api/status?' + q), env: { TAVAROV_PAY: PAY } });
 const body = await res.json();
 R.ok('/api/status: deployed -> 200, unpaid', res.status === 200 && body.paid === false, JSON.stringify(body));

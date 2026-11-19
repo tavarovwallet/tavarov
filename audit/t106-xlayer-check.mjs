@@ -36,12 +36,14 @@ const BUYER = '0x1212121212121212121212121212121212121212', FAKE = '0xfa4efa4efa
 const e6 = 10n ** 6n, e18 = 10n ** 18n;
 let w;
 const world = () => { w = makeWorld(); w.xlayer.tokens.set(FAKE, { symbol: 'USDT', name: 'Tether USD', decimals: 6 }); return w; };
-const run = (input, opts = {}) => C.check(input, Object.assign({ fetch: mockFetch(w, EP), endpoints: EP, timeoutMs: 300 }, opts));
+const run = (input, opts = {}) => C.check(input, Object.assign({ fetch: mockFetch(w, EP), endpoints: EP, timeoutMs: 300, xlayer: false, ruleCircuit: null }, opts));
+const runLive = (input, opts = {}) => C.check(input, Object.assign({ fetch: mockFetch(w, EP), endpoints: EP, timeoutMs: 300 }, opts));   // the committed defaults
 const runX = (input, opts = {}) => run(input, Object.assign({ xlayer: true }, opts));
 const xlCalls = () => w.calls.filter(c => c.startsWith('xlayer ')).length;
 
 // ---------- the tables ----------
-R.ok('off by default: XLAYER_ON false, RULE_CIRCUIT null', C.XLAYER_ON === false && C.RULE_CIRCUIT === null);
+R.ok('live since 19 Nov 2026: XLAYER_ON true, RULE_CIRCUIT = CPU #434 circuit #1 on X Layer',
+  C.XLAYER_ON === true && C.RULE_CIRCUIT && C.RULE_CIRCUIT.circuits === '0x9C5BDCB1b6c2AFFc3863b08CDe0D2bbb2D7B7fCE' && C.RULE_CIRCUIT.id === 1);
 R.ok('X Layer official: USDT0 and Circle USDC, 6 decimals', C.OFFICIAL.xlayer[USDT.xlayer.slice(2)].sym === 'USDT' && C.OFFICIAL.xlayer[USDC.xlayer.slice(2)].sym === 'USDC' &&
   Object.values(C.OFFICIAL.xlayer).every(x => x.decimals === 6) && Object.keys(C.OFFICIAL.xlayer).length === 2);
 R.ok('old bridged USDT / USDC / USDC.e are listed as not-the-issuer\'s', [USDT.xlayerOld, USDC.xlayerE, '0x74b7f16337b8972027f6196a17a631ac6de26d22'].every(a => !!C.DISCONTINUED.xlayer[a.slice(2)] && !C.OFFICIAL.xlayer[a.slice(2)]));
@@ -176,7 +178,16 @@ r = await run(H(45), { ruleCircuit: { circuits: CIRC.circuits, id: 2 } });
 R.ok('a circuit id that does not exist -> unconfirmed', r.verdict === 'green' && r.circuit.state === 'unavailable');
 withCircuit(); addEvmTx(w, 'bsc', H(46), [{ token: USDT.bsc, from: BUYER, to: SELLER, raw: 3n * e18 }]);
 r = await run(H(46));
-R.ok('RULE_CIRCUIT null (default): no eval, no circuit field', !r.circuit && w.evals === 0 && xlCalls() === 0);
+R.ok('RULE_CIRCUIT null: no eval, no circuit field', !r.circuit && w.evals === 0 && xlCalls() === 0);
+/* the committed defaults: X Layer payments found, and every verdict cross-checked with the real circuit's address */
+world(); w.circuit = { address: C.RULE_CIRCUIT.circuits.toLowerCase(), id: 1, netlist: nl.hex, nIn: 7, nOut: 2 }; w.evals = 0;
+addEvmTx(w, 'xlayer', H(47), [{ token: USDT.xlayer, from: BUYER, to: SELLER, raw: 25n * e6 }]);
+r = await runLive(H(47));
+R.ok('defaults: an X Layer USDT0 payment is found and green, and the circuit agrees', r.verdict === 'green' && r.network === 'xlayer' && r.circuit && r.circuit.state === 'agrees', JSON.stringify({ v: r.verdict, n: r.network, c: r.circuit }));
+world(); w.circuit = { address: C.RULE_CIRCUIT.circuits.toLowerCase(), id: 1, netlist: nl.hex, nIn: 7, nOut: 2 }; w.evals = 0;
+addEvmTx(w, 'bsc', H(48), [{ token: USDT.bsc, from: BUYER, to: SELLER, raw: 3n * e18 }]);
+r = await runLive(H(48));
+R.ok('defaults: a BNB payment is still green, cross-checked on X Layer', r.verdict === 'green' && r.circuit && r.circuit.state === 'agrees');
 withCircuit();
 r = await run(H(47), { ruleCircuit: CIRC });
 R.ok('not found: nothing to cross-check, no eval', r.verdict === 'notfound' && w.evals === 0);

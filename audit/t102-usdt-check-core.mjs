@@ -30,7 +30,9 @@ const e18 = 10n ** 18n, e6 = 10n ** 6n;
 
 let w;
 function world() { w = makeWorld(); return w; }
-const run = (input, opts = {}) => C.check(input, Object.assign({ fetch: mockFetch(w, EP), endpoints: EP, timeoutMs: 300 }, opts));
+/* The three original networks, X Layer and the circuit cross-check off:
+   those are t106's (with them on, the live default since 19 Nov 2026). */
+const run = (input, opts = {}) => C.check(input, Object.assign({ fetch: mockFetch(w, EP), endpoints: EP, timeoutMs: 300, xlayer: false, ruleCircuit: null }, opts));
 
 // ---------- contracts are what the issuers publish ----------
 R.ok('USDT TRON hex = TR7NHqje…', (await C.tronHexToBase58(USDT.tron)) === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');

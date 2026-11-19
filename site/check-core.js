@@ -75,12 +75,13 @@
         text: 'This is USDC.e, a bridged token on X Layer, not the USDC Circle issues there. It is not counted as a USDC payment here.' }
     }
   };
-  const XLAYER_ON = false;
+  const XLAYER_ON = true;
   /* The payment rule, taped out with TapeOut on X Layer (tools/xlayer/tapeout).
-     null = not taped out yet: verdicts are not cross-checked. When set, every
-     verdict is compared with what the published circuit says for the same
-     facts (a free read-only call); if the circuit says otherwise, no verdict. */
-  const RULE_CIRCUIT = null;          // { circuits: '0x…', id: 1 }
+     Every verdict is compared with what the published circuit says for the
+     same facts (a free read-only call); if the circuit says otherwise, no
+     verdict. Taped out 19 Nov 2026: CPU #434 "Tavarov Pay rules", circuit #1,
+     18 NAND gates; all 128 inputs checked on chain against rule(). */
+  const RULE_CIRCUIT = { circuits: '0x9C5BDCB1b6c2AFFc3863b08CDe0D2bbb2D7B7fCE', id: 1 };
 
   const NETWORKS = {
     bsc:  { name: 'BNB Chain', native: 'BNB', nativeDecimals: 18, minConf: 15, explorerTx: h => 'https://bscscan.com/tx/' + h },
