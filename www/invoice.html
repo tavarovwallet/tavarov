@@ -1744,6 +1744,10 @@ function exportCsv(){
   if (!list.length) return;
   const head = t('csvHead').split('|');
   const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const csvText = value => {
+    const text = String(value || '');
+    return /^[\s\u0000-\u001f]*[=+\-@]/.test(text) ? "'" + text : text;
+  };
   /* Excel в английской раскладке ждёт точку, в остальных — запятую. Разделитель
      колонок при этом всюду «;»: с запятой английский Excel съел бы дробную часть
      как новую колонку. */
@@ -1751,7 +1755,7 @@ function exportCsv(){
   const rows = list.map(v => [
     new Date(v.at).toLocaleString(locale()),
     comma ? String(v.a).replace('.', ',') : String(v.a),
-    v.c, v.i || '', v.o || '',
+    v.c, csvText(v.i), csvText(v.o),
     v.paid ? t('csvPaid') : ((v.t && v.t * 1000 < Date.now()) ? t('csvOld') : t('csvWait')),
     v.h || '', v.tx || ''
   ].map(q).join(';'));
@@ -1811,7 +1815,7 @@ async function logRefresh(){
       if (asked >= 20) break;
       asked++;
       const d = await askStatus(v);
-      if (d && d.paid && !directTaken(v.h, d)){
+      if (d && d.paid && !d.uncertain && !directTaken(v.h, d)){
         logSet(v.h, { paid:true, tx: d.tx || null, direct: !!d.direct }); renderLog();
       }
       await new Promise(r => setTimeout(r, 150));
@@ -1837,11 +1841,9 @@ async function askStatus(v){
          записей журнала времени не было — берём момент записи. */
       + '&s=' + encodeURIComponent(v.s || Math.floor((v.at || Date.now()) / 1000)),
       { signal: AbortSignal.timeout(9000) });
-    return await r.json();
+    return r.ok ? await r.json() : { unknown: true };
   } catch(e){ return { unknown: true }; }
 }
-async function ask(){ return askStatus(inv); }
-
 /* Прямой перевод номера счёта не несёт, и один такой перевод сервер
    засчитал бы всем открытым счетам той же суммы. Внутри кабинета это
    можно не допустить: перевод, уже записанный за другим счётом, этому
@@ -1851,13 +1853,17 @@ function directTaken(h, d){
 }
 function watch(){
   clearInterval(timer);
+  const invoice = inv;
+  let running = false;
   const tick = async () => {
-    if (!inv) return;
-    const d = await ask();
-    if (!inv) return;
-    if (d && d.paid && !directTaken(inv.h, d)){
+    if (!invoice || inv !== invoice || running) return;
+    running = true;
+    const d = await askStatus(invoice);
+    running = false;
+    if (inv !== invoice) return;
+    if (d && d.paid && !d.uncertain && !directTaken(invoice.h, d)){
       clearInterval(timer); timer = null;
-      logSet(inv.h, { paid:true, tx: d.tx || null, direct: !!d.direct });
+      logSet(invoice.h, { paid:true, tx: d.tx || null, direct: !!d.direct });
       /* Через контракт — зелёное «Оплачено». Прямой перевод — «сверьте»:
          номера счёта в нём нет, и то, что пришла нужная сумма, ещё не
          значит, что заплатил именно этот покупатель. */
@@ -1865,8 +1871,8 @@ function watch(){
       else          setDone('donePaid', 'donePaidSub', null, true);
       return;
     }
-    if (d && d.unknown){ setDone('netQuiet', 'doneSub'); return; }
-    const left = inv.t - Math.floor(Date.now() / 1000);
+    if (d && (d.unknown || d.uncertain)){ setDone('netQuiet', 'doneSub'); return; }
+    const left = invoice.t - Math.floor(Date.now() / 1000);
     if (left > 0) setDone('waitLeft', 'doneSub', String(Math.floor(left / 60)));
     else          setDone('expired', 'doneSub');
   };

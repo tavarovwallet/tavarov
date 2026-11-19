@@ -75,7 +75,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
 
 <main class="wrap">
   <h1>Privacy policy</h1>
-  <div class="date"><span>Updated</span>: 12.11.2026 · Tavarov Pay · NoN Wallet</div>
+  <div class="date"><span>Updated</span>: 16.11.2026 · Tavarov Pay · NoN Wallet</div>
 
   <div class="box">
     <p><b>At a glance.</b> Your wallet keys are created and stored on your device. Payment pages, invoices and the API process the transaction information and hosting logs described below. The marketing website uses Cloudflare Web Analytics; the wallet and checkout do not include that analytics script.</p>
@@ -91,6 +91,8 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   <h2>What we keep, part three: shops using the API</h2>
   <p>A shop that connects payments to its website signs in to the developer dashboard by signing with its wallet. We keep: its wallet address; fingerprints of its API keys (not the key itself — only the shop sees it, once); its webhook address and the secret we sign webhooks with; the invoices it created through the API — amount, currency, order number, description, its own metadata and, once paid, the payer address from the blockchain. Invoices are kept for 90 days, a dashboard sign-in lasts 12 hours. Beyond the payer address, which is public anyway, we know nothing about the customer.</p>
 
+  <p>For internal statistics, we record whether an invoice was created or confirmed, its internal reference, whether it was live or test, and a pseudonymous seller identifier. These counters do not store the customer’s address or the payment amount. The private operations dashboard displays the invoice amount, currency, network and status from our invoice records.</p>
+
   <h2>What we do not collect</h2>
   <p>The wallet does not ask for identity documents, contacts or advertising identifiers. Your API integration may include order metadata; do not include unnecessary customer information. Contacting the project by email shares your address and the contents of your message so we can reply.</p>
 
@@ -102,7 +104,7 @@ footer a{color:var(--label-2); font-size:15px; margin-right:20px}
   </ul>
   <p>All of it lives on the device only. It is not sent to our servers and not copied to any cloud. Delete the app and it goes with it, which is why a backup is worth making in advance.</p>
   <p><b>The NoN Wallet browser extension</b> works the same way: keys and settings are stored only in the extension's storage in your browser. The extension asks for access only to our server wallet.tavarov.com and does not read the pages you visit, your tabs or your history.</p>
-  <p><b>The website tavarov.com</b> counts page views with Cloudflare Web Analytics — no cookies and no tracking across sites. The wallet, the app and the extension themselves have no analytics.</p>
+  <p><b>The website tavarov.com</b> counts page views with Cloudflare Web Analytics — no cookies and no tracking across sites. The wallet web app reports the creation of a wallet and the submission of a transfer with a random event ID and a mainnet or testnet category for transfers. The report contains no wallet address, amount, transaction hash, or device identifier. The native apps and the extension do not send these reports.</p>
 
   <h2>Where requests go</h2>
   <p>A wallet cannot work without asking the blockchain. These requests go straight from your device, bypassing us, and their recipients can see your IP address and what you asked about:</p>

@@ -4,7 +4,7 @@ Tags: crypto, usdt, usdc, cryptocurrency, payment gateway
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,11 @@ No. Payments are in USDT and USDC only.
 2. On Solana the customer scans a Solana Pay code or pays in Phantom or Solflare.
 
 == Changelog ==
+
+= 1.2.1 =
+* At checkout, redirect to the order confirmation when the invoice is already paid. If the previous payment status cannot be checked, ask the customer to wait before trying again.
+* Compare a paid invoice with the current order total before completing the order.
+* Limit webhook request size and ignore event types unrelated to payment confirmation.
 
 = 1.2.0 =
 * New network: X Layer (OKX, chain 196). USDT (USDT0) or USDC, paid through the Tavarov Pay contract; gas in OKB. The order note links the payment to the OKX X Layer explorer.

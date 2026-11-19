@@ -31,6 +31,9 @@
 import { messageHash, recoverAddress, keccak256 } from '../_crypto.js';
 import { promoteByHash, migrateDonIndex, promoteSolDonations } from '../donate.js';
 import { overLimit } from '../_limit.js';
+import { readBoundedBody } from '../_bounded-body.js';
+import { recordInvoiceStat } from '../_admin-events.js';
+import { syncAdminInvoice } from '../_admin-history.js';
 import { notifyPaid, notifyProblem } from '../_tg.js';
 import { scanReferrals, readPartner, partnerView } from '../_ref.js';
 import { partnerSolMerchants } from '../_solref.js';
@@ -660,7 +663,11 @@ async function refresh(env, rec, origin, opts){
     retryAt = await deliver(env, rec, origin);
   else if (rec.st === 'paid' && rec.wh && rec.wh.next) retryAt = rec.wh.next;
   const after = JSON.stringify([rec.st || 'pending', rec.pay || null, rec.wh || null, rec.tgw || 0]);
-  if (after !== before) await kvPut(env, kInv(rec.h), rec, INV_TTL);
+  if (after !== before) {
+    await kvPut(env, kInv(rec.h), rec, INV_TTL);
+    if (chain.st) await syncAdminInvoice(env, rec);
+  }
+  if (chain.st === 'paid') await recordInvoiceStat(env, rec, 'paid');
   return { retryAt };
 }
 
@@ -675,11 +682,9 @@ async function enqueue(env, h, at){
 /* ===================== обработчики ===================== */
 
 async function readBody(request){
-  const len = Number(request.headers.get('content-length') || 0);
-  if (len > MAX_BODY) return { tooBig: true };
-  let text = '';
-  try{ text = await request.text(); } catch(e){ return { bad: true }; }
-  if (text.length > MAX_BODY) return { tooBig: true };
+  const input = await readBoundedBody(request, MAX_BODY);
+  if (input.bad || input.tooBig) return input;
+  const { text } = input;
   if (!text.trim()) return { body: {} };
   try{
     const b = JSON.parse(text);
@@ -794,6 +799,8 @@ async function createInvoice(request, env, who, origin){
     list.unshift(rec.h);
     await kvPut(env, kRecent(who.w, who.mode), list.slice(0, 50), INV_TTL);
   } catch(e){ /* список в кабинете — для удобства */ }
+  await syncAdminInvoice(env, rec);
+  await recordInvoiceStat(env, rec, 'invoice');
   return json(publicInvoice(rec, origin), 201);
 }
 
@@ -1019,6 +1026,8 @@ export async function createTgInvoice(env, o){
       if (!q.some(e => e.h === rec.h)){ q.push({ h: rec.h, t: rec.t }); await kvPut(env, K_SOLQ, q.slice(-300)); }
     } catch(e){ /* увидит кнопка «Проверить оплату» */ }
   }
+  await syncAdminInvoice(env, rec);
+  await recordInvoiceStat(env, rec, 'invoice');
   return { rec, url: payUrl(rec, 'https://wallet.tavarov.com') };
 }
 export const tgPayUrl = rec => payUrl(rec, 'https://wallet.tavarov.com');
@@ -1178,6 +1187,7 @@ async function devRoute(parts, request, env, origin, waitUntil){
     rec.wh = { n: 0 };
     const retryAt = await deliver(env, rec, origin);
     await kvPut(env, kInv(rec.h), rec, INV_TTL);
+    await syncAdminInvoice(env, rec);
     if (retryAt) waitUntil(enqueue(env, rec.h, retryAt));
     return json(publicInvoice(rec, origin));
   }

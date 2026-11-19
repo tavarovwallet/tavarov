@@ -13,6 +13,8 @@ on:
       target:
         description: "all / wallet / creator / site"
         default: all
+        type: choice
+        options: [all, wallet, creator, site]
 concurrency:
   group: deploy
   cancel-in-progress: false
@@ -20,6 +22,7 @@ permissions:
   contents: read
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -30,17 +33,22 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Token present
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "::error::Add the CLOUDFLARE_API_TOKEN repository secret"; exit 1; fi
       - name: What changed
         id: c
+        env:
+          TARGET: ${{ inputs.target }}
+          BEFORE: ${{ github.event.before }}
         run: |
-          T="${{ github.event.inputs.target }}"
-          if [ -n "$T" ] && [ "$T" != "all" ]; then echo "$T=1" >> "$GITHUB_OUTPUT"; exit 0; fi
-          BEFORE="${{ github.event.before }}"
-          if [ -z "$T" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+          case "$TARGET" in
+            wallet|creator|site) echo "$TARGET=1" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            ''|all) ;;
+            *) echo "::error::Unknown deployment target"; exit 1 ;;
+          esac
+          if [ -z "$TARGET" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
             CH=$(git diff --name-only "$BEFORE" HEAD)
           else
             CH=$(printf "www/\ncreator/\nsite/\n")
@@ -51,7 +59,17 @@ jobs:
           echo "$CH" | grep -q '^site/' && echo "site=1" >> "$GITHUB_OUTPUT" || true
       - name: Tests
         if: steps.c.outputs.wallet || steps.c.outputs.creator
-        run: for t in tests/*.mjs; do node --experimental-vm-modules "$t"; done
+        shell: bash
+        run: |
+          for test in tests/*.mjs; do node --experimental-vm-modules "$test"; done
+      - name: Check owner dashboard in wallet build
+        if: steps.c.outputs.wallet
+        shell: bash
+        run: |
+          for file in www/admin/{index.html,dashboard.js,dashboard.css} functions/{admin/_middleware.js,api/admin/stats.js,api/admin/events.js}; do
+            [ -s "$file" ] || { echo "::error file=$file::Wallet deployment is missing the owner dashboard"; exit 1; }
+          done
+          node tools/admin-stats/check.mjs
       # Gas-free USDC on Base (functions/api/relay-base.js) needs a small relayer
       # wallet that pays gas. Its key is created here once, straight into the
       # Pages secrets, and never printed: nobody, human or bot, has seen it.
@@ -107,12 +125,23 @@ jobs:
         working-directory: site
         run: npx --yes wrangler@4 pages deploy . --project-name tavarov-site --branch production --commit-dirty=true
       - name: Check live
+        env:
+          CHECK_WALLET: ${{ steps.c.outputs.wallet }}
         run: |
           sleep 20
           fail=0
           for u in https://wallet.tavarov.com/ https://wallet.tavarov.com/api/tg https://creator.tavarov.com/ https://tavarov.com/; do
             c=$(curl -s -o /dev/null -w '%{http_code}' -L "$u"); echo "$c $u"; [ "$c" = 200 ] || fail=1
           done
+          if [ "$CHECK_WALLET" = 1 ]; then
+            for path in /admin/ /api/admin/stats; do
+              code=$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' "https://wallet.tavarov.com$path")
+              case "$code" in
+                302|403) ;;
+                *) echo "::error::$path must require owner access (HTTP $code)"; fail=1 ;;
+              esac
+            done
+          fi
           # The download must be the APK the page shows, not a page.
           want=$(python3 -c "import json;print(json.load(open('site/apk.json'))['sha256'])")
           type=$(curl -s -o /tmp/live.apk -w '%{content_type}' https://tavarov.com/tavarov.apk)
@@ -122,6 +151,7 @@ jobs:
           exit $fail
 
   android-release:
+    if: github.ref == 'refs/heads/main'
     # The same APK as a GitHub release, created once per version from
     # site/apk.json: tag wallet-v<version> on the commit it was built from.
     runs-on: ubuntu-latest

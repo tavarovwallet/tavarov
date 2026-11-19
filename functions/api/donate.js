@@ -117,6 +117,7 @@ async function rpc(urls, method, params){
 import { solBinding, partnerAtaFor } from './_solref.js';
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
+import { readBoundedBody } from './_bounded-body.js';
 import { tgCall, esc } from './_tg.js';
 import { SOL, SOLNETS, solRpc, solRefSigs, solTxBatches } from './_sol.js';
 
@@ -549,13 +550,11 @@ async function refreshGoal(env, cfg, net, to, p){
 
 async function onPost({ request, env }){
   if (!env || !env.TILL) return json({ error: 'storage is not configured' }, 503);
-  const len = Number(request.headers.get('content-length') || 0);
-  if (len > MAX_BODY) return json({ error: 'too large' }, 413);
-  let text = '';
-  try{ text = await request.text(); } catch(e){ return json({ error: 'bad body' }, 400); }
-  if (text.length > MAX_BODY) return json({ error: 'too large' }, 413);
-  let b; try{ b = JSON.parse(text); } catch(e){ return json({ error: 'bad json' }, 400); }
-  if (!b || typeof b !== 'object') return json({ error: 'bad json' }, 400);
+  const input = await readBoundedBody(request, MAX_BODY);
+  if (input.tooBig) return json({ error: 'too large' }, 413);
+  if (input.bad) return json({ error: 'bad body' }, 400);
+  let b; try{ b = JSON.parse(input.text); } catch(e){ return json({ error: 'bad json' }, 400); }
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return json({ error: 'bad json' }, 400);
 
   const net = parseNet(b.net);
   if (b.action === 'profile'){

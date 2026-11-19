@@ -87,7 +87,10 @@ check( 'X Layer: в заметке ссылка в обозреватель OKX'
 $g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE ) );
 $ff = $g->get_form_fields();
 check( 'в настройках сеть X Layer есть', isset( $ff['network']['options']['xlayer'] ) && 'X Layer' === $ff['network']['options']['xlayer'] );
-check( 'версия 1.2.0 в заголовке и в readme (Stable tag)', '1.2.0' === TAVAROV_PAY_VERSION && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/tavarov-pay.php' ), 'Version:           1.2.0' ) && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/readme.txt' ), 'Stable tag: 1.2.0' ) && false !== strpos( file_get_contents( __DIR__ . '/../tavarov-pay/readme.txt' ), '= 1.2.0 =' ) );
+$version = preg_quote( TAVAROV_PAY_VERSION, '/' );
+$plugin = file_get_contents( __DIR__ . '/../tavarov-pay/tavarov-pay.php' );
+$readme = file_get_contents( __DIR__ . '/../tavarov-pay/readme.txt' );
+check( 'версия совпадает в заголовке, Stable tag и changelog', preg_match( '/^ \* Version:[ \t]+' . $version . '$/m', $plugin ) && preg_match( '/^Stable tag: ' . $version . '$/m', $readme ) && preg_match( '/^= ' . $version . ' =$/m', $readme ) );
 
 $g = gw( array( 'enabled' => 'yes', 'api_key' => $LIVE, 'network' => 'solana', 'solana_address' => '', 'debug' => 'yes' ) );
 $r = $g->process_payment( 7 );

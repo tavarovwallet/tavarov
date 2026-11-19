@@ -43,6 +43,8 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	/** Re-checks after the invoice is created, in seconds. */
 	const CHECKS = array( 180, 900, 3600 );
 
+	const WEBHOOK_BODY_MAX = 16384;
+
 	/**
 	 * Constructor.
 	 */
@@ -320,6 +322,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		if ( ! $order ) {
 			return array( 'result' => 'failure' );
 		}
+		if ( $order->is_paid() ) {
+			return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
+		}
 
 		$api                   = $this->api();
 		list( $network, $currency ) = $this->payment_route();
@@ -332,6 +337,14 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 
 		// Same order, same sum, invoice still open: send the customer back to it.
 		$reuse = $this->reusable_invoice( $order, $amount, $currency, $network );
+		if ( $order->is_paid() ) {
+			return array( 'result' => 'success', 'redirect' => $this->get_return_url( $order ) );
+		}
+		if ( is_wp_error( $reuse ) ) {
+			$this->log( 'Check failed at checkout for order ' . $order->get_id() . ': ' . $reuse->get_error_message() );
+			wc_add_notice( __( 'Could not check your previous crypto payment right now. If you have already paid, wait a minute and check your order before retrying.', 'tavarov-pay' ), 'error' );
+			return array( 'result' => 'failure' );
+		}
 		if ( $reuse ) {
 			return array(
 				'result'   => 'success',
@@ -464,7 +477,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @param string   $amount   Current amount.
 	 * @param string   $currency Current currency.
 	 * @param string   $network  Current network.
-	 * @return string|null Payment URL.
+	 * @return string|null|WP_Error Payment URL, no invoice to reuse, or an unsuccessful verification.
 	 */
 	private function reusable_invoice( $order, $amount, $currency, $network = 'bnb' ) {
 		$id   = (string) $order->get_meta( self::META_INVOICE );
@@ -476,8 +489,14 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			return null;
 		}
 		$inv = $this->api()->get_invoice( $id );
-		if ( is_wp_error( $inv ) || ! is_array( $inv ) ) {
-			return null;
+		if ( is_wp_error( $inv ) ) {
+			if ( 'tavarov_pay_not_found' === $inv->get_error_code() ) {
+				return null;
+			}
+			return $inv;
+		}
+		if ( ! is_array( $inv ) || ! empty( $inv['stale'] ) ) {
+			return new WP_Error( 'tavarov_pay_unverified_invoice', __( 'The payment network did not confirm the current invoice status.', 'tavarov-pay' ) );
 		}
 		$this->apply_invoice( $order, $inv );
 		if ( isset( $inv['status'] ) && 'pending' === $inv['status'] && isset( $inv['expires_at'] ) && (int) $inv['expires_at'] > time() + 120 ) {
@@ -499,7 +518,7 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 	 * @return bool Whether the order is paid now.
 	 */
 	public function apply_invoice( $order, $inv ) {
-		if ( ! is_array( $inv ) || ! isset( $inv['id'], $inv['status'] ) || $inv['id'] !== $order->get_meta( self::META_INVOICE ) ) {
+		if ( ! is_array( $inv ) || ! empty( $inv['stale'] ) || ! isset( $inv['id'], $inv['status'] ) || $inv['id'] !== $order->get_meta( self::META_INVOICE ) ) {
 			return false;
 		}
 		$status = (string) $inv['status'];
@@ -510,7 +529,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			if ( $paid ) {
 				return true;
 			}
-			if ( ! self::same_amount( $inv['amount'], $order->get_meta( self::META_AMOUNT ) ) || $inv['currency'] !== $order->get_meta( self::META_CURRENCY ) ) {
+			if ( ! self::same_amount( $inv['amount'] ?? null, $order->get_meta( self::META_AMOUNT ) )
+				|| ! self::same_amount( $inv['amount'] ?? null, self::format_amount( $order->get_total() ) )
+				|| ( $inv['currency'] ?? null ) !== $order->get_meta( self::META_CURRENCY ) ) {
 				$this->note_once( $order, 'mismatch', __( 'Tavarov Pay reports the invoice as paid, but its amount or currency does not match this order. The order was NOT marked paid — please check it manually.', 'tavarov-pay' ) );
 				return false;
 			}
@@ -583,6 +604,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 			$this->log( 'Check failed for order ' . $order->get_id() . ': ' . $inv->get_error_message() );
 			return $inv;
 		}
+		if ( ! empty( $inv['stale'] ) ) {
+			return new WP_Error( 'tavarov_pay_unverified_invoice', __( 'The payment network did not confirm the current invoice status.', 'tavarov-pay' ) );
+		}
 		return $this->apply_invoice( $order, $inv );
 	}
 
@@ -598,7 +622,10 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		if ( ! $gw ) {
 			wp_send_json( array( 'error' => 'gateway not loaded' ), 503 );
 		}
-		$raw    = (string) file_get_contents( 'php://input' );
+		$raw = file_get_contents( 'php://input', false, null, 0, self::WEBHOOK_BODY_MAX + 1 );
+		if ( false === $raw || strlen( $raw ) > self::WEBHOOK_BODY_MAX ) {
+			wp_send_json( array( 'error' => 'invalid webhook body size' ), 413 );
+		}
 		$secret = (string) $gw->get_option( 'webhook_secret' );
 		$sig    = isset( $_SERVER['HTTP_TAVAROV_SIGNATURE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_TAVAROV_SIGNATURE'] ) ) : '';
 		if ( '' !== $secret && ! Tavarov_Pay_API::verify_signature( $raw, $sig, $secret ) ) {
@@ -611,6 +638,9 @@ class Tavarov_Pay_Gateway extends WC_Payment_Gateway {
 		}
 		if ( 'ping' === $event['type'] ) {
 			wp_send_json( array( 'ok' => true ), 200 );
+		}
+		if ( 'invoice.paid' !== $event['type'] ) {
+			wp_send_json( array( 'ok' => true, 'ignored' => true ), 200 );
 		}
 		$id = isset( $event['data']['id'] ) ? (string) $event['data']['id'] : '';
 		if ( ! Tavarov_Pay_API::id_looks_valid( $id ) ) {

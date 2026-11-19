@@ -110,7 +110,7 @@ const scan = async (link) => {
     amt: document.getElementById('sendAmount').value,
     box: document.getElementById('scanIntentBox').textContent,
     red: document.getElementById('scanIntentBox').className.indexOf('notice-err') >= 0,
-    chain: scannedChainId
+    chain: scannedNetwork ? scannedNetwork.chainId : null
   }));
 };
 

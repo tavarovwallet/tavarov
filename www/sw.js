@@ -79,7 +79,7 @@ self.addEventListener('fetch', (e) => {
      который меняется через минуту; отданный из памяти вчерашний «нет»
      означал бы, что продавец не увидит уже пришедшие деньги, а покупателя
      отправят платить второй раз. */
-  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname.startsWith('/api/') || url.pathname === '/admin' || url.pathname.startsWith('/admin/')) return;
 
   if (isApp(req, url)){
     /* Сначала сеть: человек должен видеть ту версию, которую вы выложили.

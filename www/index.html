@@ -2977,6 +2977,7 @@ let payDirect = false;        // пришли из быстрого действ
 let payMode = null;
 let wallet = null;
 let pendingGenerate = null;
+let pendingWalletCreation = false;
 let ticketPollTimer = null;
 let ticketInfo = null;
 /* Номер выставленного счёта. Один на весь счёт: и в коде, и в ссылке для
@@ -3420,7 +3421,7 @@ function cancelAddWallet(){
   renderWalletState();
   syncBack();
 }
-async function addWalletDone(){
+async function addWalletDone(created = false){
   const nw = walletCore(pendingGenerate || {});
   pendingGenerate = null;
   const g = document.getElementById('mnemonicGrid'); if (g) g.innerHTML = '';
@@ -3441,6 +3442,7 @@ async function addWalletDone(){
   await clearTillAmount();
   try{ await walletsCommit(nw); }
   catch(e){ showGlobalError(t('k4b6aa9c3') + (e && e.message || e)); cancelAddWallet(); return; }
+  if (created && !testnetOn()) reportWebWalletEvent('wallet_created');
   afterWalletChange();
   animate('dashCard', 'push-in');
 }
@@ -3880,6 +3882,15 @@ async function quickCreate(){
     idle: 'kf3c6144a', passEl: document.getElementById('qcPass'), pass2El: document.getElementById('qcPass2'),
     nameEl: document.getElementById('qcName'), needName: !testnetOn(), quick: true });
 }
+function reportWebWalletEvent(kind){
+  if (location.origin !== 'https://wallet.tavarov.com' || window.Capacitor?.isNativePlatform?.()) return;
+  try{
+    fetch('/api/admin/events', { method: 'POST', credentials: 'omit', keepalive: true,
+      referrerPolicy: 'no-referrer', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind, id: crypto.randomUUID() })
+    }).catch(()=>{});
+  } catch {}
+}
 async function createVault(o){
   const errBox = o.errBox, btn = o.btn, nameEl = o.nameEl;
   errBox.classList.add('hidden');
@@ -3905,6 +3916,8 @@ async function createVault(o){
       pendingGenerate = await walletFromMnemonicAll(rnd.mnemonic.phrase);
     }
     await persistVault(pendingGenerate, p1);
+    if ((o.quick || pendingWalletCreation) && !testnetOn()) reportWebWalletEvent('wallet_created');
+    pendingWalletCreation = false;
     if (o.quick) setBackupPending(true);
     /* Хранилище заменили — старая запись входа по лицу больше ни к чему не
        подходит. Оставить её значит дать кнопку, которая отдаёт пароль от
@@ -7053,7 +7066,8 @@ async function finishGenerate(){
   }
   if (el) el.value = '';
   /* Ещё один кошелёк к уже открытым: пароль у приложения уже есть. */
-  if (addingWallet){ await addWalletDone(); return; }
+  if (addingWallet){ await addWalletDone(true); return; }
+  pendingWalletCreation = true;
   flowStage = 'protect';
   renderWalletState();
   animate('protectCard', 'push-in');
@@ -7126,6 +7140,7 @@ function seedProblem(raw){
   return null;
 }
 async function doImport(){
+  pendingWalletCreation = false;
   const errBox = document.getElementById('importError');
   errBox.classList.add('hidden');
   try{
@@ -11476,9 +11491,30 @@ let scannedName = '';            // название точки из QR
    и по нему магазин потом узнаёт свой заказ: сумма и адрес для этого не
    годятся — два человека могут купить одно и то же в одну секунду. */
 let scannedInvoice = '';
-/* Номер сети, для которой выписан код. Держим до самой отправки: между
+/* Сеть, для которой выписан код. Держим до самой отправки: между
    сканированием и подтверждением человек может переключить сеть. */
-let scannedChainId = null;
+let scannedNetwork = null;
+
+function scannedNetworkFor(payment){
+  const chainSpecified = payment.chainId !== null && payment.chainId !== undefined;
+  if (!chainSpecified && !payment.net) return undefined;
+  if (chainSpecified && (!Number.isSafeInteger(payment.chainId) || payment.chainId <= 0)) return null;
+  const test = testnetOn();
+  const networkKey = payment.net === 'bnbTestnet' ? 'bnb' : payment.net;
+  if (payment.net === 'bnbTestnet' && !test) return null;
+  if (test && payment.net && payment.net !== 'bnbTestnet' && !chainSpecified) return null;
+  const match = ENABLED_NETS.find(key =>
+    (!networkKey || key === networkKey) && (!chainSpecified || NETWORKS[key].chainId === payment.chainId));
+  return match ? NETWORKS[match] : null;
+}
+
+function clearScannedPaymentFields(){
+  clearScanned();
+  scannedSolRef = null;
+  const to = document.getElementById('sendTo'), amount = document.getElementById('sendAmount');
+  if (to) to.value = '';
+  if (amount) amount.value = '';
+}
 
 /* Сумма и монета счёта кассы, как они пришли в коде (SCAN-FIX-V1). */
 let scannedFix = null;
@@ -11491,7 +11527,7 @@ const SCANFIX_TXT = {
   id: 'Tagihan ini sebesar %a. Koin dan jumlahnya tidak bisa diubah, atau kasir tidak akan melihat pembayarannya. Perlu koin atau jumlah lain? Minta kode baru ke penjual.'
 };
 function clearScanned(){
-  scannedMerchant = null; scannedName = ''; scannedInvoice = ''; scannedChainId = null; scannedFix = null;
+  scannedMerchant = null; scannedName = ''; scannedInvoice = ''; scannedNetwork = null; scannedFix = null;
   const box = document.getElementById('scanIntentBox');
   if (box) box.classList.add('hidden');
 }
@@ -11699,7 +11735,7 @@ async function applyScannedPayment(text){
   /* Новый код — новая покупка: ошибка от прошлой попытки к ней не относится (SCAN-FIX-V1). */
   try{ clearSendResult(); } catch(e){}
   scannedFix = null;
-  scannedMerchant = null; scannedName = ''; scannedInvoice = ''; scannedChainId = null;
+  scannedMerchant = null; scannedName = ''; scannedInvoice = ''; scannedNetwork = null;
   scannedSolRef = (d.solRef && d.to) ? { to: d.to, ref: d.solRef } : null;
 
   /* Код из другой нашей сети (продавец в Ethereum, а кошелёк открыт в BNB) —
@@ -11730,19 +11766,6 @@ async function applyScannedPayment(text){
       if (others.length) tillNote = t('k8053021c') + others.join(', ') + t('kfa13eb6c');
     }
   }
-  {
-    let want = null;
-    if (d.chainId){
-      Object.keys(NETWORKS).forEach(k => { if (NETWORKS[k].chainId === d.chainId) want = k; });
-    } else if (d.net && NETWORKS[d.net]){
-      want = d.net;
-    }
-    if (want && want !== network && ENABLED_NETS.includes(want)){
-      switchNetwork(want);
-      switchedTo = want;
-    }
-  }
-
   /* ---------- Чужая сеть: остановка, а не предупреждение ----------
 
      Один и тот же адрес существует и в основной сети, и в тестовой, и очень
@@ -11750,11 +11773,9 @@ async function applyScannedPayment(text){
      отсканированный в основной сети, уводит НАСТОЯЩИЕ деньги на адрес, где
      их ждали понарошку. Предупреждение тут не годится: его пролистывают.
      Останавливаем до экрана подтверждения и ничего не подставляем в поля. */
-  const here = NETWORKS[network] || {};
-  if (d.chainId && here.chainId && d.chainId !== here.chainId){
-    clearScanned();
-    const to = document.getElementById('sendTo'), am = document.getElementById('sendAmount');
-    if (to) to.value = ''; if (am) am.value = '';
+  const intendedNetwork = scannedNetworkFor(d);
+  if (intendedNetwork === null){
+    clearScannedPaymentFields();
     if (box){
       box.textContent = t('ke6c4b564');
       box.className = 'notice notice-err';
@@ -11763,7 +11784,11 @@ async function applyScannedPayment(text){
     }
     return;
   }
-  scannedChainId = d.chainId || null;
+  if (intendedNetwork && intendedNetwork !== NETWORKS[network]){
+    switchedTo = ENABLED_NETS.find(key => NETWORKS[key] === intendedNetwork);
+    switchNetwork(switchedTo);
+  }
+  scannedNetwork = intendedNetwork || null;
 
   /* Код продавца суммы не содержит — спрашиваем у контракта, чего продавец
      просит прямо сейчас. Если счёта нет или он просрочен, честно говорим
@@ -11929,9 +11954,6 @@ async function applyScannedPayment(text){
   if (d.name) parts.push(t('k219c83f0') + d.name);
   if (d.item) parts.push(t('k67a2e571') + d.item);
   if (d.amt)  parts.push(t('k992b6a72') + d.amt + ' ' + (d.cur || ''));
-  if (d.net && d.net !== network) parts.push(t('k6103af6f') +
-      ((NETWORKS[d.net] && NETWORKS[d.net].name) || d.net) + t('k85ddd985') + NETWORKS[network].name +
-      t('kc2c6ebfd'));
   if (!d.amt) parts.push(t('kb66f47c1'));
   else if (d.m) parts.push(t('kf1657c7f'));
   /* Название точки в коде — свободный текст, его пишет тот, кто код собрал.
@@ -11942,7 +11964,7 @@ async function applyScannedPayment(text){
   if (switchedTo) parts.unshift(t('kf9c5e148') + NETWORKS[network].name);
   if (tillNote && d.amt) parts.push(tillNote);
   box.textContent = parts.join('. ') + '.';
-  box.className = 'notice notice-' + ((d.net && d.net !== network) ? 'err' : (shopRoot ? 'warn' : 'info'));
+  box.className = 'notice notice-' + (shopRoot ? 'warn' : 'info');
   box.style.textAlign = 'left';
   box.classList.remove('hidden');
 }
@@ -12594,6 +12616,7 @@ function tillNet(){
 function tillMulti(net, currency){ return net === 'bnb' && (currency === 'USDT' || currency === 'USDC'); }
 
 let tillPushed = null;      // что мы положили на наклейку, чтобы потом снять
+let tillClearPending = null;
 
 /* Название товара для кассы. Сервер принимает не больше 64 знаков и без
    управляющих и «невидимых» символов — готовим строку заранее, иначе касса
@@ -12644,15 +12667,27 @@ async function pushTillAmount(o){
    через минуту, увидит цену, которую уже никто не просит. */
 async function clearTillAmount(){
   const was = tillPushed;
-  tillPushed = null;
-  if (!was || !wallet || !wallet.evm) return;
-  try{
-    const fields = { action:'clear', m: was.m, k: was.k, net: was.net,
-                     c:'', a:'', i:'', o:'', h:'', ts: Math.floor(Date.now() / 1000) };
-    const sig = await evmSigner().signMessage(tillSignedText(fields));
-    await fetch(tillApi(), { method:'POST', headers:{ 'content-type':'application/json' },
-      body: JSON.stringify(Object.assign({}, fields, { sig })) });
-  } catch(e){ /* не сняли — через десять минут погаснет само */ }
+  if (!was || !wallet || !wallet.evm || wallet.evm.address.toLowerCase() !== was.m.toLowerCase()) return;
+  if (tillClearPending) return tillClearPending;
+  tillClearPending = (async () => {
+    try{
+      const fields = { action:'clear', m: was.m, k: was.k, net: was.net,
+                       c:'', a:'', i:'', o:'', h:'', ts: Math.floor(Date.now() / 1000) };
+      const sig = await evmSigner().signMessage(tillSignedText(fields));
+      if (tillPushed !== was) return;
+      const r = await fetch(tillApi(), { method:'POST', headers:{ 'content-type':'application/json' },
+        body: JSON.stringify(Object.assign({}, fields, { sig })) });
+      const d = await r.json().catch(() => null);
+      if (!r.ok || !d || !d.ok || !d.cleared) throw new Error('Till clear failed');
+      if (tillPushed === was) tillPushed = null;
+    } catch(e){
+      if (tillPushed !== was) return;
+      showGlobalError(lang === 'ru' || lang === 'tg'
+        ? 'Не удалось снять сумму с наклейки. Покупатели всё ещё могут её видеть.'
+        : 'Could not clear the till. Customers may still see the previous amount.');
+    }
+  })();
+  try{ await tillClearPending; } finally{ tillClearPending = null; }
 }
 
 /* opts.sticker — счёт уже выставлен в сети, и заплатить по нему можно, не
@@ -12907,9 +12942,8 @@ function reviewSend(){
   /* Сеть могли переключить уже ПОСЛЕ сканирования — на экране остались бы
      подставленные адрес и сумма из чужой сети. Проверяем второй раз, у самой
      двери: первая проверка спасает от ошибки, вторая — от хитрости. */
-  const netNow = NETWORKS[network] || {};
-  if (scannedChainId && netNow.chainId && scannedChainId !== netNow.chainId){
-    clearScanned();
+  if (scannedNetwork && scannedNetwork !== NETWORKS[network]){
+    clearScannedPaymentFields();
     alert(t('ked74aede'));
     return;
   }
@@ -12963,7 +12997,7 @@ function reviewSend(){
   if (!merchant && payMode === 'buy' && myHere && to.toLowerCase() !== myHere.toLowerCase()){
     merchant = to;
   }
-  pendingSend = { to, amount, currency, merchant, viaName,
+  pendingSend = { to, amount, currency, merchant, viaName, networkConfig: NETWORKS[network],
                   name: fromScan ? scannedName : '',
                   invoice: fromScan ? scannedInvoice : '',
                   /* Метка из чужого кода Solana Pay: по ней продавец найдёт
@@ -13051,11 +13085,16 @@ async function doSend(){
     resultBox.classList.remove('hidden');
     return;
   }
-  /* Второй раз — у самой двери, до пароля: получатель обязан быть адресом
-     этой сети. Сеть могли переключить после проверки в reviewSend. */
+  /* Получатель обязан быть адресом этой сети до запроса пароля. */
   if (!recipientAddrOk(send.to) || (send.merchant && !recipientAddrOk(send.merchant))){
     resultBox.innerHTML = t('k7512c4ee') + escapeHtml(t('kfd9a8a48')) + '</div>';
     resultBox.classList.remove('hidden');
+    return;
+  }
+  if (send.networkConfig !== NETWORKS[network]){
+    cancelSend();
+    clearScannedPaymentFields();
+    alert(t('ked74aede'));
     return;
   }
 
@@ -13104,12 +13143,19 @@ async function doSend(){
                         t('k85b8d844'));
       }
     }
-    const cfg = NETWORKS[network];
+    if (send !== pendingSend || w !== wallet || send.networkConfig !== NETWORKS[network]){
+      throw new Error(t('ked74aede'));
+    }
+    const cfg = send.networkConfig;
     let txUrl;
+    const testTransfer = testnetOn();
     lastTxHash = null;
     if (cfg.kind==='tron') txUrl = await tronSend(w, send, cfg);
     else if (cfg.kind==='evm') txUrl = await evmSend(w, send, cfg);
     else if (cfg.kind==='solana') txUrl = await solSend(w, send, cfg);
+    if (!send.merchant && !send.invoice && sendIntent !== 'withdraw' && lastTxHash) {
+      reportWebWalletEvent(testTransfer ? 'transfer_test_submitted' : 'transfer_submitted');
+    }
 
     /* Перевод отправлялся и НЕ ДОЖИДАЛСЯ подтверждения вовсе: человек видел
        «транзакция отправлена в сеть» и на этом всё. Прошла она или нет,

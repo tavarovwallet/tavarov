@@ -40,6 +40,7 @@
 
 import { messageHash, recoverAddress } from './_crypto.js';
 import { overLimit, tooMany } from './_limit.js';
+import { readBoundedBody } from './_bounded-body.js';
 import { SOL } from './_sol.js';
 
 const NETS = {
@@ -233,7 +234,10 @@ async function onGet({ request, env }){
       try{ v = JSON.parse(raw); } catch(e){ v = null; }
       /* KV clears expired keys on its own, but not always to the second. We
          do not serve a stale amount just because the cleaner was slow. */
-      if (v && !v.cleared && v.expiresAt > now) return json(Object.assign({}, v, { source: 'till', now }));
+      if (v && v.expiresAt > now){
+        if (v.cleared) return json({ empty: true, now });
+        return json(Object.assign({}, v, { source: 'till', now }));
+      }
     }
   }
 
@@ -259,13 +263,11 @@ async function onPost({ request, env }){
      процессора на каждый запрос — бесплатный способ положить кассы всех. */
   if (await overLimit(request, env, 'till', 60, 600)) return tooMany();
   let body = null;
-  const len = parseInt(request.headers.get('content-length') || '0', 10);
-  if (len > MAX_BODY) return json({ error: 'request too large' }, 413);
-  let text = '';
-  try{ text = await request.text(); } catch(e){ return json({ error: 'bad request body' }, 400); }
-  if (text.length > MAX_BODY) return json({ error: 'request too large' }, 413);
-  try{ body = JSON.parse(text); } catch(e){ return json({ error: 'bad request body' }, 400); }
-  if (!body || typeof body !== 'object') return json({ error: 'bad request body' }, 400);
+  const input = await readBoundedBody(request, MAX_BODY);
+  if (input.tooBig) return json({ error: 'request too large' }, 413);
+  if (input.bad) return json({ error: 'bad request body' }, 400);
+  try{ body = JSON.parse(input.text); } catch(e){ return json({ error: 'bad request body' }, 400); }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'bad request body' }, 400);
 
   const action = body.action === 'clear' ? 'clear' : 'set';
   const net = body.net === 'bnbTestnet' ? 'bnbTestnet' : 'bnb';
@@ -350,8 +352,12 @@ async function onPost({ request, env }){
      повтором: сравнивать её было не с чем. Метка живёт столько же, сколько
      жила бы сумма, — дольше повтор и так не проходит по часам. */
   if (action === 'clear'){
-    try{ await env.TILL.put(key, JSON.stringify({ cleared: true, ts, expiresAt: now + TTL }),
-                            { expirationTtl: TTL }); } catch(e){}
+    try{
+      await env.TILL.put(key, JSON.stringify({ cleared: true, ts, expiresAt: now + TTL }),
+                          { expirationTtl: TTL });
+    } catch(e){
+      return json({ error: 'could not clear the till — try again' }, 503);
+    }
     return json({ ok: true, cleared: true });
   }
 
