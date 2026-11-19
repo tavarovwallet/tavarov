@@ -145,7 +145,12 @@ export async function run(cfg, opts = {}){
     log('  sent       ' + label + '  ' + hash);
     for (let i = 0; i < 240; i++){
       const r = await c.rpc('eth_getTransactionReceipt', [hash]).catch(() => null);
-      if (r && r.blockNumber){ if (BigInt(r.status) !== 1n) throw new Error(label + ': the network rejected ' + hash); return r; }
+      if (r && r.blockNumber){
+        if (BigInt(r.status) !== 1n) throw new Error(label + ': the network rejected ' + hash);
+        /* Let the other nodes catch up before the next read. */
+        await new Promise(res => setTimeout(res, opts.settleMs != null ? opts.settleMs : 3000));
+        return r;
+      }
       await new Promise(res => setTimeout(res, opts.pollMs || 1500));
     }
     throw new Error(label + ': not confirmed in 6 minutes: ' + hash);
