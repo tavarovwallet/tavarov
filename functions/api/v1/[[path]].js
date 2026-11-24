@@ -32,7 +32,7 @@ import { messageHash, recoverAddress, keccak256 } from '../_crypto.js';
 import { promoteByHash, migrateDonIndex, promoteSolDonations } from '../donate.js';
 import { overLimit } from '../_limit.js';
 import { readBoundedBody } from '../_bounded-body.js';
-import { recordInvoiceStat } from '../_admin-events.js';
+import { recordInvoiceStat, recordChainPaid } from '../_admin-events.js';
 import { syncAdminInvoice } from '../_admin-history.js';
 import { notifyPaid, notifyProblem } from '../_tg.js';
 import { scanReferrals, readPartner, partnerView } from '../_ref.js';
@@ -875,6 +875,7 @@ async function runCron(env, origin, phase){
       out.scanned[net] = (logs || []).length;
       const seen = new Set();
       for (const l of (logs || [])){
+        if (!/testnet/i.test(net)) await recordChainPaid(env, net, l);
         const h = word(l.data, 3).toLowerCase();
         if (seen.has(h)) continue;
         seen.add(h);

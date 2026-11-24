@@ -1,6 +1,6 @@
 const period = document.getElementById('period');
 const statusLine = document.getElementById('status');
-const names = ['first_invoice', 'first_payment', 'repeat_payment', 'invoice_live', 'paid_live',
+const names = ['first_invoice', 'first_payment', 'repeat_payment', 'invoice_live', 'paid_live', 'paid_chain',
   'invoice_test', 'paid_test', 'wallet_created', 'transfer_submitted', 'transfer_test_submitted'];
 const merchantList = document.getElementById('merchants');
 const siteVisits = document.getElementById('site-visits');
