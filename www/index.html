@@ -12783,9 +12783,26 @@ async function createTicket(opts){
                                      cur: currency === 'native' ? '' : currency,
                                      amt: amount, item: item, name: shopName(),
                                      inv: ticketInvoice });
-    drawQr(qrHolder, payLink, 190);
+    /* 25.11.2026: в BNB Chain, Ethereum, Base и X Layer на экране — ссылка
+       на страницу счёта, а не «ethereum:…/transfer». По стандартному коду
+       MetaMask и другие кошельки переводили деньги прямо на адрес — мимо
+       контракта, без комиссии и без номера счёта (так прошла проверочная
+       оплата 25 ноября). Страницу счёта открывает любая камера и любой
+       кошелёк, а платит она через контракт. NoN Wallet такую ссылку читает
+       (payLinkFromUrl). Solana и оплата в монете сети — как раньше.
+       Слишком длинную ссылку укорачиваем: убираем товар, потом название. */
+    const evmWeb = !!contractsFor() && !!w.evm && currency !== 'native' && network !== 'solana';
+    let qrText = payLink;
+    if (evmWeb){
+      const webArgs = { merchant: w.evm.address, amt: amount, cur: currency, item: item,
+                        name: shopName(), net: netCode(), inv: ticketInvoice, order: 'k' + ticketInvoice.slice(2, 10) };
+      qrText = buildWebInvoice(webArgs);
+      if (qrText.length > 420) qrText = buildWebInvoice(Object.assign({}, webArgs, { item: '' }));
+      if (qrText.length > 420) qrText = buildWebInvoice(Object.assign({}, webArgs, { item: '', name: '' }));
+    }
+    drawQr(qrHolder, qrText, 190);
     const linkBox = document.getElementById('ticketPayLink');
-    if (linkBox) linkBox.textContent = payLink;
+    if (linkBox) linkBox.textContent = qrText;
 
     /* Ссылка для браузера. Показываем её только когда касса вообще работает
        в этой сети: без контракта оплаты страница счёта не сможет узнать,

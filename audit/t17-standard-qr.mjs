@@ -154,7 +154,8 @@ await page.evaluate(() => createTicket());
 await page.waitForTimeout(3000);
 const shown = await page.evaluate(() => document.getElementById('ticketPayLink').textContent);
 R.ok('ССЫЛКА НА ОПЛАТУ ПОКАЗАНА РЯДОМ С КОДОМ', shown.length > 20, shown.slice(0, 50));
-R.ok('и это та же ссылка, что в картинке', /^(ethereum:|tavarov:pay\?)/.test(shown), shown.slice(0, 20));
+// 25.11.2026: в EVM-сетях с контрактом в коде — страница счёта (её открывает любой кошелёк и платит через контракт).
+R.ok('и это та же ссылка, что в картинке', /^(https:\/\/wallet\.tavarov\.com\/pay\.html#p=|ethereum:|tavarov:pay\?)/.test(shown), shown.slice(0, 20));
 const backLink = await page.evaluate(s => parsePayLink(s), shown);
 R.ok('вставленная ссылка читается как ПОКУПКА, а не перевод',
   !!backLink && !!backLink.m, JSON.stringify(backLink && { m: backLink.m, amt: backLink.amt }));

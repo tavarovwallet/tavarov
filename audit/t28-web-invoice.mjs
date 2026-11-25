@@ -66,8 +66,9 @@ let tk = await makeTicket('USDT', '12.34');
 R.ok('ИНТЕРНЕТ-ССЫЛКА ВЫДАНА', tk.shown && tk.web.length > 30, tk.web.slice(0, 60));
 R.ok('она ведёт на страницу счёта нашего сайта',
   tk.web.startsWith('https://wallet.tavarov.com/pay.html#p='), tk.web.slice(0, 55));
-R.ok('а ссылка для нашего приложения осталась на месте',
-  /^(ethereum:|tavarov:pay\?)/.test(tk.own), tk.own.slice(0, 24));
+// 25.11.2026: код на экране кассы — та же страница счёта: по «ethereum:…» чужие кошельки платили мимо контракта.
+R.ok('код на экране — страница счёта, а не прямой перевод',
+  tk.own.startsWith('https://wallet.tavarov.com/pay.html#p='), tk.own.slice(0, 24));
 
 /* Самое важное: то, что мы положили в ссылку, страница счёта обязана понять.
    Разбираем ровно по тем же правилам, что и она. */
@@ -91,7 +92,9 @@ R.ok('и у счёта есть срок', payload.t > Math.floor(Date.now() / 1
 /* Номер счёта один и тот же в коде и в ссылке: продавец следит за одним
    номером, и оплата, пришедшая по другому, до него бы не дошла. */
 R.ok('НОМЕР СЧЁТА В КОДЕ И В ССЫЛКЕ ОДИН',
-  tk.own.indexOf(payload.h.slice(2)) >= 0 || tk.own.indexOf(payload.h) >= 0,
+  (() => { const m = tk.own.match(/#p=([A-Za-z0-9_-]+)/); if (!m) return false;
+            const o = JSON.parse(Buffer.from(m[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+            return o.h === payload.h; })(),
   payload.h.slice(0, 14) + '…');
 
 // ---------- второй счёт — другой номер ----------
