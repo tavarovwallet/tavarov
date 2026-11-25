@@ -25,3 +25,10 @@ await recordChainPaid(env, 'bnb', log);
 assert.equal(rows.size, 3, 'works without the cache too');
 await recordChainPaid({}, 'bnb', log);   // not configured: silently nothing
 console.log('t112 ok');
+
+// 25.11.2026: сама база сводки ограничивает виды записей (CHECK). Новый вид
+// должен быть в схеме, иначе запись молча падает — так и случилось.
+import fs from 'node:fs';
+const schema = fs.readFileSync(new URL('../tools/admin-stats/schema.sql', import.meta.url), 'utf8');
+for (const k of ['paid_chain']) assert.ok(schema.includes("'" + k + "'"), 'schema.sql allows ' + k);
+console.log('t112 schema ok');

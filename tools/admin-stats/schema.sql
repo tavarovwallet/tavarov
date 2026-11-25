@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS admin_events (
   id TEXT PRIMARY KEY,
-  kind TEXT NOT NULL CHECK (kind IN ('invoice_live', 'paid_live', 'invoice_test', 'paid_test', 'wallet_created', 'transfer_submitted', 'transfer_test_submitted')),
+  kind TEXT NOT NULL CHECK (kind IN ('invoice_live', 'paid_live', 'invoice_test', 'paid_test', 'wallet_created', 'transfer_submitted', 'transfer_test_submitted', 'paid_chain')),
   merchant TEXT,
   occurred INTEGER NOT NULL
 );
