@@ -1725,6 +1725,12 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
             <div style="font-size:15px; color:var(--label-2); margin:4px 0 18px;" id="ticketCurrency"></div>
             <div class="qr-wrap"><div id="kassaQr"></div></div>
             <div style="text-align:left;">
+              <!-- 25.11.2026: ручной адрес прячем, когда в сети есть контракт
+                   оплаты: перевод на адрес идёт мимо контракта, без комиссии
+                   и без номера счёта. Для простых переводов в кошельке есть
+                   свой раздел «Получить». Остаётся там, где контракта нет
+                   (Solana, монета сети). -->
+              <div id="ticketManualBox">
               <div class="field-label" data-i18n="k989296aa">Или переводом вручную — адрес</div>
               <div class="addr-row">
                 <div class="addr-text" id="ticketAddr"></div>
@@ -1734,6 +1740,7 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
               <div class="addr-row">
                 <div class="addr-text" id="ticketAmountCopy" style="font-size:15px; color:var(--label);"></div>
                 <button class="mini-btn" onclick="copyText('ticketAmountCopy', this)" data-i18n="k112b141b">Копировать</button>
+              </div>
               </div>
 
               <!-- Ссылка на оплату. Без неё покупка возможна только через
@@ -12803,6 +12810,12 @@ async function createTicket(opts){
     drawQr(qrHolder, qrText, 190);
     const linkBox = document.getElementById('ticketPayLink');
     if (linkBox) linkBox.textContent = qrText;
+    const manualBox = document.getElementById('ticketManualBox');
+    if (manualBox) manualBox.classList.toggle('hidden', evmWeb);
+    /* Ссылка на оплату в EVM теперь та же страница счёта, что и ссылка для
+       интернета ниже, — второй раз её не показываем. */
+    ['ticketLinkLabel', 'ticketLinkNote'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', evmWeb); });
+    if (linkBox && linkBox.parentElement) linkBox.parentElement.classList.toggle('hidden', evmWeb);
 
     /* Ссылка для браузера. Показываем её только когда касса вообще работает
        в этой сети: без контракта оплаты страница счёта не сможет узнать,
