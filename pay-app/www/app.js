@@ -542,7 +542,13 @@ function renderWait(){
   drawQr($('qr'), web);
   waitError(waitErrKey);
   show('otherBox', otherOpen);
-  if (otherOpen){
+  /* 25 November 2026: no manual address on networks with the payment
+     contract. A plain transfer to the address skips the contract, so no
+     service fee and no invoice number. The share link stays: it opens the
+     payment page, which pays through the contract from any wallet. */
+  const manual = otherOpen && !netOf(sale.net).chainId;
+  show('manualLine', manual); show('manualAddr', manual);
+  if (manual){
     $('manualLine').textContent = fill(t('manual'), { a: fmtAmount(sale.amount) + ' ' + sale.cur, n: netOf(sale.net).name });
     $('manualAddr').textContent = sale.to;
   }
