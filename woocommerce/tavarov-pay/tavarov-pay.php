@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Tavarov Pay
+ * Plugin Name:       Tavarov Pay – Crypto Payments for WooCommerce (USDT, USDC)
  * Plugin URI:        https://tavarov.com/woocommerce
  * Description:       Accept USDT and USDC on BNB Chain, Ethereum, Base, X Layer or Solana in WooCommerce. Customers pay from any wallet, the money goes straight to your own wallet, no custodian in between.
  * Version:           1.2.1

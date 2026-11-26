@@ -1,6 +1,6 @@
-=== Tavarov Pay ===
+=== Tavarov Pay – Crypto Payments for WooCommerce (USDT, USDC) ===
 Contributors: tavarov
-Tags: crypto, usdt, usdc, cryptocurrency, payment gateway
+Tags: crypto payments, usdt, usdc, stablecoin, payment gateway
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,7 +8,7 @@ Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept USDT and USDC on BNB Chain, Ethereum, Base, X Layer or Solana. Customers pay from any wallet, money goes straight to yours. 1% fee.
+Non-custodial USDT and USDC payments on BNB Chain, Ethereum, Base, X Layer and Solana. Money goes straight to your wallet. 1% fee.
 
 == Description ==
 
