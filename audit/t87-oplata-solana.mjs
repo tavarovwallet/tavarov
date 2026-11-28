@@ -37,9 +37,10 @@ ok('сеть Solana', (await page.textContent('#net')) === 'Solana');
 const qrText = await page.evaluate(() => { const c = document.querySelector('#qr img, #qr canvas'); return document.getElementById('qr').title || ''; });
 const built = await page.evaluate(() => { const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c, r: SOL.refFromInvoice(inv.h) }); return SOL.refFromInvoice(inv.h); });
 ok('метка счёта считается', built === 'Ew2cTsGyPv7pmn6CyLzV1X1K8A6nBWvJvmkvMY1sM4KU' ? false : built.length >= 32, built);
-ok('подсказка — про Phantom и Solflare', /Phantom/.test(await page.textContent('#qrHint')), await page.textContent('#qrHint'));
+/* 28.11.2026: код в Solana — ссылка на страницу, её читает любая камера; подсказка общая. */
+ok('подсказка — любая камера или кошелёк', /камеру телефона/.test(await page.textContent('#qrHint')), await page.textContent('#qrHint'));
 await page.evaluate(() => applyLang('en'));
-ok('и после смены языка тоже', /Phantom/.test(await page.textContent('#qrHint')), await page.textContent('#qrHint'));
+ok('и после смены языка тоже', /phone camera/.test(await page.textContent('#qrHint')), await page.textContent('#qrHint'));
 ok('кнопки MetaMask нет', !(await vis(page, '#openOther')));
 const href = await page.getAttribute('#openWallet', 'href');
 ok('«Открыть в NoN Wallet» несёт net=solana и продавца', decodeURIComponent(href || '').includes('net=solana') && decodeURIComponent(href || '').includes(M), decodeURIComponent(href).slice(0, 120));
