@@ -20,10 +20,14 @@ const dialogs = []; let promptAnswer = '';
 
 const first = await page.evaluate(() => wallet.evm.address);
 R.ok('НА ГЛАВНОМ ВИДНО, КАКОЙ КОШЕЛЁК ОТКРЫТ', await vis('#walletChip') && (await page.textContent('#walletChipName')) === 'Кошелёк 1', await page.textContent('#walletChipName'));
-R.ok('и выбор сети тут же, сверху', await vis('#dashCard #netPills') && (await page.$$eval('#dashCard #netPills .netpill', e => e.length)) === 5);   // с 20.11.2026 и X Layer
-await page.click('#dashCard #netPills .netpill[data-net="eth"]'); await wait(200);
-R.ok('нажал Ethereum на главном — сеть сменилась', await page.evaluate(() => network) === 'eth');
-await page.click('#dashCard #netPills .netpill[data-net="bnb"]'); await wait(200);
+/* С 28.11.2026 сеть — кнопкой справа сверху: нажал — список из пяти, выбрал — окно закрылось. */
+R.ok('и выбор сети тут же, сверху справа', await vis('#navNet') && (await page.textContent('#navNetName')) === 'BNB');
+await page.click('#navNet'); await wait(200);
+R.ok('нажал на сеть — открылся список из пяти', await vis('#netModal') && (await page.$$eval('#netPills .netpill', e => e.length)) === 5);   // с 20.11.2026 и X Layer
+await page.click('#netPills .netpill[data-net="eth"]'); await wait(200);
+R.ok('выбрал Ethereum — сеть сменилась, список закрылся, сверху написано Ethereum', await page.evaluate(() => network) === 'eth' && !(await vis('#netModal')) && (await page.textContent('#navNetName')) === 'Ethereum');
+await page.click('#navNet'); await wait(200);
+await page.click('#netPills .netpill[data-net="bnb"]'); await wait(200);
 
 // ---- создать и передумать ----
 await page.click('#walletChip'); await wait(200);

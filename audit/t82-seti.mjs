@@ -50,8 +50,9 @@ await page.route(RPC, async route => {
 const pills = await page.evaluate(() => { renderNetPills(); return [...document.querySelectorAll('#netPills .netpill')].map(e => e.textContent); });
 /* С 20 ноября 2026 — пять: X Layer между Base и Solana (t110). */
 R.ok('пять сетей: BNB, Ethereum, Base, X Layer, Solana', JSON.stringify(pills) === JSON.stringify(['BNB Chain','Ethereum','Base','X Layer','Solana']), pills.join(', '));
-const where = await page.evaluate(() => ({ inDash: !!document.querySelector('#dashCard #netPills'), inSettings: !!document.querySelector('#settingsCard #netPills') }));
-R.ok('выбор сети — на главном экране, а не в настройках', where.inDash && !where.inSettings, JSON.stringify(where));
+/* С 28.11.2026 сеть меняется кнопкой справа сверху (#navNet), список — в окне. */
+const where = await page.evaluate(() => ({ chip: !document.getElementById('navNet').classList.contains('hidden') && !!document.querySelector('.nav-right #navNet'), inSettings: !!document.querySelector('#settingsCard #netPills') }));
+R.ok('выбор сети — кнопкой сверху справа, а не в настройках', where.chip && !where.inSettings, JSON.stringify(where));
 const tn = await page.evaluate(() => ({ eth: !!TESTNET.eth, base: !!TESTNET.base, sol: !!TESTNET.solana, ck: JSON.stringify(CONTRACT_KEYS) }));
 R.ok('тестовых Sepolia, Base Sepolia и Solana devnet больше нет', !tn.eth && !tn.base && !tn.sol && !/ethTestnet|baseTestnet/.test(tn.ck), JSON.stringify(tn));
 const main = await page.evaluate(() => ['bnb','eth','base'].map(k => MAINNET[k].name + ':' + MAINNET[k].chainId + ':' + Object.keys(MAINNET[k].tokens).join('+')));
@@ -61,7 +62,7 @@ const usdtEth = await page.evaluate(() => MAINNET.eth.tokens.USDT);
 R.ok('USDT в Ethereum — настоящий, 6 знаков', usdtEth.contract === '0xdAC17F958D2ee523a2206206994597C13D831ec7' && usdtEth.decimals === 6);
 
 await page.evaluate(() => switchNetwork('eth')); await wait(300);
-const ethState = await page.evaluate(() => ({ net: network, nav: document.getElementById('navNet').textContent, c: contractsFor(), bonus: bonusesHere(), toks: Object.keys(tokensFor('eth')) }));
+const ethState = await page.evaluate(() => ({ net: network, nav: document.getElementById('navNetName').textContent, c: contractsFor(), bonus: bonusesHere(), toks: Object.keys(tokensFor('eth')) }));
 R.ok('переключились на Ethereum', ethState.net === 'eth' && ethState.nav === 'Ethereum');
 R.ok('TVR в этой сети нет', !ethState.toks.includes('TVR'), ethState.toks.join(','));
 

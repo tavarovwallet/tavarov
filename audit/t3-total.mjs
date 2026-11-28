@@ -67,7 +67,11 @@ R.ok('честно сказано, каких курсов не хватило',
   noPrice.note.includes('без курса') && noPrice.note.includes('tBNB'), noPrice.note);
 
 // ---------- баланс не загрузился ----------
-await page.evaluate(() => { lastBalances = null; renderTotal(); });
+/* С 28.11.2026 прошлые остатки помнятся на устройстве: пока свежие не
+   пришли, показываем их, а не прочерк. Прочерк — когда не знаем ничего. */
+const kept = await page.evaluate(async () => { lastBalances = null; await renderTotal(); return document.getElementById('totalUsd').textContent; });
+R.ok('свежих остатков нет — показана прошлая сумма, а не прочерк', /\d/.test(kept) && kept !== '—', kept);
+await page.evaluate(() => { balCacheClear(); lastBalances = null; renderTotal(); });
 await page.waitForTimeout(400);
 R.ok('без балансов показан прочерк, а не ноль',
   (await page.evaluate(() => document.getElementById('totalUsd').textContent)) === '—');

@@ -1088,36 +1088,25 @@ input[type=number]{ -moz-appearance:textfield; appearance:textfield; }
 .don-tip .link-btn{ background:none; border:none; padding:0; margin-left:4px; font:inherit; font-weight:600; color:var(--accent); cursor:pointer; }
 #donGreet{ font-family:inherit; font-size:15px; min-height:88px; }
 
-/* Переключатель сетей — сегмент с логотипами и переезжающей «шайбой» */
-#netPills.netpills{ --n:4; --i:0; position:relative; display:grid; grid-template-columns:repeat(var(--n),1fr); gap:0;
-  padding:3px; margin:0 0 20px; border-radius:14px; background:var(--fill-2); overflow:visible; }
-#netPills.netpills::before{ content:''; position:absolute; top:3px; bottom:3px; left:3px;
-  width:calc((100% - 6px) / var(--n)); border-radius:11px; background:var(--bg-grouped);
-  box-shadow:0 1px 2px rgba(14,14,22,.06), 0 4px 14px -6px rgba(14,14,22,.14);
-  transform:translateX(calc(var(--i) * 100%)); transition:transform .38s cubic-bezier(.3,.8,.25,1); }
-#netPills .netpill{ position:relative; z-index:1; flex:none; min-width:0; display:flex; align-items:center; justify-content:center; gap:6px;
-  padding:9px 4px; border-radius:11px; background:none; color:var(--label-2); font-size:13px; font-weight:600; letter-spacing:-.015em;
-  white-space:nowrap; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:color .25s ease; }
-#netPills .netpill.active{ background:none; color:var(--label); }
-#netPills .netpill .nn{ overflow:hidden; text-overflow:ellipsis; }
-#netPills .nl{ position:relative; width:16px; height:16px; flex:none; border-radius:50%; overflow:hidden;
-  filter:grayscale(1); opacity:.7; transition:filter .3s ease, opacity .3s ease, transform .3s ease; }
-#netPills .nl svg{ display:block; width:100%; height:100%; }
-#netPills .nl .coin-logo{ box-shadow:none; }
-#netPills .netpill.active .nl{ filter:none; opacity:1; }
-#netPills .netpill:active .nl{ transform:scale(.9); }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #netPills.netpills::before{ background:rgba(255,255,255,.10); box-shadow:none; } }
-:root[data-theme="dark"] #netPills.netpills::before{ background:rgba(255,255,255,.10); box-shadow:none; }
-/* Узкое окно (расширение 380 px, небольшие телефоны): всё помещается целиком —
-   мельче отступы и значок, «BNB Chain» коротко — «BNB». */
-@media (max-width:410px){
-  #netPills .netpill{ gap:4px; padding:9px 2px; font-size:12.5px; letter-spacing:-.02em; }
-  #netPills .nl{ width:14px; height:14px; }
-  #netPills .netpill[data-net="bnb"] .nn{ display:none; }
-  #netPills .netpill[data-net="bnb"]::after{ content:'BNB'; }
-}
-@media (max-width:374px){ #netPills .nl{ display:none; } }
-@media (prefers-reduced-motion: reduce){ #netPills.netpills::before{ transition:none; } }
+/* Сеть — кнопкой справа сверху (28.11.2026). Раньше под кошельком стояла
+   полоса из пяти сетей: на телефоне «Ethereum» обрезался до «Ethere…», а
+   полоса съедала место над суммой. Теперь сеть видна на любой вкладке, и
+   сменить её можно отовсюду: нажал — открылся список. */
+.net-badge.net-chip{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px 5px 6px; max-width:46vw;
+  color:var(--label); font-weight:600; font-size:13.5px; letter-spacing:-.01em; -webkit-tap-highlight-color:transparent; }
+.net-chip .nn{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.net-chip .caret{ font-size:10px; color:var(--label-3, var(--label-2)); margin-left:-1px; }
+.net-chip .nl, #netPills .nl{ position:relative; flex:none; border-radius:50%; overflow:hidden; display:block; }
+.net-chip .nl{ width:20px; height:20px; }
+.net-chip .nl svg, #netPills .nl svg{ display:block; width:100%; height:100%; }
+.net-chip .nl .coin-logo, #netPills .nl .coin-logo{ box-shadow:none; }
+#netPills .netpill{ width:100%; border:none; background:none; font:inherit; color:var(--label); text-align:left;
+  font-size:16px; font-weight:600; letter-spacing:-.01em; -webkit-tap-highlight-color:transparent; }
+#netPills .netpill .nl{ width:30px; height:30px; }
+#netPills .netpill .nn{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#netPills .netpill .ck{ width:22px; height:22px; flex:none; color:var(--accent); opacity:0; }
+#netPills .netpill.active .ck{ opacity:1; }
+#netPills .netpill:active{ background:var(--fill-2); }
 
 /* Скорость на Android: без размытия под шапкой и панелью (каждый кадр
    прокрутки на недорогом телефоне размывал всё заново), строки за экраном
@@ -1161,7 +1150,7 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
   <div class="nav-title" id="navTitle"><span class="sr-only">NoN Wallet</span><span class="brandmark" aria-hidden="true"><span>N</span><svg class="oo" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><path d="M87 22a48 48 0 0 1 0 76" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"/><circle cx="60" cy="60" r="19" fill="currentColor"/></svg><span>N</span><span class="wo">Wallet</span></span></div>
   </div>
   <div class="nav-right">
-    <button class="net-badge hidden" id="navNet" onclick="setTab('wallet')" title="Текущая сеть" data-i18n-title="kb7ed1c48" data-i18n-title="kb7ed1c48" data-i18n-title="kb7ed1c48">BNB Chain</button>
+    <button class="net-badge net-chip hidden" id="navNet" onclick="openNetSheet()" title="Текущая сеть" data-i18n-title="kb7ed1c48" aria-haspopup="dialog"><span class="nl" id="navNetLogo" aria-hidden="true"></span><span class="nn" id="navNetName">BNB</span><span class="caret" aria-hidden="true">▾</span></button>
   <button class="nav-icon hidden" id="tabSettings" onclick="setTab('settings')" aria-label="Настройки" data-i18n-aria-label="kc919d65b" title="Настройки" data-i18n-title="kc919d65b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="3.1"></circle>
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -1421,7 +1410,6 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
         </button>
       </div>
       <div class="notice notice-info hidden" id="solPathNote" role="status" style="text-align:left; margin:0 0 14px; cursor:pointer;" onclick="solPathNote(false)"><span data-i18n="kcba7f18a">Нашли ваши монеты Solana по адресу, как в Trust Wallet, и переключили кошелёк на него. Поменять можно в настройках.</span></div>
-      <div class="netpills hidden" id="netPills" role="tablist" aria-label="Сеть" data-i18n-aria-label="k547743e8"></div>
       <div class="group group-pad hidden" id="netSingle">
         <div class="kv" style="margin:0;"><span data-i18n="kc897949f">Работаем в сети</span><b id="netSingleName">BNB Chain</b></div>
       </div>
@@ -2621,6 +2609,15 @@ html.android .push-in, html.android .pop-in{ animation-duration:.2s; }
     <button class="btn" onclick="startAddWallet('new')" data-i18n="k2c787c06">Создать новый кошелёк</button>
     <button class="btn btn-tinted" onclick="startAddWallet('import')" data-i18n="k76b27779">Добавить по seed-фразе или ключу</button>
     <button class="btn btn-plain" onclick="closeWallets()" data-i18n="k34e1413d">Готово</button>
+  </div>
+</div>
+
+<div class="hidden sheet-backdrop" id="netModal" onclick="if (event.target === this) closeNetSheet()">
+  <div class="sheet">
+    <div class="sheet-grab"></div>
+    <h2 data-i18n="k547743e8">Сеть</h2>
+    <div class="group" id="netPills" role="listbox" aria-label="Сеть" data-i18n-aria-label="k547743e8"></div>
+    <button class="btn btn-plain" onclick="closeNetSheet()" data-i18n="k34e1413d">Готово</button>
   </div>
 </div>
 
@@ -3868,6 +3865,7 @@ async function doUnlock(){
 function forgetVault(){
   if (!confirm(t('kb9ac44c7'))) return;
   try{ localStorage.removeItem(VAULT_KEY); localStorage.removeItem(BIO_FLAG); } catch(e){}
+  balCacheClear();
   try{ const pl = bioPlugin(); if (pl) pl.deleteCredentials({ server:BIO_SERVER }); } catch(e){}
   /* И запись браузерного входа по лицу. Без этого она пережила бы кошелёк:
      новый кошелёк получил бы кнопку «войти лицом», отдающую пароль от
@@ -4665,6 +4663,37 @@ function rowUsdRaw(r){
   if (px === null) return '';
   return r.val > 0 ? escapeHtml(mkUsd(r.val * px)) : '';
 }
+/* 28.11.2026: последние остатки — на этом устройстве.
+   Телефон выгружает приложение из памяти, и после этого каждый запуск
+   начинался с пустых строк и «—» вместо суммы, пока не ответит сеть. Теперь
+   сразу показываем то, что было в прошлый раз, а свежее подставляем, как
+   только придёт. Хранится только здесь, по сети и адресу; для отправки и
+   проверок «хватит ли» по-прежнему берутся только свежие остатки
+   (lastBalances), эти — только для показа. */
+const BALCACHE_KEY = 'tavarov.balcache.v1';
+function balCacheId(net, addr){ return (testnetOn() ? 't:' : '') + net + ':' + String(addr || '').toLowerCase(); }
+function balCacheAll(){
+  try{ const o = JSON.parse(localStorage.getItem(BALCACHE_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }
+  catch(e){ return {}; }
+}
+function balCacheSave(net, addr, b){
+  if (!b || typeof b !== 'object') return;
+  try{
+    const all = balCacheAll();
+    all[balCacheId(net, addr)] = { at: Date.now(), b };
+    Object.keys(all).sort((x, y) => (all[y].at || 0) - (all[x].at || 0)).slice(40).forEach(k => delete all[k]);
+    localStorage.setItem(BALCACHE_KEY, JSON.stringify(all));
+  } catch(e){}
+}
+function balCacheClear(){ try{ localStorage.removeItem(BALCACHE_KEY); } catch(e){} }
+/* Что показать: свежие остатки этого кошелька, а пока их нет — прошлые. */
+function shownBalances(){
+  const own = wallet ? addressFor(network, wallet) : null;
+  if (!own) return null;
+  if (lastBalances && (!lastBalancesFor || lastBalancesFor === own)) return lastBalances;
+  const hit = balCacheAll()[balCacheId(network, own)];
+  return (hit && hit.b && typeof hit.b === 'object') ? hit.b : null;
+}
 function renderTokens(){
   const listEl = document.getElementById('tokenList');
   if (!listEl) return;
@@ -4675,9 +4704,10 @@ function renderTokens(){
   if (lastBalancesFor && ownNow && lastBalancesFor !== ownNow) lastBalances = null;
   const nativeSym = NETWORKS[network].nativeSym;
   const vis = visibleTokens(network);
-  const rows = [{ key:'native', sym:nativeSym, val: lastBalances ? lastBalances.native : null, dec:4 }];
+  const bal = shownBalances();
+  const rows = [{ key:'native', sym:nativeSym, val: (bal && typeof bal.native === 'number') ? bal.native : null, dec:4 }];
   Object.keys(vis).forEach(sym=>{
-    rows.push({ key:sym, sym, val: (lastBalances && typeof lastBalances[sym] === 'number') ? lastBalances[sym] : null, dec:2, meta:vis[sym] });
+    rows.push({ key:sym, sym, val: (bal && typeof bal[sym] === 'number') ? bal[sym] : null, dec:2, meta:vis[sym] });
   });
   listEl.innerHTML = '';
   /* Поиск: свои монеты — по символу, названию и адресу контракта. */
@@ -4770,7 +4800,25 @@ function mkMatch(c, q){
   return c.nets.some(x => x.s.toLowerCase().includes(q) || x.n.toLowerCase().includes(q) || x.a.toLowerCase() === q);
 }
 
+/* Рынок из прошлого раза (28.11.2026): список с ценами виден сразу, а не
+   после «Загрузка…»; под списком честно написано, во сколько обновлён. */
+const MK_KEY = 'tavarov.market.v1';
+function mkRestore(){
+  if (mkData) return false;
+  try{
+    const v = JSON.parse(localStorage.getItem(MK_KEY) || 'null');
+    if (!v || typeof v.at !== 'number' || !v.d || typeof v.d !== 'object' || Date.now() - v.at > 3 * 86400e3) return false;
+    mkData = v.d; mkAt = v.at;
+    return true;
+  } catch(e){ return false; }
+}
+function mkKeep(){ try{ localStorage.setItem(MK_KEY, JSON.stringify({ at: mkAt, d: mkData })); } catch(e){} }
+mkRestore();
 async function loadMarket(force){
+  if (mkRestore()){
+    if (tab === 'market') renderMarket();
+    if (coinOpenId) renderCoin();
+  }
   if (!force && mkData && Date.now() - mkAt < 2 * 60 * 1000) return;
   if (mkLoading) return mkLoading;
   const ids = mkCoins().map(c => c.g);
@@ -4793,7 +4841,7 @@ async function loadMarket(force){
         got++;
       });
     });
-    if (got){ if (!mkData) setTimeout(() => playIn('mkList'), 0); mkData = next; mkAt = Date.now(); mkFailed = false; }
+    if (got){ if (!mkData) setTimeout(() => playIn('mkList'), 0); mkData = next; mkAt = Date.now(); mkFailed = false; mkKeep(); }
     else mkFailed = true;
   })().finally(() => { mkLoading = null; });
   await mkLoading;
@@ -5112,6 +5160,19 @@ function rampOpenSite(){
    и об этом сказано прямо, а не спрятано. */
 const STABLE_SYMS = { USDT:1, USDC:1, BUSD:1, DAI:1, TUSD:1, FDUSD:1 };
 const spotCache = {};            // id справочника -> { at, usd }
+/* Курсы тоже помним между запусками (28.11.2026): сумма на главном
+   появляется сразу по вчерашнему курсу и тут же уточняется. Старше суток —
+   не берём: такой курс уже не «почти верный». */
+const SPOT_KEY = 'tavarov.spot.v1';
+try{
+  const kept = JSON.parse(localStorage.getItem(SPOT_KEY) || '{}');
+  Object.keys(kept || {}).forEach(id => {
+    const v = kept[id];
+    if (v && typeof v.usd === 'number' && isFinite(v.usd) && typeof v.at === 'number' && Date.now() - v.at < 86400e3) spotCache[id] = { at: v.at, usd: v.usd };
+  });
+} catch(e){}
+function spotKeep(){ try{ localStorage.setItem(SPOT_KEY, JSON.stringify(spotCache)); } catch(e){} }
+function spotStale(id){ const h = spotCache[id]; return (h && Date.now() - h.at < 86400e3) ? h.usd : null; }
 let totalRun = 0;                // номер последнего расчёта: старые ответы не рисуем
 
 const spotInFlight = {};         // id -> обещание: один запрос вместо трёх
@@ -5143,6 +5204,7 @@ async function spotFetch(id){
   const usd = j && j[id] && typeof j[id].usd === 'number' ? j[id].usd : null;
   if (usd === null) throw new Error(t('k8729c8c9'));
   spotCache[id] = { at: Date.now(), usd };
+  spotKeep();
   return usd;
 }
 
@@ -5188,7 +5250,9 @@ async function renderTotal(){
   if (!sumEl || !noteEl) return;
   const run = ++totalRun;
 
-  if (!wallet || !lastBalances){
+  const bal = shownBalances();
+  const fresh = !!(bal && bal === lastBalances);
+  if (!wallet || !bal){
     bchartNow = null;
     try{ renderBalanceChart(); } catch(e){}
     sumEl.textContent = '—';
@@ -5197,9 +5261,9 @@ async function renderTotal(){
   }
 
   const vis = visibleTokens(network);
-  const items = [{ sym: NETWORKS[network].nativeSym, val: lastBalances.native }];
+  const items = [{ sym: NETWORKS[network].nativeSym, val: (typeof bal.native === 'number') ? bal.native : null }];
   Object.keys(vis).forEach(s => items.push({
-    sym: s, val: (typeof lastBalances[s] === 'number') ? lastBalances[s] : null, rec: vis[s]
+    sym: s, val: (typeof bal[s] === 'number') ? bal[s] : null, rec: vis[s]
   }));
 
   const unknown = [];              // есть монеты, а курса нет
@@ -5216,6 +5280,9 @@ async function renderTotal(){
     /* Монеты из каталога — по id CoinGecko из каталога (по адресу контракта). */
     const id = COINGECKO_IDS[it.sym] || catalogIdFor(network, it.rec);
     if (!id){ unknown.push(it.sym); return 0; }
+    /* Курс из прошлого раза — сразу, свежий догонит и сумма пересчитается. */
+    const old = spotStale(id);
+    if (old !== null){ spotUsd(id).then(v => { if (v !== old) renderTotal(); }).catch(() => {}); return it.val * old; }
     try { return it.val * await spotUsd(id); }
     catch(e){ unknown.push(it.sym); return 0; }
   }));
@@ -5227,7 +5294,7 @@ async function renderTotal(){
   /* График: снимок — только когда сумма полная. Неполную не пишем, но и
      график не прячем — рисуем то, что было. */
   try{
-    if (!unknown.length && !pending.length){ bchartNow = total; bchartRecord(total); }
+    if (fresh && !unknown.length && !pending.length){ bchartNow = total; bchartRecord(total); }
     else bchartNow = null;
     renderBalanceChart();
   } catch(e){}
@@ -6601,37 +6668,52 @@ function netLogoHtml(n){
   const inner = n === 'base' ? BASE_LOGO : coinLogoHtml(NET_LOGO_IDS[n]);
   return '<span class="nl" aria-hidden="true">' + (inner || '') + '</span>';
 }
+const NET_CHECK = '<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+/* Короткое имя для кнопки сверху: «BNB Chain» не помещается рядом с логотипом. */
+function netShortName(n){ return n === 'bnb' ? 'BNB' : NETWORKS[n].name; }
+function renderNetChip(){
+  const nm = document.getElementById('navNetName'), lg = document.getElementById('navNetLogo');
+  if (!nm || !NETWORKS[network]) return;
+  nm.textContent = netShortName(network);
+  if (lg && lg.dataset.net !== network){ lg.innerHTML = netLogoHtml(network).replace(/^<span class="nl"[^>]*>|<\/span>$/g, ''); lg.dataset.net = network; }
+}
 function renderNetPills(){
   const pills = document.getElementById('netPills');
   const single = document.getElementById('netSingle');
+  renderNetChip();
   if (!pills || !single) return;
   const many = ENABLED_NETS.length > 1;
-  pills.classList.toggle('hidden', !many);
   single.classList.toggle('hidden', many);
   if (many){
     if (pills.dataset.built !== ENABLED_NETS.join(',')){
       pills.innerHTML = '';
       ENABLED_NETS.forEach(n=>{
-        const el = document.createElement('div');
-        el.className = 'netpill';
+        const el = document.createElement('button');
+        el.className = 'netpill wl-row';
         el.dataset.net = n;
-        el.setAttribute('role', 'tab');
+        el.setAttribute('role', 'option');
         el.innerHTML = netLogoHtml(n);
         const nm = document.createElement('span');
         nm.className = 'nn'; nm.textContent = NETWORKS[n].name;
         el.appendChild(nm);
-        el.onclick = ()=>switchNetwork(n);
+        el.insertAdjacentHTML('beforeend', NET_CHECK);
+        el.onclick = ()=>{ switchNetwork(n); closeNetSheet(); };
         pills.appendChild(el);
       });
       pills.dataset.built = ENABLED_NETS.join(',');
     }
     pills.querySelectorAll('.netpill').forEach(el=>{ const on = el.dataset.net === network; el.classList.toggle('active', on); el.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    pills.style.setProperty('--n', ENABLED_NETS.length);
-    pills.style.setProperty('--i', Math.max(0, ENABLED_NETS.indexOf(network)));
   } else {
     document.getElementById('netSingleName').textContent = NETWORKS[network].name;
   }
 }
+function openNetSheet(){
+  if (ENABLED_NETS.length < 2) return;
+  renderNetPills();
+  document.getElementById('netModal').classList.remove('hidden');
+  syncBack();
+}
+function closeNetSheet(){ const m = document.getElementById('netModal'); if (m) m.classList.add('hidden'); syncBack(); }
 
 function switchNetwork(n){
   if (!ENABLED_NETS.includes(n)) return;
@@ -6642,7 +6724,6 @@ function switchNetwork(n){
   vaultState = null; myName = null; myNameFor = null;
   ensureRpc(n).catch(()=>{});
   const cfg = NETWORKS[n];
-  document.getElementById('navNet').textContent = cfg.name;
   renderNetPills();
   renderWalletState();
 }
@@ -6707,7 +6788,7 @@ function renderWalletState(){
     nav.textContent = TAB_TITLES[tab];
   }
   /* На главном сеть и так выбрана кнопками сверху — второй раз не пишем. */
-  document.getElementById('navNet').classList.toggle('hidden', !ready || tab==='wallet' || tab==='settings' || tab==='cashback' || tab==='market');
+  document.getElementById('navNet').classList.toggle('hidden', !ready || ENABLED_NETS.length < 2 || tab==='settings' || addingWallet);
 
   /* Каждое дело показывает только своё. Ничего лишнего на экране быть не
      должно: лишнее люди нажимают. */
@@ -6873,7 +6954,7 @@ function renderWalletState(){
     renderTokens();
     renderMyName();
     document.getElementById('dashAddr').textContent = addressFor(network, w) || '—';
-    document.getElementById('navNet').textContent = NETWORKS[network].name;
+    renderNetChip();
     renderEnvInfo();
     refreshBalances();
     loadHistory();
@@ -7252,6 +7333,7 @@ async function disconnectWallet(){
   if (!ok) return;
   if (!confirm(t('kb9ac44c7'))) return;
   try{ localStorage.removeItem(VAULT_KEY); localStorage.removeItem(BIO_FLAG); localStorage.removeItem(ROLE_KEY); } catch(e){}
+  balCacheClear();
   try{ const pl = bioPlugin(); if (pl) pl.deleteCredentials({ server:BIO_SERVER }); } catch(e){}
   bioWebClear();
   bioInfo.enabled = false;
@@ -7336,6 +7418,7 @@ async function refreshBalances(){
       if (gb) gb.classList.add('hidden');
     }
     lastBalances = b; lastBalancesFor = address;
+    balCacheSave(net0, address, b);
     renderTokens();
     if (tokenView) renderTokenScreen();
     /* Нашлись монеты из каталога — показать их остатки сразу. */
@@ -13855,7 +13938,7 @@ async function askPersistentStorage(){
 
 /* Номер сборки. Нужен ровно для одного: понять, ту ли версию человек
    смотрит. Без него на вопрос «а вы обновились?» ответить нечем. */
-const BUILD = '2026-11-28.2';   // 1.1.5: касса через страницу оплаты, Solana — выбор кошелька
+const BUILD = '2026-11-28.3';   // 1.1.5: касса через страницу оплаты, Solana — выбор кошелька
 /* Версия приложения — та же, что у Android-сборки (versionName). Её видно
    в подвале настроек; раньше там стояло «версия 1.0», вписанное прямо в
    перевод, и оно не менялось с выпусками. Номер сборки (дата) остаётся
