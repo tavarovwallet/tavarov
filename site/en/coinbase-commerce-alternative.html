@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coinbase Commerce alternative: non-custodial, 1%, any country — Tavarov Pay</title>
+<meta name="description" content="Coinbase Commerce closed for merchants outside the US and Singapore. Tavarov Pay works the same way: non-custodial, 1% fee, USDT and USDC straight to your wallet, WooCommerce plugin.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tavarov.com/en/coinbase-commerce-alternative">
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Coinbase Commerce alternative: non-custodial, 1%, any country — Tavarov Pay">
+<meta property="og:description" content="Coinbase Commerce closed for merchants outside the US and Singapore. Tavarov Pay works the same way: non-custodial, 1% fee, USDT and USDC straight to your wallet, WooCommerce plugin.">
+<meta property="og:url" content="https://tavarov.com/en/coinbase-commerce-alternative">
+<meta name="theme-color" content="#F7F2FE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140B2B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/brand-mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F7F2FE;--card:#FFFFFF;--label:#1C1330;--label-2:rgba(48,33,79,.72);--label-3:rgba(48,33,79,.46);
+--sep:rgba(90,60,150,.16);--accent:#7C3AED;--accent-2:#4B1FE8;--r:16px;
+--font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+--mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#140B2B;--card:#20153D;--label:#FFFFFF;
+--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}}
+:root[data-theme="dark"]{--bg:#140B2B;--card:#20153D;--label:#FFFFFF;--label-2:rgba(235,225,255,.74);--label-3:rgba(235,225,255,.46);
+--sep:rgba(190,160,255,.18);--accent:#A78BFA;--accent-2:#8B5CF6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding:0 22px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--sep)}
+.bar{display:flex;align-items:center;gap:14px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--label);font-size:17px}
+.brand:hover{text-decoration:none}.brand svg{width:30px;height:30px;border-radius:8px;display:block}
+.bar nav{margin-left:auto;display:flex;gap:6px}
+.bar nav a{font-size:13.5px;font-weight:650;padding:5px 10px;border-radius:8px;color:var(--label-2)}
+.bar nav a[aria-current="true"]{background:var(--card);color:var(--label);box-shadow:0 1px 3px rgba(40,20,80,.14)}
+h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:44px 0 12px;overflow-wrap:anywhere}
+.lead{font-size:19px;color:var(--label-2);margin:0 0 26px}
+h2{font-size:22px;font-weight:760;letter-spacing:-.01em;margin:38px 0 10px}
+h3{font-size:18px;font-weight:720;margin:22px 0 6px}
+p{margin:0 0 13px;color:var(--label-2)}p b,li b{color:var(--label)}
+ul,ol{margin:0 0 13px;padding-left:22px;color:var(--label-2)}li{margin-bottom:7px}
+.box{background:var(--card);border:1px solid var(--sep);border-radius:var(--r);padding:20px 24px;margin:22px 0}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.btn{display:inline-block;padding:13px 20px;border-radius:13px;font-weight:700;font-size:16px}
+.btn:hover{text-decoration:none}
+.btn-main{background:var(--accent-2);color:#fff}.btn-ghost{background:var(--card);color:var(--label);border:1px solid var(--sep)}
+code,pre{font-family:var(--mono);font-size:14px}
+pre{background:#170D31;color:#EDE7FF;padding:16px 18px;border-radius:14px;overflow:auto;line-height:1.5}
+code{background:rgba(124,58,237,.10);padding:1px 6px;border-radius:6px}pre code{background:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.grid .box{margin:0}.grid h3{margin-top:0}
+.note{font-size:14.5px;color:var(--label-3);margin:0 0 13px}
+.date{color:var(--label-3);font-size:15px;margin-bottom:24px}
+details{background:var(--card);border:1px solid var(--sep);border-radius:14px;padding:14px 18px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--label)}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--sep);margin-top:48px;padding:26px 0 52px;color:var(--label-3);font-size:14.5px}
+footer a{color:var(--label-2);font-size:15px;margin-right:18px;display:inline-block;margin-bottom:6px}
+.tbl{overflow-x:auto;margin:18px 0;border:1px solid var(--sep);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.45}
+th,td{padding:10px 12px;border-bottom:1px solid var(--sep);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}th{color:var(--label);font-weight:720}td{color:var(--label-2)}td:first-child{color:var(--label);font-weight:650}
+@media (max-width:600px){.tbl table,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}.tbl tr:first-child{display:none}
+.tbl tr{border-bottom:1px solid var(--sep);padding:10px 14px}.tbl tr:last-child{border-bottom:0}.tbl td{border:0;padding:3px 0}
+.tbl td:first-child{font-size:16px;margin-bottom:4px}.tbl td[data-label]:before{content:attr(data-label) ': ';color:var(--label);font-weight:650}}
+@media (max-width:430px){.wrap{padding:0 16px}.brand{font-size:15px}.bar nav a{padding:5px 7px}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebPage", "name": "Coinbase Commerce alternative: non-custodial, 1%, any country — Tavarov Pay", "description": "Coinbase Commerce closed for merchants outside the US and Singapore. Tavarov Pay works the same way: non-custodial, 1% fee, USDT and USDC straight to your wallet, WooCommerce plugin.", "url": "https://tavarov.com/en/coinbase-commerce-alternative", "inLanguage": "en", "dateModified": "2026-11-29", "publisher": {"@type": "Organization", "name": "Tavarov", "url": "https://tavarov.com"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is this the same model as Coinbase Commerce?", "acceptedAnswer": {"@type": "Answer", "text": "Yes in the part that mattered: payments go straight to your own wallet and the fee is 1%. We never hold your money, so there is nothing to withdraw and nothing that can be frozen on our side."}}, {"@type": "Question", "name": "Do you accept Bitcoin and Ether like Coinbase Commerce did?", "acceptedAnswer": {"@type": "Answer", "text": "No. Tavarov Pay accepts stablecoins only: USDT and USDC (USDT0 on X Layer). Your prices stay in dollars and you never take crypto price risk."}}, {"@type": "Question", "name": "Do I need an account or KYC?", "acceptedAnswer": {"@type": "Answer", "text": "No account and no identity check are needed to receive payments to your own wallet. You are still responsible for following the laws and tax rules of your country."}}, {"@type": "Question", "name": "Which countries are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Tavarov Pay is software that works in any country where you may legally accept crypto payments. Some countries restrict crypto payments, so check the rules where you live."}}]}]</script>
+<link rel="stylesheet" href="/min.css">
+<meta property="og:site_name" content="Tavarov Pay"><meta property="og:locale" content="en_US"><meta property="og:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@TavarovWallet"><meta name="twitter:title" content="How to accept USDT: on a website, in a shop, by link — Tavarov Pay"><meta name="twitter:description" content="Three ways to accept USDT and USDC: API and plugin for websites, a QR code at the counter, an invoice link in any chat. Money straight to your wallet, 1% fee."><meta name="twitter:image" content="https://tavarov.com/social/tavarov-pay.jpg"><meta name="twitter:image:alt" content="Tavarov Pay — Accept USDT and USDC to your own wallet."></head>
+<body>
+<header><div class="wrap bar"><a class="brand" href="/"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><path d="M33 22a48 48 0 0 0 0 76M87 22a48 48 0 0 1 0 76" fill="none" stroke="#9875F5" stroke-width="16" stroke-linecap="round"></path><circle cx="60" cy="60" r="19" fill="#9875F5"></circle></svg> Tavarov Pay</a><nav><a href="/en/woocommerce">Plugin</a><a href="https://wallet.tavarov.com/dev">API</a></nav></div></header>
+<main class="wrap">
+
+<h1>Coinbase Commerce closed. Same model, still open.</h1>
+<p class="lead">On March 31, 2026 Coinbase Commerce shut down for merchants outside the United States and Singapore, and its WooCommerce plugin is no longer available. Tavarov Pay works the way Commerce did: non-custodial, 1%, money straight to your own wallet, in any country.</p>
+<div class="cta"><a class="btn btn-main" href="/en/woocommerce">Get the WooCommerce plugin</a><a class="btn btn-ghost" href="https://wallet.tavarov.com/dev">Use the API</a></div>
+
+<h2>What stays the same</h2>
+<div class="tbl"><table>
+<tr><th></th><th>Coinbase Commerce (closed)</th><th>Tavarov Pay</th></tr>
+<tr><td>Who holds the money</td><td data-label="Coinbase Commerce">You (non-custodial)</td><td data-label="Tavarov Pay">You (non-custodial). We never hold it, not even for a second</td></tr>
+<tr><td>Fee</td><td data-label="Coinbase Commerce">1%</td><td data-label="Tavarov Pay">1% today, taken in the same transaction. Nothing to withdraw, no payout fee</td></tr>
+<tr><td>Countries</td><td data-label="Coinbase Commerce">US and Singapore only (via Coinbase Business)</td><td data-label="Tavarov Pay">Any country where accepting crypto is legal</td></tr>
+<tr><td>Coins</td><td data-label="Coinbase Commerce">BTC, ETH, USDC and others</td><td data-label="Tavarov Pay">Stablecoins only: USDT and USDC on BNB Chain, Ethereum, Base, Solana and X Layer (which tokens depends on the network)</td></tr>
+<tr><td>Account and KYC to receive</td><td data-label="Coinbase Commerce">Coinbase account</td><td data-label="Tavarov Pay">Not needed. Any wallet address works</td></tr>
+</table></div>
+
+<h2>Switch in five minutes</h2>
+<ol>
+<li>Install <a href="/en/woocommerce">Tavarov Pay for WooCommerce</a> from the official WordPress.org directory.</li>
+<li>Paste the wallet address where you want to receive payments. <a href="/wallet">NoN Wallet</a> is free, but any wallet on the supported networks works.</li>
+<li>Turn off the old Coinbase Commerce payment method so customers don’t see a dead button.</li>
+</ol>
+<p>Not on WooCommerce? Create invoices with one API call and get a signed <code>invoice.paid</code> webhook, or send a payment link in any chat. Docs and test mode are in the <a href="https://wallet.tavarov.com/dev">developer area</a>.</p>
+
+<div class="box">
+<p><b>Why non-custodial matters.</b> A custodial gateway can freeze your balance, change its countries or close your account, and your money is stuck until it pays you out. With Tavarov Pay the customer’s payment is split on-chain in one transaction: 99% to your wallet, 1% to the service. If we disappeared tomorrow, every payment you already received would still be in your wallet.</p>
+</div>
+
+<h2>Questions</h2><details><summary>Is this the same model as Coinbase Commerce?</summary><p>Yes in the part that mattered: payments go straight to your own wallet and the fee is 1%. We never hold your money, so there is nothing to withdraw and nothing that can be frozen on our side.</p></details><details><summary>Do you accept Bitcoin and Ether like Coinbase Commerce did?</summary><p>No. Tavarov Pay accepts stablecoins only: USDT and USDC (USDT0 on X Layer). Your prices stay in dollars and you never take crypto price risk.</p></details><details><summary>Do I need an account or KYC?</summary><p>No account and no identity check are needed to receive payments to your own wallet. You are still responsible for following the laws and tax rules of your country.</p></details><details><summary>Which countries are supported?</summary><p>Tavarov Pay is software that works in any country where you may legally accept crypto payments. Some countries restrict crypto payments, so check the rules where you live.</p></details>
+</main>
+<footer><div class="wrap"><a href="/">Home</a><a href="https://wallet.tavarov.com/">Open the wallet</a><a href="https://wallet.tavarov.com/dev">API for websites</a><a href="/en/woocommerce">WooCommerce plugin</a><a href="/en/accept-usdt">Accept USDT</a><a href="/en/fake-usdt-payment">Fake USDT check</a><a href="/en/check">Check a payment</a><a href="/en/crypto-donations">Tips for streamers</a><a href="/en/partners">Partners</a><a href="/en/terms">Terms</a><a href="/en/privacy">Privacy</a><p style="margin:14px 0 0">NoN Wallet and Tavarov Pay are non-custodial: we never hold keys or money. Some countries restrict crypto payments — check the rules where you live.</p><p style="margin:6px 0 0">© 2026 Tavarov</p></div></footer>
+
+
+</body></html>
