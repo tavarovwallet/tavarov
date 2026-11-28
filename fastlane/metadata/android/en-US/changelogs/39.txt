@@ -1,0 +1,1 @@
+X Layer network (OKB, USDT0, USDC). Checkout QR now opens the payment page, so any wallet pays through the contract; on Solana the buyer picks Phantom, Solflare or Trust Wallet. Indonesian language, clearer swap screen and send status, stricter recipient check.

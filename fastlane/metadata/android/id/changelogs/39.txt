@@ -1,0 +1,1 @@
+Jaringan X Layer (OKB, USDT0, USDC). QR kasir kini membuka halaman pembayaran, sehingga dompet apa pun membayar lewat kontrak; di Solana pembeli memilih Phantom, Solflare atau Trust Wallet. Bahasa Indonesia, layar tukar yang lebih jelas, pemeriksaan penerima yang lebih ketat.
