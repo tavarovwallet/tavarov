@@ -1,0 +1,1 @@
+Network switch in the top-right corner, available on every tab. The wallet shows your last balances, prices and market list right away instead of loading screens, then updates them. The settings page shows the correct app version.

@@ -1,0 +1,1 @@
+Ganti jaringan lewat tombol di kanan atas, di tab mana pun. Dompet langsung menampilkan saldo, harga, dan daftar pasar terakhir tanpa layar memuat, lalu memperbaruinya. Halaman pengaturan menampilkan versi aplikasi yang benar.
