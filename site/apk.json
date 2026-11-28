@@ -1,10 +1,10 @@
 {
   "file": "tavarov.apk",
-  "version": "1.1.4",
-  "versionCode": 38,
-  "tag": "wallet-v1.1.4",
-  "source": "d35e7d9e7e9fdccff7fb85b8be46396db027aa4d",
-  "size": "7.3 MB",
-  "bytes": 7678705,
-  "sha256": "7f46b8a60646cd6c3b7a99d9bb8f83d098b138bb4bb00e75442cdafc6a0f8a23"
+  "version": "1.1.5",
+  "versionCode": 39,
+  "tag": "wallet-v1.1.5",
+  "source": "4a55dfb5eb86c017ad2229cc918a10690cac45fd",
+  "size": "7.4 MB",
+  "bytes": 7726926,
+  "sha256": "f4ebb1732af5a250a5dd8cbbe253130505c4867bca05f52d60be6a456d0400b3"
 }
