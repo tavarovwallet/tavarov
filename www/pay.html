@@ -319,6 +319,7 @@ label, .lbl, .sec, .sum-row .k{ text-transform:none !important; letter-spacing:-
       <button class="btn btn-main hidden" id="solPayHere" type="button" data-t="solPayHere">Оплатить этим кошельком</button>
       <a class="btn btn-ghost hidden" id="solPhantom" href="#" rel="noopener" data-t="solPhantom">Оплатить в Phantom</a>
       <a class="btn btn-ghost hidden" id="solSolflare" href="#" rel="noopener" data-t="solSolflare">Оплатить в Solflare</a>
+      <a class="btn btn-ghost hidden" id="solTrust" href="#" rel="noopener" data-t="solTrust">Оплатить в Trust Wallet</a>
       <div class="note hidden" id="solPayErr"></div>
     </div>
     <button class="btn btn-ghost" id="copyLink" data-t="copy">Скопировать ссылку</button>
@@ -496,6 +497,7 @@ const RU = {
   solPayHere:'Оплатить этим кошельком',
   solPhantom:'Оплатить в Phantom',
   solSolflare:'Оплатить в Solflare',
+  solTrust:'Оплатить в Trust Wallet',
   solPayBusy:'Подтвердите оплату в кошельке…',
   solPaySent:'Отправлено — ждём подтверждения сети…',
   solPayFail:'Кошелёк не провёл оплату: ',
@@ -548,6 +550,7 @@ const T = {
     solPayHere:'Pay with this wallet',
     solPhantom:'Pay in Phantom',
     solSolflare:'Pay in Solflare',
+    solTrust:'Pay in Trust Wallet',
     solPayBusy:'Confirm the payment in your wallet…',
     solPaySent:'Sent — waiting for the network to confirm…',
     solPayFail:'The wallet did not make the payment: ',
@@ -598,6 +601,7 @@ const T = {
     solPayHere:'Pagar con esta billetera',
     solPhantom:'Pagar en Phantom',
     solSolflare:'Pagar en Solflare',
+    solTrust:'Pagar en Trust Wallet',
     solPayBusy:'Confirme el pago en su billetera…',
     solPaySent:'Enviado: esperando la confirmación de la red…',
     solPayFail:'La billetera no hizo el pago: ',
@@ -648,6 +652,7 @@ const T = {
     solPayHere:'Bu cüzdanla öde',
     solPhantom:'Phantom’da öde',
     solSolflare:'Solflare’de öde',
+    solTrust:'Trust Wallet’de öde',
     solPayBusy:'Ödemeyi cüzdanınızda onaylayın…',
     solPaySent:'Gönderildi — ağın onayı bekleniyor…',
     solPayFail:'Cüzdan ödemeyi yapmadı: ',
@@ -698,6 +703,7 @@ const T = {
     solPayHere:'Pagar com esta carteira',
     solPhantom:'Pagar no Phantom',
     solSolflare:'Pagar no Solflare',
+    solTrust:'Pagar no Trust Wallet',
     solPayBusy:'Confirme o pagamento na sua carteira…',
     solPaySent:'Enviado — aguardando a confirmação da rede…',
     solPayFail:'A carteira não fez o pagamento: ',
@@ -748,6 +754,7 @@ const T = {
     solPayHere:'Bayar dengan dompet ini',
     solPhantom:'Bayar di Phantom',
     solSolflare:'Bayar di Solflare',
+    solTrust:'Bayar di Trust Wallet',
     solPayBusy:'Konfirmasi pembayaran di dompet Anda…',
     solPaySent:'Terkirim — menunggu konfirmasi jaringan…',
     solPayFail:'Dompet tidak melakukan pembayaran: ',
@@ -1705,7 +1712,6 @@ function renderText(){
   $('to').textContent    = inv.m;
   $('net').textContent   = NET_NAMES[inv.net || 'bnb'] || inv.net;
   $('order').textContent = inv.o || '—';
-  if (isSolNet(inv.net)){ const qh = $('qrHint'); if (qh) qh.textContent = t('qrHintSol'); }
 }
 
 /* ---------- Solana: оплата кошельком в его же браузере ----------
@@ -1771,8 +1777,12 @@ function renderSolWallets(){
   const url = solWalletPageUrl(), ref = encodeURIComponent(location.origin);
   $('solPhantom').href = 'https://phantom.app/ul/browse/' + encodeURIComponent(url) + '?ref=' + ref;
   $('solSolflare').href = 'https://solflare.com/ul/v1/browse/' + encodeURIComponent(url) + '?ref=' + ref;
+  /* Trust Wallet открывает страницу в своём браузере по общей ссылке;
+     coin_id=501 — Solana (SLIP-44), чтобы кошелёк сразу был в нужной сети. */
+  $('solTrust').href = 'https://link.trustwallet.com/open_url?coin_id=501&url=' + encodeURIComponent(url);
   $('solPhantom').classList.toggle('hidden', !!prov);
   $('solSolflare').classList.toggle('hidden', !!prov);
+  $('solTrust').classList.toggle('hidden', !!prov);
 }
 /* Та же операция в формате v0 (без таблиц адресов): сообщение = 0x80 +
    прежнее сообщение + 0 (число таблиц). Содержимое то же самое: те же
@@ -1863,21 +1873,16 @@ function render(){
      NoN Wallet такую ссылку читает с 9.10.2026 (payLinkFromUrl), в том
      числе приложение 1.1.4. Ссылка длиннее — поэтому, как и в Solana,
      название и товар убираем, если код выходит слишком плотным. */
-  let qrText = isSolNet(inv.net) ? link : qrPaymentUrl();
+  /* 28.11.2026: и в Solana код — та же https-ссылка. Раньше здесь был
+     «solana:https://…» (Solana Pay): камера iPhone отдавала его тому
+     приложению, что первым забрало схему solana:, — у покупателя это
+     оказывался Solflare, и выбрать Phantom или Trust Wallet он не мог.
+     Ссылку открывает любая камера, а на странице — кнопки кошельков
+     (renderSolWallets). Сама оплата та же: одна операция, 99% продавцу,
+     1% кошельку развития, с меткой счёта. NoN Wallet такую ссылку
+     читает (payLinkFromUrl, сеть solana). */
+  let qrText = qrPaymentUrl();
   renderSolWallets();
-  if (isSolNet(inv.net)){
-    const q = new URLSearchParams({ m: inv.m, a: String(inv.a), c: inv.c || 'USDC', r: SOL.refFromInvoice(inv.h) });
-    if (inv.n) q.set('n', String(inv.n).slice(0, 48));
-    if (inv.i) q.set('i', String(inv.i).slice(0, 64));
-    const sp = () => 'solana:' + encodeURIComponent((inv.w || 'https://wallet.tavarov.com') + '/api/solpay?' + q.toString());
-    /* Ссылка кодируется дважды, и каждая русская буква становится
-       двенадцатью знаками. Длинное название делает код таким плотным, что
-       камера его не читает, — тогда название и товар в код не кладём:
-       оплата от этого не меняется, только подпись в кошельке короче. */
-    qrText = sp();
-    if (qrText.length > 360){ q.delete('i'); qrText = sp(); }
-    if (qrText.length > 360){ q.delete('n'); qrText = sp(); }
-  }
   /* Запасной адрес кошелька: он берётся из самого счёта, а сюда попадают
      только счета, выписанные до того, как поле появилось. Старый адрес тут
      держать нельзя — покупателя увело бы на площадку, которую мы больше не
@@ -2310,7 +2315,7 @@ function qrPaymentUrl(){
   return url;
 }
 function paymentUrl(){
-  const o = { m: inv.m, a: inv.a, c: inv.c || 'USDT', h: inv.h, net: inv.net || 'bnb' };
+  const o = { m: inv.m, a: inv.a, c: inv.c || (isSolNet(inv.net) ? 'USDC' : 'USDT'), h: inv.h, net: inv.net || 'bnb' };
   ['o', 'n', 'i', 'w', 'r', 't', 's', 'ft', 'api'].forEach(k => { if (inv[k]) o[k] = inv[k]; });
   return location.origin + location.pathname + '?p=' + b64urlEncode(JSON.stringify(o))
        + '&pick=1&lang=' + LANG;

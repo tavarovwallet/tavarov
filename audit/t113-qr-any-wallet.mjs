@@ -54,7 +54,13 @@ for (const net of ['bnb', 'eth', 'base']){
   ok(net + ': подсказка — любая камера или кошелёк', r.hintShown && /камеру телефона|phone camera/.test(r.hint), r.hint);
 }
 const sol = await qrOf({ ...base, net: 'solana', m: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU', c: 'USDC' });
-ok('solana: код — Solana Pay, как раньше', sol.qr.startsWith('solana:'), sol.qr.slice(0, 60));
+ok('solana: код — тоже https-ссылка на страницу (28.11.2026: Solana Pay открывал только один кошелёк)',
+   /^http:\/\/localhost:\d+\/pay\?p=[A-Za-z0-9_-]+&pick=1&lang=/.test(sol.qr), sol.qr.slice(0, 90));
+ok('solana: подсказка — любая камера или кошелёк', sol.hintShown && /камеру телефона|phone camera/.test(sol.hint), sol.hint);
+{
+  const pay = JSON.parse(Buffer.from(sol.qr.match(/p=([A-Za-z0-9_-]+)/)[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+  ok('solana: в ссылке сеть solana, USDC и номер счёта', pay.net === 'solana' && pay.c === 'USDC' && pay.h === H, JSON.stringify(pay).slice(0, 120));
+}
 
 const long = await qrOf({ ...base, net: 'bnb', n: 'Очень длинное название магазина '.repeat(6), i: 'Очень длинный товар '.repeat(8) });
 ok('длинные название и товар не делают код нечитаемым (≤ 420 знаков)', long.qr.length <= 420, long.qr.length);

@@ -12798,10 +12798,16 @@ async function createTicket(opts){
        кошелёк, а платит она через контракт. NoN Wallet такую ссылку читает
        (payLinkFromUrl). Solana и оплата в монете сети — как раньше.
        Слишком длинную ссылку укорачиваем: убираем товар, потом название. */
-    const evmWeb = !!contractsFor() && !!w.evm && currency !== 'native' && network !== 'solana';
+    /* 28.11.2026: и в Solana на экране — страница счёта, а не
+       «solana:https://…». Камера iPhone отдавала Solana Pay одному
+       приложению (у покупателя — Solflare), выбрать кошелёк было нельзя.
+       Страница счёта даёт кнопки Phantom, Solflare и Trust Wallet и платит
+       той же операцией: 99% продавцу, 1% кошельку развития. */
+    const solWebQr = solPayHere() && !!w.solana && currency !== 'native';
+    const evmWeb = (!!contractsFor() && !!w.evm && currency !== 'native' && network !== 'solana') || solWebQr;
     let qrText = payLink;
     if (evmWeb){
-      const webArgs = { merchant: w.evm.address, amt: amount, cur: currency, item: item,
+      const webArgs = { merchant: solWebQr ? w.solana.address : w.evm.address, amt: amount, cur: currency, item: item,
                         name: shopName(), net: netCode(), inv: ticketInvoice, order: 'k' + ticketInvoice.slice(2, 10) };
       qrText = buildWebInvoice(webArgs);
       if (qrText.length > 420) qrText = buildWebInvoice(Object.assign({}, webArgs, { item: '' }));
