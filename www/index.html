@@ -6407,6 +6407,33 @@ window.addEventListener('popstate', () => {
   try{ goBack(); }catch(e){}
   syncBack();
 });
+/* 28.11.2026: жест «назад» в приложении под iOS. В iPhone нет системной кнопки
+   «назад», а WKWebView внутри приложения не превращает смахивание от левого
+   края в шаг назад. Ловим его сами: палец лёг у левого края и ушёл вправо
+   почти горизонтально — шаг назад внутри кошелька, как кнопка «‹». */
+(function(){
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!IS_NATIVE_APP || !ios) return;
+  let x0 = 0, y0 = 0, t0 = 0, on = false;
+  document.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    on = e.touches.length === 1 && t.clientX <= 28;
+    if (on){ x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); }
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!on) return;
+    const t = e.touches[0];
+    if (Math.abs(t.clientY - y0) > 50) on = false;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!on) return;
+    on = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = Math.abs(t.clientY - y0);
+    const fast = dx > 40 && Date.now() - t0 < 300;
+    if ((dx > 80 || fast) && dy < 50){ try{ goBack(); }catch(err){} syncBack(); }
+  }, { passive: true });
+})();
 /* Окна открываются в десятке мест — следим за всеми разом, а не дописываем
    вызов в каждое. */
 function watchSheets(){
@@ -13828,7 +13855,7 @@ async function askPersistentStorage(){
 
 /* Номер сборки. Нужен ровно для одного: понять, ту ли версию человек
    смотрит. Без него на вопрос «а вы обновились?» ответить нечем. */
-const BUILD = '2026-11-28.1';   // 1.1.5: касса через страницу оплаты, Solana — выбор кошелька
+const BUILD = '2026-11-28.2';   // 1.1.5: касса через страницу оплаты, Solana — выбор кошелька
 /* Версия приложения — та же, что у Android-сборки (versionName). Её видно
    в подвале настроек; раньше там стояло «версия 1.0», вписанное прямо в
    перевод, и оно не менялось с выпусками. Номер сборки (дата) остаётся
