@@ -13828,12 +13828,12 @@ async function askPersistentStorage(){
 
 /* Номер сборки. Нужен ровно для одного: понять, ту ли версию человек
    смотрит. Без него на вопрос «а вы обновились?» ответить нечем. */
-const BUILD = '2026-11-20.1';   // X Layer
+const BUILD = '2026-11-28.1';   // 1.1.5: касса через страницу оплаты, Solana — выбор кошелька
 /* Версия приложения — та же, что у Android-сборки (versionName). Её видно
    в подвале настроек; раньше там стояло «версия 1.0», вписанное прямо в
    перевод, и оно не менялось с выпусками. Номер сборки (дата) остаётся
    для разбора неполадок: по нему видно, что именно открыто. */
-const APP_VERSION = '1.1.4';
+const APP_VERSION = '1.1.5';
 try{ const v = document.getElementById('appVersion'); if (v) v.textContent = APP_VERSION; }catch(e){}
 
 async function renderEnvInfo(){
@@ -13841,7 +13841,8 @@ async function renderEnvInfo(){
   if (!where) return;
   const build = document.getElementById('envBuild');
   if (build) build.textContent = BUILD + ' · ' + APP_VERSION;
-  where.textContent = IS_NATIVE ? t('k4b74278d')
+  /* 28.11.2026: то же приложение собирается и под iOS — там писало «Приложение Android». */
+  where.textContent = IS_NATIVE ? (IS_IOS ? t('k4b74278d').replace('Android', 'iOS') : t('k4b74278d'))
                     : IS_STANDALONE ? t('k9640c480')
                     : t('kdd286747');
   document.getElementById('envSecure').textContent = cryptoAvailable() ? t('k81c9dad1') : t('k1f1d5e14');
